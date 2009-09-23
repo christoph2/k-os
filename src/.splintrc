@@ -1,0 +1,33 @@
+-booltype boolean
+-booltrue TRUE
+-boolfalse FALSE
++charindex
+-charint
++forcehints
+-enum-int
+-enum-index
+#-relax-quals
+-ignore-signs
+-match-any-integral
++pred-bool-ptr
++pred-bool-int
++pred-bool-others
+-noeffect
++must-define
+-internal-name-length 31
++glob-imp-only
++struct-imp-only
++ret-imp-only
++read-only-strings
+
+#-imp-outs
+-I ..\inc
+-I ..\..\common\inc
+-I ..\..\common\drivers\include\cpu12
+-I ..\..\common\InstallISR
+-I c:\projekte\csProjects\trunk\common\include
+
+-D__CSMC__
+#D__IAR_SYSTEMS_ICC__
+#D__ICCHCS12__
+
