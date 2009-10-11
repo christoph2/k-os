@@ -24,10 +24,6 @@ __copyright__="""
   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 """
 
-##
-##  OIL-Preprocessor (C-Style).
-##
-
 import os
 import re
 import sys
@@ -126,7 +122,7 @@ def Parse(fname):
                 if (sdelim=='"' and edelim!='"') or (sdelim=='<' and edelim!='>'):
                     SevereError(fname,line_no,E_UNBALANCED_DELIMS,'Unbalanced deliminiters '+sdelim+','+edelim+' in #include-statement')
                 else:
-                    ## Warn, if no comment,
+                    ## Warn, if no comment.
                     print >> of,'\n',
                     if sdelim=='"':
                         inc_path=os.path.join(os.path.curdir,incfile)
@@ -160,4 +156,4 @@ def Parser(fname):
 
 
 if __name__=='__main__':
-    Parser(r'C:\projekte\eOSEK\trunk\SystemGenerator\appcfg2.oil')
+    Parser(r'test.oil')

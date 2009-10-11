@@ -20,41 +20,56 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  */
- 
+
 #if !defined(__ISR_CFG_H)
 #define __ISR_CFG_H
-
-#ifdef __cplusplus
-extern "C"
-{
-#endif  /* __cplusplus */
-
-DECLARE_ISR2_VECTOR(OSSystemTimerVector);
-DECLARE_ISR2_USER_HANDLER(OSSystemTimerVector);
-#define MDCU_VECTOR OSSystemTimerVector
-
-DECLARE_ISR1_VECTOR(SWI_Vector);
-#define SWI_VECTOR SWI_Vector
-
-DECLARE_ISR1_VECTOR(RTI_Vector);
-#define RTI_VECTOR RTI_Vector
-
-#if 0
-DECLARE_ISR1_VECTOR(SCI0_Vector);
-#define SCI0_VECTOR SCI0_Vector
-#endif
 
 DECLARE_ISR1_VECTOR(ATD0_Vector);
 #define ATD0_VECTOR ATD0_Vector
 
+DECLARE_ISR1_VECTOR(SystemTimerHandler);
+#define MDCU_VECTOR SystemTimerHandler
+
+DECLARE_ISR1_VECTOR(TMR_TofHandler);
+#define TOF_VECTOR  TMR_TofHandler
+
+DECLARE_ISR1_VECTOR(RTI_Vector);
+#define RTI_VECTOR  RTI_Vector
+
+DECLARE_ISR1_VECTOR(SCI0_Vector);
+#define SCI0_VECTOR SCI0_Vector
+
+DECLARE_ISR1_VECTOR(SCI1_Vector);
+#define SCI1_VECTOR SCI1_Vector
 
 #if 0
-DECLARE_ISR(SPI0_Vector);
-#define SPI0_VECTOR SPI0_Vector
+DECLARE_ISR1_VECTOR(iic_handler);
+#define IIC_VECTOR  iic_handler
 #endif
 
-#ifdef __cplusplus
-}
-#endif  /* __cplusplus */
+DECLARE_ISR1_VECTOR(PAOVIHandler);
+#define PAOF_VECTOR PAOVIHandler
+
+DECLARE_ISR1_VECTOR(PBOVIHandler);
+#define PBOF_VECTOR PBOVIHandler
+
+DECLARE_ISR1_VECTOR(PORTHHandler);
+#define PH_VECTOR   PORTHHandler
+
+DECLARE_ISR1_VECTOR(SPI0_Vector);
+#define SPI0_VECTOR SPI0_Vector
+
+DECLARE_ISR1_VECTOR(CAN0TxVector);
+#define CAN0T_VECTOR CAN0TxVector
+
+DECLARE_ISR1_VECTOR(CAN0RxVector);
+#define CAN0R_VECTOR CAN0RxVector
+
+DECLARE_ISR1_VECTOR(CAN0ErrorVector);
+#define CAN0E_VECTOR CAN0ErrorVector
+
+DECLARE_ISR1_VECTOR(CAN0WakupVector);
+#define CAN0W_VECTOR CAN0WakupVector
 
 #endif /* __ISR_CFG_H */
+

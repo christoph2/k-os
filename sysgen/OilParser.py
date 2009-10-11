@@ -749,7 +749,7 @@ def ParseOil(fname):
         return (ImplDefMap,AppDefMap)
 
 def test():
-    ImplDef,AppDef=ParseOil(r"appcfg2.oil")
+    ImplDef,AppDef=ParseOil(r"test.oil")
     GenORTI.Generate("test.ort",AppDef)
     GenCfg.Generate("test",AppDef)
         
