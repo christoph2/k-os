@@ -1,26 +1,26 @@
 /*
- * k_os (Konnex Operating-System based on the OSEK/VDX-Standard).
- *
- * (C) 2007-2009 by Christoph Schueler <chris@konnex-tools.de>
- *
- * All Rights Reserved
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License along
- * with this program; if not, write to the Free Software Foundation, Inc.,
- * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
- *
- */
+   k_os (Konnex Operating-System based on the OSEK/VDX-Standard).
 
+   (C) 2007-2010 by Christoph Schueler <chris@konnex-tools.de,
+                                       cpu12.gems@googlemail.com>
+
+   All Rights Reserved
+
+   This program is free software; you can redistribute it and/or modify
+   it under the terms of the GNU General Public License as published by
+   the Free Software Foundation; version 2 of the License.
+
+   This program is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+   GNU General Public License for more details.
+
+   You should have received a copy of the GNU General Public License
+   along with this program; if not, write to the Free Software
+   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA 
+
+   s. FLOSS-EXCEPTION.txt
+*/
 #if !defined(__OSMACROS_H)
 #define __OSMACROS_H
 
@@ -108,7 +108,7 @@
 **  Conditional Scheduling, if running Task is preempteble
 **  and called from Task-Level.
 **
-*/ 
+*/
 #if defined(OS_SCHED_POLICY_PRE)
 #define OS_COND_SCHEDULE_FROM_TASK_LEVEL()  \
     _BEGIN_BLOCK                            \
@@ -132,12 +132,12 @@
 #if     defined(OS_BCC1) || defined(OS_ECC1)
 #define OS_TASK_INCR_ACTIVATIONS(tid)
 #define OS_TASK_DECR_ACTIVATIONS(tid)
-#elif   defined(OS_BCC2) || defined(OS_ECC2) 
+#elif   defined(OS_BCC2) || defined(OS_ECC2)
 #define OS_TASK_INCR_ACTIVATIONS(tid)   OS_TCB[(tid)].Activations++
 #define OS_TASK_DECR_ACTIVATIONS(tid)   OS_TCB[(tid)].Activations--
 #endif
 
-#if     defined(OS_USE_RESSCHEDULER)            
+#if     defined(OS_USE_RESSCHEDULER)
 #define OS_LOCK_SCHEDULER()         (OsFlags|=OS_SYS_FLAG_SCHED_OCCUPIED)
 #define OS_UNLOCK_SCHEDULER()       (OsFlags&=~OS_SYS_FLAG_SCHED_OCCUPIED)
 #define OS_IS_SCHEDULER_LOCKED()    ((OsFlags & OS_SYS_FLAG_SCHED_OCCUPIED)==OS_SYS_FLAG_SCHED_OCCUPIED)
@@ -146,7 +146,7 @@
 #define OS_UNLOCK_SCHEDULER()
 #define OS_IS_SCHEDULER_LOCKED()    ((boolean)FALSE)
 #endif  /* OS_USE_RESSCHEDULER */
-        
+
 #define OS_SET_ISR_LEVEL()          (OsFlags|=OS_SYS_FLAG_ISR_LEVEL)
 #define OS_SET_TASK_LEVEL()         (OsFlags&=~OS_SYS_FLAG_ISR_LEVEL)
 #define OS_IS_ISR_LEVEL()           ((OsFlags & OS_SYS_FLAG_ISR_LEVEL)==OS_SYS_FLAG_ISR_LEVEL)
@@ -187,7 +187,7 @@
         if ((OsCallevel & (cl)) == OS_CL_INVALID) {     \
             OSCallErrorHookAndReturn(E_OS_CALLEVEL);    \
         }                                               \
-    _END_BLOCK        
+    _END_BLOCK
 #else
 #define ASSERT_VALID_CALLEVEL(cl)
 #endif
@@ -225,8 +225,8 @@
         OS_SET_CALLEVEL(OS_CL_ISR2);    \
     _END_BLOCK
 
-/*  
-** OS_SET_CALLEVEL(OS_CL_TASK);    \ 
+/*
+** OS_SET_CALLEVEL(OS_CL_TASK);    \
 */
 
 
@@ -274,7 +274,7 @@
 #if defined(OS_USE_ERRORHOOK)
 #define ASSERT_INTERRUPTS_ENABLED_AT_TASK_LEVEL()                   \
     _BEGIN_BLOCK                                                    \
-        if ((Cpu_InterruptsDisabled()) && (!OS_IS_ISR_LEVEL())) {   \
+        if ((CPU_INTERRUPTS_DISABLED()) && (!OS_IS_ISR_LEVEL())) {   \
             OSCallErrorHookAndReturn(E_OS_DISABLEDINT);             \
         }                                                           \
     _END_BLOCK
@@ -286,7 +286,7 @@
 #if defined(OS_EXTENDED_STATUS)
 #define ASSERT_VALID_TASKID(tid)                                \
     _BEGIN_BLOCK                                                \
-        if (((tid)==INVALID_TASK) || ((tid)>OS_NUM_TASKS)) {    \
+        if (((tid)==INVALID_TASK) || ((tid)>OS_NUMBER_OF_TASKS)) {    \
             OSCallErrorHookAndReturn(E_OS_ID);                  \
         }                                                       \
     _END_BLOCK
@@ -311,7 +311,7 @@
 #if defined(OS_EXTENDED_STATUS)
 #define ASSERT_VALID_COUNTERID(cid)             \
     _BEGIN_BLOCK                                \
-        if ((cid)>=OS_NUM_COUNTERS) {           \
+        if ((cid)>=OS_NUMBER_OF_COUNTERS) {           \
             OSCallErrorHookAndReturn(E_OS_ID);  \
         }                                       \
     _END_BLOCK
@@ -330,13 +330,13 @@
     _END_BLOCK
 #else
 #define ASSERT_VALID_COUNTER_VALUE(cid,value)
-#endif    
+#endif
 
 
 #if defined(OS_EXTENDED_STATUS)
 #define ASSERT_VALID_ALARMID(aid)               \
     _BEGIN_BLOCK                                \
-        if ((aid)>=OS_NUM_ALARMS) {             \
+        if ((aid)>=OS_NUMBER_OF_ALARMS) {             \
             OSCallErrorHookAndReturn(E_OS_ID);  \
         }                                       \
     _END_BLOCK
@@ -345,19 +345,19 @@
 #endif
 
 
-#define WARN_IF_ALARM_IS_NOT_IN_USE(aid)                    \
-    _BEGIN_BLOCK                                            \
-        if (OS_AlarmValue[(aid)].State==ALM_STOPPED) {      \
-            OSCallErrorHookAndReturn(E_OS_NOFUNC);          \
-        }                                                   \
+#define WARN_IF_ALARM_IS_NOT_RUNNING(aid)           \
+    _BEGIN_BLOCK                                    \
+        if (!OsAlm_IsRunning((aid))) {                 \
+            OSCallErrorHookAndReturn(E_OS_NOFUNC);  \
+        }                                           \
     _END_BLOCK
 
 
-#define WARN_IF_ALARM_IS_IN_USE(aid)                        \
-    _BEGIN_BLOCK                                            \
-        if (OS_AlarmValue[(aid)].State==ALM_RUNNING) {      \
-            OSCallErrorHookAndReturn(E_OS_STATE);           \
-        }                                                   \
+#define WARN_IF_ALARM_IS_RUNNING(aid)               \
+    _BEGIN_BLOCK                                    \
+        if (OsAlm_IsRunning((aid))) {                  \
+            OSCallErrorHookAndReturn(E_OS_NOFUNC);  \
+        }                                           \
     _END_BLOCK
 
 
@@ -376,7 +376,7 @@
     _END_BLOCK
 #else
 #define ASSERT_VALID_ALARM_VALUES(aid,value,cycle)
-#endif    
+#endif
 
 
 #define ASSERT_TASK_IS_EXTENDED(tid)                \
@@ -385,7 +385,7 @@
             OSCallErrorHookAndReturn(E_OS_ACCESS);  \
         }                                           \
     _END_BLOCK
-        
+
 
 #if defined(OS_EXTENDED_STATUS)
 #define ASSERT_TASK_IS_NOT_SUSPENDED(tid)           \
@@ -402,13 +402,13 @@
 #if defined(OS_EXTENDED_STATUS)
 #define ASSERT_VALID_RESOURCEID(rid)                                \
     _BEGIN_BLOCK                                                    \
-        if (((rid)!=RES_SCHEDULER) && ((rid)>=OS_NUM_RESOURCES)) {  \
+        if (((rid)!=RES_SCHEDULER) && ((rid)>=OS_NUMBER_OF_RESOURCES)) {  \
             OSCallErrorHookAndReturn(E_OS_ID);                      \
         }                                                           \
     _END_BLOCK
 #else
 #define ASSERT_VALID_RESOURCEID(rid)
-#endif          
+#endif
 
 
 #if defined(OS_EXTENDED_STATUS)
@@ -471,7 +471,7 @@
 #define OS_UNLOCK_INTERNAL_RESOURCE()
 #endif
 
-        
+
 #if defined(OS_BCC1) || defined(OS_ECC1)
 #define WARN_IF_TO_MANY_ACTIVATIONS(tid)            \
     _BEGIN_BLOCK                                    \
@@ -512,7 +512,7 @@
     _END_BLOCK
 #else
 #define OS_CALL_PRE_TASK_HOOK()
-#endif        
+#endif
 
 
 #if defined(OS_USE_POSTTASKHOOK)
@@ -522,10 +522,10 @@
         OS_SET_CALLEVEL(OS_CL_POST_TASK_HOOK);  \
         PostTaskHook();                         \
         OS_RESTORE_CALLEVEL();                  \
-    _END_BLOCK            
+    _END_BLOCK
 #else
 #define OS_CALL_POST_TASK_HOOK()
-#endif        
+#endif
 
 /*
 **
@@ -555,7 +555,7 @@
 #if defined(COM_EXTENDED_STATUS)
 #define ASSERT_VALID_MESSAGE_ID(mid)                \
     _BEGIN_BLOCK                                    \
-        if ((mid)>=COM_NUM_MESSAGES) {              \
+        if ((mid)>=COM_NUMBER_OF_MESSAGES) {              \
             COMCallErrorHookAndReturn(E_COM_ID);    \
         }                                           \
     _END_BLOCK

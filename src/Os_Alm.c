@@ -1,31 +1,53 @@
 /*
- * k_os (Konnex Operating-System based on the OSEK/VDX-Standard).
- *
- * (C) 2007-2009 by Christoph Schueler <chris@konnex-tools.de>
- *
- * All Rights Reserved
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License along
- * with this program; if not, write to the Free Software Foundation, Inc.,
- * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
- *
- */
+   k_os (Konnex Operating-System based on the OSEK/VDX-Standard).
 
+   (C) 2007-2010 by Christoph Schueler <chris@konnex-tools.de,
+                                       cpu12.gems@googlemail.com>
+
+   All Rights Reserved
+
+   This program is free software; you can redistribute it and/or modify
+   it under the terms of the GNU General Public License as published by
+   the Free Software Foundation; version 2 of the License.
+
+   This program is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+   GNU General Public License for more details.
+
+   You should have received a copy of the GNU General Public License
+   along with this program; if not, write to the Free Software
+   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA 
+
+   s. FLOSS-EXCEPTION.txt
+*/
 #include "Osek.h"
 
-/* 
+static Os_AlarmStateType OsAlm_ActiveAlarms;    /* todo: Name!!! */
+
+void OsAlm_StartAlarm(uint8 num)
+{
+    OsAlm_ActiveAlarms=Utl_BitSet(OsAlm_ActiveAlarms,num);
+}
+
+void OsAlm_StopAlarm(uint8 num)
+{
+    OsAlm_ActiveAlarms=Utl_BitReset(OsAlm_ActiveAlarms,num);
+}
+
+boolean OsAlm_IsRunning(uint8 num)
+{
+    return Utl_BitGet(OsAlm_ActiveAlarms,num);
+}
+
+/*Os_AlarmStateType*/uint16  OsAlm_GetActiveAlarms(void)
+{
+    return OsAlm_ActiveAlarms;
+}
+
+/*
 **
-** Gets the Configuration-Parameters of the attached Counter. 
+** Gets the Configuration-Parameters of the attached Counter.
 **
 */
 
@@ -36,10 +58,10 @@ StatusType GetAlarmBase(AlarmType AlarmID,AlarmBaseRefType Info)
 **              – E_OK – no error.
 **
 **      Extended-Status:
-**              – E_OS_ID – the alarm identifier is invalid.    
+**              – E_OS_ID – the alarm identifier is invalid.
 **      OSCallErrorHookAndReturn(E_OS_ID);
 */
-    SAVE_SERVICE_CONTEXT(OSServiceId_GetAlarmBase,AlarmID,/*Info*/NULL,NULL);
+    SAVE_SERVICE_CONTEXT(OSServiceId_GetAlarmBase,AlarmID,Info,NULL);
     ASSERT_VALID_ALARMID(AlarmID);
     ASSERT_VALID_CALLEVEL(OS_CL_TASK|OS_CL_ISR2|OS_CL_ERROR_HOOK|OS_CL_PRE_TASK_HOOK|OS_CL_POST_TASK_HOOK);
 
@@ -55,13 +77,13 @@ StatusType GetAlarm(AlarmType AlarmID,TickRefType Tick)
 **              – E_OK – no error.
 **              – E_OS_NOFUNC – the alarm is not in use.
 **      Extended-Status:
-**              – E_OS_ID – the alarm identifier is invalid.    
+**              – E_OS_ID – the alarm identifier is invalid.
 */
-    SAVE_SERVICE_CONTEXT(OSServiceId_GetAlarm,AlarmID,/*Tick*/NULL,NULL);
+    SAVE_SERVICE_CONTEXT(OSServiceId_GetAlarm,AlarmID,Tick,NULL);
     ASSERT_VALID_ALARMID(AlarmID);
     ASSERT_VALID_CALLEVEL(OS_CL_TASK|OS_CL_ISR2|OS_CL_ERROR_HOOK|OS_CL_PRE_TASK_HOOK|OS_CL_POST_TASK_HOOK);
-    WARN_IF_ALARM_IS_NOT_IN_USE(AlarmID);
-    
+    WARN_IF_ALARM_IS_NOT_RUNNING(AlarmID);
+
     DISABLE_ALL_OS_INTERRUPTS();
     *Tick=OS_AlarmValue[AlarmID].ExpireCounter;
     ENABLE_ALL_OS_INTERRUPTS();
@@ -89,21 +111,21 @@ StatusType SetRelAlarm(AlarmType AlarmID,TickType increment,TickType cycle)
 */
     SAVE_SERVICE_CONTEXT(OSServiceId_SetRelAlarm,AlarmID,increment,cycle);
     ASSERT_VALID_ALARMID(AlarmID);
-    WARN_IF_ALARM_IS_IN_USE(AlarmID);
+    WARN_IF_ALARM_IS_RUNNING(AlarmID);
     ASSERT_VALID_ALARM_VALUES(AlarmID,increment,cycle);
     ASSERT_VALID_CALLEVEL(OS_CL_TASK|OS_CL_ISR2);
-    
+
     if (increment==(TickType)0) {   /* todo: in 'ASSERT_VALID_ALARM_VALUES' einbauen!!! */
         CLEAR_SERVICE_CONTEXT();
-        return E_OS_VALUE;  /*  !REQ!AS!OS!OS304!  */   
+        return E_OS_VALUE;  /*  !REQ!AS!OS!OS304!  */
     }
 
     DISABLE_ALL_OS_INTERRUPTS();
     OS_AlarmValue[AlarmID].ExpireCounter=increment;
     OS_AlarmValue[AlarmID].CycleCounter=cycle;
-    OS_AlarmValue[AlarmID].State=ALM_RUNNING;
+    OsAlm_StartAlarm(AlarmID);  //    OS_AlarmValue[AlarmID].State=ALM_RUNNING;
     ENABLE_ALL_OS_INTERRUPTS();
-    
+
     CLEAR_SERVICE_CONTEXT();
     return E_OK;
 }
@@ -128,21 +150,21 @@ StatusType SetAbsAlarm(AlarmType AlarmID,TickType start,TickType cycle)
     TickType CurrentCounterValue;
 
     SAVE_SERVICE_CONTEXT(OSServiceId_SetAbsAlarm,AlarmID,start,cycle);
-    ASSERT_VALID_ALARMID(AlarmID); 
-    WARN_IF_ALARM_IS_IN_USE(AlarmID);
-    ASSERT_VALID_ALARM_VALUES(AlarmID,start,cycle); 
+    ASSERT_VALID_ALARMID(AlarmID);
+    WARN_IF_ALARM_IS_RUNNING(AlarmID);
+    ASSERT_VALID_ALARM_VALUES(AlarmID,start,cycle);
     ASSERT_VALID_CALLEVEL(OS_CL_TASK|OS_CL_ISR2);
 
     DISABLE_ALL_OS_INTERRUPTS();
-    
+
     CurrentCounterValue=Os_CounterValues[OS_AlarmConf[AlarmID].AttachedCounter];
     if (start==CurrentCounterValue) {
         OS_AlarmValue[AlarmID].ExpireCounter=(TickType)0;
         OS_AlarmValue[AlarmID].CycleCounter=cycle;
-        OS_AlarmValue[AlarmID].State=ALM_RUNNING;
-        
+        OsAlm_StartAlarm(AlarmID);        // OS_AlarmValue[AlarmID].State=ALM_RUNNING;
+
         OsAlm_NotifyAlarm(AlarmID);
-        OS_COND_SCHEDULE_FROM_TASK_LEVEL();        
+        OS_COND_SCHEDULE_FROM_TASK_LEVEL();
     } else {
         if (start>CurrentCounterValue) {
            OS_AlarmValue[AlarmID].ExpireCounter=start-CurrentCounterValue;
@@ -152,9 +174,9 @@ StatusType SetAbsAlarm(AlarmType AlarmID,TickType start,TickType cycle)
                 CurrentCounterValue+start+((TickType)1);
         }
         OS_AlarmValue[AlarmID].CycleCounter=cycle;
-        OS_AlarmValue[AlarmID].State=ALM_RUNNING;    
+        OsAlm_StartAlarm(AlarmID); // OS_AlarmValue[AlarmID].State=ALM_RUNNING;
     }
-    
+
     ENABLE_ALL_OS_INTERRUPTS();
 
     CLEAR_SERVICE_CONTEXT();
@@ -170,15 +192,15 @@ StatusType CancelAlarm(AlarmType AlarmID)
 **              – E_OS_NOFUNC – the alarm is not in use.
 **      Extended-Status:
 **              – E_OS_ID – the alarm identifier is invalid.
-**     
+**
 */
-    SAVE_SERVICE_CONTEXT(OSServiceId_CancelAlarm,AlarmID,NULL,NULL);    
+    SAVE_SERVICE_CONTEXT(OSServiceId_CancelAlarm,AlarmID,NULL,NULL);
     ASSERT_VALID_ALARMID(AlarmID);
-    ASSERT_VALID_CALLEVEL(OS_CL_TASK|OS_CL_ISR2);    
-    WARN_IF_ALARM_IS_NOT_IN_USE(AlarmID);        
-    
+    ASSERT_VALID_CALLEVEL(OS_CL_TASK|OS_CL_ISR2);
+    WARN_IF_ALARM_IS_NOT_RUNNING(AlarmID);
+
     DISABLE_ALL_OS_INTERRUPTS();
-    OS_AlarmValue[AlarmID].State=ALM_STOPPED;
+    OsAlm_StopAlarm(AlarmID); // OS_AlarmValue[AlarmID].State=ALM_STOPPED;
     ENABLE_ALL_OS_INTERRUPTS();
 
     CLEAR_SERVICE_CONTEXT();
@@ -190,41 +212,41 @@ void OsAlm_InitAlarms(void)
 {
     uint8_least i;
     AlarmConfigurationType *alarm_def;
-        
-    for (i=(uint8_least)0;i<OS_NUM_ALARMS;++i) {
-        alarm_def=(AlarmConfigurationType*)&OS_AlarmConf[i];              
-        
+
+    for (i=(uint8_least)0;i<OS_NUMBER_OF_ALARMS;++i) {
+        alarm_def=(AlarmConfigurationType*)&OS_AlarmConf[i];
+
         if (Utl_BitGet((uint16)alarm_def->Autostart,GetActiveApplicationMode())) {
             OS_AlarmValue[i].ExpireCounter=alarm_def->AlarmTime;
             OS_AlarmValue[i].CycleCounter=alarm_def->CycleTime;
-            OS_AlarmValue[i].State=ALM_RUNNING;            
+            OsAlm_StartAlarm(i);  // OS_AlarmValue[i].State=ALM_RUNNING;
         } else {
             OS_AlarmValue[i].ExpireCounter=(TickType)0;
             OS_AlarmValue[i].CycleCounter=(TickType)0;
-            OS_AlarmValue[i].State=ALM_STOPPED;
+            OsAlm_StopAlarm(i); // OS_AlarmValue[i].State=ALM_STOPPED;
         }
-    }    
+    }
 }
 
 
 void OsAlm_NotifyAlarm(AlarmType AlarmID)
-{ 
+{
     AlarmConfigurationType *Alarm;
 #if defined(OS_EXTENDED_STATUS) && defined(OS_USE_CALLEVEL_CHECK)
     OsCallevelType CallevelSaved;
-#endif    
-    
+#endif
+
     Alarm=(AlarmConfigurationType *)&OS_AlarmConf[AlarmID];
-                
+
     DISABLE_ALL_OS_INTERRUPTS();
     if (OS_AlarmValue[AlarmID].CycleCounter!=(TickType)0) {
-    /* cyclic Alarm. */
+        /* cyclic Alarm. */
         OS_AlarmValue[AlarmID].ExpireCounter=OS_AlarmValue[AlarmID].CycleCounter;
     } else {
-    /* one-shot Alarm. */
-        OS_AlarmValue[AlarmID].State=ALM_STOPPED;
+        /* one-shot Alarm. */
+        OsAlm_StopAlarm(AlarmID);  // OS_AlarmValue[AlarmID].State=ALM_STOPPED;
     }
-    ENABLE_ALL_OS_INTERRUPTS();                
+    ENABLE_ALL_OS_INTERRUPTS();
 
     switch (Alarm->ActionType) {
         case ALM_SETEVENT:
@@ -237,19 +259,19 @@ void OsAlm_NotifyAlarm(AlarmType AlarmID)
             DISABLE_ALL_OS_INTERRUPTS();
             #if defined(OS_EXTENDED_STATUS) && defined(OS_USE_CALLEVEL_CHECK)
             CallevelSaved=OS_GET_CALLEVEL();
-            #endif                
+            #endif
             OS_SET_CALLEVEL(OS_CL_ALARM_CALLBACK);
             (Alarm->Action.AlarmCallback)();
             #if defined(OS_EXTENDED_STATUS) && defined(OS_USE_CALLEVEL_CHECK)
             OS_SET_CALLEVEL(CallevelSaved);
-            #endif                            
+            #endif
             ENABLE_ALL_OS_INTERRUPTS();
             break;
-#if 0                        
+#if 0
         case ALM_COUNTER:
             (void)IncrementCounter(Alarm->Action.CounterID);
             break;
-#endif     
+#endif
         default:
             ASSERT(FALSE);
     }

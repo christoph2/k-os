@@ -1,0 +1,677 @@
+//////////////////////////////////////////////////////////////////////////////
+//                                                                           /
+// IAR HCS12 C/C++ Compiler V3.11A/W32                 17/Mar/2010  10:33:54 /
+// Copyright 1997-2006 IAR Systems. All rights reserved.                     /
+//                                                                           /
+//    Source file  =  C:\projekte\csProjects\k-os\src\Os_Res.c               /
+//    Command line =  C:\projekte\csProjects\k-os\src\Os_Res.c               /
+//                    --preprocess=l C:\projekte\csProjects\k-os\examples\Ex /
+//                    01\IAR\Debug\List\ -lC C:\projekte\csProjects\k-os\exa /
+//                    mples\Ex01\IAR\Debug\List\ -lB                         /
+//                    C:\projekte\csProjects\k-os\examples\Ex01\IAR\Debug\Li /
+//                    st\ --code_model=normal --double=32 -o                 /
+//                    C:\projekte\csProjects\k-os\examples\Ex01\IAR\Debug\Ob /
+//                    j\ --require_prototypes -e -z2 --no_cse --no_unroll    /
+//                    --no_inline --no_code_motion --no_tbaa                 /
+//                    --no_cross_call --debug "-D_DLIB_CONFIG_FILE=C:\Progra /
+//                    mme\IAR Systems\Embedded Workbench Evaluation          /
+//                    4.0\HCS12\LIB\DLIB\dlhcs12nfn.h" --segment             /
+//                    __data8=DATA8 --segment __data16=DATA16 --segment      /
+//                    __banked=BANKED_CODE --segment __non_banked=CODE       /
+//                    --segment __intvec=INTVEC --segment __difunct=DIFUNCT  /
+//                    --segment __cstack=CSTACK --segment __inittab=INITTAB  /
+//                    -I C:\projekte\csProjects\k-os\inc\ -I                 /
+//                    C:\projekte\csProjects\common\inc\ -I                  /
+//                    C:\projekte\csProjects\common\ -I                      /
+//                    C:\projekte\csProjects\common\InstallISR\ -I           /
+//                    C:\projekte\csProjects\k-os\examples\Ex01\ -I          /
+//                    C:\projekte\csProjects\common\drivers\include\cpu12\   /
+//                    -I "C:\Programme\IAR Systems\Embedded Workbench        /
+//                    Evaluation 4.0\HCS12\INC\" -I "C:\Programme\IAR        /
+//                    Systems\Embedded Workbench Evaluation                  /
+//                    4.0\HCS12\INC\DLIB\"                                   /
+//    List file    =  C:\projekte\csProjects\k-os\examples\Ex01\IAR\Debug\Li /
+//                    st\Os_Res.s12                                          /
+//                                                                           /
+//                                                                           /
+//////////////////////////////////////////////////////////////////////////////
+
+        NAME Os_Res
+
+        RSEG CSTACK:DATA:REORDER:NOROOT(0)
+
+        EXTERN ?cstart_init_zero
+
+        PUBWEAK ?init?tab?DATA16_Z
+        PUBLIC GetResource
+        PUBLIC OsRes_GetInternalResource
+        PUBLIC OsRes_InitResources
+        PUBLIC OsRes_ReleaseInternalResource
+        PUBLIC ReleaseResource
+
+        EXTERN Os_Resources
+        EXTERN Os_ServiceContext
+        EXTERN OsFlags
+        EXTERN OsCurrentTID
+        EXTERN OS_TaskConf
+        EXTERN OS_ResourceConf
+        EXTERN OsCallevel
+        EXTERN OsCurrentTCB
+        EXTERN OS_IntResourceConf
+        EXTERN OSSaveServiceContext
+        EXTERN OsErrorCallErrorHook
+        EXTERN OsMLQ_ChangePrio
+        EXTERN ResumeOSInterrupts
+        EXTERN SuspendOSInterrupts
+        EXTERN Utl_BitGet
+        EXTERN Utl_BitReset
+        EXTERN Utl_BitSet
+
+// C:\projekte\csProjects\k-os\src\Os_Res.c
+//    1 /*
+//    2  * k_os (Konnex Operating-System based on the OSEK/VDX-Standard).
+//    3  *
+//    4  * (C) 2007-2009 by Christoph Schueler <chris@konnex-tools.de,
+//    5  *                                      cpu12.gems@googlemail.com>
+//    6  *
+//    7  * All Rights Reserved
+//    8  *
+//    9  * This program is free software; you can redistribute it and/or modify
+//   10  * it under the terms of the GNU General Public License as published by
+//   11  * the Free Software Foundation; either version 2 of the License, or
+//   12  * (at your option) any later version.
+//   13  *
+//   14  * This program is distributed in the hope that it will be useful,
+//   15  * but WITHOUT ANY WARRANTY; without even the implied warranty of
+//   16  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//   17  * GNU General Public License for more details.
+//   18  *
+//   19  * You should have received a copy of the GNU General Public License along
+//   20  * with this program; if not, write to the Free Software Foundation, Inc.,
+//   21  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+//   22  *
+//   23  */
+//   24 #include "Osek.h"
+//   25 
+//   26 #if defined(OS_USE_INTERNAL_RESOURCES)
+
+        RSEG DATA16_Z:DATA:REORDER:NOROOT(0)
+        REQUIRE ?cstart_init_zero
+//   27 static uint16 BM_InternalResources;
+BM_InternalResources:
+        DS8 2
+//   28 #endif
+//   29 
+
+        RSEG CODE:CODE:REORDER:NOROOT(0)
+//   30 void OsRes_InitResources(void)
+OsRes_InitResources:
+//   31 {
+        PSHA
+//   32     uint8 i;
+//   33 
+//   34 #if defined(OS_USE_INTERNAL_RESOURCES)
+//   35     BM_InternalResources=(uint16)0;
+        LDD     #0x0
+        STD     BM_InternalResources
+//   36 #endif
+//   37 
+//   38 #if defined(OS_USE_RESOURCES)
+//   39     for (i=(uint8)0;i<OS_NUMBER_OF_RESOURCES;++i) {
+        CLR     0x0,SP
+??OsRes_InitResources_0:
+        LDAB    0x0,SP
+        CMPB    #0x1
+        BCC     ??OsRes_InitResources_1
+//   40 #if defined(USE_ORTI)
+//   41         Os_Resources[i].Locker=INVALID_TASK;
+        LDAB    0x0,SP
+        LDAA    #0x2
+        MUL
+        TFR     D,Y
+        CLR     Os_Resources,Y
+//   42 #endif
+//   43         Os_Resources[i].PriorPriorityOfTask=PRIO_NONE;
+        LDAB    0x0,SP
+        LDAA    #0x2
+        MUL
+        TFR     D,Y
+        CLR     Os_Resources + 1,Y
+//   44     }
+        LDAB    0x0,SP
+        ADDB    #0x1
+        STAB    0x0,SP
+        BRA     ??OsRes_InitResources_0
+//   45 #endif
+//   46 
+//   47 }
+??OsRes_InitResources_1:
+        PULA
+        RTS
+//   48 
+
+        RSEG CODE:CODE:REORDER:NOROOT(0)
+//   49 StatusType GetResource(ResourceType ResID)
+GetResource:
+//   50 {
+        PSHX
+        PSHA
+        STAB    0x0,SP
+//   51 /*
+//   52 **      Standard-Status:
+//   53 **              – E_OK – no error.
+//   54 **      Extended-Status:
+//   55 **              – E_OS_ID – the resource identifier is invalid.
+//   56 **              – E_OS_ACCESS – attempt to get resource which is already
+//   57 **                occupied by any task or ISR, or the assigned in OIL
+//   58 **                priority of the calling task or interrupt routine is higher
+//   59 **                than the calculated ceiling priority.
+//   60 */
+//   61     SAVE_SERVICE_CONTEXT(OSServiceId_GetResource,ResID,NULL,NULL);
+        LDD     #0x0
+        PSHD
+        LDAB    #0x1a
+        PSHB
+        LDD     #0x0
+        PSHD
+        LDAB    0x5,SP
+        EXG     B,Y
+        PULD
+        JSR     OSSaveServiceContext
+//   62 
+//   63     ASSERT_VALID_RESOURCEID(ResID);
+        LDAB    0x3,SP
+        INCB
+        LEAS    0x3,SP
+        BEQ     ??GetResource_3
+        LDAB    0x0,SP
+        CMPB    #0x1
+        BCS     ??GetResource_3
+        LDAB    #0x3
+        JSR     OsErrorCallErrorHook
+        CLR     Os_ServiceContext
+        LDAB    #0x3
+        JMP     .LWRD.(??GetResource_4)
+//   64     ASSERT_VALID_GET_RESOURCE_ACCESS(ResID);
+??GetResource_3:
+        LDAB    0x0,SP
+        INCB
+        BNE     ??GetResource_5
+        BRCLR   OsFlags,#0x1,??GetResource_0
+        LDAB    #0x1
+        JSR     OsErrorCallErrorHook
+        CLR     Os_ServiceContext
+        LDAB    #0x1
+        JMP     .LWRD.(??GetResource_4)
+??GetResource_5:
+        LDAB    0x0,SP
+        LDAA    #0x2
+        MUL
+        TFR     D,Y
+        TST     Os_Resources,Y
+        BNE     ??GetResource_6
+        LDAB    OsCurrentTID
+        LDAA    #0x9
+        MUL
+        TFR     D,Y
+        LDAB    OS_TaskConf + 5,Y
+        LDY     #OS_ResourceConf
+        LDAA    0x0,SP
+        CMPB    A,Y
+        BCC     ??GetResource_0
+??GetResource_6:
+        LDAB    #0x1
+        JSR     OsErrorCallErrorHook
+        CLR     Os_ServiceContext
+        LDAB    #0x1
+        JMP     .LWRD.(??GetResource_4)
+//   65     ASSERT_VALID_CALLEVEL(OS_CL_TASK);    /* ISR-Level Resources not implemented yet.  */
+??GetResource_0:
+        BRCLR   OsCallevel + 1,#0x1,??GetResource_1
+        BRA     ??GetResource_7
+??GetResource_1:
+        LDAB    #0x2
+        JSR     OsErrorCallErrorHook
+        CLR     Os_ServiceContext
+        LDAB    #0x2
+        JMP     .LWRD.(??GetResource_4)
+//   66     ASSERT_INTERRUPTS_ENABLED_AT_TASK_LEVEL();
+??GetResource_7:
+        TFR     CCR,B
+        BITB    #0x10
+        BEQ     ??GetResource_8
+        BRCLR   OsFlags,#0x2,??GetResource_2
+        BRA     ??GetResource_8
+??GetResource_2:
+        LDAB    #0x13
+        JSR     OsErrorCallErrorHook
+        CLR     Os_ServiceContext
+        LDAB    #0x13
+        BRA     ??GetResource_4
+//   67 
+//   68     DISABLE_ALL_OS_INTERRUPTS();
+??GetResource_8:
+        JSR     SuspendOSInterrupts
+//   69     if (ResID==RES_SCHEDULER) {
+        LDAB    0x0,SP
+        INCB
+        BNE     ??GetResource_9
+//   70         OS_LOCK_SCHEDULER();
+        LDAB    #0x1
+        ORAB    OsFlags
+        STAB    OsFlags
+        BRA     ??GetResource_10
+//   71     } else {
+//   72 #if defined(OS_USE_RESOURCES)
+//   73 #if defined(USE_ORTI)
+//   74         Os_Resources[ResID].Locker=OsCurrentTID;      /* lock Resource. */
+??GetResource_9:
+        LDAB    0x0,SP
+        LDAA    #0x2
+        MUL
+        TFR     D,Y
+        LDAB    OsCurrentTID
+        STAB    Os_Resources,Y
+//   75 #endif
+//   76         /* save current priority. */
+//   77         Os_Resources[ResID].PriorPriorityOfTask=OsCurrentTCB->CurrentPriority;
+        LDX     OsCurrentTCB
+        LDAB    0x0,SP
+        LDAA    #0x2
+        MUL
+        TFR     D,Y
+        LDAB    0x6,X
+        STAB    Os_Resources + 1,Y
+//   78         OsCurrentTCB->ResourceCount++;
+        LDY     OsCurrentTCB
+        LDAB    0x5,Y
+        ADDB    #0x1
+        LDY     OsCurrentTCB
+        STAB    0x5,Y
+//   79 
+//   80         if (OS_ResourceConf[ResID].CeilingPriority<OsCurrentTCB->CurrentPriority) {
+        LDY     #OS_ResourceConf
+        LDAB    0x0,SP
+        LDX     OsCurrentTCB
+        LDAA    0x6,X
+        CMPA    B,Y
+        BLS     ??GetResource_10
+//   81             /* Elevate Priority of running Task. */
+//   82            OsCurrentTCB->CurrentPriority=OS_ResourceConf[ResID].CeilingPriority;
+        LDY     #OS_ResourceConf
+        LDAB    0x0,SP
+        LEAY    B,Y
+        LDX     OsCurrentTCB
+        LDAB    0x0,Y
+        STAB    0x6,X
+//   83            OsMLQ_ChangePrio(OsCurrentTID,OsCurrentTCB->CurrentPriority,OS_ResourceConf[ResID].CeilingPriority);
+        LDY     #OS_ResourceConf
+        LDAB    0x0,SP
+        LEAY    B,Y
+        LDAB    0x0,Y
+        PSHB
+        LDY     OsCurrentTCB
+        LDAA    0x6,Y
+        LDAB    OsCurrentTID
+        JSR     OsMLQ_ChangePrio
+        LEAS    0x1,SP
+//   84 
+//   85         }
+//   86 #endif
+//   87     }
+//   88     ENABLE_ALL_OS_INTERRUPTS();
+??GetResource_10:
+        JSR     ResumeOSInterrupts
+//   89 
+//   90     CLEAR_SERVICE_CONTEXT();
+        CLR     Os_ServiceContext
+//   91     return E_OK;
+        LDAB    #0x0
+??GetResource_4:
+        PULA
+        PULX
+        RTS
+//   92 }
+//   93 
+
+        RSEG CODE:CODE:REORDER:NOROOT(0)
+//   94 StatusType ReleaseResource(ResourceType ResID)
+ReleaseResource:
+//   95 {
+        PSHX
+        PSHA
+        STAB    0x0,SP
+//   96 /*
+//   97 **      Standard-Status:
+//   98 **              – E_OK – no error.
+//   99 **      Extended-Status:
+//  100 **              – E_OS_ID – the resource identifier is invalid.
+//  101 **              – E_OS_NOFUNC – attempt to release a resource which is
+//  102 **                not occupied by any task or ISR, or another resource has
+//  103 **                to be released before.
+//  104 **              – E_OS_ACCESS – attempt to release a resource which has
+//  105 **                a lower ceiling priority than the assigned in OIL priority
+//  106 **                of the calling task or interrupt routine. This error code
+//  107 **                returned only if E_OS_NOFUNC was not returned.
+//  108 */
+//  109     SAVE_SERVICE_CONTEXT(OSServiceId_ReleaseResource,ResID,NULL,NULL);
+        LDD     #0x0
+        PSHD
+        LDAB    #0x1c
+        PSHB
+        LDD     #0x0
+        PSHD
+        LDAB    0x5,SP
+        EXG     B,Y
+        PULD
+        JSR     OSSaveServiceContext
+//  110 
+//  111     ASSERT_VALID_RESOURCEID(ResID);
+        LDAB    0x3,SP
+        INCB
+        LEAS    0x3,SP
+        BEQ     ??ReleaseResource_4
+        LDAB    0x0,SP
+        CMPB    #0x1
+        BCS     ??ReleaseResource_4
+        LDAB    #0x3
+        JSR     OsErrorCallErrorHook
+        CLR     Os_ServiceContext
+        LDAB    #0x3
+        JMP     .LWRD.(??ReleaseResource_5)
+//  112     ASSERT_RESOURCE_IS_OCCUPIED(ResID);
+??ReleaseResource_4:
+        LDAB    0x0,SP
+        INCB
+        BNE     ??ReleaseResource_6
+        BRCLR   OsFlags,#0x1,??ReleaseResource_0
+        BRA     ??ReleaseResource_7
+??ReleaseResource_0:
+        LDAB    #0x5
+        JSR     OsErrorCallErrorHook
+        CLR     Os_ServiceContext
+        LDAB    #0x5
+        JMP     .LWRD.(??ReleaseResource_5)
+??ReleaseResource_6:
+        LDAB    0x0,SP
+        LDAA    #0x2
+        MUL
+        TFR     D,Y
+        TST     Os_Resources,Y
+        BNE     ??ReleaseResource_7
+        LDAB    #0x5
+        JSR     OsErrorCallErrorHook
+        CLR     Os_ServiceContext
+        LDAB    #0x5
+        JMP     .LWRD.(??ReleaseResource_5)
+//  113     ASSERT_VALID_RELEASE_RESOURCE_ACCESS(ResID);
+??ReleaseResource_7:
+        LDAB    0x0,SP
+        INCB
+        BEQ     ??ReleaseResource_8
+        LDAB    OsCurrentTID
+        LDAA    #0x9
+        MUL
+        TFR     D,Y
+        LDAB    OS_TaskConf + 5,Y
+        LDY     #OS_ResourceConf
+        LDAA    0x0,SP
+        CMPB    A,Y
+        BCC     ??ReleaseResource_8
+        LDAB    #0x1
+        JSR     OsErrorCallErrorHook
+        CLR     Os_ServiceContext
+        LDAB    #0x1
+        JMP     .LWRD.(??ReleaseResource_5)
+//  114     ASSERT_VALID_CALLEVEL(OS_CL_TASK);     /* ISR-Level Resources not implemented yet.  */
+??ReleaseResource_8:
+        BRCLR   OsCallevel + 1,#0x1,??ReleaseResource_1
+        BRA     ??ReleaseResource_9
+??ReleaseResource_1:
+        LDAB    #0x2
+        JSR     OsErrorCallErrorHook
+        CLR     Os_ServiceContext
+        LDAB    #0x2
+        JMP     .LWRD.(??ReleaseResource_5)
+//  115     ASSERT_INTERRUPTS_ENABLED_AT_TASK_LEVEL();
+??ReleaseResource_9:
+        TFR     CCR,B
+        BITB    #0x10
+        BEQ     ??ReleaseResource_10
+        BRCLR   OsFlags,#0x2,??ReleaseResource_2
+        BRA     ??ReleaseResource_10
+??ReleaseResource_2:
+        LDAB    #0x13
+        JSR     OsErrorCallErrorHook
+        CLR     Os_ServiceContext
+        LDAB    #0x13
+        BRA     ??ReleaseResource_5
+//  116 
+//  117     DISABLE_ALL_OS_INTERRUPTS();
+??ReleaseResource_10:
+        JSR     SuspendOSInterrupts
+//  118     if (ResID==RES_SCHEDULER) {
+        LDAB    0x0,SP
+        INCB
+        BNE     ??ReleaseResource_11
+//  119         OS_UNLOCK_SCHEDULER();
+        LDAB    #0xfe
+        ANDB    OsFlags
+        STAB    OsFlags
+        BRA     ??ReleaseResource_12
+//  120     } else {
+//  121 #if defined(OS_USE_RESOURCES)
+//  122 #if defined(USE_ORTI)
+//  123         Os_Resources[ResID].Locker=INVALID_TASK;       /* unlock Resource. */
+??ReleaseResource_11:
+        LDAB    0x0,SP
+        LDAA    #0x2
+        MUL
+        TFR     D,Y
+        CLR     Os_Resources,Y
+//  124 #endif
+//  125         OsCurrentTCB->ResourceCount--;
+        LDY     OsCurrentTCB
+        LDAB    0x5,Y
+        ADDB    #0xff
+        LDY     OsCurrentTCB
+        STAB    0x5,Y
+//  126 
+//  127         if (OsCurrentTCB->CurrentPriority!=Os_Resources[ResID].PriorPriorityOfTask) {
+        LDY     OsCurrentTCB
+        LDAB    0x6,Y
+        PSHB
+        LDAA    0x1,SP
+        LDAB    #0x2
+        MUL
+        TFR     D,Y
+        PULB
+        CMPB    Os_Resources + 1,Y
+        BEQ     ??ReleaseResource_12
+//  128             /* restore Priority. */
+//  129             OsCurrentTCB->CurrentPriority=Os_Resources[ResID].PriorPriorityOfTask;
+        LDAB    0x0,SP
+        LDAA    #0x2
+        MUL
+        TFR     D,Y
+        LDX     OsCurrentTCB
+        LDAB    Os_Resources + 1,Y
+        STAB    0x6,X
+//  130             OsMLQ_ChangePrio(OsCurrentTID,OsCurrentTCB->CurrentPriority,Os_Resources[ResID].PriorPriorityOfTask);
+        LDAB    0x0,SP
+        LDAA    #0x2
+        MUL
+        TFR     D,Y
+        LDAB    Os_Resources + 1,Y
+        PSHB
+        LDY     OsCurrentTCB
+        LDAA    0x6,Y
+        LDAB    OsCurrentTID
+        JSR     OsMLQ_ChangePrio
+        LEAS    0x1,SP
+//  131         }
+//  132 #endif
+//  133     }
+//  134     ENABLE_ALL_OS_INTERRUPTS();
+??ReleaseResource_12:
+        JSR     ResumeOSInterrupts
+//  135     OS_COND_SCHEDULE_FROM_TASK_LEVEL();
+        BRCLR   OsFlags,#0x2,??ReleaseResource_3
+        BRA     ??ReleaseResource_13
+??ReleaseResource_3:
+        LDY     OsCurrentTCB
+        LDAB    0x6,Y
+        INCB
+        BEQ     ??ReleaseResource_13
+        SWI
+//  136 
+//  137     CLEAR_SERVICE_CONTEXT();
+??ReleaseResource_13:
+        CLR     Os_ServiceContext
+//  138     return E_OK;
+        LDAB    #0x0
+??ReleaseResource_5:
+        PULA
+        PULX
+        RTS
+//  139 }
+//  140 
+//  141 /*
+//  142 **
+//  143 **  Functions for Internal Resources.
+//  144 **
+//  145 */
+//  146 
+//  147 #if defined(OS_USE_INTERNAL_RESOURCES)
+//  148 
+//  149 /* Hinweis: die 'Idle'-Task darf keine internen Resourcen haben!!! */
+
+        RSEG CODE:CODE:REORDER:NOROOT(0)
+//  150 void OsRes_GetInternalResource(void)
+OsRes_GetInternalResource:
+//  151 {
+        PSHX
+        PSHA
+//  152     ResourceType InternalResource=OS_TaskConf[OsCurrentTID].InternalResource;
+        LDAB    OsCurrentTID
+        LDAA    #0x9
+        MUL
+        TFR     D,Y
+        LDAB    OS_TaskConf + 8,Y
+        STAB    0x0,SP
+//  153 
+//  154     if (InternalResource!=INTERNAL_RES_NONE && !Utl_BitGet(BM_InternalResources,InternalResource)) {
+        LDAB    0x0,SP
+        INCB
+        BEQ     ??OsRes_GetInternalResource_0
+        LDAB    0x0,SP
+        LDY     BM_InternalResources
+        JSR     Utl_BitGet
+        CMPB    #0x0
+        BNE     ??OsRes_GetInternalResource_0
+//  155         OsCurrentTCB->CurrentPriority=OS_IntResourceConf[InternalResource].CeilingPriority;
+        LDY     #OS_IntResourceConf
+        LDAB    0x0,SP
+        LEAY    B,Y
+        LDX     OsCurrentTCB
+        LDAB    0x0,Y
+        STAB    0x6,X
+//  156 
+//  157         BM_InternalResources=Utl_BitSet(BM_InternalResources,InternalResource);
+        LDAB    0x0,SP
+        LDY     BM_InternalResources
+        JSR     Utl_BitSet
+        STD     BM_InternalResources
+//  158 #if 0
+//  159         (void)OSSysPQChangePrio(OsCurrentTID,OsCurrentTCB->CurrentPriority);
+//  160 #endif
+//  161         OsMLQ_ChangePrio(OsCurrentTID,OsCurrentTCB->CurrentPriority,OS_IntResourceConf[InternalResource].CeilingPriority);
+        LDY     #OS_IntResourceConf
+        LDAB    0x0,SP
+        LEAY    B,Y
+        LDAB    0x0,Y
+        PSHB
+        LDY     OsCurrentTCB
+        LDAA    0x6,Y
+        LDAB    OsCurrentTID
+        JSR     OsMLQ_ChangePrio
+        LEAS    0x1,SP
+//  162 
+//  163     }
+//  164 }
+??OsRes_GetInternalResource_0:
+        PULA
+        PULX
+        RTS
+//  165 
+
+        RSEG CODE:CODE:REORDER:NOROOT(0)
+//  166 void OsRes_ReleaseInternalResource(void)
+OsRes_ReleaseInternalResource:
+//  167 {
+        PSHX
+//  168     if (OsCurrentTCB->CurrentPriority!=OS_TaskConf[OsCurrentTID].Priority) {
+        LDY     OsCurrentTCB
+        LDAB    0x6,Y
+        PSHB
+        LDAA    OsCurrentTID
+        LDAB    #0x9
+        MUL
+        TFR     D,Y
+        PULB
+        CMPB    OS_TaskConf + 5,Y
+        BEQ     ??OsRes_ReleaseInternalResource_0
+//  169         OsCurrentTCB->CurrentPriority=OS_TaskConf[OsCurrentTID].Priority;
+        LDAB    OsCurrentTID
+        LDAA    #0x9
+        MUL
+        TFR     D,Y
+        LDX     OsCurrentTCB
+        LDAB    OS_TaskConf + 5,Y
+        STAB    0x6,X
+//  170         BM_InternalResources=Utl_BitReset(BM_InternalResources,OS_TaskConf[OsCurrentTID].InternalResource);
+        LDAB    OsCurrentTID
+        LDAA    #0x9
+        MUL
+        TFR     D,Y
+        LDAB    OS_TaskConf + 8,Y
+        LDY     BM_InternalResources
+        JSR     Utl_BitReset
+        STD     BM_InternalResources
+//  171 #if 0
+//  172         (void)OSSysPQChangePrio(OsCurrentTID,OS_TaskConf[OsCurrentTID].Priority,OsCurrentTCB->CurrentPriority);
+//  173 #endif
+//  174         OsMLQ_ChangePrio(OsCurrentTID,OsCurrentTCB->CurrentPriority,OS_TaskConf[OsCurrentTID].Priority);
+        LDAB    OsCurrentTID
+        LDAA    #0x9
+        MUL
+        TFR     D,Y
+        LDAB    OS_TaskConf + 5,Y
+        PSHB
+        LDY     OsCurrentTCB
+        LDAA    0x6,Y
+        LDAB    OsCurrentTID
+        JSR     OsMLQ_ChangePrio
+        LEAS    0x1,SP
+//  175     }
+//  176 }
+??OsRes_ReleaseInternalResource_0:
+        PULX
+        RTS
+
+        RSEG INITTAB:CODE:ROOT(0)
+?init?tab?DATA16_Z:
+        DC16    sfe(DATA16_Z) - sfb(DATA16_Z), sfb(DATA16_Z), sfb(DATA16_Z)
+
+        END
+//  177 #endif /* OS_USE_INTERNAL_RESOURCES */
+// 
+// 818 bytes in segment CODE
+//   2 bytes in segment DATA16_Z
+//   6 bytes in segment INITTAB
+// 
+// 818 bytes of CODE memory (+ 6 bytes shared)
+//   2 bytes of DATA memory
+//
+//Errors: none
+//Warnings: 1

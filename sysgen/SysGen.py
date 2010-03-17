@@ -6,7 +6,8 @@ __version__="0.9.0"
 __copyright__="""
    k_os (Konnex Operating-System based on the OSEK/VDX-Standard).
  
-  (C) 2007-2009 by Christoph Schueler <chris@konnex-tools.de>
+   (C) 2007-2009 by Christoph Schueler <chris@konnex-tools.de,
+                                        cpu12.gems@googlemail.com>
   
    All Rights Reserved
  
@@ -32,7 +33,7 @@ import OilPreproc
 
 
 def SetIncludePaths(paths):
-    inc_paths=os.getenv('SYSGEN_INCLUDE')
+    inc_paths=os.getenv('KOS_INCLUDE')
     if inc_paths is not None:
         for p in inc_paths.split(';'):
             OilPreproc.AddToPathList(p)
@@ -48,12 +49,15 @@ def test():
     options=[]
     args=[]
 
-    op=OptionParser(usage=usage,version="%prog " +__version__,description="Beschreibung des Programms.")
+    op=OptionParser(usage=usage,version="%prog " +__version__,description="Generate KOS-Configuration from '.oil'-File.")
     op.add_option("-f","--command-file",type="string",metavar="FILE",
                   dest="command_file",help="read options from command-FILE")
 
     input_group=OptionGroup(op,"Input")
-    input_group.add_option("-I","--include-path",dest="inc_path",action="append",metavar="dir",help="Add directory to the list of directories to be searched for include files.")
+    input_group.add_option("-I","--include-path",dest="inc_path",action="append",metavar="dir",
+        help="Add directory to the list of directories to be searched for include files. "
+        "Environment-Variable 'KOS_INCLUDE' is also used to locate Include-Files.")
+    
     op.add_option_group(input_group)
 
     group=OptionGroup(op,"Output")
@@ -64,6 +68,11 @@ def test():
                      )
     group.add_option("-t","--test",help="verify only, don't generate anything",
                      dest="test",action="store_true",default=False)
+
+##
+##  todo: Opt. 'Generate AR-XML'.
+##
+    
     op.add_option_group(group)    
 
     (options, args) = op.parse_args()

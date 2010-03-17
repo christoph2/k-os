@@ -1,0 +1,1155 @@
+//////////////////////////////////////////////////////////////////////////////
+//                                                                           /
+// IAR HCS12 C/C++ Compiler V3.11A/W32                 17/Mar/2010  10:33:48 /
+// Copyright 1997-2006 IAR Systems. All rights reserved.                     /
+//                                                                           /
+//    Source file  =  C:\projekte\csProjects\k-os\src\Com_If.c               /
+//    Command line =  C:\projekte\csProjects\k-os\src\Com_If.c               /
+//                    --preprocess=l C:\projekte\csProjects\k-os\examples\Ex /
+//                    01\IAR\Debug\List\ -lC C:\projekte\csProjects\k-os\exa /
+//                    mples\Ex01\IAR\Debug\List\ -lB                         /
+//                    C:\projekte\csProjects\k-os\examples\Ex01\IAR\Debug\Li /
+//                    st\ --code_model=normal --double=32 -o                 /
+//                    C:\projekte\csProjects\k-os\examples\Ex01\IAR\Debug\Ob /
+//                    j\ --require_prototypes -e -z2 --no_cse --no_unroll    /
+//                    --no_inline --no_code_motion --no_tbaa                 /
+//                    --no_cross_call --debug "-D_DLIB_CONFIG_FILE=C:\Progra /
+//                    mme\IAR Systems\Embedded Workbench Evaluation          /
+//                    4.0\HCS12\LIB\DLIB\dlhcs12nfn.h" --segment             /
+//                    __data8=DATA8 --segment __data16=DATA16 --segment      /
+//                    __banked=BANKED_CODE --segment __non_banked=CODE       /
+//                    --segment __intvec=INTVEC --segment __difunct=DIFUNCT  /
+//                    --segment __cstack=CSTACK --segment __inittab=INITTAB  /
+//                    -I C:\projekte\csProjects\k-os\inc\ -I                 /
+//                    C:\projekte\csProjects\common\inc\ -I                  /
+//                    C:\projekte\csProjects\common\ -I                      /
+//                    C:\projekte\csProjects\common\InstallISR\ -I           /
+//                    C:\projekte\csProjects\k-os\examples\Ex01\ -I          /
+//                    C:\projekte\csProjects\common\drivers\include\cpu12\   /
+//                    -I "C:\Programme\IAR Systems\Embedded Workbench        /
+//                    Evaluation 4.0\HCS12\INC\" -I "C:\Programme\IAR        /
+//                    Systems\Embedded Workbench Evaluation                  /
+//                    4.0\HCS12\INC\DLIB\"                                   /
+//    List file    =  C:\projekte\csProjects\k-os\examples\Ex01\IAR\Debug\Li /
+//                    st\Com_If.s12                                          /
+//                                                                           /
+//                                                                           /
+//////////////////////////////////////////////////////////////////////////////
+
+        NAME Com_If
+
+        RSEG CSTACK:DATA:REORDER:NOROOT(0)
+
+        EXTERN ??cswitch
+        EXTERN ?cstart_init_zero
+
+        PUBWEAK ?init?tab?DATA16_Z
+        PUBLIC COMErrorGetServiceId
+        PUBLIC ComIfUpdateAndNotifyReceivers
+        PUBLIC Com_MessageObjects
+        PUBLIC Evt_Message_Receive
+        PUBLIC GetCOMApplicationMode
+        PUBLIC GetMessageStatus
+        PUBLIC InitMessage
+        PUBLIC Message_Receive_Receiver
+        PUBLIC ReceiveDynamicMessage
+        PUBLIC ReceiveMessage
+        PUBLIC SendDynamicMessage
+        PUBLIC SendMessage
+        PUBLIC SendZeroMessage
+        PUBLIC StartCOM
+        PUBLIC StartPeriodic
+        PUBLIC StopCOM
+        PUBLIC StopPeriodic
+
+        EXTERN Os_ServiceContext
+        EXTERN OsCallevel
+        EXTERN COMErrorCallErrorHook
+        EXTERN ComIntReceiveMessage
+        EXTERN ComIntSendMessage
+        EXTERN OSSaveServiceContext
+        EXTERN OsEvtSetEvent
+        EXTERN OsTask_Activate
+        EXTERN ResumeOSInterrupts
+        EXTERN SuspendOSInterrupts
+        EXTERN Utl_MemCopy
+
+// C:\projekte\csProjects\k-os\src\Com_If.c
+//    1 /*
+//    2  * k_os (Konnex Operating-System based on the OSEK/VDX-Standard).
+//    3  *
+//    4  * (C) 2007-2009 by Christoph Schueler <chris@konnex-tools.de>
+//    5  *
+//    6  * All Rights Reserved
+//    7  *
+//    8  * This program is free software; you can redistribute it and/or modify
+//    9  * it under the terms of the GNU General Public License as published by
+//   10  * the Free Software Foundation; either version 2 of the License, or
+//   11  * (at your option) any later version.
+//   12  *
+//   13  * This program is distributed in the hope that it will be useful,
+//   14  * but WITHOUT ANY WARRANTY; without even the implied warranty of
+//   15  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//   16  * GNU General Public License for more details.
+//   17  *
+//   18  * You should have received a copy of the GNU General Public License along
+//   19  * with this program; if not, write to the Free Software Foundation, Inc.,
+//   20  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+//   21  *
+//   22  */
+//   23 
+//   24 
+//   25 /*
+//   26 **
+//   27 ** Interface/Dispatcher (internal/external Comm.) for OSEK-COM-Functions.
+//   28 **
+//   29 */
+//   30 
+//   31 #include "com_int.h"
+//   32 
+//   33 #if defined(OS_USE_COM)
+//   34 
+//   35 #define Message_Send    ((uint8)0)
+//   36 #define Message_Receive ((uint8)1)
+//   37 
+
+        RSEG DATA16_Z:DATA:REORDER:NOROOT(0)
+        REQUIRE ?cstart_init_zero
+//   38 static uint32 MsgDataReceive;
+MsgDataReceive:
+        DS8 4
+//   39 
+
+        RSEG DATA16_C:CONST:REORDER:NOROOT(0)
+//   40 const ComReceiverType Message_Receive_Receiver[1]={{1}};
+Message_Receive_Receiver:
+        DC16 1
+//   41 
+
+        RSEG DATA16_C:CONST:REORDER:NOROOT(0)
+//   42 const MessageSetEventType Evt_Message_Receive={Task1,(EventMaskType)0x08};
+Evt_Message_Receive:
+        DC8 1, 8
+//   43 
+
+        RSEG DATA16_C:CONST:REORDER:NOROOT(0)
+//   44 const ComMessageObjectType Com_MessageObjects[COM_NUMBER_OF_MESSAGES]=
+Com_MessageObjects:
+        DC8 0, 0
+        DC16 0H
+        DC8 4
+        DC16 0H
+        DC8 1
+        DC16 Message_Receive_Receiver
+        DC8 1, 2
+        DC16 Evt_Message_Receive
+        DC8 4
+        DC16 MsgDataReceive
+        DC8 0
+        DC16 0H
+//   45 {
+//   46     {SEND_STATIC_INTERNAL,COM_NOTIFY_NONE,(void*)NULL,4,(const ApplicationDataRef *)
+//   47         NULL,(uint8)1,(ComReceiverType*)&Message_Receive_Receiver},
+//   48     {RECEIVE_UNQUEUED_INTERNAL,COM_SETEVENT,(void*)&Evt_Message_Receive,4,(const ApplicationDataRef *)
+//   49         &MsgDataReceive,(uint8)0,(ComReceiverType*)NULL},
+//   50 };
+//   51 
+
+        RSEG DATA16_Z:DATA:REORDER:NOROOT(0)
+        REQUIRE ?cstart_init_zero
+//   52 static Com_StatusType Com_Status=COM_UNINIT;
+Com_Status:
+        DS8 1
+
+        RSEG DATA16_Z:DATA:REORDER:NOROOT(0)
+        REQUIRE ?cstart_init_zero
+//   53 static COMApplicationModeType Com_AppMode;
+Com_AppMode:
+        DS8 1
+//   54 
+
+        RSEG CODE:CODE:REORDER:NOROOT(0)
+//   55 StatusType StartCOM(COMApplicationModeType Mode)
+StartCOM:
+//   56 {
+        PSHX
+        PSHD
+        STAB    0x1,SP
+//   57 /*
+//   58     Standard:
+//   59         · This service returns E_OK if the initialisation completed successfully.
+//   60         · This service returns an implementation-specific status code if the
+//   61           initialisation was not completed successfully.
+//   62     Extended:
+//   63         In addition to the standard status codes defined above, the following
+//   64         status code is supported:
+//   65         · This service returns E_COM_ID if the parameter <Mode> is out of range.
+//   66 */
+//   67 #if defined(COM_START_COM_EXTENSION)
+//   68     StatusType Status;
+//   69 #endif
+//   70     uint8_least idx;
+//   71     ComMessageObjectType *MessageObject;
+//   72 
+//   73     SAVE_SERVICE_CONTEXT(COMServiceId_StartCOM,Mode,NULL,NULL);
+        LDD     #0x0
+        PSHD
+        LDAB    #0x64
+        PSHB
+        LDD     #0x0
+        PSHD
+        LDAB    0x6,SP
+        EXG     B,Y
+        PULD
+        JSR     OSSaveServiceContext
+//   74 
+//   75     Com_AppMode=Mode;
+        LDAB    0x4,SP
+        STAB    Com_AppMode
+//   76 
+//   77     for (idx=(uint8_least)0;idx<COM_NUMBER_OF_MESSAGES;++idx) {
+        CLR     0x3,SP
+        LEAS    0x3,SP
+??StartCOM_0:
+        LDAB    0x0,SP
+        CMPB    #0x2
+        BCC     ??StartCOM_1
+//   78         MessageObject=(ComMessageObjectType *)&GET_MESSAGE_OBJECT(idx);
+        LDAB    0x0,SP
+        LDAA    #0xa
+        MUL
+        ADDD    #Com_MessageObjects
+        TFR     D,X
+//   79 
+//   80         if (MessageObject->Property!=SEND_STATIC_INTERNAL &&
+//   81                 MessageObject->Property!=SEND_ZERO_INTERNAL &&
+//   82                 MessageObject->Property!=SEND_ZERO_EXTERNAL &&
+//   83                 MessageObject->Property!=RECEIVE_ZERO_EXTERNAL) {
+//   84 /* todo: use Initialisation-Value. */
+//   85 #if 0
+//   86             DISABLE_ALL_OS_INTERRUPTS();
+//   87             OsUtilMemCpy((void*)MessageObject->Data,(void*)DataRef,MessageObject->Size);
+//   88             ENABLE_ALL_OS_INTERRUPTS();
+//   89 #endif
+//   90         }
+//   91     }
+        LDAB    0x0,SP
+        ADDB    #0x1
+        STAB    0x0,SP
+        BRA     ??StartCOM_0
+//   92 
+//   93 #if defined(COM_START_COM_EXTENSION)
+//   94     Status=StartCOMExtension();
+//   95 #endif
+//   96     Com_Status=COM_INIT;
+??StartCOM_1:
+        LDAB    #0x1
+        STAB    Com_Status
+//   97 
+//   98     CLEAR_SERVICE_CONTEXT();
+        CLR     Os_ServiceContext
+//   99     return E_OK;
+        LDAB    #0x0
+        PULY
+        PULX
+        RTS
+//  100 }
+//  101 
+//  102 
+
+        RSEG CODE:CODE:REORDER:NOROOT(0)
+//  103 StatusType StopCOM(COMShutdownModeType Mode)
+StopCOM:
+//  104 {
+        PSHA
+        STAB    0x0,SP
+//  105 /*
+//  106     Parameter (in): Mode COM_SHUTDOWN_IMMEDIATE
+//  107         The shutdown occurs immediately without waiting for pending operations to complete.
+//  108 */
+//  109 /*
+//  110     Standard:
+//  111         · This service returns E_OK if OSEK COM was shut down successfully.
+//  112         · This service returns an implementation-specific status code if the
+//  113           shutdown was not completed successfully.
+//  114     Extended:
+//  115         In addition to the standard status codes defined above, the following
+//  116         status code is supported:
+//  117         · This service returns E_COM_ID if the parameter <Mode> is out of range.
+//  118 */
+//  119     SAVE_SERVICE_CONTEXT(COMServiceId_StopCOM,Mode,NULL,NULL);
+        LDD     #0x0
+        PSHD
+        LDAB    #0x66
+        PSHB
+        LDD     #0x0
+        PSHD
+        LDAB    0x5,SP
+        EXG     B,Y
+        PULD
+        JSR     OSSaveServiceContext
+//  120 
+//  121     Com_Status=COM_UNINIT;
+        CLR     Com_Status
+//  122 
+//  123     CLEAR_SERVICE_CONTEXT();
+        CLR     Os_ServiceContext
+//  124     return E_OK;
+        LDAB    #0x0
+        LEAS    0x3,SP
+        PULA
+        RTS
+//  125 }
+//  126 
+//  127 
+
+        RSEG CODE:CODE:REORDER:NOROOT(0)
+//  128 COMApplicationModeType GetCOMApplicationMode(void)
+GetCOMApplicationMode:
+//  129 {
+//  130 /*  Return value: Current COM application mode. */
+//  131     return Com_AppMode;
+        LDAB    Com_AppMode
+        RTS
+//  132 }
+//  133 
+//  134 
+
+        RSEG CODE:CODE:REORDER:NOROOT(0)
+//  135 StatusType InitMessage(MessageIdentifier Message,ApplicationDataRef DataRef)
+InitMessage:
+//  136 {
+        PSHX
+        PSHD
+        STY     0x0,SP
+        TFR     D,X
+//  137 /*
+//  138     Standard:
+//  139         · This service returns E_OK if the initialisation of the message object
+//  140           completed successfully.
+//  141         · This service returns an implementation-specific status code if the
+//  142           initialisation did not complete successfully.
+//  143     Extended:
+//  144         In addition to the standard status code defined above, the following
+//  145         status code is supported:
+//  146         · This service returns E_COM_ID if the parameter <Message> is
+//  147           out of range or refers to a zero-length message or to an internal transmit message.
+//  148 */
+//  149     SAVE_SERVICE_CONTEXT(COMServiceId_InitMessage,Message,DataRef,NULL);
+        LDD     #0x0
+        PSHD
+        LDAB    #0x68
+        PSHB
+        LDD     0x3,SP
+        TFR     X,Y
+        JSR     OSSaveServiceContext
+//  150     ASSERT_VALID_MESSAGE_ID(Message);
+        CPX     #0x2
+        LEAS    0x3,SP
+        BCS     ??InitMessage_0
+        LDAB    #0x20
+        JSR     COMErrorCallErrorHook
+        CLR     Os_ServiceContext
+        LDAB    #0x20
+        BRA     ??InitMessage_1
+//  151     ASSERT_CAN_INITIALIZE_MESSAGE(Message);
+??InitMessage_0:
+        TFR     X,Y
+        LDD     #0xa
+        EMUL
+        TFR     D,Y
+        TST     Com_MessageObjects,Y
+        BEQ     ??InitMessage_2
+        TFR     X,Y
+        LDD     #0xa
+        EMUL
+        TFR     D,Y
+        LDAB    Com_MessageObjects,Y
+        CMPB    #0x3
+        BEQ     ??InitMessage_2
+        TFR     X,Y
+        LDD     #0xa
+        EMUL
+        TFR     D,Y
+        LDAB    Com_MessageObjects,Y
+        CMPB    #0x7
+        BEQ     ??InitMessage_2
+        TFR     X,Y
+        LDD     #0xa
+        EMUL
+        TFR     D,Y
+        LDAB    Com_MessageObjects,Y
+        CMPB    #0x8
+        BNE     ??InitMessage_3
+??InitMessage_2:
+        LDAB    #0x20
+        JSR     COMErrorCallErrorHook
+        CLR     Os_ServiceContext
+        LDAB    #0x20
+        BRA     ??InitMessage_1
+//  152 
+//  153     DISABLE_ALL_OS_INTERRUPTS();
+??InitMessage_3:
+        JSR     SuspendOSInterrupts
+//  154     Utl_MemCopy((void*)GET_MESSAGE_OBJECT(Message).Data,(void*)DataRef,(uint16)GET_MESSAGE_OBJECT(Message).Size);
+        TFR     X,Y
+        LDD     #0xa
+        EMUL
+        TFR     D,Y
+        LDAB    Com_MessageObjects + 4,Y
+        EXG     B,Y
+        PSHY
+        LDD     0x2,SP
+        PSHD
+        TFR     X,Y
+        LDD     #0xa
+        EMUL
+        TFR     D,Y
+        LDY     Com_MessageObjects + 5,Y
+        PULD
+        JSR     Utl_MemCopy
+//  155     ENABLE_ALL_OS_INTERRUPTS();
+        LEAS    0x2,SP
+        JSR     ResumeOSInterrupts
+//  156 
+//  157     CLEAR_SERVICE_CONTEXT();
+        CLR     Os_ServiceContext
+//  158     return E_OK;
+        LDAB    #0x0
+??InitMessage_1:
+        PULY
+        PULX
+        RTS
+//  159 }
+//  160 
+//  161 
+
+        RSEG CODE:CODE:REORDER:NOROOT(0)
+//  162 StatusType StartPeriodic(void)
+StartPeriodic:
+//  163 {
+//  164 /*
+//  165 Standard and Extended:
+//  166     · This service returns E_OK if periodic transmission was started successfully.
+//  167     · This service returns an implementation-specific status code if starting of
+//  168       periodic transmission was not completed successfully.
+//  169 */
+//  170     SAVE_SERVICE_CONTEXT(COMServiceId_StartPeriodic,NULL,NULL,NULL);
+        LDD     #0x0
+        PSHD
+        LDAB    #0x6a
+        PSHB
+        LDD     #0x0
+        LDY     #0x0
+        JSR     OSSaveServiceContext
+//  171     ASSERT_COM_IS_INITIALIZED();
+        TST     Com_Status
+        LEAS    0x3,SP
+        BNE     ??StartPeriodic_0
+        LDAB    #0x30
+        JSR     COMErrorCallErrorHook
+        CLR     Os_ServiceContext
+        LDAB    #0x30
+        RTS
+//  172 
+//  173     CLEAR_SERVICE_CONTEXT();
+??StartPeriodic_0:
+        CLR     Os_ServiceContext
+//  174     return E_OK;
+        LDAB    #0x0
+        RTS
+//  175 }
+//  176 
+//  177 
+
+        RSEG CODE:CODE:REORDER:NOROOT(0)
+//  178 StatusType StopPeriodic(void)
+StopPeriodic:
+//  179 {
+//  180 /*
+//  181     Standard and Extended:
+//  182         · This service returns E_OK if periodic transmission was stopped successfully.
+//  183         · This service returns an implementation-specific status code if
+//  184           stopping periodic transmission was not completed successfully.
+//  185 */
+//  186     SAVE_SERVICE_CONTEXT(COMServiceId_StopPeriodic,NULL,NULL,NULL);
+        LDD     #0x0
+        PSHD
+        LDAB    #0x6c
+        PSHB
+        LDD     #0x0
+        LDY     #0x0
+        JSR     OSSaveServiceContext
+//  187     ASSERT_COM_IS_INITIALIZED();
+        TST     Com_Status
+        LEAS    0x3,SP
+        BNE     ??StopPeriodic_0
+        LDAB    #0x30
+        JSR     COMErrorCallErrorHook
+        CLR     Os_ServiceContext
+        LDAB    #0x30
+        RTS
+//  188 
+//  189     CLEAR_SERVICE_CONTEXT();
+??StopPeriodic_0:
+        CLR     Os_ServiceContext
+//  190     return E_OK;
+        LDAB    #0x0
+        RTS
+//  191 }
+//  192 
+//  193 
+
+        RSEG CODE:CODE:REORDER:NOROOT(0)
+//  194 StatusType SendMessage(MessageIdentifier Message,ApplicationDataRef DataRef)
+SendMessage:
+//  195 {
+        PSHX
+        LEAS    -0x3,SP
+        STY     0x1,SP
+        TFR     D,X
+//  196 /*
+//  197     Standard:
+//  198         · This service returns E_OK if the service operation completed successfully.
+//  199     Extended:
+//  200         In addition to the standard status code defined above, the following
+//  201         status code is supported:
+//  202         · This service returns E_COM_ID if the parameter <Message> is
+//  203           out of range or if it refers to a message that is received or to a
+//  204           dynamic-length or zero-length message.
+//  205 */
+//  206     StatusType Status=E_OK;
+        CLR     0x0,SP
+//  207 
+//  208     SAVE_SERVICE_CONTEXT(COMServiceId_SendMessage,Message,DataRef,NULL);
+        LDD     #0x0
+        PSHD
+        LDAB    #0x6e
+        PSHB
+        LDD     0x4,SP
+        TFR     X,Y
+        JSR     OSSaveServiceContext
+//  209     ASSERT_COM_IS_INITIALIZED();
+        TST     Com_Status
+        LEAS    0x3,SP
+        BNE     ??SendMessage_0
+        LDAB    #0x30
+        JSR     COMErrorCallErrorHook
+        CLR     Os_ServiceContext
+        LDAB    #0x30
+        BRA     ??SendMessage_1
+//  210     ASSERT_VALID_MESSAGE_ID(Message);
+??SendMessage_0:
+        CPX     #0x2
+        BCS     ??SendMessage_2
+        LDAB    #0x20
+        JSR     COMErrorCallErrorHook
+        CLR     Os_ServiceContext
+        LDAB    #0x20
+        BRA     ??SendMessage_1
+//  211     ASSERT_IS_STATIC_SENDING_MESSAGE(Message);
+??SendMessage_2:
+        TFR     X,Y
+        LDD     #0xa
+        EMUL
+        TFR     D,Y
+        TST     Com_MessageObjects,Y
+        BEQ     ??SendMessage_3
+        LDAB    #0x20
+        JSR     COMErrorCallErrorHook
+        CLR     Os_ServiceContext
+        LDAB    #0x20
+        BRA     ??SendMessage_1
+//  212 
+//  213     switch (GET_MESSAGE_OBJECT(Message).Property) {
+??SendMessage_3:
+        TFR     X,Y
+        LDD     #0xa
+        EMUL
+        TFR     D,Y
+        LDAB    Com_MessageObjects,Y
+        SUBB    #0x0
+        BNE     ??SendMessage_4
+//  214         case SEND_STATIC_INTERNAL:
+//  215             Status=ComIntSendMessage(Message,DataRef);
+        LDY     0x1,SP
+        TFR     X,D
+        JSR     ComIntSendMessage
+        STAB    0x0,SP
+        BRA     ??SendMessage_5
+//  216             break;
+//  217 #if 0
+//  218 /* not supported yet. */
+//  219         case SEND_ZERO_INTERNAL:
+//  220         case SEND_STATIC_EXTERNAL:
+//  221         case SEND_DYNAMIC_EXTERNAL:
+//  222         case SEND_ZERO_EXTERNAL:
+//  223             break;
+//  224 #endif
+//  225         default:
+//  226             ASSERT(FALSE);
+??SendMessage_4:
+        bgnd
+//  227     }
+//  228 
+//  229     CLEAR_SERVICE_CONTEXT();
+??SendMessage_5:
+        CLR     Os_ServiceContext
+//  230     return Status;
+        LDAB    0x0,SP
+??SendMessage_1:
+        LEAS    0x3,SP
+        PULX
+        RTS
+//  231 }
+//  232 
+//  233 
+
+        RSEG CODE:CODE:REORDER:NOROOT(0)
+//  234 StatusType ReceiveMessage(MessageIdentifier Message,ApplicationDataRef DataRef)
+ReceiveMessage:
+//  235 {
+        PSHX
+        LEAS    -0x3,SP
+        STY     0x1,SP
+        TFR     D,X
+//  236 /*
+//  237     Standard:
+//  238         · This service returns E_OK if data in the queued or unqueued
+//  239           message identified by <Message> are available and returned to
+//  240           the application successfully.
+//  241         · This service returns E_COM_NOMSG if the queued message
+//  242           identified by <Message> is empty.
+//  243         · This service returns E_COM_LIMIT if an overflow of the message
+//  244           queue identified by <Message> occurred since the last call to
+//  245           ReceiveMessage for <Message>. E_COM_LIMIT indicates that
+//  246           at least one message has been discarded since the message
+//  247           queue filled. Nevertheless the service is performed and a
+//  248           message is returned. The service ReceiveMessage clears the
+//  249           overflow condition for <Message>.
+//  250     Extended:
+//  251         In addition to the standard status codes defined above, the following
+//  252         status code is supported:
+//  253         · This service returns E_COM_ID if the parameter <Message> is
+//  254           out of range or if it refers to message that is sent or to a dynamiclength
+//  255           or zero-length message.
+//  256 */
+//  257     StatusType Status=E_OK;
+        CLR     0x0,SP
+//  258 
+//  259     SAVE_SERVICE_CONTEXT(COMServiceId_ReceiveMessage,Message,DataRef,NULL);
+        LDD     #0x0
+        PSHD
+        LDAB    #0x70
+        PSHB
+        LDD     0x4,SP
+        TFR     X,Y
+        JSR     OSSaveServiceContext
+//  260     ASSERT_COM_IS_INITIALIZED();
+        TST     Com_Status
+        LEAS    0x3,SP
+        BNE     ??ReceiveMessage_0
+        LDAB    #0x30
+        JSR     COMErrorCallErrorHook
+        CLR     Os_ServiceContext
+        LDAB    #0x30
+        BRA     ??ReceiveMessage_1
+//  261     ASSERT_VALID_MESSAGE_ID(Message);
+??ReceiveMessage_0:
+        CPX     #0x2
+        BCS     ??ReceiveMessage_2
+        LDAB    #0x20
+        JSR     COMErrorCallErrorHook
+        CLR     Os_ServiceContext
+        LDAB    #0x20
+        BRA     ??ReceiveMessage_1
+//  262     ASSERT_IS_STATIC_RECEIVING_MESSAGE(Message);
+??ReceiveMessage_2:
+        TFR     X,Y
+        LDD     #0xa
+        EMUL
+        TFR     D,Y
+        LDAB    Com_MessageObjects,Y
+        DECB
+        BEQ     ??ReceiveMessage_3
+        LDAB    #0x20
+        JSR     COMErrorCallErrorHook
+        CLR     Os_ServiceContext
+        LDAB    #0x20
+        BRA     ??ReceiveMessage_1
+//  263 
+//  264     switch (GET_MESSAGE_OBJECT(Message).Property) {
+??ReceiveMessage_3:
+        TFR     X,Y
+        LDD     #0xa
+        EMUL
+        TFR     D,Y
+        LDAB    Com_MessageObjects,Y
+        SUBB    #0x1
+        BEQ     ??ReceiveMessage_4
+        SUBB    #0x1
+        BEQ     ??ReceiveMessage_5
+        BRA     ??ReceiveMessage_6
+//  265         case RECEIVE_UNQUEUED_INTERNAL:
+//  266             Status=ComIntReceiveMessage(Message,DataRef);
+??ReceiveMessage_4:
+        LDY     0x1,SP
+        TFR     X,D
+        JSR     ComIntReceiveMessage
+        STAB    0x0,SP
+        BRA     ??ReceiveMessage_5
+//  267             break;
+//  268         case RECEIVE_QUEUED_INTERNAL:
+//  269             break;
+//  270 #if 0
+//  271 /* not supported yet. */
+//  272         case RECEIVE_ZERO_INTERNAL:
+//  273         case RECEIVE_ZERO_EXTERNAL:
+//  274         case RECEIVE_UNQUEUED_EXTERNAL:
+//  275         case RECEIVE_QUEUED_EXTERNAL:
+//  276         case RECEIVE_DYNAMIC_EXTERNAL:
+//  277             break;
+//  278 #endif
+//  279         default:
+//  280             ASSERT(FALSE);;
+??ReceiveMessage_6:
+        bgnd
+//  281     }
+//  282 
+//  283     CLEAR_SERVICE_CONTEXT();
+??ReceiveMessage_5:
+        CLR     Os_ServiceContext
+//  284     return Status;
+        LDAB    0x0,SP
+??ReceiveMessage_1:
+        LEAS    0x3,SP
+        PULX
+        RTS
+//  285 }
+//  286 
+//  287 
+
+        RSEG CODE:CODE:REORDER:NOROOT(0)
+//  288 StatusType SendDynamicMessage(MessageIdentifier Message,ApplicationDataRef DataRef,LengthRef LengthRef)
+SendDynamicMessage:
+//  289 {
+        PSHX
+        LEAS    -0x4,SP
+        STD     0x0,SP
+        STY     0x2,SP
+        LDX     0x8,SP
+//  290 /*
+//  291     Standard:
+//  292         · This service returns E_OK if the service operation completed successfully.
+//  293     Extended:
+//  294         In addition to the standard status code defined above, the following
+//  295         status codes are supported:
+//  296         · This service returns E_COM_ID if the parameter <Message> is
+//  297           out of range or if it refers to a received message, a static-length
+//  298           message or a zero-length message.
+//  299         · This service returns E_COM_LENGTH if the value to which
+//  300           <LengthRef> points is not within the range 0 to the maximum
+//  301           length defined for <Message>.
+//  302 */
+//  303     SAVE_SERVICE_CONTEXT(COMServiceId_SendDynamicMessage,Message,DataRef,LengthRef);
+        PSHX
+        LDAB    #0x72
+        PSHB
+        LDD     0x5,SP
+        LDY     0x3,SP
+        JSR     OSSaveServiceContext
+//  304     ASSERT_COM_IS_INITIALIZED();
+        TST     Com_Status
+        LEAS    0x3,SP
+        BNE     ??SendDynamicMessage_0
+        LDAB    #0x30
+        JSR     COMErrorCallErrorHook
+        CLR     Os_ServiceContext
+        LDAB    #0x30
+        BRA     ??SendDynamicMessage_1
+//  305     ASSERT_VALID_MESSAGE_ID(Message);
+??SendDynamicMessage_0:
+        LDD     0x0,SP
+        CPD     #0x2
+        BCS     ??SendDynamicMessage_2
+        LDAB    #0x20
+        JSR     COMErrorCallErrorHook
+        CLR     Os_ServiceContext
+        LDAB    #0x20
+        BRA     ??SendDynamicMessage_1
+//  306 
+//  307     CLEAR_SERVICE_CONTEXT();
+??SendDynamicMessage_2:
+        CLR     Os_ServiceContext
+//  308     return E_OK;
+        LDAB    #0x0
+??SendDynamicMessage_1:
+        LEAS    0x4,SP
+        PULX
+        RTS
+//  309 }
+//  310 
+
+        RSEG CODE:CODE:REORDER:NOROOT(0)
+//  311 StatusType ReceiveDynamicMessage(MessageIdentifier Message,ApplicationDataRef DataRef,LengthRef LengthRef)
+ReceiveDynamicMessage:
+//  312 {
+        PSHX
+        LEAS    -0x4,SP
+        STD     0x0,SP
+        STY     0x2,SP
+        LDX     0x8,SP
+//  313 /*
+//  314     Standard:
+//  315         · This service returns E_OK if data in the unqueued message identified by <Message>
+//  316           is returned to the application succesfully.
+//  317     Extended:
+//  318         In addition to the standard status code defined above, the following
+//  319         status codes are supported:
+//  320         · This service returns E_COM_ID if the parameter <Message> is
+//  321           out of range or if it refers to a message that is sent, a queued message,
+//  322           a static-length message or a zero-length message.
+//  323 */
+//  324     SAVE_SERVICE_CONTEXT(COMServiceId_ReceiveDynamicMessage,Message,DataRef,LengthRef);
+        PSHX
+        LDAB    #0x74
+        PSHB
+        LDD     0x5,SP
+        LDY     0x3,SP
+        JSR     OSSaveServiceContext
+//  325     ASSERT_COM_IS_INITIALIZED();
+        TST     Com_Status
+        LEAS    0x3,SP
+        BNE     ??ReceiveDynamicMessage_0
+        LDAB    #0x30
+        JSR     COMErrorCallErrorHook
+        CLR     Os_ServiceContext
+        LDAB    #0x30
+        BRA     ??ReceiveDynamicMessage_1
+//  326     ASSERT_VALID_MESSAGE_ID(Message);
+??ReceiveDynamicMessage_0:
+        LDD     0x0,SP
+        CPD     #0x2
+        BCS     ??ReceiveDynamicMessage_2
+        LDAB    #0x20
+        JSR     COMErrorCallErrorHook
+        CLR     Os_ServiceContext
+        LDAB    #0x20
+        BRA     ??ReceiveDynamicMessage_1
+//  327 
+//  328     CLEAR_SERVICE_CONTEXT();
+??ReceiveDynamicMessage_2:
+        CLR     Os_ServiceContext
+//  329     return E_OK;
+        LDAB    #0x0
+??ReceiveDynamicMessage_1:
+        LEAS    0x4,SP
+        PULX
+        RTS
+//  330 }
+//  331 
+//  332 
+
+        RSEG CODE:CODE:REORDER:NOROOT(0)
+//  333 StatusType SendZeroMessage(MessageIdentifier Message)
+SendZeroMessage:
+//  334 {
+        PSHX
+        TFR     D,X
+//  335 /*
+//  336     Standard:
+//  337         · This service returns E_OK if the service operation completed successfully.
+//  338     Extended:
+//  339         In addition to the standard status code defined above, the following
+//  340         status code is supported:
+//  341         · This service returns E_COM_ID if the parameter <Message> is
+//  342           out of range or if it refers to a non-zero-length message.
+//  343 */
+//  344     SAVE_SERVICE_CONTEXT(COMServiceId_SendZeroMessage,Message,NULL,NULL);
+        LDD     #0x0
+        PSHD
+        LDAB    #0x76
+        PSHB
+        LDD     #0x0
+        TFR     X,Y
+        JSR     OSSaveServiceContext
+//  345     ASSERT_COM_IS_INITIALIZED();
+        TST     Com_Status
+        LEAS    0x3,SP
+        BNE     ??SendZeroMessage_0
+        LDAB    #0x30
+        JSR     COMErrorCallErrorHook
+        CLR     Os_ServiceContext
+        LDAB    #0x30
+        BRA     ??SendZeroMessage_1
+//  346     ASSERT_VALID_MESSAGE_ID(Message);
+??SendZeroMessage_0:
+        CPX     #0x2
+        BCS     ??SendZeroMessage_2
+        LDAB    #0x20
+        JSR     COMErrorCallErrorHook
+        CLR     Os_ServiceContext
+        LDAB    #0x20
+        BRA     ??SendZeroMessage_1
+//  347 
+//  348     CLEAR_SERVICE_CONTEXT();
+??SendZeroMessage_2:
+        CLR     Os_ServiceContext
+//  349     return E_OK;
+        LDAB    #0x0
+??SendZeroMessage_1:
+        PULX
+        RTS
+//  350 }
+//  351 
+
+        RSEG CODE:CODE:REORDER:NOROOT(0)
+//  352 StatusType GetMessageStatus(MessageIdentifier Message)
+GetMessageStatus:
+//  353 {
+        PSHX
+        TFR     D,X
+//  354 /*
+//  355     Standard:
+//  356         · This service returns E_COM_NOMSG if the message queue
+//  357           identified by <Message> is empty.
+//  358         · This service returns E_COM_LIMIT if an overflow of the message
+//  359           queue identified by <Message> occurred since the last call to
+//  360           ReceiveMessage for <Message>.
+//  361         · This service returns E_OK if none of the conditions specified
+//  362           above is applicable or fulfilled and no error indication is present.
+//  363     Extended:
+//  364         In addition to the standard status codes defined above, the following
+//  365         status code is supported:
+//  366         · This service returns E_COM_ID if the parameter <Message> is
+//  367           out of range or if it does not refer to a queued message.
+//  368 */
+//  369     SAVE_SERVICE_CONTEXT(COMServiceId_GetMessageStatus,Message,NULL,NULL);
+        LDD     #0x0
+        PSHD
+        LDAB    #0x78
+        PSHB
+        LDD     #0x0
+        TFR     X,Y
+        JSR     OSSaveServiceContext
+//  370     ASSERT_COM_IS_INITIALIZED();
+        TST     Com_Status
+        LEAS    0x3,SP
+        BNE     ??GetMessageStatus_0
+        LDAB    #0x30
+        JSR     COMErrorCallErrorHook
+        CLR     Os_ServiceContext
+        LDAB    #0x30
+        BRA     ??GetMessageStatus_1
+//  371     ASSERT_VALID_MESSAGE_ID(Message);
+??GetMessageStatus_0:
+        CPX     #0x2
+        BCS     ??GetMessageStatus_2
+        LDAB    #0x20
+        JSR     COMErrorCallErrorHook
+        CLR     Os_ServiceContext
+        LDAB    #0x20
+        BRA     ??GetMessageStatus_1
+//  372 
+//  373     CLEAR_SERVICE_CONTEXT();
+??GetMessageStatus_2:
+        CLR     Os_ServiceContext
+//  374     return E_OK;
+        LDAB    #0x0
+??GetMessageStatus_1:
+        PULX
+        RTS
+//  375 }
+//  376 
+//  377 
+
+        RSEG CODE:CODE:REORDER:NOROOT(0)
+//  378 COMServiceIdType COMErrorGetServiceId(void)
+COMErrorGetServiceId:
+//  379 {
+//  380 /*
+//  381     Return value: Service Identifier.
+//  382 */
+//  383 /*    return (COMServiceIdType)0;   */
+//  384 }
+        RTS
+//  385 
+//  386 
+
+        RSEG CODE:CODE:REORDER:NOROOT(0)
+//  387 void ComIfUpdateAndNotifyReceivers(ComMessageObjectType *MessageSendObject,ApplicationDataRef DataRef)
+ComIfUpdateAndNotifyReceivers:
+//  388 {
+        PSHX
+        LEAS    -0x8,SP
+        STY     0x2,SP
+        STD     0x6,SP
+//  389     uint8_least idx,count;
+//  390     ComMessageObjectType *MessageObject;
+//  391 #if defined(OS_EXTENDED_STATUS) && defined(OS_USE_CALLEVEL_CHECK)
+//  392     OsCallevelType CallevelSaved;
+//  393 #endif
+//  394 
+//  395     ASSERT(MessageSendObject->Receiver!=(ComReceiverType *)NULL);
+        LDY     0x2,SP
+        LDD     0x8,Y
+        BNE     ??ComIfUpdateAndNotifyReceivers_0
+        bgnd
+//  396 
+//  397     count=MessageSendObject->NumReceivers;
+??ComIfUpdateAndNotifyReceivers_0:
+        LDY     0x2,SP
+        LDAB    0x7,Y
+        STAB    0x1,SP
+//  398     for (idx=(uint8_least)0;idx<count;++idx) {
+        CLR     0x0,SP
+??ComIfUpdateAndNotifyReceivers_1:
+        LDAB    0x0,SP
+        CMPB    0x1,SP
+        LBCC    ??ComIfUpdateAndNotifyReceivers_2
+//  399         DISABLE_ALL_OS_INTERRUPTS();
+        JSR     SuspendOSInterrupts
+//  400         MessageObject=(ComMessageObjectType *)&GET_MESSAGE_OBJECT(MessageSendObject->Receiver[idx].Message);
+        LDY     0x2,SP
+        LDAB    0x0,SP
+        LDAA    #0x2
+        MUL
+        ADDD    0x8,Y
+        TFR     D,Y
+        LDY     0x0,Y
+        LDD     #0xa
+        EMUL
+        ADDD    #Com_MessageObjects
+        TFR     D,X
+//  401         ASSERT(MessageSendObject->Size==MessageObject->Size);
+        LDY     0x2,SP
+        LDAB    0x4,Y
+        CMPB    0x4,X
+        BEQ     ??ComIfUpdateAndNotifyReceivers_3
+        bgnd
+//  402         ASSERT(MessageObject->Property==RECEIVE_UNQUEUED_INTERNAL);    /* todo: CCCB */
+??ComIfUpdateAndNotifyReceivers_3:
+        LDAB    0x0,X
+        DECB
+        BEQ     ??ComIfUpdateAndNotifyReceivers_4
+        bgnd
+//  403         ASSERT(MessageObject->Action.Dummy!=(void*)NULL);
+??ComIfUpdateAndNotifyReceivers_4:
+        LDD     0x2,X
+        BNE     ??ComIfUpdateAndNotifyReceivers_5
+        bgnd
+//  404         Utl_MemCopy((void*)MessageObject->Data,(void*)DataRef,(uint16)MessageObject->Size);
+??ComIfUpdateAndNotifyReceivers_5:
+        LDAB    0x4,X
+        EXG     B,Y
+        PSHY
+        LDD     0x8,SP
+        LDY     0x5,X
+        JSR     Utl_MemCopy
+//  405         ENABLE_ALL_OS_INTERRUPTS();
+        LEAS    0x2,SP
+        JSR     ResumeOSInterrupts
+//  406 
+//  407         switch (MessageObject->Notification) {  /* NotificationType??? */
+        LDAB    0x1,X
+        SUBB    #0x0
+        BEQ     ??ComIfUpdateAndNotifyReceivers_6
+        SUBB    #0x1
+        BEQ     ??ComIfUpdateAndNotifyReceivers_7
+        SUBB    #0x1
+        BEQ     ??ComIfUpdateAndNotifyReceivers_8
+        SUBB    #0x1
+        BEQ     ??ComIfUpdateAndNotifyReceivers_9
+        SUBB    #0x1
+        BEQ     ??ComIfUpdateAndNotifyReceivers_6
+        BRA     ??ComIfUpdateAndNotifyReceivers_10
+//  408             case COM_ACTIVATETASK:
+//  409                 (void)OsTask_Activate(MessageObject->Action.TaskID);
+??ComIfUpdateAndNotifyReceivers_7:
+        LDAB    0x2,X
+        JSR     OsTask_Activate
+        BRA     ??ComIfUpdateAndNotifyReceivers_6
+//  410                 break;
+//  411             case COM_SETEVENT:
+//  412                 (void)OsEvtSetEvent(MessageObject->Action.Event->TaskID,MessageObject->Action.Event->Mask);
+??ComIfUpdateAndNotifyReceivers_8:
+        LDY     0x2,X
+        LDAA    0x1,Y
+        LDAB    [0x2,X]
+        JSR     OsEvtSetEvent
+        BRA     ??ComIfUpdateAndNotifyReceivers_6
+//  413                 break;
+//  414             case COM_COMCALLBACK:
+//  415                 DISABLE_ALL_OS_INTERRUPTS();
+??ComIfUpdateAndNotifyReceivers_9:
+        JSR     SuspendOSInterrupts
+//  416                 #if defined(OS_EXTENDED_STATUS) && defined(OS_USE_CALLEVEL_CHECK)
+//  417                 CallevelSaved=OS_GET_CALLEVEL();
+        LDD     OsCallevel
+        STD     0x4,SP
+//  418                 #endif
+//  419                 OS_SET_CALLEVEL(OS_CL_ALARM_CALLBACK);
+        LDD     #0x80
+        STD     OsCallevel
+//  420                 (MessageObject->Action.Callback)();
+        JSR     [0x2,X]
+//  421                 #if defined(OS_EXTENDED_STATUS) && defined(OS_USE_CALLEVEL_CHECK)
+//  422                 OS_SET_CALLEVEL(CallevelSaved);
+        LDD     0x4,SP
+        STD     OsCallevel
+//  423                 #endif
+//  424                 ENABLE_ALL_OS_INTERRUPTS();
+        JSR     ResumeOSInterrupts
+        BRA     ??ComIfUpdateAndNotifyReceivers_6
+//  425                 break;
+//  426             case COM_FLAG:
+//  427               /* todo: Implementieren (nicht CCCA) !!! */
+//  428 /*                MessageObject->Action.Flag; */
+//  429                 break;
+//  430             case COM_NOTIFY_NONE:
+//  431                 break;  /* No Action. */
+//  432             default:
+//  433                 ASSERT(FALSE);
+??ComIfUpdateAndNotifyReceivers_10:
+        bgnd
+//  434         }
+//  435     }
+??ComIfUpdateAndNotifyReceivers_6:
+        LDAB    0x0,SP
+        ADDB    #0x1
+        STAB    0x0,SP
+        JMP     .LWRD.(??ComIfUpdateAndNotifyReceivers_1)
+//  436 }
+??ComIfUpdateAndNotifyReceivers_2:
+        LEAS    0x8,SP
+        PULX
+        RTS
+
+        RSEG INITTAB:CODE:ROOT(0)
+?init?tab?DATA16_Z:
+        DC16    sfe(DATA16_Z) - sfb(DATA16_Z), sfb(DATA16_Z), sfb(DATA16_Z)
+
+        END
+//  437 
+//  438 /*
+//  439 **
+//  440 **  Routines provided by the application.
+//  441 **
+//  442 */
+//  443 
+//  444 
+//  445 /*  COMCallout(CalloutRoutineName) */
+//  446 
+//  447 #endif /* OS_USE_COM */
+// 
+// 1 036 bytes in segment CODE
+//    24 bytes in segment DATA16_C
+//     6 bytes in segment DATA16_Z
+//     6 bytes in segment INITTAB
+// 
+// 1 036 bytes of CODE  memory (+ 6 bytes shared)
+//    24 bytes of CONST memory
+//     6 bytes of DATA  memory
+//
+//Errors: none
+//Warnings: 1

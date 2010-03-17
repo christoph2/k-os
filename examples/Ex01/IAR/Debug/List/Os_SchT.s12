@@ -1,0 +1,545 @@
+//////////////////////////////////////////////////////////////////////////////
+//                                                                           /
+// IAR HCS12 C/C++ Compiler V3.11A/W32                 17/Mar/2010  10:33:43 /
+// Copyright 1997-2006 IAR Systems. All rights reserved.                     /
+//                                                                           /
+//    Source file  =  C:\projekte\csProjects\k-os\src\Os_SchT.c              /
+//    Command line =  C:\projekte\csProjects\k-os\src\Os_SchT.c              /
+//                    --preprocess=l C:\projekte\csProjects\k-os\examples\Ex /
+//                    01\IAR\Debug\List\ -lC C:\projekte\csProjects\k-os\exa /
+//                    mples\Ex01\IAR\Debug\List\ -lB                         /
+//                    C:\projekte\csProjects\k-os\examples\Ex01\IAR\Debug\Li /
+//                    st\ --code_model=normal --double=32 -o                 /
+//                    C:\projekte\csProjects\k-os\examples\Ex01\IAR\Debug\Ob /
+//                    j\ --require_prototypes -e -z2 --no_cse --no_unroll    /
+//                    --no_inline --no_code_motion --no_tbaa                 /
+//                    --no_cross_call --debug "-D_DLIB_CONFIG_FILE=C:\Progra /
+//                    mme\IAR Systems\Embedded Workbench Evaluation          /
+//                    4.0\HCS12\LIB\DLIB\dlhcs12nfn.h" --segment             /
+//                    __data8=DATA8 --segment __data16=DATA16 --segment      /
+//                    __banked=BANKED_CODE --segment __non_banked=CODE       /
+//                    --segment __intvec=INTVEC --segment __difunct=DIFUNCT  /
+//                    --segment __cstack=CSTACK --segment __inittab=INITTAB  /
+//                    -I C:\projekte\csProjects\k-os\inc\ -I                 /
+//                    C:\projekte\csProjects\common\inc\ -I                  /
+//                    C:\projekte\csProjects\common\ -I                      /
+//                    C:\projekte\csProjects\common\InstallISR\ -I           /
+//                    C:\projekte\csProjects\k-os\examples\Ex01\ -I          /
+//                    C:\projekte\csProjects\common\drivers\include\cpu12\   /
+//                    -I "C:\Programme\IAR Systems\Embedded Workbench        /
+//                    Evaluation 4.0\HCS12\INC\" -I "C:\Programme\IAR        /
+//                    Systems\Embedded Workbench Evaluation                  /
+//                    4.0\HCS12\INC\DLIB\"                                   /
+//    List file    =  C:\projekte\csProjects\k-os\examples\Ex01\IAR\Debug\Li /
+//                    st\Os_SchT.s12                                         /
+//                                                                           /
+//                                                                           /
+//////////////////////////////////////////////////////////////////////////////
+
+        NAME Os_SchT
+
+        RSEG CSTACK:DATA:REORDER:NOROOT(0)
+
+        PUBLIC GetScheduleTableStatus
+        PUBLIC NextScheduleTable
+        PUBLIC OsSchTInitScheduleTables
+        PUBLIC SetScheduleTableAsync
+        PUBLIC StartScheduleTableAbs
+        PUBLIC StartScheduleTableRel
+        PUBLIC StartScheduleTableSynchron
+        PUBLIC StopScheduleTable
+        PUBLIC SyncScheduleTable
+
+        EXTERN OsCallevel
+        EXTERN Os_ServiceContext
+        EXTERN OSSaveServiceContext
+        EXTERN OsErrorCallErrorHook
+        EXTERN ResumeOSInterrupts
+        EXTERN SuspendOSInterrupts
+
+// C:\projekte\csProjects\k-os\src\Os_SchT.c
+//    1 /*
+//    2  * k_os (Konnex Operating-System based on the OSEK/VDX-Standard).
+//    3  *
+//    4  * (C) 2007-2009 by Christoph Schueler <chris@konnex-tools.de>
+//    5  *
+//    6  * All Rights Reserved
+//    7  *
+//    8  * This program is free software; you can redistribute it and/or modify
+//    9  * it under the terms of the GNU General Public License as published by
+//   10  * the Free Software Foundation; either version 2 of the License, or
+//   11  * (at your option) any later version.
+//   12  *
+//   13  * This program is distributed in the hope that it will be useful,
+//   14  * but WITHOUT ANY WARRANTY; without even the implied warranty of
+//   15  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//   16  * GNU General Public License for more details.
+//   17  *
+//   18  * You should have received a copy of the GNU General Public License along
+//   19  * with this program; if not, write to the Free Software Foundation, Inc.,
+//   20  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+//   21  *
+//   22  */
+//   23 
+//   24 #include "Os_SchT.h"
+//   25 
+//   26 /*
+//   27 **
+//   28 **  internal States: STOPPED,WAITING,RUNNING,TERMINATING.
+//   29 **
+//   30 */
+//   31 
+//   32 /*
+//   33 **  !REQ!AS!OS429! "A schedule table that is implicitly synchronized shall have a 
+//   34 **  Duration equal to OsCounterMaxAllowedValue+1 of is associated OSEK OS counter."
+//   35 */
+//   36 
+//   37 /*
+//   38 **  !REQ!AS!OS430! "The OS shall prevent a schedule table that is implicitly
+//   39 **  synchronized from being started ât a relative count value."
+//   40 */
+//   41 
+//   42 #define INVALID_SCHEDULE_TABLE  ((uint8)0xff)
+//   43 
+//   44 
+//   45 typedef struct tagOsSchTType {
+//   46     uint8 InternalState;
+//   47     ScheduleTableStatusType ExternalState;
+//   48     TickType Delay;
+//   49     
+//   50     ScheduleTableType CurrentTable;
+//   51     ScheduleTableType NextTable;
+//   52     uint8 CurrentPoint;  /* CurrentEntry */
+//   53 } OsSchTType;
+//   54 
+//   55 
+//   56 typedef enum tagOsSchTSyncStrategyType {
+//   57     SCHT_SYNC_NONE,
+//   58     SCHT_SYNC_IMPLICIT,
+//   59     SCHT_SYNC_EXPLICIT
+//   60 } OsSchTSyncStrategyType;
+//   61 
+//   62 
+//   63 typedef struct tagOsScheduleTableConfigurationType {
+//   64 /* 1..* ExpiryPoints */
+//   65     
+//   66     TickType TableDuration;
+//   67     boolean Repeating;
+//   68     CounterType CounterID;
+//   69     OsSchTSyncStrategyType SyncStrategy; 
+//   70     TickType ExplicitPrecision;
+//   71     TickType MaxRetard;
+//   72     TickType MaxAdvance;
+//   73 } OsScheduleTableConfigurationType;
+//   74 
+//   75 
+//   76 typedef struct tagOsExpiryPointType {    
+//   77     TickType Offset;
+//   78     TickType MaxRetard;  /* to be substracted */
+//   79     TickType MaxAdvance; /* to be added */
+//   80 
+//   81 	/*
+//   82 **  todo: TaskActivations + Events.
+//   83 **
+//   84 */    
+//   85 } OsExpiryPointType;
+//   86 
+//   87 
+
+        RSEG CODE:CODE:REORDER:NOROOT(0)
+//   88 StatusType StartScheduleTableRel(ScheduleTableType ScheduleTableID,TickType Offset)
+StartScheduleTableRel:
+//   89 {
+        PSHX
+        PSHA
+        STAB    0x0,SP
+        TFR     Y,X
+//   90     SAVE_SERVICE_CONTEXT(OSServiceId_StartScheduleTableRel,ScheduleTableID,Offset,NULL);
+        LDD     #0x0
+        PSHD
+        LDAB    #0x44
+        PSHB
+        TFR     X,D
+        PSHD
+        LDAB    0x5,SP
+        EXG     B,Y
+        PULD
+        JSR     OSSaveServiceContext
+//   91     ASSERT_VALID_CALLEVEL(OS_CL_TASK|OS_CL_ISR2);
+        LEAS    0x3,SP
+        BRCLR   OsCallevel + 1,#0x3,??StartScheduleTableRel_0
+        BRA     ??StartScheduleTableRel_1
+??StartScheduleTableRel_0:
+        LDAB    #0x2
+        JSR     OsErrorCallErrorHook
+        CLR     Os_ServiceContext
+        LDAB    #0x2
+        BRA     ??StartScheduleTableRel_2
+//   92 
+//   93     DISABLE_ALL_OS_INTERRUPTS();
+??StartScheduleTableRel_1:
+        JSR     SuspendOSInterrupts
+//   94     
+//   95     ENABLE_ALL_OS_INTERRUPTS();    
+        JSR     ResumeOSInterrupts
+//   96     CLEAR_SERVICE_CONTEXT();
+        CLR     Os_ServiceContext
+//   97     return E_OK;
+        LDAB    #0x0
+??StartScheduleTableRel_2:
+        PULA
+        PULX
+        RTS
+//   98     
+//   99 }
+//  100 
+//  101 
+
+        RSEG CODE:CODE:REORDER:NOROOT(0)
+//  102 StatusType StartScheduleTableAbs(ScheduleTableType ScheduleTableID,TickType Tickvalue)
+StartScheduleTableAbs:
+//  103 {
+        PSHX
+        PSHA
+        STAB    0x0,SP
+        TFR     Y,X
+//  104     SAVE_SERVICE_CONTEXT(OSServiceId_StartScheduleTableAbs,ScheduleTableID,Tickvalue,NULL);
+        LDD     #0x0
+        PSHD
+        LDAB    #0x46
+        PSHB
+        TFR     X,D
+        PSHD
+        LDAB    0x5,SP
+        EXG     B,Y
+        PULD
+        JSR     OSSaveServiceContext
+//  105     ASSERT_VALID_CALLEVEL(OS_CL_TASK|OS_CL_ISR2);
+        LEAS    0x3,SP
+        BRCLR   OsCallevel + 1,#0x3,??StartScheduleTableAbs_0
+        BRA     ??StartScheduleTableAbs_1
+??StartScheduleTableAbs_0:
+        LDAB    #0x2
+        JSR     OsErrorCallErrorHook
+        CLR     Os_ServiceContext
+        LDAB    #0x2
+        BRA     ??StartScheduleTableAbs_2
+//  106 
+//  107     DISABLE_ALL_OS_INTERRUPTS();
+??StartScheduleTableAbs_1:
+        JSR     SuspendOSInterrupts
+//  108     
+//  109     ENABLE_ALL_OS_INTERRUPTS();    
+        JSR     ResumeOSInterrupts
+//  110     CLEAR_SERVICE_CONTEXT();
+        CLR     Os_ServiceContext
+//  111     return E_OK;
+        LDAB    #0x0
+??StartScheduleTableAbs_2:
+        PULA
+        PULX
+        RTS
+//  112     
+//  113 }
+//  114 
+//  115 
+
+        RSEG CODE:CODE:REORDER:NOROOT(0)
+//  116 StatusType StopScheduleTable(ScheduleTableType ScheduleTableID)
+StopScheduleTable:
+//  117 {
+        PSHA
+        STAB    0x0,SP
+//  118     SAVE_SERVICE_CONTEXT(OSServiceId_StopScheduleTable,ScheduleTableID,NULL,NULL);
+        LDD     #0x0
+        PSHD
+        LDAB    #0x48
+        PSHB
+        LDD     #0x0
+        PSHD
+        LDAB    0x5,SP
+        EXG     B,Y
+        PULD
+        JSR     OSSaveServiceContext
+//  119     ASSERT_VALID_CALLEVEL(OS_CL_TASK|OS_CL_ISR2);
+        LEAS    0x3,SP
+        BRCLR   OsCallevel + 1,#0x3,??StopScheduleTable_0
+        BRA     ??StopScheduleTable_1
+??StopScheduleTable_0:
+        LDAB    #0x2
+        JSR     OsErrorCallErrorHook
+        CLR     Os_ServiceContext
+        LDAB    #0x2
+        BRA     ??StopScheduleTable_2
+//  120 
+//  121     DISABLE_ALL_OS_INTERRUPTS();
+??StopScheduleTable_1:
+        JSR     SuspendOSInterrupts
+//  122     
+//  123     ENABLE_ALL_OS_INTERRUPTS(); 
+        JSR     ResumeOSInterrupts
+//  124     CLEAR_SERVICE_CONTEXT();
+        CLR     Os_ServiceContext
+//  125     return E_OK;
+        LDAB    #0x0
+??StopScheduleTable_2:
+        PULA
+        RTS
+//  126     
+//  127 }
+//  128 
+//  129 
+
+        RSEG CODE:CODE:REORDER:NOROOT(0)
+//  130 StatusType NextScheduleTable(ScheduleTableType ScheduleTableID_From,ScheduleTableType ScheduleTableID_To)
+NextScheduleTable:
+//  131 {
+        PSHD
+        STAB    0x0,SP
+        STAA    0x1,SP
+//  132     SAVE_SERVICE_CONTEXT(OSServiceId_NextScheduleTable,ScheduleTableID_From,ScheduleTableID_To,NULL);
+        LDD     #0x0
+        PSHD
+        LDAB    #0x4a
+        PSHB
+        LDAB    0x4,SP
+        CLRA
+        PSHD
+        LDAB    0x5,SP
+        EXG     B,Y
+        PULD
+        JSR     OSSaveServiceContext
+//  133     ASSERT_VALID_CALLEVEL(OS_CL_TASK|OS_CL_ISR2);
+        LEAS    0x3,SP
+        BRCLR   OsCallevel + 1,#0x3,??NextScheduleTable_0
+        BRA     ??NextScheduleTable_1
+??NextScheduleTable_0:
+        LDAB    #0x2
+        JSR     OsErrorCallErrorHook
+        CLR     Os_ServiceContext
+        LDAB    #0x2
+        BRA     ??NextScheduleTable_2
+//  134 
+//  135     DISABLE_ALL_OS_INTERRUPTS();
+??NextScheduleTable_1:
+        JSR     SuspendOSInterrupts
+//  136     
+//  137     ENABLE_ALL_OS_INTERRUPTS();    
+        JSR     ResumeOSInterrupts
+//  138     CLEAR_SERVICE_CONTEXT();
+        CLR     Os_ServiceContext
+//  139     return E_OK;
+        LDAB    #0x0
+??NextScheduleTable_2:
+        PULY
+        RTS
+//  140     
+//  141 }
+//  142 
+//  143 
+
+        RSEG CODE:CODE:REORDER:NOROOT(0)
+//  144 StatusType StartScheduleTableSynchron(ScheduleTableType ScheduleTableID)
+StartScheduleTableSynchron:
+//  145 {
+        PSHA
+        STAB    0x0,SP
+//  146     SAVE_SERVICE_CONTEXT(OSServiceId_StartScheduleTableSynchron,ScheduleTableID,NULL,NULL);
+        LDD     #0x0
+        PSHD
+        LDAB    #0x4c
+        PSHB
+        LDD     #0x0
+        PSHD
+        LDAB    0x5,SP
+        EXG     B,Y
+        PULD
+        JSR     OSSaveServiceContext
+//  147     ASSERT_VALID_CALLEVEL(OS_CL_TASK|OS_CL_ISR2);
+        LEAS    0x3,SP
+        BRCLR   OsCallevel + 1,#0x3,??StartScheduleTableSynchron_0
+        BRA     ??StartScheduleTableSynchron_1
+??StartScheduleTableSynchron_0:
+        LDAB    #0x2
+        JSR     OsErrorCallErrorHook
+        CLR     Os_ServiceContext
+        LDAB    #0x2
+        BRA     ??StartScheduleTableSynchron_2
+//  148 
+//  149     DISABLE_ALL_OS_INTERRUPTS();
+??StartScheduleTableSynchron_1:
+        JSR     SuspendOSInterrupts
+//  150     
+//  151     ENABLE_ALL_OS_INTERRUPTS();    
+        JSR     ResumeOSInterrupts
+//  152     CLEAR_SERVICE_CONTEXT();
+        CLR     Os_ServiceContext
+//  153     return E_OK;    
+        LDAB    #0x0
+??StartScheduleTableSynchron_2:
+        PULA
+        RTS
+//  154 }
+//  155 
+//  156 
+
+        RSEG CODE:CODE:REORDER:NOROOT(0)
+//  157 StatusType SyncScheduleTable(ScheduleTableType ScheduleTableID,TickType Value)
+SyncScheduleTable:
+//  158 {
+        PSHX
+        PSHA
+        STAB    0x0,SP
+        TFR     Y,X
+//  159     SAVE_SERVICE_CONTEXT(OSServiceId_SyncScheduleTable,ScheduleTableID,Value,NULL);
+        LDD     #0x0
+        PSHD
+        LDAB    #0x4e
+        PSHB
+        TFR     X,D
+        PSHD
+        LDAB    0x5,SP
+        EXG     B,Y
+        PULD
+        JSR     OSSaveServiceContext
+//  160     ASSERT_VALID_CALLEVEL(OS_CL_TASK|OS_CL_ISR2);
+        LEAS    0x3,SP
+        BRCLR   OsCallevel + 1,#0x3,??SyncScheduleTable_0
+        BRA     ??SyncScheduleTable_1
+??SyncScheduleTable_0:
+        LDAB    #0x2
+        JSR     OsErrorCallErrorHook
+        CLR     Os_ServiceContext
+        LDAB    #0x2
+        BRA     ??SyncScheduleTable_2
+//  161 
+//  162     DISABLE_ALL_OS_INTERRUPTS();
+??SyncScheduleTable_1:
+        JSR     SuspendOSInterrupts
+//  163     
+//  164     ENABLE_ALL_OS_INTERRUPTS();    
+        JSR     ResumeOSInterrupts
+//  165     CLEAR_SERVICE_CONTEXT();
+        CLR     Os_ServiceContext
+//  166     return E_OK;
+        LDAB    #0x0
+??SyncScheduleTable_2:
+        PULA
+        PULX
+        RTS
+//  167     
+//  168 }
+//  169 
+//  170 
+
+        RSEG CODE:CODE:REORDER:NOROOT(0)
+//  171 StatusType SetScheduleTableAsync(ScheduleTableType ScheduleID)
+SetScheduleTableAsync:
+//  172 {
+        PSHA
+        STAB    0x0,SP
+//  173     SAVE_SERVICE_CONTEXT(OSServiceId_SetScheduleTableAsync,ScheduleID,NULL,NULL);
+        LDD     #0x0
+        PSHD
+        LDAB    #0x52
+        PSHB
+        LDD     #0x0
+        PSHD
+        LDAB    0x5,SP
+        EXG     B,Y
+        PULD
+        JSR     OSSaveServiceContext
+//  174     ASSERT_VALID_CALLEVEL(OS_CL_TASK|OS_CL_ISR2);
+        LEAS    0x3,SP
+        BRCLR   OsCallevel + 1,#0x3,??SetScheduleTableAsync_0
+        BRA     ??SetScheduleTableAsync_1
+??SetScheduleTableAsync_0:
+        LDAB    #0x2
+        JSR     OsErrorCallErrorHook
+        CLR     Os_ServiceContext
+        LDAB    #0x2
+        BRA     ??SetScheduleTableAsync_2
+//  175 
+//  176     DISABLE_ALL_OS_INTERRUPTS();
+??SetScheduleTableAsync_1:
+        JSR     SuspendOSInterrupts
+//  177     
+//  178     ENABLE_ALL_OS_INTERRUPTS();    
+        JSR     ResumeOSInterrupts
+//  179     CLEAR_SERVICE_CONTEXT();
+        CLR     Os_ServiceContext
+//  180     return E_OK;
+        LDAB    #0x0
+??SetScheduleTableAsync_2:
+        PULA
+        RTS
+//  181     
+//  182 }
+//  183 
+//  184 
+
+        RSEG CODE:CODE:REORDER:NOROOT(0)
+//  185 StatusType GetScheduleTableStatus(ScheduleTableType ScheduleID,ScheduleTableStatusRefType /*@out@*/ScheduleStatus)
+GetScheduleTableStatus:
+//  186 {
+        PSHX
+        PSHA
+        STAB    0x0,SP
+        TFR     Y,X
+//  187     SAVE_SERVICE_CONTEXT(OSServiceId_GetScheduleTableStatus,ScheduleID,ScheduleStatus,NULL);
+        LDD     #0x0
+        PSHD
+        LDAB    #0x50
+        PSHB
+        TFR     X,D
+        PSHD
+        LDAB    0x5,SP
+        EXG     B,Y
+        PULD
+        JSR     OSSaveServiceContext
+//  188     ASSERT_VALID_CALLEVEL(OS_CL_TASK|OS_CL_ISR2);
+        LEAS    0x3,SP
+        BRCLR   OsCallevel + 1,#0x3,??GetScheduleTableStatus_0
+        BRA     ??GetScheduleTableStatus_1
+??GetScheduleTableStatus_0:
+        LDAB    #0x2
+        JSR     OsErrorCallErrorHook
+        CLR     Os_ServiceContext
+        LDAB    #0x2
+        BRA     ??GetScheduleTableStatus_2
+//  189 
+//  190     DISABLE_ALL_OS_INTERRUPTS();
+??GetScheduleTableStatus_1:
+        JSR     SuspendOSInterrupts
+//  191     
+//  192     ENABLE_ALL_OS_INTERRUPTS();   
+        JSR     ResumeOSInterrupts
+//  193     CLEAR_SERVICE_CONTEXT();
+        CLR     Os_ServiceContext
+//  194     return E_OK;
+        LDAB    #0x0
+??GetScheduleTableStatus_2:
+        PULA
+        PULX
+        RTS
+//  195     
+//  196 }
+//  197 
+//  198 
+
+        RSEG CODE:CODE:REORDER:NOROOT(0)
+//  199 void OsSchTInitScheduleTables(void)
+OsSchTInitScheduleTables:
+//  200 {
+//  201     
+//  202 }
+        RTS
+
+        END
+// 
+// 463 bytes in segment CODE
+// 
+// 463 bytes of CODE memory
+//
+//Errors: none
+//Warnings: 1

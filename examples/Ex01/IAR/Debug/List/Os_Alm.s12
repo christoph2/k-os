@@ -1,0 +1,999 @@
+//////////////////////////////////////////////////////////////////////////////
+//                                                                           /
+// IAR HCS12 C/C++ Compiler V3.11A/W32                 17/Mar/2010  10:33:49 /
+// Copyright 1997-2006 IAR Systems. All rights reserved.                     /
+//                                                                           /
+//    Source file  =  C:\projekte\csProjects\k-os\src\Os_Alm.c               /
+//    Command line =  C:\projekte\csProjects\k-os\src\Os_Alm.c               /
+//                    --preprocess=l C:\projekte\csProjects\k-os\examples\Ex /
+//                    01\IAR\Debug\List\ -lC C:\projekte\csProjects\k-os\exa /
+//                    mples\Ex01\IAR\Debug\List\ -lB                         /
+//                    C:\projekte\csProjects\k-os\examples\Ex01\IAR\Debug\Li /
+//                    st\ --code_model=normal --double=32 -o                 /
+//                    C:\projekte\csProjects\k-os\examples\Ex01\IAR\Debug\Ob /
+//                    j\ --require_prototypes -e -z2 --no_cse --no_unroll    /
+//                    --no_inline --no_code_motion --no_tbaa                 /
+//                    --no_cross_call --debug "-D_DLIB_CONFIG_FILE=C:\Progra /
+//                    mme\IAR Systems\Embedded Workbench Evaluation          /
+//                    4.0\HCS12\LIB\DLIB\dlhcs12nfn.h" --segment             /
+//                    __data8=DATA8 --segment __data16=DATA16 --segment      /
+//                    __banked=BANKED_CODE --segment __non_banked=CODE       /
+//                    --segment __intvec=INTVEC --segment __difunct=DIFUNCT  /
+//                    --segment __cstack=CSTACK --segment __inittab=INITTAB  /
+//                    -I C:\projekte\csProjects\k-os\inc\ -I                 /
+//                    C:\projekte\csProjects\common\inc\ -I                  /
+//                    C:\projekte\csProjects\common\ -I                      /
+//                    C:\projekte\csProjects\common\InstallISR\ -I           /
+//                    C:\projekte\csProjects\k-os\examples\Ex01\ -I          /
+//                    C:\projekte\csProjects\common\drivers\include\cpu12\   /
+//                    -I "C:\Programme\IAR Systems\Embedded Workbench        /
+//                    Evaluation 4.0\HCS12\INC\" -I "C:\Programme\IAR        /
+//                    Systems\Embedded Workbench Evaluation                  /
+//                    4.0\HCS12\INC\DLIB\"                                   /
+//    List file    =  C:\projekte\csProjects\k-os\examples\Ex01\IAR\Debug\Li /
+//                    st\Os_Alm.s12                                          /
+//                                                                           /
+//                                                                           /
+//////////////////////////////////////////////////////////////////////////////
+
+        NAME Os_Alm
+
+        RSEG CSTACK:DATA:REORDER:NOROOT(0)
+
+        EXTERN ??cswitch
+        EXTERN ?cstart_init_zero
+
+        PUBWEAK ?init?tab?DATA16_Z
+        PUBLIC CancelAlarm
+        PUBLIC GetAlarm
+        PUBLIC GetAlarmBase
+        PUBLIC OsAlm_GetActiveAlarms
+        PUBLIC OsAlm_InitAlarms
+        PUBLIC OsAlm_IsRunning
+        PUBLIC OsAlm_NotifyAlarm
+        PUBLIC OsAlm_StartAlarm
+        PUBLIC OsAlm_StopAlarm
+        PUBLIC SetAbsAlarm
+        PUBLIC SetRelAlarm
+
+        EXTERN Os_ServiceContext
+        EXTERN OsCallevel
+        EXTERN OS_AlarmConf
+        EXTERN OS_AlarmValue
+        EXTERN __OS_CounterDefs
+        EXTERN Os_CounterValues
+        EXTERN OsFlags
+        EXTERN OsCurrentTCB
+        EXTERN GetActiveApplicationMode
+        EXTERN GetCounterInfo
+        EXTERN OSSaveServiceContext
+        EXTERN OsErrorCallErrorHook
+        EXTERN OsEvtSetEvent
+        EXTERN OsTask_Activate
+        EXTERN ResumeOSInterrupts
+        EXTERN SuspendOSInterrupts
+        EXTERN Utl_BitGet
+        EXTERN Utl_BitReset
+        EXTERN Utl_BitSet
+
+// C:\projekte\csProjects\k-os\src\Os_Alm.c
+//    1 /*
+//    2  * k_os (Konnex Operating-System based on the OSEK/VDX-Standard).
+//    3  *
+//    4  * (C) 2007-2009 by Christoph Schueler <chris@konnex-tools.de,
+//    5  *                                      cpu12.gems@googlemail.com>
+//    6  *
+//    7  * All Rights Reserved
+//    8  *
+//    9  * This program is free software; you can redistribute it and/or modify
+//   10  * it under the terms of the GNU General Public License as published by
+//   11  * the Free Software Foundation; either version 2 of the License, or
+//   12  * (at your option) any later version.
+//   13  *
+//   14  * This program is distributed in the hope that it will be useful,
+//   15  * but WITHOUT ANY WARRANTY; without even the implied warranty of
+//   16  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//   17  * GNU General Public License for more details.
+//   18  *
+//   19  * You should have received a copy of the GNU General Public License along
+//   20  * with this program; if not, write to the Free Software Foundation, Inc.,
+//   21  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+//   22  *
+//   23  */
+//   24 #include "Osek.h"
+//   25 
+
+        RSEG DATA16_Z:DATA:REORDER:NOROOT(0)
+        REQUIRE ?cstart_init_zero
+//   26 static Os_AlarmStateType OsAlm_ActiveAlarms;    /* todo: Name!!! */
+OsAlm_ActiveAlarms:
+        DS8 1
+//   27 
+
+        RSEG CODE:CODE:NOROOT(0)
+//   28 void OsAlm_StartAlarm(uint8 num)
+OsAlm_StartAlarm:
+//   29 {
+        PSHA
+        STAB    0x0,SP
+//   30     OsAlm_ActiveAlarms=Utl_BitSet(OsAlm_ActiveAlarms,num);
+        LDAB    0x0,SP
+        LDAA    OsAlm_ActiveAlarms
+        EXG     A,Y
+        JSR     Utl_BitSet
+        STAB    OsAlm_ActiveAlarms
+//   31 }
+        PULA
+        RTS
+//   32 
+
+        RSEG CODE:CODE:NOROOT(0)
+//   33 void OsAlm_StopAlarm(uint8 num)
+OsAlm_StopAlarm:
+//   34 {
+        PSHA
+        STAB    0x0,SP
+//   35     OsAlm_ActiveAlarms=Utl_BitReset(OsAlm_ActiveAlarms,num);
+        LDAB    0x0,SP
+        LDAA    OsAlm_ActiveAlarms
+        EXG     A,Y
+        JSR     Utl_BitReset
+        STAB    OsAlm_ActiveAlarms
+//   36 }
+        PULA
+        RTS
+//   37 
+
+        RSEG CODE:CODE:NOROOT(0)
+//   38 boolean OsAlm_IsRunning(uint8 num)
+OsAlm_IsRunning:
+//   39 {
+        PSHA
+        STAB    0x0,SP
+//   40     return Utl_BitGet(OsAlm_ActiveAlarms,num);
+        LDAB    0x0,SP
+        LDAA    OsAlm_ActiveAlarms
+        EXG     A,Y
+        JSR     Utl_BitGet
+        PULA
+        RTS
+//   41 }
+//   42 
+
+        RSEG CODE:CODE:NOROOT(0)
+//   43 /*Os_AlarmStateType*/uint16  OsAlm_GetActiveAlarms(void)
+OsAlm_GetActiveAlarms:
+//   44 {
+//   45     return OsAlm_ActiveAlarms;
+        LDAB    OsAlm_ActiveAlarms
+        CLRA
+        RTS
+//   46 }
+//   47 
+//   48 /*
+//   49 **
+//   50 ** Gets the Configuration-Parameters of the attached Counter.
+//   51 **
+//   52 */
+//   53 
+
+        RSEG CODE:CODE:NOROOT(0)
+//   54 StatusType GetAlarmBase(AlarmType AlarmID,AlarmBaseRefType Info)
+GetAlarmBase:
+//   55 {
+        PSHX
+        LEAS    -0x3,SP
+        STAB    0x0,SP
+        STY     0x1,SP
+//   56 /*
+//   57 **      Standard-Status:
+//   58 **              – E_OK – no error.
+//   59 **
+//   60 **      Extended-Status:
+//   61 **              – E_OS_ID – the alarm identifier is invalid.
+//   62 **      OSCallErrorHookAndReturn(E_OS_ID);
+//   63 */
+//   64     SAVE_SERVICE_CONTEXT(OSServiceId_GetAlarmBase,AlarmID,Info,NULL);
+        LDD     #0x0
+        PSHD
+        LDAB    #0x26
+        PSHB
+        LDD     0x4,SP
+        PSHD
+        LDAB    0x5,SP
+        EXG     B,Y
+        PULD
+        JSR     OSSaveServiceContext
+//   65     ASSERT_VALID_ALARMID(AlarmID);
+        LDAB    0x3,SP
+        CMPB    #0x1
+        LEAS    0x3,SP
+        BCS     ??GetAlarmBase_1
+        LDAB    #0x3
+        JSR     OsErrorCallErrorHook
+        CLR     Os_ServiceContext
+        LDAB    #0x3
+        BRA     ??GetAlarmBase_2
+//   66     ASSERT_VALID_CALLEVEL(OS_CL_TASK|OS_CL_ISR2|OS_CL_ERROR_HOOK|OS_CL_PRE_TASK_HOOK|OS_CL_POST_TASK_HOOK);
+??GetAlarmBase_1:
+        BRCLR   OsCallevel + 1,#0x1f,??GetAlarmBase_0
+        BRA     ??GetAlarmBase_3
+??GetAlarmBase_0:
+        LDAB    #0x2
+        JSR     OsErrorCallErrorHook
+        CLR     Os_ServiceContext
+        LDAB    #0x2
+        BRA     ??GetAlarmBase_2
+//   67 
+//   68     CLEAR_SERVICE_CONTEXT();
+??GetAlarmBase_3:
+        CLR     Os_ServiceContext
+//   69     return GetCounterInfo(OS_AlarmConf[AlarmID].AttachedCounter,Info);
+        LDY     0x1,SP
+        LDAB    0x0,SP
+        LDAA    #0x9
+        MUL
+        TFR     D,X
+        LDAB    OS_AlarmConf,X
+        JSR     GetCounterInfo
+??GetAlarmBase_2:
+        LEAS    0x3,SP
+        PULX
+        RTS
+//   70 }
+//   71 
+//   72 
+
+        RSEG CODE:CODE:NOROOT(0)
+//   73 StatusType GetAlarm(AlarmType AlarmID,TickRefType Tick)
+GetAlarm:
+//   74 {
+        PSHX
+        PSHA
+        STAB    0x0,SP
+        TFR     Y,X
+//   75 /*
+//   76 **      Standard:
+//   77 **              – E_OK – no error.
+//   78 **              – E_OS_NOFUNC – the alarm is not in use.
+//   79 **      Extended-Status:
+//   80 **              – E_OS_ID – the alarm identifier is invalid.
+//   81 */
+//   82     SAVE_SERVICE_CONTEXT(OSServiceId_GetAlarm,AlarmID,Tick,NULL);
+        LDD     #0x0
+        PSHD
+        LDAB    #0x28
+        PSHB
+        TFR     X,D
+        PSHD
+        LDAB    0x5,SP
+        EXG     B,Y
+        PULD
+        JSR     OSSaveServiceContext
+//   83     ASSERT_VALID_ALARMID(AlarmID);
+        LDAB    0x3,SP
+        CMPB    #0x1
+        LEAS    0x3,SP
+        BCS     ??GetAlarm_1
+        LDAB    #0x3
+        JSR     OsErrorCallErrorHook
+        CLR     Os_ServiceContext
+        LDAB    #0x3
+        BRA     ??GetAlarm_2
+//   84     ASSERT_VALID_CALLEVEL(OS_CL_TASK|OS_CL_ISR2|OS_CL_ERROR_HOOK|OS_CL_PRE_TASK_HOOK|OS_CL_POST_TASK_HOOK);
+??GetAlarm_1:
+        BRCLR   OsCallevel + 1,#0x1f,??GetAlarm_0
+        BRA     ??GetAlarm_3
+??GetAlarm_0:
+        LDAB    #0x2
+        JSR     OsErrorCallErrorHook
+        CLR     Os_ServiceContext
+        LDAB    #0x2
+        BRA     ??GetAlarm_2
+//   85     WARN_IF_ALARM_IS_NOT_RUNNING(AlarmID);
+??GetAlarm_3:
+        LDAB    0x0,SP
+        JSR     OsAlm_IsRunning
+        CMPB    #0x0
+        BNE     ??GetAlarm_4
+        LDAB    #0x5
+        JSR     OsErrorCallErrorHook
+        CLR     Os_ServiceContext
+        LDAB    #0x5
+        BRA     ??GetAlarm_2
+//   86 
+//   87     DISABLE_ALL_OS_INTERRUPTS();
+??GetAlarm_4:
+        JSR     SuspendOSInterrupts
+//   88     *Tick=OS_AlarmValue[AlarmID].ExpireCounter;
+        LDAB    0x0,SP
+        LDAA    #0x4
+        MUL
+        TFR     D,Y
+        LDD     OS_AlarmValue,Y
+        STD     0x0,X
+//   89     ENABLE_ALL_OS_INTERRUPTS();
+        JSR     ResumeOSInterrupts
+//   90 
+//   91     CLEAR_SERVICE_CONTEXT();
+        CLR     Os_ServiceContext
+//   92     return E_OK;
+        LDAB    #0x0
+??GetAlarm_2:
+        PULA
+        PULX
+        RTS
+//   93 }
+//   94 
+//   95 
+
+        RSEG CODE:CODE:NOROOT(0)
+//   96 StatusType SetRelAlarm(AlarmType AlarmID,TickType increment,TickType cycle)
+SetRelAlarm:
+//   97 {
+        PSHX
+        PSHD
+        STD     0x0,SP
+        TFR     Y,X
+//   98 /*
+//   99 **      Standard-Status:
+//  100 **              – E_OK – no error.
+//  101 **              – E_OS_STATE – the alarm is already in use.
+//  102 **      Extended-Status:
+//  103 **              – E_OS_ID – the alarm identifier is invalid.
+//  104 **              – E_OS_VALUE - an alarm initialization value is outside of
+//  105 **                the admissible limits (lower than zero or greater than the
+//  106 **                maximum allowed value of the counter), or alarm cycle
+//  107 **                value is unequal to 0 and outside of the admissible
+//  108 **                counter limits (less than the minimum cycle value of the
+//  109 **                counter or greater than the maximum allowed value of
+//  110 **                the counter).
+//  111 */
+//  112     SAVE_SERVICE_CONTEXT(OSServiceId_SetRelAlarm,AlarmID,increment,cycle);
+        PSHX
+        LDAB    #0x2a
+        PSHB
+        LDD     0x3,SP
+        PSHD
+        LDAB    0xb,SP
+        EXG     B,Y
+        PULD
+        JSR     OSSaveServiceContext
+//  113     ASSERT_VALID_ALARMID(AlarmID);
+        LDAB    0x9,SP
+        CMPB    #0x1
+        LEAS    0x3,SP
+        BCS     ??SetRelAlarm_1
+        LDAB    #0x3
+        JSR     OsErrorCallErrorHook
+        CLR     Os_ServiceContext
+        LDAB    #0x3
+        JMP     .LWRD.(??SetRelAlarm_2)
+//  114     WARN_IF_ALARM_IS_RUNNING(AlarmID);
+??SetRelAlarm_1:
+        LDAB    0x6,SP
+        JSR     OsAlm_IsRunning
+        CMPB    #0x0
+        BEQ     ??SetRelAlarm_3
+        LDAB    #0x5
+        JSR     OsErrorCallErrorHook
+        CLR     Os_ServiceContext
+        LDAB    #0x5
+        JMP     .LWRD.(??SetRelAlarm_2)
+//  115     ASSERT_VALID_ALARM_VALUES(AlarmID,increment,cycle);
+??SetRelAlarm_3:
+        LDAB    0x6,SP
+        LDAA    #0x9
+        MUL
+        TFR     D,Y
+        LDAB    OS_AlarmConf,Y
+        LDAA    #0xb
+        MUL
+        TFR     D,Y
+        LDD     __OS_CounterDefs + 2,Y
+        CPD     0x0,SP
+        BCS     ??SetRelAlarm_4
+        CPX     #0x0
+        BEQ     ??SetRelAlarm_5
+        LDAB    0x6,SP
+        LDAA    #0x9
+        MUL
+        TFR     D,Y
+        LDAB    OS_AlarmConf,Y
+        LDAA    #0xb
+        MUL
+        TFR     D,Y
+        CPX     __OS_CounterDefs + 2,Y
+        BHI     ??SetRelAlarm_4
+        LDAA    0x6,SP
+        LDAB    #0x9
+        MUL
+        TFR     D,Y
+        LDAA    OS_AlarmConf,Y
+        LDAB    #0xb
+        MUL
+        TFR     D,Y
+        CPX     __OS_CounterDefs + 6,Y
+        BCC     ??SetRelAlarm_5
+??SetRelAlarm_4:
+        LDAB    #0x8
+        JSR     OsErrorCallErrorHook
+        CLR     Os_ServiceContext
+        LDAB    #0x8
+        BRA     ??SetRelAlarm_2
+//  116     ASSERT_VALID_CALLEVEL(OS_CL_TASK|OS_CL_ISR2);
+??SetRelAlarm_5:
+        BRCLR   OsCallevel + 1,#0x3,??SetRelAlarm_0
+        BRA     ??SetRelAlarm_6
+??SetRelAlarm_0:
+        LDAB    #0x2
+        JSR     OsErrorCallErrorHook
+        CLR     Os_ServiceContext
+        LDAB    #0x2
+        BRA     ??SetRelAlarm_2
+//  117 
+//  118     if (increment==(TickType)0) {   /* todo: in 'ASSERT_VALID_ALARM_VALUES' einbauen!!! */
+??SetRelAlarm_6:
+        LDD     0x0,SP
+        BNE     ??SetRelAlarm_7
+//  119         CLEAR_SERVICE_CONTEXT();
+        CLR     Os_ServiceContext
+//  120         return E_OS_VALUE;  /*  !REQ!AS!OS!OS304!  */
+        LDAB    #0x8
+        BRA     ??SetRelAlarm_2
+//  121     }
+//  122 
+//  123     DISABLE_ALL_OS_INTERRUPTS();
+??SetRelAlarm_7:
+        JSR     SuspendOSInterrupts
+//  124     OS_AlarmValue[AlarmID].ExpireCounter=increment;
+        LDAB    0x6,SP
+        LDAA    #0x4
+        MUL
+        TFR     D,Y
+        LDD     0x0,SP
+        STD     OS_AlarmValue,Y
+//  125     OS_AlarmValue[AlarmID].CycleCounter=cycle;
+        LDAA    0x6,SP
+        LDAB    #0x4
+        MUL
+        TFR     D,Y
+        STX     OS_AlarmValue + 2,Y
+//  126     OsAlm_StartAlarm(AlarmID);  //    OS_AlarmValue[AlarmID].State=ALM_RUNNING;
+        LDAB    0x6,SP
+        JSR     OsAlm_StartAlarm
+//  127     ENABLE_ALL_OS_INTERRUPTS();
+        JSR     ResumeOSInterrupts
+//  128 
+//  129     CLEAR_SERVICE_CONTEXT();
+        CLR     Os_ServiceContext
+//  130     return E_OK;
+        LDAB    #0x0
+??SetRelAlarm_2:
+        PULY
+        PULX
+        RTS
+//  131 }
+//  132 
+//  133 
+
+        RSEG CODE:CODE:NOROOT(0)
+//  134 StatusType SetAbsAlarm(AlarmType AlarmID,TickType start,TickType cycle)
+SetAbsAlarm:
+//  135 {
+        PSHX
+        LEAS    -0x4,SP
+        STD     0x0,SP
+        TFR     Y,X
+//  136 /*
+//  137 **      Standard-Status:
+//  138 **              – E_OK – no error.
+//  139 **              – E_OS_STATE – the alarm is already in use.
+//  140 **      Extended-Status:
+//  141 **              – E_OS_ID – the alarm identifier is invalid.
+//  142 **              – E_OS_VALUE - an alarm initialization value is outside of
+//  143 **                the admissible limits (lower than zero or greater than the
+//  144 **                maximum allowed value of the counter), or alarm cycle
+//  145 **                value is unequal to 0 and outside of the admissible
+//  146 **                counter limits (less than the minimum cycle value of the
+//  147 **                counter or greater than the maximum allowed value of
+//  148 **                the counter).
+//  149 */
+//  150     TickType CurrentCounterValue;
+//  151 
+//  152     SAVE_SERVICE_CONTEXT(OSServiceId_SetAbsAlarm,AlarmID,start,cycle);
+        PSHX
+        LDAB    #0x2c
+        PSHB
+        LDD     0x3,SP
+        PSHD
+        LDAB    0xd,SP
+        EXG     B,Y
+        PULD
+        JSR     OSSaveServiceContext
+//  153     ASSERT_VALID_ALARMID(AlarmID);
+        LDAB    0xb,SP
+        CMPB    #0x1
+        LEAS    0x3,SP
+        BCS     ??SetAbsAlarm_2
+        LDAB    #0x3
+        JSR     OsErrorCallErrorHook
+        CLR     Os_ServiceContext
+        LDAB    #0x3
+        JMP     .LWRD.(??SetAbsAlarm_3)
+//  154     WARN_IF_ALARM_IS_RUNNING(AlarmID);
+??SetAbsAlarm_2:
+        LDAB    0x8,SP
+        JSR     OsAlm_IsRunning
+        CMPB    #0x0
+        BEQ     ??SetAbsAlarm_4
+        LDAB    #0x5
+        JSR     OsErrorCallErrorHook
+        CLR     Os_ServiceContext
+        LDAB    #0x5
+        JMP     .LWRD.(??SetAbsAlarm_3)
+//  155     ASSERT_VALID_ALARM_VALUES(AlarmID,start,cycle);
+??SetAbsAlarm_4:
+        LDAB    0x8,SP
+        LDAA    #0x9
+        MUL
+        TFR     D,Y
+        LDAB    OS_AlarmConf,Y
+        LDAA    #0xb
+        MUL
+        TFR     D,Y
+        LDD     __OS_CounterDefs + 2,Y
+        CPD     0x0,SP
+        BCS     ??SetAbsAlarm_5
+        CPX     #0x0
+        BEQ     ??SetAbsAlarm_6
+        LDAB    0x8,SP
+        LDAA    #0x9
+        MUL
+        TFR     D,Y
+        LDAB    OS_AlarmConf,Y
+        LDAA    #0xb
+        MUL
+        TFR     D,Y
+        CPX     __OS_CounterDefs + 2,Y
+        BHI     ??SetAbsAlarm_5
+        LDAA    0x8,SP
+        LDAB    #0x9
+        MUL
+        TFR     D,Y
+        LDAA    OS_AlarmConf,Y
+        LDAB    #0xb
+        MUL
+        TFR     D,Y
+        CPX     __OS_CounterDefs + 6,Y
+        BCC     ??SetAbsAlarm_6
+??SetAbsAlarm_5:
+        LDAB    #0x8
+        JSR     OsErrorCallErrorHook
+        CLR     Os_ServiceContext
+        LDAB    #0x8
+        JMP     .LWRD.(??SetAbsAlarm_3)
+//  156     ASSERT_VALID_CALLEVEL(OS_CL_TASK|OS_CL_ISR2);
+??SetAbsAlarm_6:
+        BRCLR   OsCallevel + 1,#0x3,??SetAbsAlarm_0
+        BRA     ??SetAbsAlarm_7
+??SetAbsAlarm_0:
+        LDAB    #0x2
+        JSR     OsErrorCallErrorHook
+        CLR     Os_ServiceContext
+        LDAB    #0x2
+        JMP     .LWRD.(??SetAbsAlarm_3)
+//  157 
+//  158     DISABLE_ALL_OS_INTERRUPTS();
+??SetAbsAlarm_7:
+        JSR     SuspendOSInterrupts
+//  159 
+//  160     CurrentCounterValue=Os_CounterValues[OS_AlarmConf[AlarmID].AttachedCounter];
+        LDAB    0x8,SP
+        LDAA    #0x9
+        MUL
+        TFR     D,Y
+        LDAB    OS_AlarmConf,Y
+        LDAA    #0x2
+        MUL
+        TFR     D,Y
+        LDD     Os_CounterValues,Y
+        STD     0x2,SP
+//  161     if (start==CurrentCounterValue) {
+        LDD     0x0,SP
+        CPD     0x2,SP
+        BNE     ??SetAbsAlarm_8
+//  162         OS_AlarmValue[AlarmID].ExpireCounter=(TickType)0;
+        LDAB    0x8,SP
+        LDAA    #0x4
+        MUL
+        TFR     D,Y
+        LDD     #0x0
+        STD     OS_AlarmValue,Y
+//  163         OS_AlarmValue[AlarmID].CycleCounter=cycle;
+        LDAA    0x8,SP
+        LDAB    #0x4
+        MUL
+        TFR     D,Y
+        STX     OS_AlarmValue + 2,Y
+//  164         OsAlm_StartAlarm(AlarmID);        // OS_AlarmValue[AlarmID].State=ALM_RUNNING;
+        LDAB    0x8,SP
+        JSR     OsAlm_StartAlarm
+//  165 
+//  166         OsAlm_NotifyAlarm(AlarmID);
+        LDAB    0x8,SP
+        JSR     OsAlm_NotifyAlarm
+//  167         OS_COND_SCHEDULE_FROM_TASK_LEVEL();
+        BRCLR   OsFlags,#0x2,??SetAbsAlarm_1
+        BRA     ??SetAbsAlarm_9
+??SetAbsAlarm_1:
+        LDY     OsCurrentTCB
+        LDAB    0x6,Y
+        INCB
+        BEQ     ??SetAbsAlarm_9
+        SWI
+        BRA     ??SetAbsAlarm_9
+//  168     } else {
+//  169         if (start>CurrentCounterValue) {
+??SetAbsAlarm_8:
+        LDD     0x2,SP
+        CPD     0x0,SP
+        BCC     ??SetAbsAlarm_10
+//  170            OS_AlarmValue[AlarmID].ExpireCounter=start-CurrentCounterValue;
+        LDD     0x0,SP
+        SUBD    0x2,SP
+        PSHD
+        LDAA    0xa,SP
+        LDAB    #0x4
+        MUL
+        TFR     D,Y
+        PULD
+        STD     OS_AlarmValue,Y
+        BRA     ??SetAbsAlarm_11
+//  171         } else {
+//  172             OS_AlarmValue[AlarmID].ExpireCounter=
+//  173                 __OS_CounterDefs[OS_AlarmConf[AlarmID].AttachedCounter].CounterParams.maxallowedvalue-
+//  174                 CurrentCounterValue+start+((TickType)1);
+??SetAbsAlarm_10:
+        LDAB    0x8,SP
+        LDAA    #0x9
+        MUL
+        TFR     D,Y
+        LDAB    OS_AlarmConf,Y
+        LDAA    #0xb
+        MUL
+        TFR     D,Y
+        LDD     __OS_CounterDefs + 2,Y
+        SUBD    0x2,SP
+        ADDD    0x0,SP
+        ADDD    #0x1
+        PSHD
+        LDAA    0xa,SP
+        LDAB    #0x4
+        MUL
+        TFR     D,Y
+        PULD
+        STD     OS_AlarmValue,Y
+//  175         }
+//  176         OS_AlarmValue[AlarmID].CycleCounter=cycle;
+??SetAbsAlarm_11:
+        LDAA    0x8,SP
+        LDAB    #0x4
+        MUL
+        TFR     D,Y
+        STX     OS_AlarmValue + 2,Y
+//  177         OsAlm_StartAlarm(AlarmID); // OS_AlarmValue[AlarmID].State=ALM_RUNNING;
+        LDAB    0x8,SP
+        JSR     OsAlm_StartAlarm
+//  178     }
+//  179 
+//  180     ENABLE_ALL_OS_INTERRUPTS();
+??SetAbsAlarm_9:
+        JSR     ResumeOSInterrupts
+//  181 
+//  182     CLEAR_SERVICE_CONTEXT();
+        CLR     Os_ServiceContext
+//  183     return E_OK;
+        LDAB    #0x0
+??SetAbsAlarm_3:
+        LEAS    0x4,SP
+        PULX
+        RTS
+//  184 }
+//  185 
+//  186 
+
+        RSEG CODE:CODE:NOROOT(0)
+//  187 StatusType CancelAlarm(AlarmType AlarmID)
+CancelAlarm:
+//  188 {
+        PSHA
+        STAB    0x0,SP
+//  189 /*
+//  190 **      Standard-Status:
+//  191 **              – E_OK – no error.
+//  192 **              – E_OS_NOFUNC – the alarm is not in use.
+//  193 **      Extended-Status:
+//  194 **              – E_OS_ID – the alarm identifier is invalid.
+//  195 **
+//  196 */
+//  197     SAVE_SERVICE_CONTEXT(OSServiceId_CancelAlarm,AlarmID,NULL,NULL);
+        LDD     #0x0
+        PSHD
+        LDAB    #0x2e
+        PSHB
+        LDD     #0x0
+        PSHD
+        LDAB    0x5,SP
+        EXG     B,Y
+        PULD
+        JSR     OSSaveServiceContext
+//  198     ASSERT_VALID_ALARMID(AlarmID);
+        LDAB    0x3,SP
+        CMPB    #0x1
+        LEAS    0x3,SP
+        BCS     ??CancelAlarm_1
+        LDAB    #0x3
+        JSR     OsErrorCallErrorHook
+        CLR     Os_ServiceContext
+        LDAB    #0x3
+        BRA     ??CancelAlarm_2
+//  199     ASSERT_VALID_CALLEVEL(OS_CL_TASK|OS_CL_ISR2);
+??CancelAlarm_1:
+        BRCLR   OsCallevel + 1,#0x3,??CancelAlarm_0
+        BRA     ??CancelAlarm_3
+??CancelAlarm_0:
+        LDAB    #0x2
+        JSR     OsErrorCallErrorHook
+        CLR     Os_ServiceContext
+        LDAB    #0x2
+        BRA     ??CancelAlarm_2
+//  200     WARN_IF_ALARM_IS_NOT_RUNNING(AlarmID);
+??CancelAlarm_3:
+        LDAB    0x0,SP
+        JSR     OsAlm_IsRunning
+        CMPB    #0x0
+        BNE     ??CancelAlarm_4
+        LDAB    #0x5
+        JSR     OsErrorCallErrorHook
+        CLR     Os_ServiceContext
+        LDAB    #0x5
+        BRA     ??CancelAlarm_2
+//  201 
+//  202     DISABLE_ALL_OS_INTERRUPTS();
+??CancelAlarm_4:
+        JSR     SuspendOSInterrupts
+//  203     OsAlm_StopAlarm(AlarmID); // OS_AlarmValue[AlarmID].State=ALM_STOPPED;
+        LDAB    0x0,SP
+        JSR     OsAlm_StopAlarm
+//  204     ENABLE_ALL_OS_INTERRUPTS();
+        JSR     ResumeOSInterrupts
+//  205 
+//  206     CLEAR_SERVICE_CONTEXT();
+        CLR     Os_ServiceContext
+//  207     return E_OK;
+        LDAB    #0x0
+??CancelAlarm_2:
+        PULA
+        RTS
+//  208 }
+//  209 
+//  210 
+
+        RSEG CODE:CODE:NOROOT(0)
+//  211 void OsAlm_InitAlarms(void)
+OsAlm_InitAlarms:
+//  212 {
+        PSHX
+        PSHA
+//  213     uint8_least i;
+//  214     AlarmConfigurationType *alarm_def;
+//  215 
+//  216     for (i=(uint8_least)0;i<OS_NUMBER_OF_ALARMS;++i) {
+        CLR     0x0,SP
+??OsAlm_InitAlarms_0:
+        LDAB    0x0,SP
+        CMPB    #0x1
+        BCC     ??OsAlm_InitAlarms_1
+//  217         alarm_def=(AlarmConfigurationType*)&OS_AlarmConf[i];
+        LDAB    0x0,SP
+        LDAA    #0x9
+        MUL
+        ADDD    #OS_AlarmConf
+        TFR     D,X
+//  218 
+//  219         if (Utl_BitGet((uint16)alarm_def->Autostart,GetActiveApplicationMode())) {
+        JSR     GetActiveApplicationMode
+        LDAA    0x4,X
+        EXG     A,Y
+        JSR     Utl_BitGet
+        CMPB    #0x0
+        BEQ     ??OsAlm_InitAlarms_2
+//  220             OS_AlarmValue[i].ExpireCounter=alarm_def->AlarmTime;
+        LDAB    0x0,SP
+        LDAA    #0x4
+        MUL
+        TFR     D,Y
+        LDD     0x5,X
+        STD     OS_AlarmValue,Y
+//  221             OS_AlarmValue[i].CycleCounter=alarm_def->CycleTime;
+        LDAB    0x0,SP
+        LDAA    #0x4
+        MUL
+        TFR     D,Y
+        LDD     0x7,X
+        STD     OS_AlarmValue + 2,Y
+//  222             OsAlm_StartAlarm(i);  // OS_AlarmValue[i].State=ALM_RUNNING;
+        LDAB    0x0,SP
+        JSR     OsAlm_StartAlarm
+        BRA     ??OsAlm_InitAlarms_3
+//  223         } else {
+//  224             OS_AlarmValue[i].ExpireCounter=(TickType)0;
+??OsAlm_InitAlarms_2:
+        LDAB    0x0,SP
+        LDAA    #0x4
+        MUL
+        TFR     D,Y
+        LDD     #0x0
+        STD     OS_AlarmValue,Y
+//  225             OS_AlarmValue[i].CycleCounter=(TickType)0;
+        LDAB    0x0,SP
+        LDAA    #0x4
+        MUL
+        TFR     D,Y
+        LDD     #0x0
+        STD     OS_AlarmValue + 2,Y
+//  226             OsAlm_StopAlarm(i); // OS_AlarmValue[i].State=ALM_STOPPED;
+        LDAB    0x0,SP
+        JSR     OsAlm_StopAlarm
+//  227         }
+//  228     }
+??OsAlm_InitAlarms_3:
+        LDAB    0x0,SP
+        ADDB    #0x1
+        STAB    0x0,SP
+        BRA     ??OsAlm_InitAlarms_0
+//  229 }
+??OsAlm_InitAlarms_1:
+        PULA
+        PULX
+        RTS
+//  230 
+//  231 
+
+        RSEG CODE:CODE:REORDER:NOROOT(0)
+//  232 void OsAlm_NotifyAlarm(AlarmType AlarmID)
+OsAlm_NotifyAlarm:
+//  233 {
+        PSHX
+        LEAS    -0x5,SP
+        STAB    0x0,SP
+//  234     AlarmConfigurationType *Alarm;
+//  235 #if defined(OS_EXTENDED_STATUS) && defined(OS_USE_CALLEVEL_CHECK)
+//  236     OsCallevelType CallevelSaved;
+//  237 #endif
+//  238 
+//  239     Alarm=(AlarmConfigurationType *)&OS_AlarmConf[AlarmID];
+        LDAB    0x0,SP
+        LDAA    #0x9
+        MUL
+        ADDD    #OS_AlarmConf
+        STD     0x1,SP
+//  240 
+//  241     DISABLE_ALL_OS_INTERRUPTS();
+        JSR     SuspendOSInterrupts
+//  242     if (OS_AlarmValue[AlarmID].CycleCounter!=(TickType)0) {
+        LDAB    0x0,SP
+        LDAA    #0x4
+        MUL
+        TFR     D,Y
+        LDD     OS_AlarmValue + 2,Y
+        BEQ     ??OsAlm_NotifyAlarm_0
+//  243         /* cyclic Alarm. */
+//  244         OS_AlarmValue[AlarmID].ExpireCounter=OS_AlarmValue[AlarmID].CycleCounter;
+        LDAB    0x0,SP
+        LDAA    #0x4
+        MUL
+        TFR     D,X
+        LDAB    0x0,SP
+        LDAA    #0x4
+        MUL
+        TFR     D,Y
+        LDD     OS_AlarmValue + 2,X
+        STD     OS_AlarmValue,Y
+        BRA     ??OsAlm_NotifyAlarm_1
+//  245     } else {
+//  246         /* one-shot Alarm. */
+//  247         OsAlm_StopAlarm(AlarmID);  // OS_AlarmValue[AlarmID].State=ALM_STOPPED;
+??OsAlm_NotifyAlarm_0:
+        LDAB    0x0,SP
+        JSR     OsAlm_StopAlarm
+//  248     }
+//  249     ENABLE_ALL_OS_INTERRUPTS();
+??OsAlm_NotifyAlarm_1:
+        JSR     ResumeOSInterrupts
+//  250 
+//  251     switch (Alarm->ActionType) {
+        LDY     0x1,SP
+        LDAB    0x1,Y
+        SUBB    #0x0
+        BEQ     ??OsAlm_NotifyAlarm_2
+        SUBB    #0x1
+        BEQ     ??OsAlm_NotifyAlarm_3
+        SUBB    #0x1
+        BEQ     ??OsAlm_NotifyAlarm_4
+        BRA     ??OsAlm_NotifyAlarm_5
+//  252         case ALM_SETEVENT:
+//  253             (void)OsEvtSetEvent(Alarm->Action.Event->TaskID,Alarm->Action.Event->Mask);
+??OsAlm_NotifyAlarm_2:
+        LDY     0x1,SP
+        LDY     0x2,Y
+        LDAA    0x1,Y
+        LDY     0x1,SP
+        LDAB    [0x2,Y]
+        JSR     OsEvtSetEvent
+        BRA     ??OsAlm_NotifyAlarm_6
+//  254             break;
+//  255         case ALM_ACTIVATETASK:
+//  256             (void)OsTask_Activate(Alarm->Action.TaskID);
+??OsAlm_NotifyAlarm_3:
+        LDY     0x1,SP
+        LDAB    0x2,Y
+        JSR     OsTask_Activate
+        BRA     ??OsAlm_NotifyAlarm_6
+//  257             break;
+//  258         case ALM_CALLBACK:
+//  259             DISABLE_ALL_OS_INTERRUPTS();
+??OsAlm_NotifyAlarm_4:
+        JSR     SuspendOSInterrupts
+//  260             #if defined(OS_EXTENDED_STATUS) && defined(OS_USE_CALLEVEL_CHECK)
+//  261             CallevelSaved=OS_GET_CALLEVEL();
+        LDD     OsCallevel
+        STD     0x3,SP
+//  262             #endif
+//  263             OS_SET_CALLEVEL(OS_CL_ALARM_CALLBACK);
+        LDD     #0x80
+        STD     OsCallevel
+//  264             (Alarm->Action.AlarmCallback)();
+        LDY     0x1,SP
+        JSR     [0x2,Y]
+//  265             #if defined(OS_EXTENDED_STATUS) && defined(OS_USE_CALLEVEL_CHECK)
+//  266             OS_SET_CALLEVEL(CallevelSaved);
+        LDD     0x3,SP
+        STD     OsCallevel
+//  267             #endif
+//  268             ENABLE_ALL_OS_INTERRUPTS();
+        JSR     ResumeOSInterrupts
+        BRA     ??OsAlm_NotifyAlarm_6
+//  269             break;
+//  270 #if 0
+//  271         case ALM_COUNTER:
+//  272             (void)IncrementCounter(Alarm->Action.CounterID);
+//  273             break;
+//  274 #endif
+//  275         default:
+//  276             ASSERT(FALSE);
+??OsAlm_NotifyAlarm_5:
+        bgnd
+//  277     }
+//  278 }
+??OsAlm_NotifyAlarm_6:
+        LEAS    0x5,SP
+        PULX
+        RTS
+
+        RSEG INITTAB:CODE:ROOT(0)
+?init?tab?DATA16_Z:
+        DC16    sfe(DATA16_Z) - sfb(DATA16_Z), sfb(DATA16_Z), sfb(DATA16_Z)
+
+        END
+// 
+// 1 177 bytes in segment CODE
+//     1 byte  in segment DATA16_Z
+//     6 bytes in segment INITTAB
+// 
+// 1 177 bytes of CODE memory (+ 6 bytes shared)
+//     1 byte  of DATA memory
+//
+//Errors: none
+//Warnings: 1

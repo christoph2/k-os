@@ -1,0 +1,407 @@
+################################################################################
+#                                                                              #
+#      IAR Universal Linker V4.60B/386                                         #
+#                                                                              #
+#           Link time     =  17/Mar/2010  10:33:54                             #
+#           Target CPU    =  68HC12                                            #
+#           List file     =  C:\projekte\csProjects\k-os\examples\Ex01\IAR\Deb #
+#                            ug\List\EX01.map                                  #
+#           Output file 1 =  C:\projekte\csProjects\k-os\examples\Ex01\IAR\Deb #
+#                            ug\Exe\EX01.d12                                   #
+#                            Format: debug                                     #
+#                            UBROF version 10.0.2                              #
+#                            Using library modules for C-SPY (-rt)             #
+#           Command line  =  C:\projekte\csProjects\k-os\examples\Ex01\IAR\Deb #
+#                            ug\Obj\Com_Ext.r12                                #
+#                            C:\projekte\csProjects\k-os\examples\Ex01\IAR\Deb #
+#                            ug\Obj\Com_Flt.r12                                #
+#                            C:\projekte\csProjects\k-os\examples\Ex01\IAR\Deb #
+#                            ug\Obj\Com_If.r12                                 #
+#                            C:\projekte\csProjects\k-os\examples\Ex01\IAR\Deb #
+#                            ug\Obj\Com_Int.r12                                #
+#                            C:\projekte\csProjects\k-os\examples\Ex01\IAR\Deb #
+#                            ug\Obj\Hw_Cfg.r12                                 #
+#                            C:\projekte\csProjects\k-os\examples\Ex01\IAR\Deb #
+#                            ug\Obj\ISR.r12                                    #
+#                            C:\projekte\csProjects\k-os\examples\Ex01\IAR\Deb #
+#                            ug\Obj\Os_Alm.r12                                 #
+#                            C:\projekte\csProjects\k-os\examples\Ex01\IAR\Deb #
+#                            ug\Obj\Os_Cfg.r12                                 #
+#                            C:\projekte\csProjects\k-os\examples\Ex01\IAR\Deb #
+#                            ug\Obj\Os_Ctr.r12                                 #
+#                            C:\projekte\csProjects\k-os\examples\Ex01\IAR\Deb #
+#                            ug\Obj\Os_Error.r12                               #
+#                            C:\projekte\csProjects\k-os\examples\Ex01\IAR\Deb #
+#                            ug\Obj\Os_Evt.r12                                 #
+#                            C:\projekte\csProjects\k-os\examples\Ex01\IAR\Deb #
+#                            ug\Obj\Os_Exec.r12                                #
+#                            C:\projekte\csProjects\k-os\examples\Ex01\IAR\Deb #
+#                            ug\Obj\Os_Intr.r12                                #
+#                            C:\projekte\csProjects\k-os\examples\Ex01\IAR\Deb #
+#                            ug\Obj\Os_Mlq.r12                                 #
+#                            C:\projekte\csProjects\k-os\examples\Ex01\IAR\Deb #
+#                            ug\Obj\Os_Orti.r12                                #
+#                            C:\projekte\csProjects\k-os\examples\Ex01\IAR\Deb #
+#                            ug\Obj\Os_Port.r12                                #
+#                            C:\projekte\csProjects\k-os\examples\Ex01\IAR\Deb #
+#                            ug\Obj\Os_Res.r12                                 #
+#                            C:\projekte\csProjects\k-os\examples\Ex01\IAR\Deb #
+#                            ug\Obj\Os_SchT.r12                                #
+#                            C:\projekte\csProjects\k-os\examples\Ex01\IAR\Deb #
+#                            ug\Obj\Os_Task.r12                                #
+#                            C:\projekte\csProjects\k-os\examples\Ex01\IAR\Deb #
+#                            ug\Obj\Os_Vars.r12                                #
+#                            C:\projekte\csProjects\k-os\examples\Ex01\IAR\Deb #
+#                            ug\Obj\Port_Asm.r12                               #
+#                            C:\projekte\csProjects\k-os\examples\Ex01\IAR\Deb #
+#                            ug\Obj\Utl.r12                                    #
+#                            C:\projekte\csProjects\k-os\examples\Ex01\IAR\Deb #
+#                            ug\Obj\app.r12                                    #
+#                            -o                                                #
+#                            C:\projekte\csProjects\k-os\examples\Ex01\IAR\Deb #
+#                            ug\Exe\EX01.d12                                   #
+#                            -l                                                #
+#                            C:\projekte\csProjects\k-os\examples\Ex01\IAR\Deb #
+#                            ug\List\EX01.map                                  #
+#                            -xesn                                             #
+#                            "-IC:\Programme\IAR Systems\Embedded Workbench Ev #
+#                            aluation 4.0\HCS12\LIB\"                          #
+#                            -f                                                #
+#                            "C:\Programme\IAR Systems\Embedded Workbench Eval #
+#                            uation 4.0\HCS12\config\lnkmc9s12dp256b.xcl"      #
+#                            (-chcs12 -D_RAM_BEGIN=01000 -D_RAM_END=03FFF      #
+#                            -D_EEPROM_BEGIN=00400 -D_EEPROM_END=00FFF         #
+#                            -D_FLASH16MID_BEGIN=04000                         #
+#                            -D_FLASH16MID_END=07FFF                           #
+#                            -D_FLASH16HI_BEGIN=0C000 -D_FLASH16HI_END=0FFFF   #
+#                            -D_FLASH16PAGE_BEGIN=308000                       #
+#                            -D_FLASH16PAGE_END=30BFFF                         #
+#                            -U_FLASH16MID_BEGIN-_FLASH16MID_END=3E8000-3EBFFF #
+#                            -U_FLASH16HI_BEGIN-_FLASH16HI_END=3F8000-3FBFFF   #
+#                            -Z(CODE)INTVEC=FF80-FFFF                          #
+#                            -Z(CODE)DATA8_ID,DATA16_ID,INITTAB=_FLASH16MID_BE #
+#                            GIN-_FLASH16MID_END,_FLASH16HI_BEGIN-_FLASH16HI_E #
+#                            ND                                                #
+#                            -Z(CODE)DIFUNCT -P(CODE)DATA16_C,CODE,CHECKSUM    #
+#                            -D_PAGES=16                                       #
+#                            -P(CODE)BANKED_CODE,BANKED_CODE_SEGMENT_INIT=[_FL #
+#                            ASH16PAGE_BEGIN-_FLASH16PAGE_END]*_PAGES+10000    #
+#                            -Z(DATA)DATA16_I,DATA16_Z,DATA16_N,HEAP+_HEAP_SIZ #
+#                            E=_RAM_BEGIN-_RAM_END                             #
+#                            -Z(CODE)DBG_CODE -Z(DATA)CSTACK+_STACK_SIZE#)     #
+#                            -rt -s __program_start                            #
+#                            "C:\Programme\IAR Systems\Embedded Workbench Eval #
+#                            uation 4.0\HCS12\LIB\DLIB\dlhcs12nfn.r12"         #
+#                            -D_HEAP_SIZE=200 -D_STACK_SIZE=40                 #
+#                                                                              #
+#                        Copyright 1987-2006 IAR Systems. All rights reserved. #
+################################################################################
+
+
+
+
+
+                ****************************************
+                *                                      *
+                *           CROSS REFERENCE            *
+                *                                      *
+                ****************************************
+
+       Program entry at :           50BC  Relocatable, from module : ?cstartup
+
+
+
+
+                ****************************************
+                *                                      *
+                *            RUNTIME MODEL             *
+                *                                      *
+                ****************************************
+
+  __code_model           = normal
+  __dlib_file_descriptor = 0
+  __double_size          = 32
+  __rt_version           = 1
+
+                ****************************************
+                *                                      *
+                *              ENTRY LIST              *
+                *                                      *
+                ****************************************
+
+?FILLER_BYTES
+?ABS_ENTRY_MOD
+  _STACK_SIZE                                0040 
+  _HEAP_SIZE                                 0200 
+  _PAGES                                     0016 
+  _FLASH16PAGE_END                           0030BFFF 
+  _FLASH16PAGE_BEGIN                         00308000 
+  _FLASH16HI_END                             FFFF 
+  _FLASH16HI_BEGIN                           C000 
+  _FLASH16MID_END                            7FFF 
+  _FLASH16MID_BEGIN                          4000 
+  _EEPROM_END                                0FFF 
+  _EEPROM_BEGIN                              0400 
+  _RAM_END                                   3FFF 
+  _RAM_BEGIN                                 1000 
+Com_Ext ( C:\projekte\csProjects\k-os\examples\Ex01\IAR\Debug\Obj\Com_Ext.r12 )
+Com_Flt ( C:\projekte\csProjects\k-os\examples\Ex01\IAR\Debug\Obj\Com_Flt.r12 )
+Com_If ( C:\projekte\csProjects\k-os\examples\Ex01\IAR\Debug\Obj\Com_If.r12 )
+  ?init?tab?DATA16_Z                         4000 
+Com_Int ( C:\projekte\csProjects\k-os\examples\Ex01\IAR\Debug\Obj\Com_Int.r12 )
+Hw_Cfg ( C:\projekte\csProjects\k-os\examples\Ex01\IAR\Debug\Obj\Hw_Cfg.r12 )
+ISR ( C:\projekte\csProjects\k-os\examples\Ex01\IAR\Debug\Obj\ISR.r12 )
+  DUMMY_VECTOR                               50D1 
+  interrupt_vectors                          FF80 
+Os_Alm ( C:\projekte\csProjects\k-os\examples\Ex01\IAR\Debug\Obj\Os_Alm.r12 )
+  OsAlm_StartAlarm                           454C 
+  OsAlm_StopAlarm                            455E 
+  OsAlm_GetActiveAlarms                      4570 
+  OsAlm_InitAlarms                           4575 
+  OsAlm_NotifyAlarm                          45E4 
+  OsAlm_ActiveAlarms                         1000   LOCAL
+Os_Cfg ( C:\projekte\csProjects\k-os\examples\Ex01\IAR\Debug\Obj\Os_Cfg.r12 )
+  Tsk1_Stk                                   1001 
+  Tsk2_Stk                                   1041 
+  ISR_Stk                                    1081 
+  IdleTask_Stk                               10A1 
+  OS_TaskConf                                4FFB 
+  OS_TCB                                     10C1 
+  OS_IntResourceConf                         50CC 
+  Os_Resources                               10D6 
+  Os_CounterValues                           10D8 
+  AlarmsForSysCounter                        50D0 
+  __OS_CounterDefs                           5096 
+  OS_AlarmValue                              10DA 
+  OS_AlarmConf                               50A1 
+  OSSystemTimerVector                        4E8F 
+Os_Ctr ( C:\projekte\csProjects\k-os\examples\Ex01\IAR\Debug\Obj\Os_Ctr.r12 )
+  InitCounter                                43E8 
+  IncrementCounter                           4446 
+  OsCtr_InitCounters                         44D6 
+  OsCtr_UpdateAttachedAlarms                 44F1   LOCAL
+  OsCtr_UpdateAttachedScheduleTables
+                                             454B   LOCAL
+Os_Error ( C:\projekte\csProjects\k-os\examples\Ex01\IAR\Debug\Obj\Os_Error.r12 )
+  Os_ServiceContext                          10DE 
+  OsLastError                                10E5 
+  OsErrorCallErrorHook                       4E51 
+  OSSaveServiceContext                       4FDC 
+Os_Evt ( C:\projekte\csProjects\k-os\examples\Ex01\IAR\Debug\Obj\Os_Evt.r12 )
+  OsEvtSetEvent                              4672 
+  SetEvent                                   4759 
+  ClearEvent                                 4AF9 
+  GetEvent                                   490A 
+  WaitEvent                                  484C 
+Os_Exec ( C:\projekte\csProjects\k-os\examples\Ex01\IAR\Debug\Obj\Os_Exec.r12 )
+  StartOS                                    49B6 
+  GetActiveApplicationMode                   4A26 
+  FuncOsExec_IdleTask                        505C 
+  OsExec_ScheduleFromISR                     4785 
+  OsExec_HigherPriorityThenCurrentReady
+                                             47C7 
+  OsExec_StartHighestReadyTask               47FC 
+  SWI_Vector                                 481B 
+  StartupContext                             10E6   LOCAL
+  Os_AppMode                                 10EA   LOCAL
+  OsExec_Init                                4A3F   LOCAL
+  OsExec_HigherPriorityThenCurrentReady::inv_exp_tab
+                                             4F9C   LOCAL
+Os_Intr ( C:\projekte\csProjects\k-os\examples\Ex01\IAR\Debug\Obj\Os_Intr.r12 )
+  OsIntr_InitInterrupts                      50C2 
+  ResumeAllInterrupts                        4C63 
+  SuspendAllInterrupts                       4C65 
+  ResumeOSInterrupts                         4C67 
+  SuspendOSInterrupts                        4C69 
+  InterruptDisableCounter                    10EB   LOCAL
+  IStateSave                                 10EC   LOCAL
+  SuspendCPUInterrrupts                      4C69   LOCAL
+  ResumeCPUInterrrupts                       4C8D   LOCAL
+Os_Mlq ( C:\projekte\csProjects\k-os\examples\Ex01\IAR\Debug\Obj\Os_Mlq.r12 )
+  MLQ_QueueDef                               50B3 
+  OsMLQ_Init                                 400C 
+  OsMLQ_GetHighestPrio                       402A 
+  OsMLQ_TasksAreReady                        4052 
+  OsMLQ_GetBitmap                            405D 
+  OsMLQ_AddTaskLast                          4061 
+  OsMLQ_RemoveTask                           408B 
+  OsMLQ_ChangePrio                           40D5 
+  MLQ_QueueData                              10ED   LOCAL
+  MLQ_ReadyQueue                             10F7   LOCAL
+  BM_NotEmpty                                1100   LOCAL
+  OsMLQ_InitQueue                            40F7   LOCAL
+  OsMLQ_PushBack                             4134   LOCAL
+  OsMLQ_PopFront                             4175   LOCAL
+  OsMLQ_IsEmpty                              41D3   LOCAL
+  OsMLQ_Front                                41E4   LOCAL
+Os_Orti ( C:\projekte\csProjects\k-os\examples\Ex01\IAR\Debug\Obj\Os_Orti.r12 )
+Os_Port ( C:\projekte\csProjects\k-os\examples\Ex01\IAR\Debug\Obj\Os_Port.r12 )
+  OS_TOS_ISR                                 50CE 
+  OsPortTaskStackInit                        4C04 
+  OsPortInit                                 4DC3 
+  OSSystemTimerVector_Handler                507D 
+  Cfg                                        5047   LOCAL
+Os_Res ( C:\projekte\csProjects\k-os\examples\Ex01\IAR\Debug\Obj\Os_Res.r12 )
+  OsRes_InitResources                        4EFC 
+  OsRes_GetInternalResource                  4D6F 
+  OsRes_ReleaseInternalResource              4D17 
+  BM_InternalResources                       1102   LOCAL
+Os_SchT ( C:\projekte\csProjects\k-os\examples\Ex01\IAR\Debug\Obj\Os_SchT.r12 )
+Os_Task ( C:\projekte\csProjects\k-os\examples\Ex01\IAR\Debug\Obj\Os_Task.r12 )
+  OsTask_Ready                               4205 
+  OsTask_Wait                                4227 
+  OsTask_Activate                            423E 
+  Schedule                                   42ED 
+  OsTask_InitTasks                           4360 
+  OsTask_Init                                4399   LOCAL
+Os_Vars ( C:\projekte\csProjects\k-os\examples\Ex01\IAR\Debug\Obj\Os_Vars.r12 )
+  OsCurrentTID                               1104 
+  OsCurrentTCB                               1105 
+  OsFlags                                    1107 
+  OsCallevel                                 1108 
+  OsCallevelSaved                            110A 
+  OsCurrentISRID                             110C 
+port_iar ( C:\projekte\csProjects\k-os\examples\Ex01\IAR\Debug\Obj\Port_Asm.r12 )
+  OS_START_CURRENT_TASK                      4A5D 
+  OS_SAVE_CONTEXT                            4A63 
+  OS_RESTORE_CONTEXT                         4A6E 
+  OS_ISR_CONTEXT                             4A74 
+  Utl_SetJump                                4A7E 
+  Utl_LongJump                               4A88 
+  OsMLQ_GetLowestBitNumber                   4A95 
+  Utl_Divrem                                 4AA6 
+  Mem_GetStackPointer                        4AB3 
+  Mem_GetFreePointer                         4ADF 
+  Mem_GetStackTOS                            4ABA 
+  Mem_GetStackBOS                            4AB6 
+  Mem_StackCheck                             4ABE 
+  MemoryStuff                                4AE3 
+  ReversedLog2Tab                            4B83   LOCAL
+  __ljexit                                   4A90   LOCAL
+  L10                                        4A9F   LOCAL
+  L20                                        4AA5   LOCAL
+  st_cont1                                   4AD2   LOCAL
+  st_exit                                    4ADC   LOCAL
+  st_cont2                                   4ADA   LOCAL
+Utl ( C:\projekte\csProjects\k-os\examples\Ex01\IAR\Debug\Obj\Utl.r12 )
+  Utl_BitGet                                 4F59 
+  Utl_BitSet                                 4F7B 
+  Utl_BitReset                               5016 
+  Utl_MemSet                                 4F2B 
+  ?init?tab?DATA16_I                         4006 
+  PowerOfTwoTab16                            4FBC   LOCAL
+app ( C:\projekte\csProjects\k-os\examples\Ex01\IAR\Debug\Obj\app.r12 )
+  main                                       50AA 
+  FuncTask1                                  4ECC 
+  FuncTask2                                  4CBE 
+  AlarmCallbackAlarm1                        5031 
+  ErrorHook                                  50D2 
+  snd_data                                   110D   LOCAL
+  TimesCalled                                1111   LOCAL
+  AlarmCallbackAlarm1::cnt                   1119   LOCAL
+?low_level_init ( C:\Programme\IAR Systems\Embedded Workbench Evaluation 4.0\HCS12\LIB\DLIB\dlhcs12nfn.r12 )
+?segment_init ( C:\Programme\IAR Systems\Embedded Workbench Evaluation 4.0\HCS12\LIB\DLIB\dlhcs12nfn.r12 )
+  __segment_init                             4E0E 
+?abort ( C:\Programme\IAR Systems\Embedded Workbench Evaluation 4.0\HCS12\LIB\DLIB\dlhcs12nfn.r12 )
+?__dbg_break ( C:\Programme\IAR Systems\Embedded Workbench Evaluation 4.0\HCS12\LIB\DLIB\dlhcs12nfn.r12 )
+  __DebugBreak                               111D 
+?__exit ( C:\Programme\IAR Systems\Embedded Workbench Evaluation 4.0\HCS12\LIB\DLIB\dlhcs12nfn.r12 )
+  __exit                                     506E 
+?__write ( C:\Programme\IAR Systems\Embedded Workbench Evaluation 4.0\HCS12\LIB\DLIB\dlhcs12nfn.r12 )
+?__dwrite ( C:\Programme\IAR Systems\Embedded Workbench Evaluation 4.0\HCS12\LIB\DLIB\dlhcs12nfn.r12 )
+?cppinit ( C:\Programme\IAR Systems\Embedded Workbench Evaluation 4.0\HCS12\LIB\DLIB\dlhcs12nfn.r12 )
+?exit ( C:\Programme\IAR Systems\Embedded Workbench Evaluation 4.0\HCS12\LIB\DLIB\dlhcs12nfn.r12 )
+  exit                                       50C6 
+?xcloseall ( C:\Programme\IAR Systems\Embedded Workbench Evaluation 4.0\HCS12\LIB\DLIB\dlhcs12nfn.r12 )
+?cstartup ( C:\Programme\IAR Systems\Embedded Workbench Evaluation 4.0\HCS12\LIB\DLIB\dlhcs12nfn.r12 )
+  __program_start                            50BC 
+?cexit ( C:\Programme\IAR Systems\Embedded Workbench Evaluation 4.0\HCS12\LIB\DLIB\dlhcs12nfn.r12 )
+  _exit                                      50C9 
+  ?cstart_end                                50CC 
+?cmain ( C:\Programme\IAR Systems\Embedded Workbench Evaluation 4.0\HCS12\LIB\DLIB\dlhcs12nfn.r12 )
+  ?cmain                                     508A 
+  ?cstart_init_zero                          508A 
+  ?cstart_init_copy                          508A 
+  ?call_main                                 508D 
+??lior ( C:\Programme\IAR Systems\Embedded Workbench Evaluation 4.0\HCS12\LIB\DLIB\dlhcs12nfn.r12 )
+??lcmp ( C:\Programme\IAR Systems\Embedded Workbench Evaluation 4.0\HCS12\LIB\DLIB\dlhcs12nfn.r12 )
+??lmul ( C:\Programme\IAR Systems\Embedded Workbench Evaluation 4.0\HCS12\LIB\DLIB\dlhcs12nfn.r12 )
+??long_divide ( C:\Programme\IAR Systems\Embedded Workbench Evaluation 4.0\HCS12\LIB\DLIB\dlhcs12nfn.r12 )
+??cswitch ( C:\Programme\IAR Systems\Embedded Workbench Evaluation 4.0\HCS12\LIB\DLIB\dlhcs12nfn.r12 )
+
+
+
+                ****************************************
+                *                                      *
+                *            MODULE SUMMARY            *
+                *                                      *
+                ****************************************
+
+Module               CODE   DATA  CONST
+------               ----   ----  -----
+                    (Rel)  (Rel)  (Abs)
+?__dbg_break            1
+?__exit                15
+?cexit                  3
+?cmain                 12
+?cstartup               6             2
+?exit                   3
+?segment_init          67
+Com_If
+  + shared              6
+ISR                   127
+Os_Alm                294      1
+Os_Cfg                111    221
+Os_Ctr                356
+Os_Error               93      8
+Os_Evt                775
+Os_Exec               416      5
+Os_Intr                95      2
+Os_Mlq                514     21
+Os_Port               206
+Os_Res                219      2
+Os_Task               483
+Os_Vars                        9
+Utl                   178
+app                   169     16
+port_iar              285
+N/A (command line)            64
+N/A (alignment)
+------              -----    ---      -
+Total:              4 434    349      2
+
+
+                ****************************************
+                *                                      *
+                *      SEGMENTS IN ADDRESS ORDER       *
+                *                                      *
+                ****************************************
+
+
+SEGMENT              SPACE    START ADDRESS   END ADDRESS     SIZE  TYPE  ALIGN
+=======              =====    =============   ===========     ====  ====  =====
+DATA16_I                                  1000                       dse    0
+DATA16_Z                               1000 - 111C             11D   rel    0
+DBG_CODE                               111D - 111D               1   rel    0
+CSTACK                                 3FC0 - 3FFF              40   dse    0
+DATA8_ID                                  4000                       dse    0
+DATA16_ID                                 4000                       dse    0
+INITTAB                                4000 - 400B               C   rel    0
+DIFUNCT                                   400C                       rel    0
+<CODE,DATA16_C> 1                      400C - 50D2            10C7   rel    0
+INTVEC                                 FF80 - FFFD              7E   rel    0
+INTVEC                                 FFFE - FFFF               2   rel    0
+
+                ****************************************
+                *                                      *
+                *        END OF CROSS REFERENCE        *
+                *                                      *
+                ****************************************
+
+ 4 434 bytes of CODE  memory
+   349 bytes of DATA  memory
+     0 bytes of CONST memory (+ 2 absolute )
+
+Errors: none
+Warnings: none
+

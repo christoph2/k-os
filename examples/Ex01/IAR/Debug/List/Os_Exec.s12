@@ -1,0 +1,578 @@
+//////////////////////////////////////////////////////////////////////////////
+//                                                                           /
+// IAR HCS12 C/C++ Compiler V3.11A/W32                 17/Mar/2010  10:33:41 /
+// Copyright 1997-2006 IAR Systems. All rights reserved.                     /
+//                                                                           /
+//    Source file  =  C:\projekte\csProjects\k-os\src\Os_Exec.c              /
+//    Command line =  C:\projekte\csProjects\k-os\src\Os_Exec.c              /
+//                    --preprocess=l C:\projekte\csProjects\k-os\examples\Ex /
+//                    01\IAR\Debug\List\ -lC C:\projekte\csProjects\k-os\exa /
+//                    mples\Ex01\IAR\Debug\List\ -lB                         /
+//                    C:\projekte\csProjects\k-os\examples\Ex01\IAR\Debug\Li /
+//                    st\ --code_model=normal --double=32 -o                 /
+//                    C:\projekte\csProjects\k-os\examples\Ex01\IAR\Debug\Ob /
+//                    j\ --require_prototypes -e -z2 --no_cse --no_unroll    /
+//                    --no_inline --no_code_motion --no_tbaa                 /
+//                    --no_cross_call --debug "-D_DLIB_CONFIG_FILE=C:\Progra /
+//                    mme\IAR Systems\Embedded Workbench Evaluation          /
+//                    4.0\HCS12\LIB\DLIB\dlhcs12nfn.h" --segment             /
+//                    __data8=DATA8 --segment __data16=DATA16 --segment      /
+//                    __banked=BANKED_CODE --segment __non_banked=CODE       /
+//                    --segment __intvec=INTVEC --segment __difunct=DIFUNCT  /
+//                    --segment __cstack=CSTACK --segment __inittab=INITTAB  /
+//                    -I C:\projekte\csProjects\k-os\inc\ -I                 /
+//                    C:\projekte\csProjects\common\inc\ -I                  /
+//                    C:\projekte\csProjects\common\ -I                      /
+//                    C:\projekte\csProjects\common\InstallISR\ -I           /
+//                    C:\projekte\csProjects\k-os\examples\Ex01\ -I          /
+//                    C:\projekte\csProjects\common\drivers\include\cpu12\   /
+//                    -I "C:\Programme\IAR Systems\Embedded Workbench        /
+//                    Evaluation 4.0\HCS12\INC\" -I "C:\Programme\IAR        /
+//                    Systems\Embedded Workbench Evaluation                  /
+//                    4.0\HCS12\INC\DLIB\"                                   /
+//    List file    =  C:\projekte\csProjects\k-os\examples\Ex01\IAR\Debug\Li /
+//                    st\Os_Exec.s12                                         /
+//                                                                           /
+//                                                                           /
+//////////////////////////////////////////////////////////////////////////////
+
+        NAME Os_Exec
+
+        RSEG CSTACK:DATA:REORDER:NOROOT(0)
+
+        EXTERN ?cstart_init_zero
+
+        PUBWEAK ?init?tab?DATA16_Z
+        PUBLIC FuncOsExec_IdleTask
+        PUBLIC GetActiveApplicationMode
+        PUBLIC OsExec_HigherPriorityThenCurrentReady
+        PUBLIC OsExec_ScheduleFromISR
+        PUBLIC OsExec_StartHighestReadyTask
+        PUBLIC OsExec_TaskReturnGuard
+        PUBLIC SWI_Vector
+        PUBLIC ShutdownOS
+        PUBLIC StartOS
+
+        EXTERN OsCallevel
+        EXTERN OsFlags
+        EXTERN OsCurrentTID
+        EXTERN OS_TCB
+        EXTERN OsCurrentTCB
+        EXTERN Os_ServiceContext
+        EXTERN OsCallevelSaved
+        EXTERN OSSaveServiceContext
+        EXTERN OS_ISR_CONTEXT
+        EXTERN OS_RESTORE_CONTEXT
+        EXTERN OS_SAVE_CONTEXT
+        EXTERN OS_START_CURRENT_TASK
+        EXTERN OsAlm_InitAlarms
+        EXTERN OsCtr_InitCounters
+        EXTERN OsIntr_InitInterrupts
+        EXTERN OsMLQ_GetBitmap
+        EXTERN OsMLQ_GetHighestPrio
+        EXTERN OsMLQ_Init
+        EXTERN OsMLQ_TasksAreReady
+        EXTERN OsPortInit
+        EXTERN OsRes_GetInternalResource
+        EXTERN OsRes_InitResources
+        EXTERN OsTask_InitTasks
+        EXTERN Schedule
+        EXTERN Utl_LongJump
+        EXTERN Utl_SetJump
+
+// C:\projekte\csProjects\k-os\src\Os_Exec.c
+//    1 /*
+//    2  * k_os (Konnex Operating-System based on the OSEK/VDX-Standard).
+//    3  *
+//    4  * (C) 2007-2009 by Christoph Schueler <chris@konnex-tools.de>
+//    5  *
+//    6  * All Rights Reserved
+//    7  *
+//    8  * This program is free software; you can redistribute it and/or modify
+//    9  * it under the terms of the GNU General Public License as published by
+//   10  * the Free Software Foundation; either version 2 of the License, or
+//   11  * (at your option) any later version.
+//   12  *
+//   13  * This program is distributed in the hope that it will be useful,
+//   14  * but WITHOUT ANY WARRANTY; without even the implied warranty of
+//   15  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//   16  * GNU General Public License for more details.
+//   17  *
+//   18  * You should have received a copy of the GNU General Public License along
+//   19  * with this program; if not, write to the Free Software Foundation, Inc.,
+//   20  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+//   21  *
+//   22  */
+//   23 
+//   24 #include "Osek.h"
+//   25 
+//   26 static void OsExec_Init(void);
+//   27 
+//   28 #if defined(OS_SAVE_STARTUP_CTX)
+
+        RSEG DATA16_Z:DATA:REORDER:NOROOT(0)
+        REQUIRE ?cstart_init_zero
+//   29 static Utl_JumpBufType StartupContext;
+StartupContext:
+        DS8 4
+//   30 #endif  /* OS_SAVE_STARTUP_CTX */
+//   31 
+//   32 
+
+        RSEG DATA16_Z:DATA:REORDER:NOROOT(0)
+        REQUIRE ?cstart_init_zero
+//   33 static AppModeType Os_AppMode;
+Os_AppMode:
+        DS8 1
+//   34 
+//   35 
+
+        RSEG CODE:CODE:NOROOT(0)
+//   36 void StartOS(AppModeType Mode)
+StartOS:
+//   37 {
+        PSHA
+        STAB    0x0,SP
+//   38     SAVE_SERVICE_CONTEXT(OSServiceId_StartOS,Mode,NULL,NULL);
+        LDD     #0x0
+        PSHD
+        LDAB    #0x32
+        PSHB
+        LDD     #0x0
+        PSHD
+        LDAB    0x5,SP
+        EXG     B,Y
+        PULD
+        JSR     OSSaveServiceContext
+//   39 
+//   40     ASSERT_OS_NOT_RUNNING();
+        LDD     OsCallevel
+        LEAS    0x3,SP
+        BNE     ??StartOS_0
+//   41 
+//   42     if (Mode>(AppModeType)7) {
+        LDAB    0x0,SP
+        CMPB    #0x8
+        BCS     ??StartOS_1
+//   43         Os_AppMode=OSDEFAULTAPPMODE;
+        CLR     Os_AppMode
+        BRA     ??StartOS_2
+//   44     } else {
+//   45         Os_AppMode=Mode;
+??StartOS_1:
+        LDAB    0x0,SP
+        STAB    Os_AppMode
+//   46     }
+//   47 
+//   48 /*    DISABLE_ALL_OS_INTERRUPTS(); */
+//   49 
+//   50     OsPortInit();
+??StartOS_2:
+        JSR     OsPortInit
+//   51 
+//   52     OsExec_Init();
+        JSR     OsExec_Init
+//   53 
+//   54 #if defined(OS_USE_STARTUPHOOK)
+//   55     OS_SET_CALLEVEL(CL_STARTUP_HOOK);
+//   56     StartupHook();
+//   57 #endif  /* OS_USE_STARTUPHOOK */
+//   58     OS_SET_CALLEVEL(OS_CL_TASK);
+        LDD     #0x1
+        STD     OsCallevel
+//   59     OS_SET_TASK_LEVEL();
+        LDAB    #0xfd
+        ANDB    OsFlags
+        STAB    OsFlags
+//   60 
+//   61     /* check: das nächste zur Sicherheit???*/
+//   62     OS_SET_HIGHEST_PRIO_RUNNING();
+        JSR     OsMLQ_GetHighestPrio
+        STAB    OsCurrentTID
+        LDAB    OsCurrentTID
+        LDAA    #0x7
+        MUL
+        ADDD    #OS_TCB
+        STD     OsCurrentTCB
+        LDY     OsCurrentTCB
+        LDAB    #0x2
+        STAB    0x2,Y
+        JSR     OsRes_GetInternalResource
+//   63 
+//   64     CLEAR_SERVICE_CONTEXT();
+        CLR     Os_ServiceContext
+//   65 /*    ENABLE_ALL_OS_INTERRUPTS(); */
+//   66 
+//   67 #if defined(OS_SAVE_STARTUP_CTX)
+//   68     if (Utl_SetJump(&StartupContext)==0) {
+        LDY     #StartupContext
+        JSR     Utl_SetJump
+        CPD     #0x0
+        BNE     ??StartOS_0
+//   69 #endif  /* OS_SAVE_STARTUP_CTX */
+//   70 
+//   71         OS_START_CURRENT_TASK();
+        JSR     OS_START_CURRENT_TASK
+??StartOS_0:
+        PULA
+        RTS
+//   72 
+//   73 #if defined(OS_SAVE_STARTUP_CTX)
+//   74     }
+//   75 #endif  /* OS_SAVE_STARTUP_CTX */
+//   76 }
+//   77 
+
+        RSEG CODE:CODE:NOROOT(0)
+//   78 void ShutdownOS(StatusType Error)
+ShutdownOS:
+//   79 {
+        PSHD
+        STAB    0x1,SP
+//   80     uint8_least i;
+//   81 
+//   82     SAVE_SERVICE_CONTEXT(OSServiceId_ShutdownOS,Error,NULL,NULL);
+        LDD     #0x0
+        PSHD
+        LDAB    #0x34
+        PSHB
+        LDD     #0x0
+        PSHD
+        LDAB    0x6,SP
+        EXG     B,Y
+        PULD
+        JSR     OSSaveServiceContext
+//   83     CPU_DISABLE_ALL_INTERRUPTS();
+        SEI
+//   84 
+//   85     for (i=(uint8_least)0;i<OS_NUMBER_OF_TASKS;++i) {
+        CLR     0x3,SP
+        LEAS    0x3,SP
+??ShutdownOS_0:
+        LDAB    0x0,SP
+        CMPB    #0x3
+        BCC     ??ShutdownOS_1
+//   86         OS_TCB[i].State=SUSPENDED;
+        LDAB    0x0,SP
+        LDAA    #0x7
+        MUL
+        TFR     D,Y
+        CLR     OS_TCB + 2,Y
+//   87     }
+        LDAB    0x0,SP
+        ADDB    #0x1
+        STAB    0x0,SP
+        BRA     ??ShutdownOS_0
+//   88 
+//   89 #if defined(OS_USE_SHUTDOWNHOOK)
+//   90     OS_SET_CALLEVEL(CL_SHUTDOWN_HOOK);
+//   91     ShutdownHook(Error);
+//   92 #else   /* OS_USE_SHUTDOWNHOOK */
+//   93     UNREFERENCED_PARAMETER(Error);
+??ShutdownOS_1:
+        LDAB    0x1,SP
+        STAB    0x1,SP
+//   94 #endif
+//   95     OS_SET_CALLEVEL(OS_CL_INVALID);
+        LDD     #0x0
+        STD     OsCallevel
+//   96     CLEAR_SERVICE_CONTEXT();    /* ??? */
+        CLR     Os_ServiceContext
+//   97 
+//   98 #if defined(OS_SAVE_STARTUP_CTX)
+//   99     Utl_LongJump(&StartupContext,-1);
+        LDD     #0xffff
+        LDY     #StartupContext
+        JSR     Utl_LongJump
+//  100 #endif  /* OS_SAVE_STARTUP_CTX */
+//  101 /*
+//  102 **  !REQ!AS!OS425!
+//  103 **  If ShutdownOS() is called and ShutdownHook() returns then the operating
+//  104 **  system shall disable all interrupts and enter an endless loop.
+//  105 */
+//  106     FOREVER {
+??ShutdownOS_2:
+        BRA     ??ShutdownOS_2
+//  107 
+//  108     }
+//  109 }
+//  110 
+//  111 
+
+        RSEG CODE:CODE:NOROOT(0)
+//  112 AppModeType GetActiveApplicationMode(void)
+GetActiveApplicationMode:
+//  113 {
+//  114     SAVE_SERVICE_CONTEXT(OSServiceId_GetActiveApplicationMode,NULL,NULL,NULL);
+        LDD     #0x0
+        PSHD
+        LDAB    #0x30
+        PSHB
+        LDD     #0x0
+        LDY     #0x0
+        JSR     OSSaveServiceContext
+//  115 
+//  116 #if 0
+//  117     ASSERT_VALID_CALLEVEL(CL_TASK|CL_ISR2|CL_ERROR_HOOK|CL_PRE_TASK_HOOK|
+//  118                           CL_POST_TASK_HOOK|CL_STARTUP_HOOK|CL_SHUTDOWN_HOOK);
+//  119 #endif
+//  120     CLEAR_SERVICE_CONTEXT();
+        CLR     Os_ServiceContext
+//  121     return Os_AppMode;
+        LDAB    Os_AppMode
+        LEAS    0x3,SP
+        RTS
+//  122 }
+//  123 
+//  124 
+
+        RSEG CODE:CODE:REORDER:NOROOT(0)
+//  125 static void OsExec_Init(void)
+OsExec_Init:
+//  126 {
+//  127     OsCurrentTID=(INVALID_TASK);
+        CLR     OsCurrentTID
+//  128     OsCurrentTCB=(OsTCBType*)NULL;
+        LDD     #0x0
+        STD     OsCurrentTCB
+//  129     OsFlags=(uint8)0x00;
+        CLR     OsFlags
+//  130 
+//  131     OsMLQ_Init();
+        JSR     OsMLQ_Init
+//  132 
+//  133     OsIntr_InitInterrupts();
+        JSR     OsIntr_InitInterrupts
+//  134 
+//  135     OsTask_InitTasks();
+        JSR     OsTask_InitTasks
+//  136 
+//  137     OsRes_InitResources();
+        JSR     OsRes_InitResources
+//  138 
+//  139     OsAlm_InitAlarms();
+        JSR     OsAlm_InitAlarms
+//  140 
+//  141     OsCtr_InitCounters();
+        JMP     OsCtr_InitCounters
+//  142 
+//  143 }
+//  144 
+//  145 
+
+        RSEG CODE:CODE:REORDER:NOROOT(0)
+//  146 TASK(OsExec_IdleTask)
+FuncOsExec_IdleTask:
+??FuncOsExec_IdleTask_0:
+//  147 {
+//  148     FOREVER {
+//  149         WAIT_FOR_READY_TASKS();
+        CLR     OsCurrentTID
+??FuncOsExec_IdleTask_1:
+        JSR     OsMLQ_TasksAreReady
+        CMPB    #0x0
+        BNE     ??FuncOsExec_IdleTask_2
+        WAI
+        BRA     ??FuncOsExec_IdleTask_1
+//  150 #if defined(OS_SCHEDULE_NON) || defined(OS_SCHEDULE_MIX)
+//  151         (void)Schedule();
+??FuncOsExec_IdleTask_2:
+        JSR     Schedule
+        BRA     ??FuncOsExec_IdleTask_0
+//  152 #endif  /* OS_SCHEDULE_NON || OS_SCHEDULE_MIX */
+//  153     }
+//  154 }
+//  155 
+//  156 
+
+        RSEG CODE:CODE:REORDER:NOROOT(0)
+//  157 void OsExec_TaskReturnGuard(void)
+OsExec_TaskReturnGuard:
+//  158 {
+//  159 
+//  160 }
+        RTS
+//  161 
+//  162 
+//  163 #if defined(OS_SCHED_POLICY_NON)
+//  164 void OsExec_ScheduleFromISR(void) {}
+//  165 
+//  166 #elif defined(OS_SCHED_POLICY_PRE) || defined(OS_SCHED_POLICY_MIX)
+
+        RSEG CODE:CODE:NOROOT(0)
+//  167 void OsExec_ScheduleFromISR(void)   /*  ISR-Level-Scheduling. */
+OsExec_ScheduleFromISR:
+//  168 {
+//  169 #if defined(OS_SCHED_POLICY_MIX)
+//  170     if (OS_IS_TASK_PREEMPTABLE(OsCurrentTID) && !OS_IS_SCHEDULER_LOCKED()) {
+        LDY     OsCurrentTCB
+        LDAB    0x6,Y
+        INCB
+        BEQ     ??OsExec_ScheduleFromISR_1
+        BRCLR   OsFlags,#0x1,??OsExec_ScheduleFromISR_0
+        RTS
+//  171 #else
+//  172     if (!OS_IS_SCHEDULER_LOCKED()) {
+//  173 #endif  /* OS_SCHED_POLICY_NON */
+//  174         OS_CALL_POST_TASK_HOOK();
+//  175 
+//  176         if (!OS_IS_TASK_WAITING(OsCurrentTID)) {
+??OsExec_ScheduleFromISR_0:
+        LDAB    OsCurrentTID
+        LDAA    #0x7
+        MUL
+        TFR     D,Y
+        LDAB    OS_TCB + 2,Y
+        CMPB    #0x3
+        BEQ     ??OsExec_ScheduleFromISR_2
+//  177             OsCurrentTCB->State=READY;
+        LDY     OsCurrentTCB
+        LDAB    #0x1
+        STAB    0x2,Y
+//  178         }
+//  179         OS_SET_HIGHEST_PRIO_RUNNING();
+??OsExec_ScheduleFromISR_2:
+        JSR     OsMLQ_GetHighestPrio
+        STAB    OsCurrentTID
+        LDAB    OsCurrentTID
+        LDAA    #0x7
+        MUL
+        ADDD    #OS_TCB
+        STD     OsCurrentTCB
+        LDY     OsCurrentTCB
+        LDAB    #0x2
+        STAB    0x2,Y
+        JSR     OsRes_GetInternalResource
+//  180     }
+//  181 #endif
+//  182 }
+??OsExec_ScheduleFromISR_1:
+        RTS
+//  183 
+//  184 
+
+        RSEG CODE:CODE:NOROOT(0)
+//  185 boolean OsExec_HigherPriorityThenCurrentReady(void)
+OsExec_HigherPriorityThenCurrentReady:
+//  186 {
+        PSHX
+        LEAS    -0x3,SP
+//  187     uint16 tm,t_res;
+//  188     boolean res;
+//  189     static const uint16 inv_exp_tab[16]={
+//  190         (uint16)0x0001,(uint16)0x0002,(uint16)0x0004,(uint16)0x0008,
+//  191         (uint16)0x0010,(uint16)0x0020,(uint16)0x0040,(uint16)0x0080,
+//  192         (uint16)0x0100,(uint16)0x0200,(uint16)0x0400,(uint16)0x0800,
+//  193         (uint16)0x1000,(uint16)0x2000,(uint16)0x4000,(uint16)0x8000
+//  194     };
+//  195 
+//  196     tm=inv_exp_tab[OsCurrentTCB->CurrentPriority];
+        LDY     OsCurrentTCB
+        LDAB    0x6,Y
+        LDAA    #0x2
+        MUL
+        TFR     D,Y
+        LDD     ??inv_exp_tab,Y
+        TFR     D,X
+//  197 
+//  198     t_res=OsMLQ_GetBitmap() & (~tm);   /* OK? */
+        JSR     OsMLQ_GetBitmap
+        PSHD
+        TFR     X,D
+        COMA
+        COMB
+        ANDB    0x1,SP
+        ANDA    0x0,SP
+        STD     0x3,SP
+//  199     res=t_res>tm;
+        CPX     0x3,SP
+        LEAS    0x2,SP
+        BCC     ??OsExec_HigherPriorityThenCurrentReady_0
+        LDAB    #0x1
+        BRA     ??OsExec_HigherPriorityThenCurrentReady_1
+??OsExec_HigherPriorityThenCurrentReady_0:
+        LDAB    #0x0
+??OsExec_HigherPriorityThenCurrentReady_1:
+        STAB    0x0,SP
+//  200 
+//  201     return res;
+        LDAB    0x0,SP
+        LEAS    0x3,SP
+        PULX
+        RTS
+//  202 
+//  203 }
+
+        RSEG DATA16_C:CONST:REORDER:NOROOT(0)
+??inv_exp_tab:
+        DC16 1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096, 8192
+        DC16 16384, 32768
+//  204 
+//  205 
+
+        RSEG CODE:CODE:NOROOT(0)
+//  206 void OsExec_StartHighestReadyTask(void)
+OsExec_StartHighestReadyTask:
+//  207 {
+//  208     OS_SET_HIGHEST_PRIO_RUNNING();
+        JSR     OsMLQ_GetHighestPrio
+        STAB    OsCurrentTID
+        LDAB    OsCurrentTID
+        LDAA    #0x7
+        MUL
+        ADDD    #OS_TCB
+        STD     OsCurrentTCB
+        LDY     OsCurrentTCB
+        LDAB    #0x2
+        STAB    0x2,Y
+        JSR     OsRes_GetInternalResource
+//  209 
+//  210     OS_START_CURRENT_TASK();
+        JMP     OS_START_CURRENT_TASK
+//  211 }
+//  212 
+//  213 
+
+        RSEG CODE:CODE:REORDER:NOROOT(0)
+//  214 ISR1(SWI_Vector)
+SWI_Vector:
+//  215 {
+//  216     OSEnterISR();
+        JSR     OS_SAVE_CONTEXT
+        JSR     OS_ISR_CONTEXT
+        LDAB    #0x2
+        ORAB    OsFlags
+        STAB    OsFlags
+        LDD     OsCallevel
+        STD     OsCallevelSaved
+        LDD     #0x2
+        STD     OsCallevel
+//  217     OSLeaveISR();
+        LDAB    #0xfd
+        ANDB    OsFlags
+        STAB    OsFlags
+        BSR     OsExec_HigherPriorityThenCurrentReady
+        JSR     OsExec_ScheduleFromISR
+        LDD     OsCallevelSaved
+        STD     OsCallevel
+        JSR     OS_RESTORE_CONTEXT
+//  218 }
+        RTI
+
+        RSEG INITTAB:CODE:ROOT(0)
+?init?tab?DATA16_Z:
+        DC16    sfe(DATA16_Z) - sfb(DATA16_Z), sfb(DATA16_Z), sfb(DATA16_Z)
+
+        END
+// 
+// 462 bytes in segment CODE
+//  32 bytes in segment DATA16_C
+//   5 bytes in segment DATA16_Z
+//   6 bytes in segment INITTAB
+// 
+// 462 bytes of CODE  memory (+ 6 bytes shared)
+//  32 bytes of CONST memory
+//   5 bytes of DATA  memory
+//
+//Errors: none
+//Warnings: 1

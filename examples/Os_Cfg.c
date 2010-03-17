@@ -1,26 +1,26 @@
 /*
- * k_os (Konnex Operating-System based on the OSEK/VDX-Standard).
- *
- * (C) 2007-2009 by Christoph Schueler <chris@konnex-tools.de>
- *
- * All Rights Reserved
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License along
- * with this program; if not, write to the Free Software Foundation, Inc.,
- * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
- *
- */
+   k_os (Konnex Operating-System based on the OSEK/VDX-Standard).
 
+   (C) 2007-2010 by Christoph Schueler <chris@konnex-tools.de,
+                                       cpu12.gems@googlemail.com>
+
+   All Rights Reserved
+
+   This program is free software; you can redistribute it and/or modify
+   it under the terms of the GNU General Public License as published by
+   the Free Software Foundation; version 2 of the License.
+
+   This program is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+   GNU General Public License for more details.
+
+   You should have received a copy of the GNU General Public License
+   along with this program; if not, write to the Free Software
+   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA 
+
+   s. FLOSS-EXCEPTION.txt
+*/
 /*
 **
 **		!!! AUTOMATICALLY GENERATED FILE - DO NOT EDIT !!!
@@ -41,7 +41,7 @@ uint8 IdleTask_Stk[IDLETASK_STACK_SIZE];
 ** todo: 'OSDEFINEPRIORITY(INVERT_NIBBLE(x))' ist zu umständlich!!!
 */
 
-const OsTaskConfigurationType OS_TaskConf[OS_NUM_TASKS]={
+const OsTaskConfigurationType OS_TaskConf[OS_NUMBER_OF_TASKS]={
 {
     GetTaskName(OsExec_IdleTask),
     (uint8*)IdleTask_Stk,
@@ -88,25 +88,25 @@ INTERNAL_RES_NONE /*INTERNAL_RES_SCHEDULER - besser: INTERNAL_NONPREEMPT_SCHEDUL
 }
 };
 
-OsTCBType OS_TCB[OS_NUM_TASKS];
+OsTCBType OS_TCB[OS_NUMBER_OF_TASKS];
 
-const OsResourceConfigurationType OS_ResourceConf[OS_NUM_RESOURCES]={{INVERT_NIBBLE(2)}};
-const OsResourceConfigurationType OS_IntResourceConf[OS_NUM_INT_RESOURCES]={{PRIO_SCHEDULER},{INVERT_NIBBLE(2)}}; /* Index #0 ==> PRIO_SCHEDULER */
+const OsResourceConfigurationType OS_ResourceConf[OS_NUMBER_OF_RESOURCES]={{INVERT_NIBBLE(2)}};
+const OsResourceConfigurationType OS_IntResourceConf[OS_NUMBER_OF_INT_RESOURCES]={{PRIO_SCHEDULER},{INVERT_NIBBLE(2)}}; /* Index #0 ==> PRIO_SCHEDULER */
 
-OsResourceType Os_Resources[OS_NUM_RESOURCES];    /* dynamic parameters of Resources*/
+OsResourceType Os_Resources[OS_NUMBER_OF_RESOURCES];    /* dynamic parameters of Resources*/
 
-volatile TickType Os_CounterValues[OS_NUM_COUNTERS];
+volatile TickType Os_CounterValues[OS_NUMBER_OF_COUNTERS];
 
 const AlarmType AlarmsForSysCounter[1]={Alarm1};
 
-const CounterConfigurationType __OS_CounterDefs[OS_NUM_COUNTERS]=
+const CounterConfigurationType __OS_CounterDefs[OS_NUMBER_OF_COUNTERS]=
 {
     {&Os_CounterValues[0],{OSMAXALLOWEDVALUE_SystemCounter,OSTICKSPERBASE_SystemCounter,OSMINCYCLE_SystemCounter},(uint8)1,AlarmsForSysCounter}
 };
 
-volatile OSAlarm OS_AlarmValue[OS_NUM_ALARMS];
+volatile OSAlarm OS_AlarmValue[OS_NUMBER_OF_ALARMS];
 
-const AlarmConfigurationType OS_AlarmConf[OS_NUM_ALARMS]={
+const AlarmConfigurationType OS_AlarmConf[OS_NUMBER_OF_ALARMS]={
     {SystemCounter,ALM_CALLBACK,{(void*)GetAlarmCallbackName(Alarm1)},((AppModeType)0x01),(TickType)1000,(TickType)1000},
 };
 
@@ -114,4 +114,3 @@ const AlarmConfigurationType OS_AlarmConf[OS_NUM_ALARMS]={
 **  ISR2-Wrapper.
 */
 IMPLEMENT_ISR2_VECTOR(OSSystemTimerVector)
-

@@ -1,6 +1,6 @@
  # -*- coding: latin-1 -*-
  
- __version__="0.9.0"
+__version__="0.9.0"
 
 __copyright__="""
    k_os (Konnex Operating-System based on the OSEK/VDX-Standard).
@@ -742,7 +742,8 @@ def ParseOil(fname):
     try:
         f=open(fname)
     except IOError:
-        print "cannot open file"
+        print "could not open file '%s'.\n" % (fname)
+        sys.exit(1)
     else:
         data=BuildAndCheck(parse(scan(f),'file'))
         f.close()
@@ -755,5 +756,3 @@ def test():
         
 if __name__=="__main__":
     test()
-
-	

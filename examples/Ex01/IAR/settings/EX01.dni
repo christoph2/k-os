@@ -1,0 +1,44 @@
+[DisAssemblyWindow]
+NumStates=_ 1
+State 1=_ 1
+[StackPlugin]
+Enabled=1
+OverflowWarningsEnabled=1
+WarningThreshold=90
+SpWarningsEnabled=1
+WarnHow=0
+UseTrigger=1
+TriggerName=main
+LimitSize=0
+ByteLimit=50
+[Log file]
+LoggingEnabled=_ 0
+LogFile=_ ""
+Category=_ 0
+[TermIOLog]
+LoggingEnabled=_ 0
+LogFile=_ ""
+[Breakpoints]
+Bp0=_ "Code" "{C:\projekte\csProjects\k-os\examples\Ex01\app.c}.168.9@1" 0 0 0 0 "" 0 ""
+Bp1=_ "Code" "{C:\projekte\csProjects\k-os\examples\Ex01\app.c}.191.9@1" 0 0 0 0 "" 0 ""
+Bp2=_ "Code" "{C:\projekte\csProjects\k-os\src\Os_Port.c}.98.5@1" 0 0 0 0 "" 0 ""
+Bp3=_ "Code" "{C:\projekte\csProjects\k-os\examples\Ex01\app.c}.206.4@1" 1 0 0 0 "" 0 ""
+Bp4=_ "Code" "{C:\projekte\csProjects\k-os\src\Os_Alm.c}.30.5@1" 1 0 0 0 "" 0 ""
+Bp5=_ "Code" "{C:\projekte\csProjects\k-os\src\Os_Alm.c}.35.24@1" 1 0 0 0 "" 0 ""
+Bp6=_ "Code" "{C:\projekte\csProjects\k-os\src\Os_Alm.c}.45.5@1" 0 0 0 0 "" 0 ""
+Bp7=_ "Code" "{C:\projekte\csProjects\k-os\src\Os_Ctr.c}.179.17@1" 1 0 0 0 "" 0 ""
+Count=8
+[Interrupts]
+Enabled=1
+Irq0=_ 0 8008000 0 8000 1 0 0 100 0 1 "MDC_uflow 0xFFCA  MCCTL.MCZI"
+Count=1
+[MemoryMap]
+Enabled=0
+Base=0
+UseAuto=0
+TypeViolation=1
+UnspecRange=1
+ActionState=1
+[TraceHelper]
+Enabled=0
+ShowSource=1

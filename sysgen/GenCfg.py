@@ -4,7 +4,8 @@ __version__="0.9.0"
 __copyright__="""
    k_os (Konnex Operating-System based on the OSEK/VDX-Standard).
  
-  (C) 2007-2009 by Christoph Schueler <chris@konnex-tools.de>
+   (C) 2007-2009 by Christoph Schueler <chris@konnex-tools.de,
+                                        cpu12.gems@googlemail.com>
   
    All Rights Reserved
  
@@ -50,7 +51,7 @@ def itemgetter(*items):
             return tuple(obj[item] for item in items)
     return g
 
-"""
+#"""
 
 
 def Generate(fname,AppDef): 

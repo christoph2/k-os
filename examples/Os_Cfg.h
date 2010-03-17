@@ -1,25 +1,26 @@
 /*
- * k_os (Konnex Operating-System based on the OSEK/VDX-Standard).
- *
- * (C) 2007-2009 by Christoph Schueler <chris@konnex-tools.de>
- *
- * All Rights Reserved
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License along
- * with this program; if not, write to the Free Software Foundation, Inc.,
- * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
- *
- */
+   k_os (Konnex Operating-System based on the OSEK/VDX-Standard).
+
+   (C) 2007-2010 by Christoph Schueler <chris@konnex-tools.de,
+                                       cpu12.gems@googlemail.com>
+
+   All Rights Reserved
+
+   This program is free software; you can redistribute it and/or modify
+   it under the terms of the GNU General Public License as published by
+   the Free Software Foundation; version 2 of the License.
+
+   This program is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+   GNU General Public License for more details.
+
+   You should have received a copy of the GNU General Public License
+   along with this program; if not, write to the Free Software
+   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA 
+
+   s. FLOSS-EXCEPTION.txt
+*/
 
 /*
 **
@@ -33,6 +34,9 @@
 extern "C"
 {
 #endif  /* __cplusplus */
+
+#define OS_AUTOSAR
+/* #undef OS_AUTOSAR	*/
 
 #define USE_ORTI
 /* #undef   USE_ORTI */
@@ -155,7 +159,7 @@ extern "C"
 
 #define LOCALMESSAGESONLY 1
 
-#define COM_NUM_MESSAGES    ((uint8)2)
+#define COM_NUMBER_OF_MESSAGES    ((uint8)2)
 
 #endif /* OS_USE_COM */
 
@@ -170,15 +174,15 @@ extern "C"
 #undef  OS_SCHEDULE_PRE
 #define OS_SCHEDULE_MIX
 
-#define OS_NUM_TASKS            ((uint8)2+(uint8)1)
+#define OS_NUMBER_OF_TASKS            ((uint8)2+(uint8)1)
 #define STACK_SIZE              ((uint8)64)
 #define ISR_STACK_SIZE          ((uint8)32)
 #define IDLETASK_STACK_SIZE     ((uint8)32)
 
-#define OS_NUM_COUNTERS         ((uint8)1)
-#define OS_NUM_ALARMS           ((uint8)1)
-#define OS_NUM_RESOURCES        ((uint8)1)
-#define OS_NUM_INT_RESOURCES    ((uint8)2)
+#define OS_NUMBER_OF_COUNTERS         ((uint8)1)
+#define OS_NUMBER_OF_ALARMS           ((uint8)1)
+#define OS_NUMBER_OF_RESOURCES        ((uint8)1)
+#define OS_NUMBER_OF_INT_RESOURCES    ((uint8)2)
 
 #define OSSTACKFILLCHAR         ((uint8)0)
 #define OS_ENABLE_WATCHDOG
@@ -193,19 +197,19 @@ extern uint8 Tsk2_Stk[STACK_SIZE];
 extern uint8 ISR_Stk[ISR_STACK_SIZE];
 extern uint8 IdleTask_Stk[IDLETASK_STACK_SIZE];
 
-extern OsTCBType OS_TCB[OS_NUM_TASKS];
-extern const OsTaskConfigurationType OS_TaskConf[OS_NUM_TASKS];
+extern OsTCBType OS_TCB[OS_NUMBER_OF_TASKS];
+extern const OsTaskConfigurationType OS_TaskConf[OS_NUMBER_OF_TASKS];
 
 extern const OsResourceConfigurationType OS_ResourceConf[];
 extern const OsResourceConfigurationType OS_IntResourceConf[];
 
 extern OsResourceType Os_Resources[];
 
-extern volatile TickType Os_CounterValues[OS_NUM_COUNTERS];
-extern const CounterConfigurationType __OS_CounterDefs[OS_NUM_COUNTERS];
+extern volatile TickType Os_CounterValues[OS_NUMBER_OF_COUNTERS];
+extern const CounterConfigurationType __OS_CounterDefs[OS_NUMBER_OF_COUNTERS];
 
-extern volatile OSAlarm OS_AlarmValue[OS_NUM_ALARMS];
-extern const AlarmConfigurationType OS_AlarmConf[OS_NUM_ALARMS];
+extern volatile OSAlarm OS_AlarmValue[OS_NUMBER_OF_ALARMS];
+extern const AlarmConfigurationType OS_AlarmConf[OS_NUMBER_OF_ALARMS];
 
 DeclareTask(Task1);
 #define Task1   ((TaskType)1)

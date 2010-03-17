@@ -1,0 +1,178 @@
+//////////////////////////////////////////////////////////////////////////////
+//                                                                           /
+// IAR HCS12 C/C++ Compiler V3.11A/W32                 17/Mar/2010  10:33:46 /
+// Copyright 1997-2006 IAR Systems. All rights reserved.                     /
+//                                                                           /
+//    Source file  =  C:\projekte\csProjects\k-os\src\Com_Int.c              /
+//    Command line =  C:\projekte\csProjects\k-os\src\Com_Int.c              /
+//                    --preprocess=l C:\projekte\csProjects\k-os\examples\Ex /
+//                    01\IAR\Debug\List\ -lC C:\projekte\csProjects\k-os\exa /
+//                    mples\Ex01\IAR\Debug\List\ -lB                         /
+//                    C:\projekte\csProjects\k-os\examples\Ex01\IAR\Debug\Li /
+//                    st\ --code_model=normal --double=32 -o                 /
+//                    C:\projekte\csProjects\k-os\examples\Ex01\IAR\Debug\Ob /
+//                    j\ --require_prototypes -e -z2 --no_cse --no_unroll    /
+//                    --no_inline --no_code_motion --no_tbaa                 /
+//                    --no_cross_call --debug "-D_DLIB_CONFIG_FILE=C:\Progra /
+//                    mme\IAR Systems\Embedded Workbench Evaluation          /
+//                    4.0\HCS12\LIB\DLIB\dlhcs12nfn.h" --segment             /
+//                    __data8=DATA8 --segment __data16=DATA16 --segment      /
+//                    __banked=BANKED_CODE --segment __non_banked=CODE       /
+//                    --segment __intvec=INTVEC --segment __difunct=DIFUNCT  /
+//                    --segment __cstack=CSTACK --segment __inittab=INITTAB  /
+//                    -I C:\projekte\csProjects\k-os\inc\ -I                 /
+//                    C:\projekte\csProjects\common\inc\ -I                  /
+//                    C:\projekte\csProjects\common\ -I                      /
+//                    C:\projekte\csProjects\common\InstallISR\ -I           /
+//                    C:\projekte\csProjects\k-os\examples\Ex01\ -I          /
+//                    C:\projekte\csProjects\common\drivers\include\cpu12\   /
+//                    -I "C:\Programme\IAR Systems\Embedded Workbench        /
+//                    Evaluation 4.0\HCS12\INC\" -I "C:\Programme\IAR        /
+//                    Systems\Embedded Workbench Evaluation                  /
+//                    4.0\HCS12\INC\DLIB\"                                   /
+//    List file    =  C:\projekte\csProjects\k-os\examples\Ex01\IAR\Debug\Li /
+//                    st\Com_Int.s12                                         /
+//                                                                           /
+//                                                                           /
+//////////////////////////////////////////////////////////////////////////////
+
+        NAME Com_Int
+
+        RSEG CSTACK:DATA:REORDER:NOROOT(0)
+
+        PUBLIC ComIntReceiveMessage
+        PUBLIC ComIntSendMessage
+
+        EXTERN Com_MessageObjects
+        EXTERN OsFlags
+        EXTERN OsCurrentTCB
+        EXTERN ComIfUpdateAndNotifyReceivers
+        EXTERN ResumeOSInterrupts
+        EXTERN SuspendOSInterrupts
+        EXTERN Utl_MemCopy
+
+// C:\projekte\csProjects\k-os\src\Com_Int.c
+//    1 /*
+//    2  * k_os (Konnex Operating-System based on the OSEK/VDX-Standard).
+//    3  *
+//    4  * (C) 2007-2009 by Christoph Schueler <chris@konnex-tools.de>
+//    5  *
+//    6  * All Rights Reserved
+//    7  *
+//    8  * This program is free software; you can redistribute it and/or modify
+//    9  * it under the terms of the GNU General Public License as published by
+//   10  * the Free Software Foundation; either version 2 of the License, or
+//   11  * (at your option) any later version.
+//   12  *
+//   13  * This program is distributed in the hope that it will be useful,
+//   14  * but WITHOUT ANY WARRANTY; without even the implied warranty of
+//   15  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//   16  * GNU General Public License for more details.
+//   17  *
+//   18  * You should have received a copy of the GNU General Public License along
+//   19  * with this program; if not, write to the Free Software Foundation, Inc.,
+//   20  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+//   21  *
+//   22  */
+//   23 
+//   24 /*
+//   25 **
+//   26 **  Implements OSEK-COM internal Communications.
+//   27 **
+//   28 */
+//   29 
+//   30 #include "Com_Int.h"
+//   31 
+//   32 extern const ComMessageObjectType Com_MessageObjects[];
+//   33 
+
+        RSEG CODE:CODE:REORDER:NOROOT(0)
+//   34 StatusType ComIntSendMessage(MessageIdentifier Message,ApplicationDataRef DataRef)
+ComIntSendMessage:
+//   35 {
+        PSHX
+        LEAS    -0x4,SP
+        STD     0x0,SP
+        STY     0x2,SP
+//   36     ComMessageObjectType *MessageSendObject;
+//   37         
+//   38     MessageSendObject=(ComMessageObjectType *)&GET_MESSAGE_OBJECT(Message);
+        LDY     0x0,SP
+        LDD     #0xa
+        EMUL
+        ADDD    #Com_MessageObjects
+        TFR     D,X
+//   39     
+//   40     if (MessageSendObject->NumReceivers!=(uint8)0) {
+        TST     0x7,X
+        BEQ     ??ComIntSendMessage_1
+//   41         ComIfUpdateAndNotifyReceivers((ComMessageObjectType *)MessageSendObject,DataRef);
+        LDD     0x2,SP
+        TFR     X,Y
+        JSR     ComIfUpdateAndNotifyReceivers
+//   42         OS_COND_SCHEDULE_FROM_TASK_LEVEL();
+        BRCLR   OsFlags,#0x2,??ComIntSendMessage_0
+        BRA     ??ComIntSendMessage_1
+??ComIntSendMessage_0:
+        LDY     OsCurrentTCB
+        LDAB    0x6,Y
+        INCB
+        BEQ     ??ComIntSendMessage_1
+        SWI
+//   43     }
+//   44     
+//   45     return E_OK;    
+??ComIntSendMessage_1:
+        LDAB    #0x0
+        LEAS    0x4,SP
+        PULX
+        RTS
+//   46 }
+//   47 
+//   48 
+
+        RSEG CODE:CODE:REORDER:NOROOT(0)
+//   49 StatusType ComIntReceiveMessage(MessageIdentifier Message,ApplicationDataRef DataRef)
+ComIntReceiveMessage:
+//   50 {
+        PSHX
+        LEAS    -0x4,SP
+        STD     0x0,SP
+        STY     0x2,SP
+//   51     ComMessageObjectType *MessageObject;
+//   52         
+//   53     MessageObject=(ComMessageObjectType *)&GET_MESSAGE_OBJECT(Message);    
+        LDY     0x0,SP
+        LDD     #0xa
+        EMUL
+        ADDD    #Com_MessageObjects
+        TFR     D,X
+//   54 
+//   55     DISABLE_ALL_OS_INTERRUPTS();
+        JSR     SuspendOSInterrupts
+//   56     Utl_MemCopy((void*)DataRef,(void*)MessageObject->Data,(uint16)MessageObject->Size);
+        LDAB    0x4,X
+        EXG     B,Y
+        PSHY
+        LDD     0x5,X
+        LDY     0x4,SP
+        JSR     Utl_MemCopy
+//   57     ENABLE_ALL_OS_INTERRUPTS();
+        LEAS    0x2,SP
+        JSR     ResumeOSInterrupts
+//   58     
+//   59     return E_OK;
+        LDAB    #0x0
+        LEAS    0x4,SP
+        PULX
+        RTS
+//   60 }
+
+        END
+// 
+// 95 bytes in segment CODE
+// 
+// 95 bytes of CODE memory
+//
+//Errors: none
+//Warnings: 1

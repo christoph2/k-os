@@ -5,7 +5,8 @@ __version__="0.9.0"
 __copyright__="""
    k_os (Konnex Operating-System based on the OSEK/VDX-Standard).
  
-  (C) 2007-2009 by Christoph Schueler <chris@konnex-tools.de>
+   (C) 2007-2009 by Christoph Schueler <chris@konnex-tools.de,
+                                        cpu12.gems@googlemail.com>
   
    All Rights Reserved
  
@@ -102,3 +103,36 @@ class OilScanner(GenericScanner):
     def t_newline(self,s):
         r" [\n] "
         self.lineno+=1
+
+
+    def t_line_directive(self,s):
+        r'  \#[ \t]*line[ \t]*[0-9]+'   ### r' ["].*["] '
+##  #line 106 "C:\\projekte\\csProjects\\common\\inc\\Std_Macros.h"        
+##        r"  #line[ \t]+[0-9]+ "        
+        file=""
+
+        elems=s.split()
+        line=int(elems[1])
+#        file=elems[2]
+        
+        print "LINE '%s':%d" % (file,line)
+        self.rv.append(Token('line_directive',(file,line)))
+
+
+def test():
+    m="""
+        #line 106
+        OSEK OSEK {
+
+            OS	ExampleOS {
+                STATUS = EXTENDED;
+                STARTUPHOOK = FALSE;
+                ERRORHOOK = TRUE;
+                SHUTDOWNHOOK = FALSE;
+            };
+        }
+    """    
+    s=OilScanner()
+    s.tokenize(m)
+    
+test()

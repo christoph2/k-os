@@ -1,44 +1,45 @@
 /*
- * k_os (Konnex Operating-System based on the OSEK/VDX-Standard).
- *
- * (C) 2007-2009 by Christoph Schueler <chris@konnex-tools.de>
- *
- * All Rights Reserved
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License along
- * with this program; if not, write to the Free Software Foundation, Inc.,
- * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
- *
- */
+   k_os (Konnex Operating-System based on the OSEK/VDX-Standard).
 
+   (C) 2007-2010 by Christoph Schueler <chris@konnex-tools.de,
+                                       cpu12.gems@googlemail.com>
+
+   All Rights Reserved
+
+   This program is free software; you can redistribute it and/or modify
+   it under the terms of the GNU General Public License as published by
+   the Free Software Foundation; version 2 of the License.
+
+   This program is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+   GNU General Public License for more details.
+
+   You should have received a copy of the GNU General Public License
+   along with this program; if not, write to the Free Software
+   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA 
+
+   s. FLOSS-EXCEPTION.txt
+*/
 #if !defined(__OS_TYPES_H)
 #define __OS_TYPES_H
 
-#include "Std_Types.h"
 
 /*
 Internal errors of the operating system:
-These errors are implementation specific and not part of the 
-portable section. The error names reside in the same name-space as 
+These errors are implementation specific and not part of the
+portable section. The error names reside in the same name-space as
 the errors for API services mentioned above, i.e. the range of
-numbers must not overlap. To show the difference in use, 
+numbers must not overlap. To show the difference in use,
 the names internal errors must start with E_OS_SYS_
 Examples:
 • E_OS_SYS_STACK
 • E_OS_SYS_PARITY
-• ... and other implementation-specific errors, which 
+• ... and other implementation-specific errors, which
         have to be described in the vendorspecific document.
 */
+
+#include "Std_Types.h"
 
 #define E_AS        ((uint8)16)
 #define E_COM       ((uint8)32)
@@ -65,7 +66,7 @@ typedef enum tagStatusType {
     E_OS_VALUE,
     /* Implementation specific OS errors. */
     E_OS_SYS_ASSERTION_FAILED,
-    
+
     /*  Autosar-OS-Extensions.  */
     E_OS_SERVICEID=E_AS,
     E_OS_ILLEGAL_ADDRESS,
@@ -87,6 +88,7 @@ typedef enum tagStatusType {
 } StatusType;
 
 #endif  /* STATUSTYPEDEFINED  */
+
 
 /*
 ** Datatypes / Application-Management.
@@ -118,6 +120,8 @@ typedef void (*TaskFunctionType)(void);
 */
 typedef uint8 ResourceType;
 typedef ResourceType* ResourceRefType;
+
+
 /*
 ** Datatypes / Event-Control.
 */
@@ -127,12 +131,14 @@ typedef EventMaskType* EventMaskRefType;
 
 typedef uint8 MessageType;
 
+
 /*
 **      Datatypes / Counter-Management.
 */
 typedef uint8 CounterType;
 typedef CounterType* CounterRefType;
- 
+
+
 /*
 **      Datatypes / Alarm-Management.
 */
@@ -147,18 +153,15 @@ typedef struct tagAlarmBaseType {   /*  Hinweis: meint die Definition eines Coun
                                     /*  of SetRelAlarm/SetAbsAlarm) (only for systems with extended status).  */
 } AlarmBaseType,*AlarmBaseRefType,CtrInfoType,*CtrInfoRefType;
 
+
 typedef uint8 AlarmType;            /*  This data type represents an alarm object.  */
 typedef void (*AlarmCallbackType)(void);
-
-typedef enum tagAlarmState {
-    ALM_STOPPED,
-    ALM_RUNNING
-} AlarmState;
 
 typedef struct tagAlarmSetEventType {
     TaskType TaskID;
     EventMaskType Mask;
 } AlarmSetEventType;
+
 
 typedef enum tagAlarmActionTypeType {
     ALM_SETEVENT,
@@ -166,6 +169,7 @@ typedef enum tagAlarmActionTypeType {
     ALM_CALLBACK,
     ALM_COUNTER
 } AlarmActionTypeType;
+
 
 typedef union tagAlarmActionType {
     void *Dummy;
@@ -175,19 +179,19 @@ typedef union tagAlarmActionType {
     CounterType CounterID;
 } AlarmActionType;
 
+
 typedef struct tagOSAlarm {
     TickType ExpireCounter;
     TickType CycleCounter;
-    AlarmState State;
-} OSAlarm; 
+} OSAlarm;
 
 
 typedef struct tagAlarmConfigurationType {
     CounterType AttachedCounter;
     AlarmActionTypeType ActionType;
-    AlarmActionType Action;    
+    AlarmActionType Action;
     AppModeType Autostart;
-    TickType AlarmTime,CycleTime; 
+    TickType AlarmTime,CycleTime;
 } AlarmConfigurationType;
 
 typedef enum tagCounterDriverType {
@@ -207,17 +211,17 @@ typedef struct tagCounterConfigurationType {
 typedef struct tagOsTCBType {
     uint8 *Stackpointer; /* todo: 'StackPointerType! */
     TaskStateType State;
-#if defined(OS_BCC2) || defined(OS_ECC2)        
+#if defined(OS_BCC2) || defined(OS_ECC2)
     uint8 Activations;
 #endif
 #if defined(OS_ECC1) || defined(OS_ECC2)
     EventMaskType EventsSet,EventsWaitingFor;
-#endif 
+#endif
 
 #if defined(OS_USE_RESOURCES)
     uint8 ResourceCount;
 #endif
-#if defined(OS_USE_RESOURCES) || defined(OS_USE_INTERNAL_RESOURCES)    
+#if defined(OS_USE_RESOURCES) || defined(OS_USE_INTERNAL_RESOURCES)
     PriorityType CurrentPriority;
 #endif
 } OsTCBType;
@@ -244,7 +248,7 @@ typedef struct tagOsResourceConfigurationType {
 } OsResourceConfigurationType;
 
 typedef struct tagOsResourceType {
-#if defined(USE_ORTI)    
+#if defined(USE_ORTI)
     TaskType Locker;
 #endif
     PriorityType PriorPriorityOfTask;
@@ -305,7 +309,7 @@ typedef enum tagScheduleTableStatusType {
 
 typedef enum tagProtectionReturnType {
     PRO_IGNORE,PRO_TERMINATETASKISR,PRO_TERMINATEAPPL,PRO_TERMINATEAPPL_RESTART,PRO_SHUTDOWN
-} ProtectionReturnType; 
+} ProtectionReturnType;
 
 typedef enum tagRestartType {
     RESTART,NO_RESTART

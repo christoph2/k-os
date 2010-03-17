@@ -1,0 +1,665 @@
+//////////////////////////////////////////////////////////////////////////////
+//                                                                           /
+// IAR HCS12 C/C++ Compiler V3.11A/W32                 17/Mar/2010  10:33:52 /
+// Copyright 1997-2006 IAR Systems. All rights reserved.                     /
+//                                                                           /
+//    Source file  =  C:\projekte\csProjects\k-os\src\Os_Evt.c               /
+//    Command line =  C:\projekte\csProjects\k-os\src\Os_Evt.c               /
+//                    --preprocess=l C:\projekte\csProjects\k-os\examples\Ex /
+//                    01\IAR\Debug\List\ -lC C:\projekte\csProjects\k-os\exa /
+//                    mples\Ex01\IAR\Debug\List\ -lB                         /
+//                    C:\projekte\csProjects\k-os\examples\Ex01\IAR\Debug\Li /
+//                    st\ --code_model=normal --double=32 -o                 /
+//                    C:\projekte\csProjects\k-os\examples\Ex01\IAR\Debug\Ob /
+//                    j\ --require_prototypes -e -z2 --no_cse --no_unroll    /
+//                    --no_inline --no_code_motion --no_tbaa                 /
+//                    --no_cross_call --debug "-D_DLIB_CONFIG_FILE=C:\Progra /
+//                    mme\IAR Systems\Embedded Workbench Evaluation          /
+//                    4.0\HCS12\LIB\DLIB\dlhcs12nfn.h" --segment             /
+//                    __data8=DATA8 --segment __data16=DATA16 --segment      /
+//                    __banked=BANKED_CODE --segment __non_banked=CODE       /
+//                    --segment __intvec=INTVEC --segment __difunct=DIFUNCT  /
+//                    --segment __cstack=CSTACK --segment __inittab=INITTAB  /
+//                    -I C:\projekte\csProjects\k-os\inc\ -I                 /
+//                    C:\projekte\csProjects\common\inc\ -I                  /
+//                    C:\projekte\csProjects\common\ -I                      /
+//                    C:\projekte\csProjects\common\InstallISR\ -I           /
+//                    C:\projekte\csProjects\k-os\examples\Ex01\ -I          /
+//                    C:\projekte\csProjects\common\drivers\include\cpu12\   /
+//                    -I "C:\Programme\IAR Systems\Embedded Workbench        /
+//                    Evaluation 4.0\HCS12\INC\" -I "C:\Programme\IAR        /
+//                    Systems\Embedded Workbench Evaluation                  /
+//                    4.0\HCS12\INC\DLIB\"                                   /
+//    List file    =  C:\projekte\csProjects\k-os\examples\Ex01\IAR\Debug\Li /
+//                    st\Os_Evt.s12                                          /
+//                                                                           /
+//                                                                           /
+//////////////////////////////////////////////////////////////////////////////
+
+        NAME Os_Evt
+
+        RSEG CSTACK:DATA:REORDER:NOROOT(0)
+
+        PUBLIC ClearEvent
+        PUBLIC GetEvent
+        PUBLIC OsEvtSetEvent
+        PUBLIC SetEvent
+        PUBLIC WaitEvent
+
+        EXTERN Os_ServiceContext
+        EXTERN OS_TaskConf
+        EXTERN OS_TCB
+        EXTERN OsCallevel
+        EXTERN OsFlags
+        EXTERN OsCurrentTCB
+        EXTERN OsCurrentTID
+        EXTERN OSSaveServiceContext
+        EXTERN OsErrorCallErrorHook
+        EXTERN OsRes_ReleaseInternalResource
+        EXTERN OsTask_Ready
+        EXTERN OsTask_Wait
+        EXTERN ResumeOSInterrupts
+        EXTERN SuspendOSInterrupts
+
+// C:\projekte\csProjects\k-os\src\Os_Evt.c
+//    1 /*
+//    2  * k_os (Konnex Operating-System based on the OSEK/VDX-Standard).
+//    3  *
+//    4  * (C) 2007-2009 by Christoph Schueler <chris@konnex-tools.de,
+//    5  *                                      cpu12.gems@googlemail.com>
+//    6  *
+//    7  * All Rights Reserved
+//    8  *
+//    9  * This program is free software; you can redistribute it and/or modify
+//   10  * it under the terms of the GNU General Public License as published by
+//   11  * the Free Software Foundation; either version 2 of the License, or
+//   12  * (at your option) any later version.
+//   13  *
+//   14  * This program is distributed in the hope that it will be useful,
+//   15  * but WITHOUT ANY WARRANTY; without even the implied warranty of
+//   16  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//   17  * GNU General Public License for more details.
+//   18  *
+//   19  * You should have received a copy of the GNU General Public License along
+//   20  * with this program; if not, write to the Free Software Foundation, Inc.,
+//   21  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+//   22  *
+//   23  */
+//   24 #include "Osek.h"
+//   25 
+//   26 
+
+        RSEG CODE:CODE:NOROOT(0)
+//   27 StatusType OsEvtSetEvent(TaskType TaskID,EventMaskType Mask)
+OsEvtSetEvent:
+//   28 {
+        PSHX
+        PSHD
+        STAB    0x0,SP
+        STAA    0x1,SP
+//   29     SAVE_SERVICE_CONTEXT(OSServiceId_SetEvent,TaskID,Mask,NULL);
+        LDD     #0x0
+        PSHD
+        LDAB    #0x1e
+        PSHB
+        LDAB    0x4,SP
+        CLRA
+        PSHD
+        LDAB    0x5,SP
+        EXG     B,Y
+        PULD
+        JSR     OSSaveServiceContext
+//   30 
+//   31     ASSERT_VALID_TASKID(TaskID);
+        TST     0x3,SP
+        LEAS    0x3,SP
+        BEQ     ??OsEvtSetEvent_3
+        LDAB    0x0,SP
+        CMPB    #0x4
+        BCS     ??OsEvtSetEvent_4
+??OsEvtSetEvent_3:
+        LDAB    #0x3
+        JSR     OsErrorCallErrorHook
+        CLR     Os_ServiceContext
+        LDAB    #0x3
+        JMP     .LWRD.(??OsEvtSetEvent_5)
+//   32     ASSERT_TASK_IS_EXTENDED(TaskID);
+??OsEvtSetEvent_4:
+        LDAB    0x0,SP
+        LDAA    #0x9
+        MUL
+        TFR     D,Y
+        BRCLR   OS_TaskConf + 6,Y,#0x2,??OsEvtSetEvent_0
+        BRA     ??OsEvtSetEvent_6
+??OsEvtSetEvent_0:
+        LDAB    #0x1
+        JSR     OsErrorCallErrorHook
+        CLR     Os_ServiceContext
+        LDAB    #0x1
+        JMP     .LWRD.(??OsEvtSetEvent_5)
+//   33     ASSERT_TASK_IS_NOT_SUSPENDED(TaskID);
+??OsEvtSetEvent_6:
+        LDAB    0x0,SP
+        LDAA    #0x7
+        MUL
+        TFR     D,Y
+        TST     OS_TCB + 2,Y
+        BNE     ??OsEvtSetEvent_7
+        LDAB    #0x7
+        JSR     OsErrorCallErrorHook
+        CLR     Os_ServiceContext
+        LDAB    #0x7
+        BRA     ??OsEvtSetEvent_5
+//   34     ASSERT_VALID_CALLEVEL(OS_CL_TASK|OS_CL_ISR2);
+??OsEvtSetEvent_7:
+        BRCLR   OsCallevel + 1,#0x3,??OsEvtSetEvent_1
+        BRA     ??OsEvtSetEvent_8
+??OsEvtSetEvent_1:
+        LDAB    #0x2
+        JSR     OsErrorCallErrorHook
+        CLR     Os_ServiceContext
+        LDAB    #0x2
+        BRA     ??OsEvtSetEvent_5
+//   35     ASSERT_INTERRUPTS_ENABLED_AT_TASK_LEVEL();
+??OsEvtSetEvent_8:
+        TFR     CCR,B
+        BITB    #0x10
+        BEQ     ??OsEvtSetEvent_9
+        BRCLR   OsFlags,#0x2,??OsEvtSetEvent_2
+        BRA     ??OsEvtSetEvent_9
+??OsEvtSetEvent_2:
+        LDAB    #0x13
+        JSR     OsErrorCallErrorHook
+        CLR     Os_ServiceContext
+        LDAB    #0x13
+        BRA     ??OsEvtSetEvent_5
+//   36 
+//   37     DISABLE_ALL_OS_INTERRUPTS();
+??OsEvtSetEvent_9:
+        JSR     SuspendOSInterrupts
+//   38     OS_TASK_SET_EVENT(TaskID,Mask);
+        LDAB    0x0,SP
+        LDAA    #0x7
+        MUL
+        TFR     D,Y
+        LDAB    0x1,SP
+        ORAB    OS_TCB + 3,Y
+        PSHB
+        LDAA    0x1,SP
+        LDAB    #0x7
+        MUL
+        TFR     D,Y
+        PULB
+        STAB    OS_TCB + 3,Y
+//   39 
+//   40     if (((OS_TASK_GET_EVENTS_SET(TaskID) &
+//   41         OS_TASK_GET_EVENTS_WAITING_FOR(TaskID))!=(EventMaskType)0) && OS_IS_TASK_WAITING(TaskID)) {
+        LDAB    0x0,SP
+        LDAA    #0x7
+        MUL
+        TFR     D,X
+        LDAB    0x0,SP
+        LDAA    #0x7
+        MUL
+        TFR     D,Y
+        LDAB    OS_TCB + 4,Y
+        BITB    OS_TCB + 3,X
+        BEQ     ??OsEvtSetEvent_10
+        LDAB    0x0,SP
+        LDAA    #0x7
+        MUL
+        TFR     D,Y
+        LDAB    OS_TCB + 2,Y
+        CMPB    #0x3
+        BNE     ??OsEvtSetEvent_10
+//   42             OsTask_Ready(TaskID);
+        LDAB    0x0,SP
+        JSR     OsTask_Ready
+//   43     }
+//   44 
+//   45     ENABLE_ALL_OS_INTERRUPTS();
+??OsEvtSetEvent_10:
+        JSR     ResumeOSInterrupts
+//   46 
+//   47     CLEAR_SERVICE_CONTEXT();
+        CLR     Os_ServiceContext
+//   48     return E_OK;
+        LDAB    #0x0
+??OsEvtSetEvent_5:
+        PULY
+        PULX
+        RTS
+//   49 }
+//   50 
+//   51 
+
+        RSEG CODE:CODE:REORDER:NOROOT(0)
+//   52 StatusType SetEvent(TaskType TaskID,EventMaskType Mask)
+SetEvent:
+//   53 {
+        LEAS    -0x3,SP
+        STAB    0x1,SP
+        STAA    0x2,SP
+//   54 /*
+//   55 **
+//   56 **      Standard-Status:
+//   57 **              – E_OK – no error.
+//   58 **      Extended-Status:
+//   59 **              – E_OS_ID – the task identifier is invalid.
+//   60 **              – E_OS_ACCESS – the referenced task is not an Extended Task.
+//   61 **              – E_OS_STATE – the referenced task is in the suspended state.
+//   62 */
+//   63 #if defined(OS_BCC1) || defined(OS_BCC2)
+//   64     UNREFERENCED_PARAMETER(TaskID);
+//   65     UNREFERENCED_PARAMETER(Mask);
+//   66 
+//   67     OSCallErrorHookAndReturn(E_OS_ACCESS);  /* no extended tasks, always fail.  */
+//   68 #elif defined(OS_ECC1) || defined(OS_ECC2)
+//   69 
+//   70     StatusType Status=OsEvtSetEvent(TaskID,Mask);
+        LDAA    0x2,SP
+        LDAB    0x1,SP
+        JSR     OsEvtSetEvent
+        STAB    0x0,SP
+//   71 
+//   72     if (Status!=E_OK) {
+        TST     0x0,SP
+        BEQ     ??SetEvent_1
+//   73         return Status;
+        LDAB    0x0,SP
+        BRA     ??SetEvent_2
+//   74     } else {
+//   75         OS_COND_SCHEDULE_FROM_TASK_LEVEL();
+??SetEvent_1:
+        BRCLR   OsFlags,#0x2,??SetEvent_0
+        BRA     ??SetEvent_3
+??SetEvent_0:
+        LDY     OsCurrentTCB
+        LDAB    0x6,Y
+        INCB
+        BEQ     ??SetEvent_3
+        SWI
+//   76     }
+//   77 #endif
+//   78     return E_OK;
+??SetEvent_3:
+        LDAB    #0x0
+??SetEvent_2:
+        LEAS    0x3,SP
+        RTS
+//   79 }
+//   80 
+//   81 
+
+        RSEG CODE:CODE:REORDER:NOROOT(0)
+//   82 StatusType ClearEvent(EventMaskType Mask)
+ClearEvent:
+//   83 {
+        PSHA
+        STAB    0x0,SP
+//   84 
+//   85 /*
+//   86 **      Standard-Status:
+//   87 **              – E_OK – no error.
+//   88 **      Extended-Status:
+//   89 **              – E_OS_ACCESS – the calling task is not an Extended Task.
+//   90 **              – E_OS_CALLEVEL – a call at the interrupt level is not allowed.
+//   91 */
+//   92     SAVE_SERVICE_CONTEXT(OSServiceId_ClearEvent,Mask,NULL,NULL);
+        LDD     #0x0
+        PSHD
+        LDAB    #0x20
+        PSHB
+        LDD     #0x0
+        PSHD
+        LDAB    0x5,SP
+        EXG     B,Y
+        PULD
+        JSR     OSSaveServiceContext
+//   93 
+//   94 #if defined(OS_BCC1) || defined(OS_BCC2)
+//   95     UNREFERENCED_PARAMETER(Mask);
+//   96 
+//   97     OSCallErrorHookAndReturn(E_OS_ACCESS);    /* no extended tasks, always fail.  */
+//   98 #elif defined(OS_ECC1) || defined(OS_ECC2)
+//   99     ASSERT_TASK_IS_EXTENDED(OsCurrentTID);
+        LDAB    OsCurrentTID
+        LDAA    #0x9
+        MUL
+        TFR     D,Y
+        LEAS    0x3,SP
+        BRCLR   OS_TaskConf + 6,Y,#0x2,??ClearEvent_0
+        BRA     ??ClearEvent_3
+??ClearEvent_0:
+        LDAB    #0x1
+        JSR     OsErrorCallErrorHook
+        CLR     Os_ServiceContext
+        LDAB    #0x1
+        BRA     ??ClearEvent_4
+//  100     ASSERT_VALID_CALLEVEL(OS_CL_TASK);
+??ClearEvent_3:
+        BRCLR   OsCallevel + 1,#0x1,??ClearEvent_1
+        BRA     ??ClearEvent_5
+??ClearEvent_1:
+        LDAB    #0x2
+        JSR     OsErrorCallErrorHook
+        CLR     Os_ServiceContext
+        LDAB    #0x2
+        BRA     ??ClearEvent_4
+//  101     ASSERT_INTERRUPTS_ENABLED_AT_TASK_LEVEL();
+??ClearEvent_5:
+        TFR     CCR,B
+        BITB    #0x10
+        BEQ     ??ClearEvent_6
+        BRCLR   OsFlags,#0x2,??ClearEvent_2
+        BRA     ??ClearEvent_6
+??ClearEvent_2:
+        LDAB    #0x13
+        JSR     OsErrorCallErrorHook
+        CLR     Os_ServiceContext
+        LDAB    #0x13
+        BRA     ??ClearEvent_4
+//  102 
+//  103     DISABLE_ALL_OS_INTERRUPTS();
+??ClearEvent_6:
+        JSR     SuspendOSInterrupts
+//  104     OS_TASK_CLR_EVENT(OsCurrentTID,Mask);
+        LDAB    OsCurrentTID
+        LDAA    #0x7
+        MUL
+        TFR     D,Y
+        LDAB    0x0,SP
+        COMB
+        ANDB    OS_TCB + 3,Y
+        PSHB
+        LDAA    OsCurrentTID
+        LDAB    #0x7
+        MUL
+        TFR     D,Y
+        PULB
+        STAB    OS_TCB + 3,Y
+//  105     ENABLE_ALL_OS_INTERRUPTS();
+        JSR     ResumeOSInterrupts
+//  106 #endif
+//  107     CLEAR_SERVICE_CONTEXT();
+        CLR     Os_ServiceContext
+//  108     return E_OK;
+        LDAB    #0x0
+??ClearEvent_4:
+        PULA
+        RTS
+//  109 }
+//  110 
+//  111 
+
+        RSEG CODE:CODE:REORDER:NOROOT(0)
+//  112 StatusType GetEvent(TaskType TaskID,EventMaskRefType Event)
+GetEvent:
+//  113 {
+        PSHX
+        PSHA
+        STAB    0x0,SP
+        TFR     Y,X
+//  114 /*
+//  115 **      Standard-Status:
+//  116 **              – E_OK – no error.
+//  117 **      Extended-Status:
+//  118 **              – E_OS_ID – the task identifier is invalid.
+//  119 **              – E_OS_ACCESS – the referenced task is not an Extended Task.
+//  120 **              – E_OS_STATE – the referenced task is in the suspended state.
+//  121 */
+//  122     SAVE_SERVICE_CONTEXT(OSServiceId_GetEvent,TaskID,/*Event*/NULL,NULL);
+        LDD     #0x0
+        PSHD
+        LDAB    #0x22
+        PSHB
+        LDD     #0x0
+        PSHD
+        LDAB    0x5,SP
+        EXG     B,Y
+        PULD
+        JSR     OSSaveServiceContext
+//  123 
+//  124 #if defined(OS_BCC1) || defined(OS_BCC2)
+//  125     UNREFERENCED_PARAMETER(TaskID);
+//  126     UNREFERENCED_PARAMETER(Event);
+//  127 
+//  128     OSCallErrorHookAndReturn(E_OS_ACCESS);      /* no extended tasks, always fail.  */
+//  129 #elif defined(OS_ECC1) || defined(OS_ECC2)
+//  130     ASSERT_VALID_TASKID(TaskID);
+        TST     0x3,SP
+        LEAS    0x3,SP
+        BEQ     ??GetEvent_3
+        LDAB    0x0,SP
+        CMPB    #0x4
+        BCS     ??GetEvent_4
+??GetEvent_3:
+        LDAB    #0x3
+        JSR     OsErrorCallErrorHook
+        CLR     Os_ServiceContext
+        LDAB    #0x3
+        BRA     ??GetEvent_5
+//  131     ASSERT_TASK_IS_EXTENDED(TaskID);
+??GetEvent_4:
+        LDAB    0x0,SP
+        LDAA    #0x9
+        MUL
+        TFR     D,Y
+        BRCLR   OS_TaskConf + 6,Y,#0x2,??GetEvent_0
+        BRA     ??GetEvent_6
+??GetEvent_0:
+        LDAB    #0x1
+        JSR     OsErrorCallErrorHook
+        CLR     Os_ServiceContext
+        LDAB    #0x1
+        BRA     ??GetEvent_5
+//  132     ASSERT_TASK_IS_NOT_SUSPENDED(TaskID);
+??GetEvent_6:
+        LDAB    0x0,SP
+        LDAA    #0x7
+        MUL
+        TFR     D,Y
+        TST     OS_TCB + 2,Y
+        BNE     ??GetEvent_7
+        LDAB    #0x7
+        JSR     OsErrorCallErrorHook
+        CLR     Os_ServiceContext
+        LDAB    #0x7
+        BRA     ??GetEvent_5
+//  133     ASSERT_VALID_CALLEVEL(OS_CL_TASK|OS_CL_ISR2|OS_CL_ERROR_HOOK|OS_CL_PRE_TASK_HOOK|OS_CL_POST_TASK_HOOK);
+??GetEvent_7:
+        BRCLR   OsCallevel + 1,#0x1f,??GetEvent_1
+        BRA     ??GetEvent_8
+??GetEvent_1:
+        LDAB    #0x2
+        JSR     OsErrorCallErrorHook
+        CLR     Os_ServiceContext
+        LDAB    #0x2
+        BRA     ??GetEvent_5
+//  134     ASSERT_INTERRUPTS_ENABLED_AT_TASK_LEVEL();
+??GetEvent_8:
+        TFR     CCR,B
+        BITB    #0x10
+        BEQ     ??GetEvent_9
+        BRCLR   OsFlags,#0x2,??GetEvent_2
+        BRA     ??GetEvent_9
+??GetEvent_2:
+        LDAB    #0x13
+        JSR     OsErrorCallErrorHook
+        CLR     Os_ServiceContext
+        LDAB    #0x13
+        BRA     ??GetEvent_5
+//  135 
+//  136     DISABLE_ALL_OS_INTERRUPTS();
+??GetEvent_9:
+        JSR     SuspendOSInterrupts
+//  137     *Event=OS_TASK_GET_EVENTS_SET(TaskID);
+        LDAB    0x0,SP
+        LDAA    #0x7
+        MUL
+        TFR     D,Y
+        LDAB    OS_TCB + 3,Y
+        STAB    0x0,X
+//  138     ENABLE_ALL_OS_INTERRUPTS();
+        JSR     ResumeOSInterrupts
+//  139 #endif
+//  140     CLEAR_SERVICE_CONTEXT();
+        CLR     Os_ServiceContext
+//  141     return E_OK;
+        LDAB    #0x0
+??GetEvent_5:
+        PULA
+        PULX
+        RTS
+//  142 }
+//  143 
+//  144 
+
+        RSEG CODE:CODE:REORDER:NOROOT(0)
+//  145 StatusType WaitEvent(EventMaskType Mask)
+WaitEvent:
+//  146 {
+        PSHD
+        STAB    0x0,SP
+//  147 /*
+//  148 **      former state: 'running', new state 'waiting'.   - only ETs.
+//  149 **      "This call enforces the rescheduling, if the wait condition occurs."
+//  150 **
+//  151 **      Standard-Status:
+//  152 **              - E_OK – no error.
+//  153 **      Extended-Status:
+//  154 **              – E_OS_ACCESS – the calling task is not an Extended Task.
+//  155 **              – E_OS_RESOURCE – the calling task occupies resources.
+//  156 **              – E_OS_CALLEVEL – a call at the interrupt level is not allowed.
+//  157 */
+//  158 
+//  159 #if defined(OS_BCC1) || defined(OS_BCC2)
+//  160     UNREFERENCED_PARAMETER(Mask);
+//  161     SAVE_SERVICE_CONTEXT(OSServiceId_WaitEvent,Mask,NULL,NULL);
+//  162 
+//  163     OSCallErrorHookAndReturn(E_OS_ACCESS);      /* no extended tasks, always fail.  */
+//  164 #elif defined(OS_ECC1) || defined(OS_ECC2)
+//  165     EventMaskType EventsSet;
+//  166 
+//  167     SAVE_SERVICE_CONTEXT(OSServiceId_WaitEvent,Mask,NULL,NULL);
+        LDD     #0x0
+        PSHD
+        LDAB    #0x24
+        PSHB
+        LDD     #0x0
+        PSHD
+        LDAB    0x5,SP
+        EXG     B,Y
+        PULD
+        JSR     OSSaveServiceContext
+//  168 
+//  169     ASSERT_TASK_IS_EXTENDED(OsCurrentTID);
+        LDAB    OsCurrentTID
+        LDAA    #0x9
+        MUL
+        TFR     D,Y
+        LEAS    0x3,SP
+        BRCLR   OS_TaskConf + 6,Y,#0x2,??WaitEvent_0
+        BRA     ??WaitEvent_5
+??WaitEvent_0:
+        LDAB    #0x1
+        JSR     OsErrorCallErrorHook
+        CLR     Os_ServiceContext
+        LDAB    #0x1
+        JMP     .LWRD.(??WaitEvent_6)
+//  170     ASSERT_CURR_TASK_OCCUPIES_NO_RESOURCES();
+??WaitEvent_5:
+        LDY     OsCurrentTCB
+        TST     0x5,Y
+        BNE     ??WaitEvent_7
+        BRCLR   OsFlags,#0x1,??WaitEvent_1
+??WaitEvent_7:
+        LDAB    #0x6
+        JSR     OsErrorCallErrorHook
+        CLR     Os_ServiceContext
+        LDAB    #0x6
+        BRA     ??WaitEvent_6
+//  171     ASSERT_VALID_CALLEVEL(OS_CL_TASK);
+??WaitEvent_1:
+        BRCLR   OsCallevel + 1,#0x1,??WaitEvent_2
+        BRA     ??WaitEvent_8
+??WaitEvent_2:
+        LDAB    #0x2
+        JSR     OsErrorCallErrorHook
+        CLR     Os_ServiceContext
+        LDAB    #0x2
+        BRA     ??WaitEvent_6
+//  172     ASSERT_INTERRUPTS_ENABLED_AT_TASK_LEVEL();
+??WaitEvent_8:
+        TFR     CCR,B
+        BITB    #0x10
+        BEQ     ??WaitEvent_9
+        BRCLR   OsFlags,#0x2,??WaitEvent_3
+        BRA     ??WaitEvent_9
+??WaitEvent_3:
+        LDAB    #0x13
+        JSR     OsErrorCallErrorHook
+        CLR     Os_ServiceContext
+        LDAB    #0x13
+        BRA     ??WaitEvent_6
+//  173 
+//  174     DISABLE_ALL_OS_INTERRUPTS();
+??WaitEvent_9:
+        JSR     SuspendOSInterrupts
+//  175     EventsSet=OS_TASK_GET_EVENTS_SET(OsCurrentTID);
+        LDAB    OsCurrentTID
+        LDAA    #0x7
+        MUL
+        TFR     D,Y
+        LDAB    OS_TCB + 3,Y
+        STAB    0x1,SP
+//  176     OS_TASK_WAIT_FOR_EVENTS(OsCurrentTID,Mask);
+        LDAB    OsCurrentTID
+        LDAA    #0x7
+        MUL
+        TFR     D,Y
+        LDAB    0x0,SP
+        STAB    OS_TCB + 4,Y
+//  177     OS_UNLOCK_INTERNAL_RESOURCE();
+        JSR     OsRes_ReleaseInternalResource
+//  178 
+//  179     if ((EventsSet & Mask)==(EventMaskType)0) {
+        LDAB    0x0,SP
+        BITB    0x1,SP
+        BNE     ??WaitEvent_10
+//  180         /*  no events set, we have to wait...  */
+//  181         OsTask_Wait(OsCurrentTID);
+        LDAB    OsCurrentTID
+        JSR     OsTask_Wait
+//  182         ENABLE_ALL_OS_INTERRUPTS();
+        JSR     ResumeOSInterrupts
+//  183         OS_FORCE_SCHEDULE_FROM_TASK_LEVEL();
+        BRCLR   OsFlags,#0x2,??WaitEvent_4
+        BRA     ??WaitEvent_11
+??WaitEvent_4:
+        SWI
+        BRA     ??WaitEvent_11
+//  184     } else {
+//  185         ENABLE_ALL_OS_INTERRUPTS();
+??WaitEvent_10:
+        JSR     ResumeOSInterrupts
+//  186     }
+//  187 #endif
+//  188     CLEAR_SERVICE_CONTEXT();
+??WaitEvent_11:
+        CLR     Os_ServiceContext
+//  189     return E_OK;
+        LDAB    #0x0
+??WaitEvent_6:
+        PULY
+        RTS
+//  190 }
+
+        END
+// 
+// 775 bytes in segment CODE
+// 
+// 775 bytes of CODE memory
+//
+//Errors: none
+//Warnings: 1

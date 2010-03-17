@@ -1,0 +1,727 @@
+//////////////////////////////////////////////////////////////////////////////
+//                                                                           /
+// IAR HCS12 C/C++ Compiler V3.11A/W32                 17/Mar/2010  10:33:42 /
+// Copyright 1997-2006 IAR Systems. All rights reserved.                     /
+//                                                                           /
+//    Source file  =  C:\projekte\csProjects\k-os\src\Os_Mlq.c               /
+//    Command line =  C:\projekte\csProjects\k-os\src\Os_Mlq.c               /
+//                    --preprocess=l C:\projekte\csProjects\k-os\examples\Ex /
+//                    01\IAR\Debug\List\ -lC C:\projekte\csProjects\k-os\exa /
+//                    mples\Ex01\IAR\Debug\List\ -lB                         /
+//                    C:\projekte\csProjects\k-os\examples\Ex01\IAR\Debug\Li /
+//                    st\ --code_model=normal --double=32 -o                 /
+//                    C:\projekte\csProjects\k-os\examples\Ex01\IAR\Debug\Ob /
+//                    j\ --require_prototypes -e -z2 --no_cse --no_unroll    /
+//                    --no_inline --no_code_motion --no_tbaa                 /
+//                    --no_cross_call --debug "-D_DLIB_CONFIG_FILE=C:\Progra /
+//                    mme\IAR Systems\Embedded Workbench Evaluation          /
+//                    4.0\HCS12\LIB\DLIB\dlhcs12nfn.h" --segment             /
+//                    __data8=DATA8 --segment __data16=DATA16 --segment      /
+//                    __banked=BANKED_CODE --segment __non_banked=CODE       /
+//                    --segment __intvec=INTVEC --segment __difunct=DIFUNCT  /
+//                    --segment __cstack=CSTACK --segment __inittab=INITTAB  /
+//                    -I C:\projekte\csProjects\k-os\inc\ -I                 /
+//                    C:\projekte\csProjects\common\inc\ -I                  /
+//                    C:\projekte\csProjects\common\ -I                      /
+//                    C:\projekte\csProjects\common\InstallISR\ -I           /
+//                    C:\projekte\csProjects\k-os\examples\Ex01\ -I          /
+//                    C:\projekte\csProjects\common\drivers\include\cpu12\   /
+//                    -I "C:\Programme\IAR Systems\Embedded Workbench        /
+//                    Evaluation 4.0\HCS12\INC\" -I "C:\Programme\IAR        /
+//                    Systems\Embedded Workbench Evaluation                  /
+//                    4.0\HCS12\INC\DLIB\"                                   /
+//    List file    =  C:\projekte\csProjects\k-os\examples\Ex01\IAR\Debug\Li /
+//                    st\Os_Mlq.s12                                          /
+//                                                                           /
+//                                                                           /
+//////////////////////////////////////////////////////////////////////////////
+
+        NAME Os_Mlq
+
+        RSEG CSTACK:DATA:REORDER:NOROOT(0)
+
+        EXTERN ?cstart_init_zero
+
+        PUBWEAK ?init?tab?DATA16_Z
+        PUBLIC MLQ_QueueDef
+        PUBLIC OsMLQ_AddTaskFirst
+        PUBLIC OsMLQ_AddTaskLast
+        PUBLIC OsMLQ_ChangePrio
+        PUBLIC OsMLQ_GetBitmap
+        PUBLIC OsMLQ_GetHighestPrio
+        PUBLIC OsMLQ_Init
+        PUBLIC OsMLQ_RemoveTask
+        PUBLIC OsMLQ_TasksAreReady
+
+        EXTERN OS_TCB
+        EXTERN OsMLQ_GetLowestBitNumber
+        EXTERN Utl_BitReset
+        EXTERN Utl_BitSet
+        EXTERN Utl_MemSet
+
+// C:\projekte\csProjects\k-os\src\Os_Mlq.c
+//    1 /*
+//    2  * k_os (Konnex Operating-System based on the OSEK/VDX-Standard).
+//    3  *
+//    4  * (C) 2007-2009 by Christoph Schueler <chris@konnex-tools.de>
+//    5  *
+//    6  * All Rights Reserved
+//    7  *
+//    8  * This program is free software; you can redistribute it and/or modify
+//    9  * it under the terms of the GNU General Public License as published by
+//   10  * the Free Software Foundation; either version 2 of the License, or
+//   11  * (at your option) any later version.
+//   12  *
+//   13  * This program is distributed in the hope that it will be useful,
+//   14  * but WITHOUT ANY WARRANTY; without even the implied warranty of
+//   15  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//   16  * GNU General Public License for more details.
+//   17  *
+//   18  * You should have received a copy of the GNU General Public License along
+//   19  * with this program; if not, write to the Free Software Foundation, Inc.,
+//   20  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+//   21  *
+//   22  */
+//   23 
+//   24 #include "Os_Mlq.h"
+//   25 
+//   26 typedef struct tagQueueConfigurationType {
+//   27     uint8 size;
+//   28     TaskType * const data;
+//   29 } QueueConfigurationType;
+//   30 
+//   31 
+//   32 typedef struct tagQueueType {
+//   33     uint8 head,tail;
+//   34     uint8 entries;
+//   35 } QueueType;
+//   36 
+//   37 void OsMLQ_Init(void);
+//   38 
+//   39 TaskType OsMLQ_GetHighestPrio(void);
+//   40 void OsMLQ_AddTaskFirst(TaskType TaskID,PriorityType prio);
+//   41 void OsMLQ_AddTaskLast(TaskType TaskID,PriorityType prio);
+//   42 void OsMLQ_RemoveTask(PriorityType prio);
+//   43 
+//   44 static void OsMLQ_InitQueue(uint8 num);
+//   45 static void OsMLQ_PushFront(uint8 num,TaskType TaskID);
+//   46 static void OsMLQ_PushBack(uint8 num,TaskType TaskID);
+//   47 static void OsMLQ_PopFront(uint8 num);
+//   48 /*  static void OsMLQ_PopBack(uint8 num);  */
+//   49 static boolean OsMLQ_IsEmpty(uint8 num);
+//   50 /* static boolean OsMLQ_IsFull(uint8 num); */
+//   51 static TaskType OsMLQ_Front(uint8 num);
+//   52 /* static TaskType OsMLQ_Back(uint8 num); */
+//   53 
+//   54 
+//   55 #if defined(OS_USE_RESOURCES)
+//   56 #define PRIORITY_FOR_TASK(TaskID)   OS_TCB[(TaskID)].CurrentPriority
+//   57 #else
+//   58 #define PRIORITY_FOR_TASK(TaskID)   OS_TaskConf[(TaskID)].Priority
+//   59 #endif
+//   60 
+//   61 /*
+//   62 **  CONFIG.
+//   63 */
+//   64 #define OS_MLQ_NUMBER_OF_PRIORITIES   ((uint8)3)
+//   65 
+
+        RSEG DATA16_Z:DATA:REORDER:NOROOT(0)
+        REQUIRE ?cstart_init_zero
+//   66 static TaskType MLQ_QueueData[10];  /*  OS_NUMBER_OF_TASKS */
+MLQ_QueueData:
+        DS8 10
+//   67 
+
+        RSEG DATA16_C:CONST:REORDER:NOROOT(0)
+//   68 const QueueConfigurationType MLQ_QueueDef[OS_MLQ_NUMBER_OF_PRIORITIES]={ /* MLQ_ReadyQueueDefs */
+MLQ_QueueDef:
+        DC8 3
+        DC16 MLQ_QueueData
+        DC8 3
+        DC16 MLQ_QueueData + 3H
+        DC8 4
+        DC16 MLQ_QueueData + 6H
+//   69     {(uint8)3,&MLQ_QueueData[0]},
+//   70     {(uint8)3,&MLQ_QueueData[3]},
+//   71     {(uint8)4,&MLQ_QueueData[6]}
+//   72 };
+//   73 
+//   74 
+
+        RSEG DATA16_Z:DATA:REORDER:NOROOT(0)
+        REQUIRE ?cstart_init_zero
+//   75 static QueueType MLQ_ReadyQueue[OS_MLQ_NUMBER_OF_PRIORITIES];
+MLQ_ReadyQueue:
+        DS8 9
+
+        RSEG DATA16_Z:DATA:REORDER:NOROOT(0)
+        REQUIRE ?cstart_init_zero
+//   76 static uint16 BM_NotEmpty;  /* Bitmap for non-empty queues.  */
+BM_NotEmpty:
+        DS8 2
+//   77 
+//   78 
+//   79 /*
+//   80 **
+//   81 **  Global Functions.
+//   82 **
+//   83 */
+//   84 
+//   85 
+
+        RSEG CODE:CODE:NOROOT(0)
+//   86 void OsMLQ_Init(void)
+OsMLQ_Init:
+//   87 {
+        PSHA
+//   88     uint8 idx;
+//   89 
+//   90     BM_NotEmpty=(uint16)0x0000;
+        LDD     #0x0
+        STD     BM_NotEmpty
+//   91 
+//   92     for (idx=(uint8)0;idx<OS_MLQ_NUMBER_OF_PRIORITIES;++idx) {
+        CLR     0x0,SP
+??OsMLQ_Init_0:
+        LDAB    0x0,SP
+        CMPB    #0x3
+        BCC     ??OsMLQ_Init_1
+//   93         OsMLQ_InitQueue(idx);    /*  todo: Konfig.-Parameter definieren!!!   */
+        LDAB    0x0,SP
+        JSR     OsMLQ_InitQueue
+//   94     }
+        LDAB    0x0,SP
+        ADDB    #0x1
+        STAB    0x0,SP
+        BRA     ??OsMLQ_Init_0
+//   95 
+//   96 }
+??OsMLQ_Init_1:
+        PULA
+        RTS
+//   97 
+//   98 
+
+        RSEG CODE:CODE:NOROOT(0)
+//   99 TaskType OsMLQ_GetHighestPrio(void)
+OsMLQ_GetHighestPrio:
+//  100 {
+        PSHD
+//  101     uint8 queue_num;
+//  102     TaskType TaskID=INVALID_TASK;
+        CLR     0x0,SP
+//  103 
+//  104     if (BM_NotEmpty!=(uint16)0x0000) {
+        LDD     BM_NotEmpty
+        BEQ     ??OsMLQ_GetHighestPrio_0
+//  105         queue_num=OsMLQ_GetLowestBitNumber((~BM_NotEmpty+(uint16)1) & BM_NotEmpty)-((uint8)1);
+        LDD     BM_NotEmpty
+        COMA
+        COMB
+        ADDD    #0x1
+        ANDB    BM_NotEmpty + 1
+        ANDA    BM_NotEmpty
+        JSR     OsMLQ_GetLowestBitNumber
+        ADDB    #0xff
+        STAB    0x1,SP
+//  106         TaskID=OsMLQ_Front(queue_num);
+        LDAB    0x1,SP
+        JSR     OsMLQ_Front
+        STAB    0x0,SP
+//  107     }
+//  108 
+//  109     return TaskID;
+??OsMLQ_GetHighestPrio_0:
+        LDAB    0x0,SP
+        PULY
+        RTS
+//  110 }
+//  111 
+//  112 
+
+        RSEG CODE:CODE:NOROOT(0)
+//  113 boolean OsMLQ_TasksAreReady(void)
+OsMLQ_TasksAreReady:
+//  114 {
+//  115     return (BM_NotEmpty!=(uint16)0x0000);
+        LDD     BM_NotEmpty
+        BEQ     ??OsMLQ_TasksAreReady_0
+        LDAB    #0x1
+        RTS
+??OsMLQ_TasksAreReady_0:
+        LDAB    #0x0
+        RTS
+//  116 }
+//  117 
+//  118 
+
+        RSEG CODE:CODE:NOROOT(0)
+//  119 uint16 OsMLQ_GetBitmap(void)
+OsMLQ_GetBitmap:
+//  120 {
+//  121     return BM_NotEmpty;
+        LDD     BM_NotEmpty
+        RTS
+//  122 }
+//  123 
+//  124 
+
+        RSEG CODE:CODE:NOROOT(0)
+//  125 void OsMLQ_AddTaskFirst(TaskType TaskID,PriorityType prio)    /* stack. */
+OsMLQ_AddTaskFirst:
+//  126 {
+        PSHD
+        STAB    0x1,SP
+        STAA    0x0,SP
+//  127     ASSERT((prio!=PRIO_NONE) && (INVERT_NIBBLE(prio)<=OS_MLQ_NUMBER_OF_PRIORITIES));
+        TST     0x0,SP
+        BEQ     ??OsMLQ_AddTaskFirst_0
+        LDAB    0x0,SP
+        COMB
+        ANDB    #0xf
+        CMPB    #0x4
+        BCS     ??OsMLQ_AddTaskFirst_1
+??OsMLQ_AddTaskFirst_0:
+        bgnd
+//  128 
+//  129     BM_NotEmpty=Utl_BitSet(BM_NotEmpty,(uint8)prio);
+??OsMLQ_AddTaskFirst_1:
+        LDAB    0x0,SP
+        LDY     BM_NotEmpty
+        JSR     Utl_BitSet
+        STD     BM_NotEmpty
+//  130     OsMLQ_PushFront(INVERT_NIBBLE(prio),TaskID);
+        LDAA    0x1,SP
+        LDAB    0x0,SP
+        COMB
+        ANDB    #0xf
+        JSR     OsMLQ_PushFront
+//  131 }
+        PULY
+        RTS
+//  132 
+//  133 
+
+        RSEG CODE:CODE:NOROOT(0)
+//  134 void OsMLQ_AddTaskLast(TaskType TaskID,PriorityType prio)     /* queue. */
+OsMLQ_AddTaskLast:
+//  135 {
+        PSHD
+        STAB    0x1,SP
+        STAA    0x0,SP
+//  136     ASSERT((prio!=PRIO_NONE) && (INVERT_NIBBLE(prio)<=OS_MLQ_NUMBER_OF_PRIORITIES));
+        TST     0x0,SP
+        BEQ     ??OsMLQ_AddTaskLast_0
+        LDAB    0x0,SP
+        COMB
+        ANDB    #0xf
+        CMPB    #0x4
+        BCS     ??OsMLQ_AddTaskLast_1
+??OsMLQ_AddTaskLast_0:
+        bgnd
+//  137 
+//  138     BM_NotEmpty=Utl_BitSet(BM_NotEmpty,(uint8)prio);
+??OsMLQ_AddTaskLast_1:
+        LDAB    0x0,SP
+        LDY     BM_NotEmpty
+        JSR     Utl_BitSet
+        STD     BM_NotEmpty
+//  139     OsMLQ_PushBack(INVERT_NIBBLE(prio),TaskID);
+        LDAA    0x1,SP
+        LDAB    0x0,SP
+        COMB
+        ANDB    #0xf
+        JSR     OsMLQ_PushBack
+//  140 }
+        PULY
+        RTS
+//  141 
+//  142 
+
+        RSEG CODE:CODE:NOROOT(0)
+//  143 void OsMLQ_RemoveTask(TaskType TaskID)
+OsMLQ_RemoveTask:
+//  144 {
+        PSHD
+        STAB    0x1,SP
+//  145     uint8 prio;
+//  146 
+//  147     ASSERT((TaskID!=INVALID_TASK) && (TaskID<=OS_NUMBER_OF_TASKS));
+        TST     0x1,SP
+        BEQ     ??OsMLQ_RemoveTask_0
+        LDAB    0x1,SP
+        CMPB    #0x4
+        BCS     ??OsMLQ_RemoveTask_1
+??OsMLQ_RemoveTask_0:
+        bgnd
+//  148 
+//  149     prio=PRIORITY_FOR_TASK(TaskID);
+??OsMLQ_RemoveTask_1:
+        LDAB    0x1,SP
+        LDAA    #0x7
+        MUL
+        TFR     D,Y
+        LDAB    OS_TCB + 6,Y
+        STAB    0x0,SP
+//  150     ASSERT((prio!=PRIO_NONE) && (INVERT_NIBBLE(prio)<=OS_MLQ_NUMBER_OF_PRIORITIES));
+        TST     0x0,SP
+        BEQ     ??OsMLQ_RemoveTask_2
+        LDAB    0x0,SP
+        COMB
+        ANDB    #0xf
+        CMPB    #0x4
+        BCS     ??OsMLQ_RemoveTask_3
+??OsMLQ_RemoveTask_2:
+        bgnd
+//  151 
+//  152     OsMLQ_PopFront(INVERT_NIBBLE(prio));
+??OsMLQ_RemoveTask_3:
+        LDAB    0x0,SP
+        COMB
+        ANDB    #0xf
+        JSR     OsMLQ_PopFront
+//  153     if (OsMLQ_IsEmpty(INVERT_NIBBLE(prio))) {
+        LDAB    0x0,SP
+        COMB
+        ANDB    #0xf
+        JSR     OsMLQ_IsEmpty
+        CMPB    #0x0
+        BEQ     ??OsMLQ_RemoveTask_4
+//  154         BM_NotEmpty=Utl_BitReset(BM_NotEmpty,prio);
+        LDAB    0x0,SP
+        LDY     BM_NotEmpty
+        JSR     Utl_BitReset
+        STD     BM_NotEmpty
+//  155     }
+//  156 }
+??OsMLQ_RemoveTask_4:
+        PULY
+        RTS
+//  157 
+//  158 
+
+        RSEG CODE:CODE:NOROOT(0)
+//  159 void OsMLQ_ChangePrio(TaskType TaskID,PriorityType old_prio,PriorityType new_prio)
+OsMLQ_ChangePrio:
+//  160 {
+        PSHD
+        STAB    0x0,SP
+        STAA    0x1,SP
+//  161     ASSERT((new_prio!=PRIO_NONE) && (INVERT_NIBBLE(new_prio)<=OS_MLQ_NUMBER_OF_PRIORITIES));
+        TST     0x4,SP
+        BEQ     ??OsMLQ_ChangePrio_0
+        LDAB    0x4,SP
+        COMB
+        ANDB    #0xf
+        CMPB    #0x4
+        BCS     ??OsMLQ_ChangePrio_1
+??OsMLQ_ChangePrio_0:
+        bgnd
+//  162 
+//  163     OS_TCB[TaskID].CurrentPriority=new_prio;
+??OsMLQ_ChangePrio_1:
+        LDAB    0x0,SP
+        LDAA    #0x7
+        MUL
+        TFR     D,Y
+        LDAB    0x4,SP
+        STAB    OS_TCB + 6,Y
+//  164 }
+        PULY
+        RTS
+//  165 
+//  166 /*
+//  167 **
+//  168 **  Local Functions.
+//  169 **
+//  170 */
+
+        RSEG CODE:CODE:NOROOT(0)
+//  171 static void OsMLQ_InitQueue(uint8 num)
+OsMLQ_InitQueue:
+//  172 {
+        PSHA
+        STAB    0x0,SP
+//  173     Utl_MemSet((void*)&MLQ_ReadyQueue[num],(uint8)'\0',(uint16)sizeof(QueueType));
+        LDAB    #0x0
+        PSHB
+        LDD     #0x3
+        PSHD
+        LDAA    0x3,SP
+        LDAB    #0x3
+        MUL
+        ADDD    #MLQ_ReadyQueue
+        TFR     D,Y
+        PULD
+        JSR     Utl_MemSet
+//  174     Utl_MemSet((void*)MLQ_QueueDef[num].data,(uint8)'\0',(uint16)MLQ_QueueDef[num].size);
+        LEAS    0x1,SP
+        LDAB    #0x0
+        PSHB
+        LDAB    0x1,SP
+        LDAA    #0x3
+        MUL
+        TFR     D,Y
+        LDAB    MLQ_QueueDef,Y
+        CLRA
+        PSHD
+        LDAA    0x3,SP
+        LDAB    #0x3
+        MUL
+        TFR     D,Y
+        LDY     MLQ_QueueDef + 1,Y
+        PULD
+        JSR     Utl_MemSet
+//  175 }
+        LEAS    0x1,SP
+        PULA
+        RTS
+//  176 
+//  177 
+
+        RSEG CODE:CODE:NOROOT(0)
+//  178 static void OsMLQ_PushFront(uint8 num,uint8 TaskID)
+OsMLQ_PushFront:
+//  179 {
+        PSHX
+        LEAS    -0x4,SP
+        STAB    0x0,SP
+        STAA    0x3,SP
+//  180     QueueType * const rq=&MLQ_ReadyQueue[num];
+        LDAB    0x0,SP
+        LDAA    #0x3
+        MUL
+        ADDD    #MLQ_ReadyQueue
+        TFR     D,X
+//  181     QueueConfigurationType const * const qc=&MLQ_QueueDef[num];
+        LDAB    0x0,SP
+        LDAA    #0x3
+        MUL
+        ADDD    #MLQ_QueueDef
+        STD     0x1,SP
+//  182 
+//  183     (rq->head==(uint8)0x00) ? rq->head=qc->size-(uint8)1 : --rq->head;
+        TST     0x0,X
+        BNE     ??OsMLQ_PushFront_0
+        LDAB    [0x1,SP]
+        ADDB    #0xff
+        STAB    0x0,X
+        EXG     B,Y
+        BRA     ??OsMLQ_PushFront_1
+??OsMLQ_PushFront_0:
+        LDAB    0x0,X
+        ADDB    #0xff
+        STAB    0x0,X
+        EXG     B,Y
+//  184 
+//  185     qc->data[rq->head]=TaskID;
+??OsMLQ_PushFront_1:
+        LDY     0x1,SP
+        LDY     0x1,Y
+        LDAB    0x0,X
+        LDAA    0x3,SP
+        STAA    B,Y
+//  186     rq->entries++;
+        LDAB    0x2,X
+        ADDB    #0x1
+        STAB    0x2,X
+//  187 }
+        LEAS    0x4,SP
+        PULX
+        RTS
+//  188 
+//  189 
+
+        RSEG CODE:CODE:NOROOT(0)
+//  190 static void OsMLQ_PushBack(uint8 num,TaskType TaskID)
+OsMLQ_PushBack:
+//  191 {
+        PSHX
+        LEAS    -0x4,SP
+        STAB    0x0,SP
+        STAA    0x3,SP
+//  192     QueueType * const rq=&MLQ_ReadyQueue[num];
+        LDAB    0x0,SP
+        LDAA    #0x3
+        MUL
+        ADDD    #MLQ_ReadyQueue
+        TFR     D,Y
+//  193     QueueConfigurationType const * const qc=&MLQ_QueueDef[num];
+        LDAB    0x0,SP
+        LDAA    #0x3
+        MUL
+        ADDD    #MLQ_QueueDef
+        STD     0x1,SP
+//  194 
+//  195     qc->data[rq->tail]=TaskID;
+        LDX     0x1,SP
+        LDX     0x1,X
+        LDAB    0x1,Y
+        LDAA    0x3,SP
+        STAA    B,X
+//  196 
+//  197     rq->tail=(rq->tail+(uint8)1) % qc->size;
+        LDAB    0x1,Y
+        CLRA
+        ADDD    #0x1
+        PSHD
+        LDAB    [0x3,SP]
+        EXG     B,X
+        PULD
+        IDIVS
+        STAB    0x1,Y
+//  198     rq->entries++;
+        LDAB    0x2,Y
+        ADDB    #0x1
+        STAB    0x2,Y
+//  199 }
+        LEAS    0x4,SP
+        PULX
+        RTS
+//  200 
+//  201 
+
+        RSEG CODE:CODE:NOROOT(0)
+//  202 static void OsMLQ_PopFront(uint8 num)
+OsMLQ_PopFront:
+//  203 {
+        PSHA
+        STAB    0x0,SP
+//  204 #if 0
+//  205     MLQ_ReadyQueue[num].head=(MLQ_ReadyQueue[num].head+(uint8)1) % MLQ_QueueDef[num].size;
+//  206 #endif
+//  207 
+//  208     MLQ_ReadyQueue[num].entries--;
+        LDAB    0x0,SP
+        LDAA    #0x3
+        MUL
+        TFR     D,Y
+        LDAB    MLQ_ReadyQueue + 2,Y
+        ADDB    #0xff
+        PSHB
+        LDAA    0x1,SP
+        LDAB    #0x3
+        MUL
+        TFR     D,Y
+        PULB
+        STAB    MLQ_ReadyQueue + 2,Y
+//  209     MLQ_ReadyQueue[num].head++;
+        LDAB    0x0,SP
+        LDAA    #0x3
+        MUL
+        TFR     D,Y
+        LDAB    MLQ_ReadyQueue,Y
+        ADDB    #0x1
+        PSHB
+        LDAA    0x1,SP
+        LDAB    #0x3
+        MUL
+        TFR     D,Y
+        PULB
+        STAB    MLQ_ReadyQueue,Y
+//  210     if (MLQ_ReadyQueue[num].head==MLQ_QueueDef[num].size) {
+        LDAB    0x0,SP
+        LDAA    #0x3
+        MUL
+        TFR     D,Y
+        LDAB    MLQ_ReadyQueue,Y
+        PSHB
+        LDAA    0x1,SP
+        LDAB    #0x3
+        MUL
+        TFR     D,Y
+        PULB
+        CMPB    MLQ_QueueDef,Y
+        BNE     ??OsMLQ_PopFront_0
+//  211         MLQ_ReadyQueue[num].head=(uint8)0x00;
+        LDAB    0x0,SP
+        LDAA    #0x3
+        MUL
+        TFR     D,Y
+        CLR     MLQ_ReadyQueue,Y
+//  212     }
+//  213 }
+??OsMLQ_PopFront_0:
+        PULA
+        RTS
+//  214 
+//  215 
+
+        RSEG CODE:CODE:NOROOT(0)
+//  216 static boolean OsMLQ_IsEmpty(uint8 num)
+OsMLQ_IsEmpty:
+//  217 {
+//  218     return MLQ_ReadyQueue[num].entries==(uint8)0x00;
+        LDAA    #0x3
+        MUL
+        TFR     D,Y
+        TST     MLQ_ReadyQueue + 2,Y
+        BNE     ??OsMLQ_IsEmpty_0
+        LDAB    #0x1
+        RTS
+??OsMLQ_IsEmpty_0:
+        LDAB    #0x0
+        RTS
+//  219 }
+//  220 
+//  221 
+//  222 #if 0
+//  223 static boolean OsMLQ_IsFull(uint8 num)
+//  224 {
+//  225     return MLQ_ReadyQueue[num].entries==MLQ_QueueDef[num].size;
+//  226 }
+//  227 #endif
+//  228 
+//  229 
+
+        RSEG CODE:CODE:REORDER:NOROOT(0)
+//  230 static TaskType OsMLQ_Front(uint8 num)
+OsMLQ_Front:
+//  231 {
+        PSHX
+        PSHA
+        STAB    0x0,SP
+//  232     return MLQ_QueueDef[num].data[MLQ_ReadyQueue[num].head];
+        LDAB    0x0,SP
+        LDAA    #0x3
+        MUL
+        TFR     D,Y
+        LDX     MLQ_QueueDef + 1,Y
+        LDAB    0x0,SP
+        LDAA    #0x3
+        MUL
+        TFR     D,Y
+        LDAB    MLQ_ReadyQueue,Y
+        LEAY    B,X
+        LDAB    0x0,Y
+        PULA
+        PULX
+        RTS
+//  233 }
+
+        RSEG INITTAB:CODE:ROOT(0)
+?init?tab?DATA16_Z:
+        DC16    sfe(DATA16_Z) - sfb(DATA16_Z), sfb(DATA16_Z), sfb(DATA16_Z)
+
+        END
+//  234 
+//  235 
+//  236 #if 0
+//  237 static TaskType OsMLQ_Back(uint8 num)
+//  238 {
+//  239     return MLQ_QueueDef[num].data[MLQ_ReadyQueue[num].tail];
+//  240 }
+//  241 #endif
+// 
+// 618 bytes in segment CODE
+//   9 bytes in segment DATA16_C
+//  21 bytes in segment DATA16_Z
+//   6 bytes in segment INITTAB
+// 
+// 618 bytes of CODE  memory (+ 6 bytes shared)
+//   9 bytes of CONST memory
+//  21 bytes of DATA  memory
+//
+//Errors: none
+//Warnings: 1

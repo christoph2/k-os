@@ -1,0 +1,535 @@
+//////////////////////////////////////////////////////////////////////////////
+//                                                                           /
+// IAR HCS12 C/C++ Compiler V3.11A/W32                 17/Mar/2010  10:33:44 /
+// Copyright 1997-2006 IAR Systems. All rights reserved.                     /
+//                                                                           /
+//    Source file  =  C:\projekte\csProjects\k-os\src\Com_Flt.c              /
+//    Command line =  C:\projekte\csProjects\k-os\src\Com_Flt.c              /
+//                    --preprocess=l C:\projekte\csProjects\k-os\examples\Ex /
+//                    01\IAR\Debug\List\ -lC C:\projekte\csProjects\k-os\exa /
+//                    mples\Ex01\IAR\Debug\List\ -lB                         /
+//                    C:\projekte\csProjects\k-os\examples\Ex01\IAR\Debug\Li /
+//                    st\ --code_model=normal --double=32 -o                 /
+//                    C:\projekte\csProjects\k-os\examples\Ex01\IAR\Debug\Ob /
+//                    j\ --require_prototypes -e -z2 --no_cse --no_unroll    /
+//                    --no_inline --no_code_motion --no_tbaa                 /
+//                    --no_cross_call --debug "-D_DLIB_CONFIG_FILE=C:\Progra /
+//                    mme\IAR Systems\Embedded Workbench Evaluation          /
+//                    4.0\HCS12\LIB\DLIB\dlhcs12nfn.h" --segment             /
+//                    __data8=DATA8 --segment __data16=DATA16 --segment      /
+//                    __banked=BANKED_CODE --segment __non_banked=CODE       /
+//                    --segment __intvec=INTVEC --segment __difunct=DIFUNCT  /
+//                    --segment __cstack=CSTACK --segment __inittab=INITTAB  /
+//                    -I C:\projekte\csProjects\k-os\inc\ -I                 /
+//                    C:\projekte\csProjects\common\inc\ -I                  /
+//                    C:\projekte\csProjects\common\ -I                      /
+//                    C:\projekte\csProjects\common\InstallISR\ -I           /
+//                    C:\projekte\csProjects\k-os\examples\Ex01\ -I          /
+//                    C:\projekte\csProjects\common\drivers\include\cpu12\   /
+//                    -I "C:\Programme\IAR Systems\Embedded Workbench        /
+//                    Evaluation 4.0\HCS12\INC\" -I "C:\Programme\IAR        /
+//                    Systems\Embedded Workbench Evaluation                  /
+//                    4.0\HCS12\INC\DLIB\"                                   /
+//    List file    =  C:\projekte\csProjects\k-os\examples\Ex01\IAR\Debug\Li /
+//                    st\Com_Flt.s12                                         /
+//                                                                           /
+//                                                                           /
+//////////////////////////////////////////////////////////////////////////////
+
+        NAME Com_Flt
+
+        RSEG CSTACK:DATA:REORDER:NOROOT(0)
+
+        EXTERN ??lcmp
+
+        PUBLIC ComFlt_Always
+        PUBLIC ComFlt_MaskedNewDiffersMaskedOld
+        PUBLIC ComFlt_MaskedNewDiffersX
+        PUBLIC ComFlt_MaskedNewEqualsMaskedOld
+        PUBLIC ComFlt_MaskedNewEqualsX
+        PUBLIC ComFlt_Never
+        PUBLIC ComFlt_NewIsDifferent
+        PUBLIC ComFlt_NewIsEqual
+        PUBLIC ComFlt_NewIsGreatear
+        PUBLIC ComFlt_NewIsGreaterOrEqual
+        PUBLIC ComFlt_NewIsLess
+        PUBLIC ComFlt_NewIsLessOrEqual
+        PUBLIC ComFlt_NewIsOutside
+        PUBLIC ComFlt_NewIsWithin
+        PUBLIC ComFlt_OneEveryN
+
+// C:\projekte\csProjects\k-os\src\Com_Flt.c
+//    1 /*
+//    2  * k_os (Konnex Operating-System based on the OSEK/VDX-Standard).
+//    3  *
+//    4  * (C) 2007-2009 by Christoph Schueler <chris@konnex-tools.de>
+//    5  *
+//    6  * All Rights Reserved
+//    7  *
+//    8  * This program is free software; you can redistribute it and/or modify
+//    9  * it under the terms of the GNU General Public License as published by
+//   10  * the Free Software Foundation; either version 2 of the License, or
+//   11  * (at your option) any later version.
+//   12  *
+//   13  * This program is distributed in the hope that it will be useful,
+//   14  * but WITHOUT ANY WARRANTY; without even the implied warranty of
+//   15  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//   16  * GNU General Public License for more details.
+//   17  *
+//   18  * You should have received a copy of the GNU General Public License along
+//   19  * with this program; if not, write to the Free Software Foundation, Inc.,
+//   20  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+//   21  *
+//   22  */
+//   23 
+//   24 #include "Com_Flt.h"
+//   25 
+//   26 /*
+//   27     COM_FILTER_ALWAYS,
+//   28     COM_FILTER_NEVER,
+//   29     COM_FILTER_MASKEDNEWEQUALSX,
+//   30     COM_FILTER_MASKEDNEWDIFFERSX,
+//   31     COM_FILTER_NEWISEQUAL,
+//   32     COM_FILTER_NEWISDIFFERENT,
+//   33     COM_FILTER_MASKEDNEWEQUALSMASKEDOLD,
+//   34     COM_FILTER_MASKEDNEWDIFFERSMASKEDOLD,
+//   35     COM_FILTER_NEWISWITHIN,
+//   36     COM_FILTER_NEWISOUTSIDE,
+//   37     COM_FILTER_NEWISGREATER,
+//   38     COM_FILTER_NEWISLESSOREQUAL,
+//   39     COM_FILTER_NEWISLESS,
+//   40     COM_FILTER_NEWISGREATEROREQUAL,
+//   41     COM_FILTER_ONEEVERYN
+//   42 */
+//   43 
+//   44 typedef struct tagMsg_Vars {
+//   45     uint32 new_value;
+//   46     uint32 old_value;
+//   47     uint16 occurrence;
+//   48 } Msg_Vars;
+//   49 
+//   50 typedef struct tagMsg_Consts {
+//   51     uint32 mask;
+//   52     uint32 x;
+//   53     uint32 min;
+//   54     uint32 max;
+//   55     uint16 period;
+//   56     uint16 offset;
+//   57 } Msg_Consts;
+//   58 
+//   59 boolean ComFlt_Always(const Msg_Vars *vars,const Msg_Consts *consts);
+//   60 boolean ComFlt_Never(const Msg_Vars *vars,const Msg_Consts *consts);
+//   61 boolean ComFlt_MaskedNewEqualsX(const Msg_Vars *vars,const Msg_Consts *consts);
+//   62 boolean ComFlt_MaskedNewDiffersX(const Msg_Vars *vars,const Msg_Consts *consts);
+//   63 boolean ComFlt_NewIsEqual(const Msg_Vars *vars,const Msg_Consts *consts);
+//   64 boolean ComFlt_NewIsDifferent(const Msg_Vars *vars,const Msg_Consts *consts);
+//   65 boolean ComFlt_MaskedNewEqualsMaskedOld(const Msg_Vars *vars,const Msg_Consts *consts);
+//   66 boolean ComFlt_MaskedNewDiffersMaskedOld(const Msg_Vars *vars,const Msg_Consts *consts);
+//   67 boolean ComFlt_NewIsWithin(const Msg_Vars *vars,const Msg_Consts *consts);
+//   68 boolean ComFlt_NewIsOutside(const Msg_Vars *vars,const Msg_Consts *consts);
+//   69 boolean ComFlt_NewIsGreatear(const Msg_Vars *vars,const Msg_Consts *consts);
+//   70 boolean ComFlt_NewIsLessOrEqual(const Msg_Vars *vars,const Msg_Consts *consts);
+//   71 boolean ComFlt_NewIsLess(const Msg_Vars *vars,const Msg_Consts *consts);
+//   72 boolean ComFlt_NewIsGreaterOrEqual(const Msg_Vars *vars,const Msg_Consts *consts);
+//   73 boolean ComFlt_OneEveryN(const Msg_Vars *vars,const Msg_Consts *consts);
+//   74 
+//   75 
+
+        RSEG CODE:CODE:REORDER:NOROOT(0)
+//   76 boolean ComFlt_Always(const Msg_Vars *vars,const Msg_Consts *consts)
+ComFlt_Always:
+//   77 {
+        PSHX
+        TFR     D,X
+//   78     UNREFERENCED_PARAMETER(vars);
+//   79     UNREFERENCED_PARAMETER(consts);
+//   80 
+//   81     return TRUE;
+        LDAB    #0x1
+        PULX
+        RTS
+//   82 }
+//   83 
+//   84 
+
+        RSEG CODE:CODE:REORDER:NOROOT(0)
+//   85 boolean ComFlt_Never(const Msg_Vars *vars,const Msg_Consts *consts)
+ComFlt_Never:
+//   86 {
+        PSHX
+        TFR     D,X
+//   87     UNREFERENCED_PARAMETER(vars);
+//   88     UNREFERENCED_PARAMETER(consts);
+//   89 
+//   90     return FALSE;
+        LDAB    #0x0
+        PULX
+        RTS
+//   91 }
+//   92 
+
+        RSEG CODE:CODE:REORDER:NOROOT(0)
+//   93 boolean ComFlt_MaskedNewEqualsX(const Msg_Vars *vars,const Msg_Consts *consts)
+ComFlt_MaskedNewEqualsX:
+//   94 {
+        PSHX
+        TFR     D,X
+//   95     return ((vars->new_value & consts->mask)==consts->x);
+        LDD     0x2,X
+        ANDB    0x3,Y
+        ANDA    0x2,Y
+        PSHD
+        LDD     0x0,X
+        ANDB    0x1,Y
+        ANDA    0x0,Y
+        PULY
+        CPY     0x6,X
+        BNE     ??ComFlt_MaskedNewEqualsX_0
+        CPD     0x4,X
+        BNE     ??ComFlt_MaskedNewEqualsX_0
+        LDAB    #0x1
+        BRA     ??ComFlt_MaskedNewEqualsX_1
+??ComFlt_MaskedNewEqualsX_0:
+        LDAB    #0x0
+??ComFlt_MaskedNewEqualsX_1:
+        PULX
+        RTS
+//   96 }
+//   97 
+
+        RSEG CODE:CODE:REORDER:NOROOT(0)
+//   98 boolean ComFlt_MaskedNewDiffersX(const Msg_Vars *vars,const Msg_Consts *consts)
+ComFlt_MaskedNewDiffersX:
+//   99 {
+        PSHX
+        TFR     D,X
+//  100     return ((vars->new_value & consts->mask)!=consts->x);
+        LDD     0x2,X
+        ANDB    0x3,Y
+        ANDA    0x2,Y
+        PSHD
+        LDD     0x0,X
+        ANDB    0x1,Y
+        ANDA    0x0,Y
+        PULY
+        CPY     0x6,X
+        BNE     ??ComFlt_MaskedNewDiffersX_0
+        CPD     0x4,X
+        BEQ     ??ComFlt_MaskedNewDiffersX_1
+??ComFlt_MaskedNewDiffersX_0:
+        LDAB    #0x1
+        BRA     ??ComFlt_MaskedNewDiffersX_2
+??ComFlt_MaskedNewDiffersX_1:
+        LDAB    #0x0
+??ComFlt_MaskedNewDiffersX_2:
+        PULX
+        RTS
+//  101 }
+//  102 
+
+        RSEG CODE:CODE:REORDER:NOROOT(0)
+//  103 boolean ComFlt_NewIsEqual(const Msg_Vars *vars,const Msg_Consts *consts)
+ComFlt_NewIsEqual:
+//  104 {
+        PSHX
+        TFR     Y,X
+        TFR     D,Y
+//  105     return (vars->new_value==vars->old_value);
+        LDD     0x6,X
+        SUBD    0x2,X
+        BNE     ??ComFlt_NewIsEqual_0
+        LDD     0x4,X
+        SUBD    0x0,X
+        BNE     ??ComFlt_NewIsEqual_0
+        LDAB    #0x1
+        BRA     ??ComFlt_NewIsEqual_1
+??ComFlt_NewIsEqual_0:
+        LDAB    #0x0
+??ComFlt_NewIsEqual_1:
+        PULX
+        RTS
+//  106 }
+//  107 
+
+        RSEG CODE:CODE:REORDER:NOROOT(0)
+//  108 boolean ComFlt_NewIsDifferent(const Msg_Vars *vars,const Msg_Consts *consts)
+ComFlt_NewIsDifferent:
+//  109 {
+        PSHX
+        TFR     Y,X
+        TFR     D,Y
+//  110     return (vars->new_value!=vars->old_value);
+        LDD     0x6,X
+        SUBD    0x2,X
+        BNE     ??ComFlt_NewIsDifferent_0
+        LDD     0x4,X
+        SUBD    0x0,X
+        BEQ     ??ComFlt_NewIsDifferent_1
+??ComFlt_NewIsDifferent_0:
+        LDAB    #0x1
+        BRA     ??ComFlt_NewIsDifferent_2
+??ComFlt_NewIsDifferent_1:
+        LDAB    #0x0
+??ComFlt_NewIsDifferent_2:
+        PULX
+        RTS
+//  111 }
+//  112 
+
+        RSEG CODE:CODE:REORDER:NOROOT(0)
+//  113 boolean ComFlt_MaskedNewEqualsMaskedOld(const Msg_Vars *vars,const Msg_Consts *consts)
+ComFlt_MaskedNewEqualsMaskedOld:
+//  114 {
+        PSHX
+        TFR     D,X
+//  115     return ((vars->new_value & consts->mask)==(vars->old_value & consts->mask));
+        LDD     0x2,X
+        ANDB    0x3,Y
+        ANDA    0x2,Y
+        PSHD
+        LDD     0x0,X
+        ANDB    0x1,Y
+        ANDA    0x0,Y
+        PSHD
+        LDD     0x2,X
+        ANDB    0x7,Y
+        ANDA    0x6,Y
+        PSHD
+        LDD     0x0,X
+        ANDB    0x5,Y
+        ANDA    0x4,Y
+        PULY
+        JSR     ??lcmp
+        BNE     ??ComFlt_MaskedNewEqualsMaskedOld_0
+        LDAB    #0x1
+        BRA     ??ComFlt_MaskedNewEqualsMaskedOld_1
+??ComFlt_MaskedNewEqualsMaskedOld_0:
+        LDAB    #0x0
+??ComFlt_MaskedNewEqualsMaskedOld_1:
+        PULX
+        RTS
+//  116 }
+//  117 
+
+        RSEG CODE:CODE:REORDER:NOROOT(0)
+//  118 boolean ComFlt_MaskedNewDiffersMaskedOld(const Msg_Vars *vars,const Msg_Consts *consts)
+ComFlt_MaskedNewDiffersMaskedOld:
+//  119 {
+        PSHX
+        TFR     D,X
+//  120     return ((vars->new_value & consts->mask)!=(vars->old_value & consts->mask));
+        LDD     0x2,X
+        ANDB    0x3,Y
+        ANDA    0x2,Y
+        PSHD
+        LDD     0x0,X
+        ANDB    0x1,Y
+        ANDA    0x0,Y
+        PSHD
+        LDD     0x2,X
+        ANDB    0x7,Y
+        ANDA    0x6,Y
+        PSHD
+        LDD     0x0,X
+        ANDB    0x5,Y
+        ANDA    0x4,Y
+        PULY
+        JSR     ??lcmp
+        BEQ     ??ComFlt_MaskedNewDiffersMaskedOld_0
+        LDAB    #0x1
+        BRA     ??ComFlt_MaskedNewDiffersMaskedOld_1
+??ComFlt_MaskedNewDiffersMaskedOld_0:
+        LDAB    #0x0
+??ComFlt_MaskedNewDiffersMaskedOld_1:
+        PULX
+        RTS
+//  121 }
+//  122 
+
+        RSEG CODE:CODE:REORDER:NOROOT(0)
+//  123 boolean ComFlt_NewIsWithin(const Msg_Vars *vars,const Msg_Consts *consts)
+ComFlt_NewIsWithin:
+//  124 {
+        PSHX
+        TFR     Y,X
+        TFR     D,Y
+//  125     return ((vars->new_value>=consts->min) && (vars->new_value<=consts->max));
+        LDD     0x2,X
+        SUBD    0xa,Y
+        LDD     0x0,X
+        SBCB    0x9,Y
+        SBCA    0x8,Y
+        BCS     ??ComFlt_NewIsWithin_0
+        LDD     0xe,Y
+        SUBD    0x2,X
+        LDD     0xc,Y
+        SBCB    0x1,X
+        SBCA    0x0,X
+        BCS     ??ComFlt_NewIsWithin_0
+        LDAB    #0x1
+        BRA     ??ComFlt_NewIsWithin_1
+??ComFlt_NewIsWithin_0:
+        LDAB    #0x0
+??ComFlt_NewIsWithin_1:
+        PULX
+        RTS
+//  126 }
+//  127 
+
+        RSEG CODE:CODE:REORDER:NOROOT(0)
+//  128 boolean ComFlt_NewIsOutside(const Msg_Vars *vars,const Msg_Consts *consts)
+ComFlt_NewIsOutside:
+//  129 {
+        PSHX
+        TFR     Y,X
+        TFR     D,Y
+//  130     return ((consts->min>vars->new_value) || (vars->new_value>consts->max));
+        LDD     0x2,X
+        SUBD    0xa,Y
+        LDD     0x0,X
+        SBCB    0x9,Y
+        SBCA    0x8,Y
+        BCS     ??ComFlt_NewIsOutside_0
+        LDD     0xe,Y
+        SUBD    0x2,X
+        LDD     0xc,Y
+        SBCB    0x1,X
+        SBCA    0x0,X
+        BCC     ??ComFlt_NewIsOutside_1
+??ComFlt_NewIsOutside_0:
+        LDAB    #0x1
+        BRA     ??ComFlt_NewIsOutside_2
+??ComFlt_NewIsOutside_1:
+        LDAB    #0x0
+??ComFlt_NewIsOutside_2:
+        PULX
+        RTS
+//  131 }
+//  132 
+
+        RSEG CODE:CODE:REORDER:NOROOT(0)
+//  133 boolean ComFlt_NewIsGreatear(const Msg_Vars *vars,const Msg_Consts *consts)
+ComFlt_NewIsGreatear:
+//  134 {
+        PSHX
+        TFR     Y,X
+        TFR     D,Y
+//  135     return (vars->new_value>vars->old_value);
+        LDD     0x6,X
+        SUBD    0x2,X
+        LDD     0x4,X
+        SBCB    0x1,X
+        SBCA    0x0,X
+        BCC     ??ComFlt_NewIsGreatear_0
+        LDAB    #0x1
+        BRA     ??ComFlt_NewIsGreatear_1
+??ComFlt_NewIsGreatear_0:
+        LDAB    #0x0
+??ComFlt_NewIsGreatear_1:
+        PULX
+        RTS
+//  136 }
+//  137 
+
+        RSEG CODE:CODE:REORDER:NOROOT(0)
+//  138 boolean ComFlt_NewIsLessOrEqual(const Msg_Vars *vars,const Msg_Consts *consts)
+ComFlt_NewIsLessOrEqual:
+//  139 {
+        PSHX
+        TFR     Y,X
+        TFR     D,Y
+//  140     return (vars->new_value<=vars->old_value);
+        LDD     0x6,X
+        SUBD    0x2,X
+        LDD     0x4,X
+        SBCB    0x1,X
+        SBCA    0x0,X
+        BCS     ??ComFlt_NewIsLessOrEqual_0
+        LDAB    #0x1
+        BRA     ??ComFlt_NewIsLessOrEqual_1
+??ComFlt_NewIsLessOrEqual_0:
+        LDAB    #0x0
+??ComFlt_NewIsLessOrEqual_1:
+        PULX
+        RTS
+//  141 }
+//  142 
+
+        RSEG CODE:CODE:REORDER:NOROOT(0)
+//  143 boolean ComFlt_NewIsLess(const Msg_Vars *vars,const Msg_Consts *consts)
+ComFlt_NewIsLess:
+//  144 {
+        PSHX
+        TFR     Y,X
+        TFR     D,Y
+//  145     return (vars->new_value<=vars->old_value);
+        LDD     0x6,X
+        SUBD    0x2,X
+        LDD     0x4,X
+        SBCB    0x1,X
+        SBCA    0x0,X
+        BCS     ??ComFlt_NewIsLess_0
+        LDAB    #0x1
+        BRA     ??ComFlt_NewIsLess_1
+??ComFlt_NewIsLess_0:
+        LDAB    #0x0
+??ComFlt_NewIsLess_1:
+        PULX
+        RTS
+//  146 }
+//  147 
+
+        RSEG CODE:CODE:REORDER:NOROOT(0)
+//  148 boolean ComFlt_NewIsGreaterOrEqual(const Msg_Vars *vars,const Msg_Consts *consts)
+ComFlt_NewIsGreaterOrEqual:
+//  149 {
+        PSHX
+        TFR     Y,X
+        TFR     D,Y
+//  150     return (vars->new_value>=vars->old_value);
+        LDD     0x2,X
+        SUBD    0x6,X
+        LDD     0x0,X
+        SBCB    0x5,X
+        SBCA    0x4,X
+        BCS     ??ComFlt_NewIsGreaterOrEqual_0
+        LDAB    #0x1
+        BRA     ??ComFlt_NewIsGreaterOrEqual_1
+??ComFlt_NewIsGreaterOrEqual_0:
+        LDAB    #0x0
+??ComFlt_NewIsGreaterOrEqual_1:
+        PULX
+        RTS
+//  151 }
+//  152 
+
+        RSEG CODE:CODE:REORDER:NOROOT(0)
+//  153 boolean ComFlt_OneEveryN(const Msg_Vars *vars,const Msg_Consts *consts)
+ComFlt_OneEveryN:
+//  154 {
+        PSHX
+        TFR     Y,X
+        TFR     D,Y
+//  155     return ((vars->occurrence % consts->period)==consts->offset);
+        LDD     0x8,X
+        LDX     0x10,Y
+        IDIV
+        CPD     0x12,Y
+        BNE     ??ComFlt_OneEveryN_0
+        LDAB    #0x1
+        BRA     ??ComFlt_OneEveryN_1
+??ComFlt_OneEveryN_0:
+        LDAB    #0x0
+??ComFlt_OneEveryN_1:
+        PULX
+        RTS
+//  156 }
+
+        END
+// 
+// 417 bytes in segment CODE
+// 
+// 417 bytes of CODE memory
+//
+//Errors: none
+//Warnings: 1

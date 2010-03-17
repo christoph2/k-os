@@ -5,7 +5,8 @@ __version__="0.9.0"
 __copyright__="""
    k_os (Konnex Operating-System based on the OSEK/VDX-Standard).
  
-  (C) 2007-2009 by Christoph Schueler <chris@konnex-tools.de>
+   (C) 2007-2009 by Christoph Schueler <chris@konnex-tools.de,
+                                        cpu12.gems@googlemail.com>
   
    All Rights Reserved
  
@@ -39,6 +40,10 @@ of=None
 
 E_UNBALANCED_DELIMS=1
 
+#
+#os.pathsep
+#
+
 INCLUDE_DIRECTIVE=re.compile(r'[ \t]*?#[ \t]*?include[ \t]*?(?P<sdelim>[<"])(?P<incfile>.*?)(?P<edelim>[>"])(?P<rest>.*)')
 STRING=re.compile(r'(?P<before>.*?)["](?P<string>.*?)["](?P<after>.*)')
 START_COMMENT=re.compile(r'\/(?P<char>\/|\*)')
@@ -62,6 +67,7 @@ def CreateOutFile(fname):
 
 def AddToPathList(path):
     if path not in PathList:
+        print "Adding Include Path '%s'.\n" % (path)
         PathList.append(path)
 
 def AddToFileList(fname):
@@ -75,26 +81,27 @@ def TryOpen(fname):
         return True
 
 def Parse(fname):
-    print
-    print "======================================================================================"
-    print " SCANNING: ",fname
-    print "======================================================================================"
-    state=SCANNING
-    line_no=0    
-    cmt_start_line=0
-    inc_path=None
-    FileFound=False
-
+    ##
+    ##  todo: emit 'line' directives !!!
+    ##      #line 106 "C:\\projekte\\csProjects\\common\\inc\\Std_Macros.h"
+    ##
     try:    
         inf=open(fname)
     except IOError as e:
         print e
         sys.exit(2)
+    print
+    print '=' * 79
+    print " SCANNING: '%s' ..." % (fname)
+    print '=' * 79
 
+    state=SCANNING    
+    cmt_start_line=0
+    inc_path=None
+    FileFound=False    
     AddToFileList(fname)
     
-    for line in inf:
-        line_no+=1
+    for line_no,line in enumerate(inf):        
         if state==SCANNING:
             tmp_line=StripStrings(line)
             start_comment_tmp=START_COMMENT.search(tmp_line)
@@ -109,7 +116,7 @@ def Parse(fname):
                         state=MULTI_LINE_COMMENT   ## Start Multi-Line-Comment.
                         cmt_start_line=line_no
                         line=line[:start]+'\n'                        
-                        print "Multi-Line-Comment startet  @ line: ",cmt_start_line                        
+                        print "Multi-Line-Comment startet  @ line: ",cmt_start_line
                     else:
                         end=end_comment.end()
                         line=line[:start]+line[end:-1]+'\n'
@@ -117,21 +124,32 @@ def Parse(fname):
                 pass
             include_stmt=INCLUDE_DIRECTIVE.match(line)
             if include_stmt is not None:
-                sdelim,incfile,edelim,rest=include_stmt.groups(('sdelim','incfile','edelim','rest'))
+                sdelim,incfile,edelim,_=include_stmt.groups(('sdelim','incfile','edelim','rest'))
 
                 if (sdelim=='"' and edelim!='"') or (sdelim=='<' and edelim!='>'):
                     SevereError(fname,line_no,E_UNBALANCED_DELIMS,'Unbalanced deliminiters '+sdelim+','+edelim+' in #include-statement')
                 else:
-                    ## Warn, if no comment.
+                    ## Warn, if no comment.                    
                     print >> of,'\n',
                     if sdelim=='"':
+                        ## Try current directory first.
                         inc_path=os.path.join(os.path.curdir,incfile)
                         FileFound=TryOpen(inc_path)
 
-#                    while not FileFound:
- #                       TryOpen
-                    
-                    Parse(incfile)  ## inc_path
+                    if not FileFound:
+                        for p in PathList:
+                            inc_path=os.path.join(p,incfile)
+                            FileFound=TryOpen(inc_path)
+                            if FileFound:
+                                break
+                                print "FOUND: ",inc_path
+
+                    if FileFound:
+                        Parse(inc_path)
+                        print "UND ZURUECK!!!",line_no  ## todo: Müsste die Zeilen-Nr. nicht erhöt sein???
+                    else:
+                        print "Could not open include file '%s'.\n" % (incfile)
+                        sys.exit(1)
             else:
                 print >> of,line,
 

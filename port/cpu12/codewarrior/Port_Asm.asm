@@ -1,26 +1,28 @@
-; 
+;
 ;  k_os (Konnex Operating-System based on the OSEK/VDX-Standard).
-;  
-;  (C) 2007-2009 by Christoph Schueler <chris@konnex-tools.de>
-;  
+;
+;  (C) 2007-2010 by Christoph Schueler <chris@konnex-tools.de,
+;                                      cpu12.gems@googlemail.com>
+;
 ;  All Rights Reserved
-; 
+;
 ;  This program is free software; you can redistribute it and/or modify
 ;  it under the terms of the GNU General Public License as published by
-;  the Free Software Foundation; either version 2 of the License, or
-;  (at your option) any later version.
-; 
+;  the Free Software Foundation; version 2 of the License.
+;
 ;  This program is distributed in the hope that it will be useful,
 ;  but WITHOUT ANY WARRANTY; without even the implied warranty of
 ;  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 ;  GNU General Public License for more details.
 ;
-;  You should have received a copy of the GNU General Public License along
-;  with this program; if not, write to the Free Software Foundation, Inc.,
-;  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+;  You should have received a copy of the GNU General Public License
+;  along with this program; if not, write to the Free Software
+;  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA 
+;
+;  s. FLOSS-EXCEPTION.txt
 ;
  
-  PUBLIC Cpu_InterruptsDisabled
+  PUBLIC CPU_INTERRUPTS_DISABLED
   PUBLIC Utl_SetJump  
   PUBLIC Utl_LongJump
   PUBLIC OsMLQ_GetLowestBitNumber
@@ -48,7 +50,7 @@ ReversedLog2Tab:
 
 
 
-Cpu_InterruptsDisabled:
+CPU_INTERRUPTS_DISABLED:
     tfr     ccr,b
     bitb    #$10
     bne     __id_l10
@@ -123,3 +125,4 @@ Mem_GetFreePointer:
     rts
 
     END
+

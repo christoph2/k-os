@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+
+<Workspace>
+  <ConfigDictionary>
+    
+  <CurrentConfigs><Project>EX01/Debug</Project></CurrentConfigs></ConfigDictionary>
+  <Desktop>
+    <Static>
+      <Workspace>
+        <ColumnWidths>
+          
+          
+          
+          
+        <Column0>186</Column0><Column1>27</Column1><Column2>27</Column2><Column3>27</Column3></ColumnWidths>
+      </Workspace>
+      <Build>
+        
+        
+        
+        
+      <ColumnWidth0>20</ColumnWidth0><ColumnWidth1>803</ColumnWidth1><ColumnWidth2>361</ColumnWidth2><ColumnWidth3>61</ColumnWidth3></Build>
+      <Find-in-Files>
+        
+        
+        
+      <ColumnWidth0>440</ColumnWidth0><ColumnWidth1>62</ColumnWidth1><ColumnWidth2>754</ColumnWidth2></Find-in-Files>
+      <TerminalIO/>
+      <CodeCoveragePlugin/>
+      <Profiling/>
+    </Static>
+    <Windows>
+      
+      
+    <Wnd2>
+        <Tabs>
+          <Tab>
+            <Identity>TabID-27183-32514</Identity>
+            <TabName>Workspace</TabName>
+            <Factory>Workspace</Factory>
+            <Session>
+              
+            <NodeDict><ExpandedNode>EX01</ExpandedNode><ExpandedNode>EX01/OSEK</ExpandedNode><ExpandedNode>EX01/Output</ExpandedNode></NodeDict></Session>
+          </Tab>
+        </Tabs>
+        
+      <SelectedTab>0</SelectedTab></Wnd2><Wnd3>
+        <Tabs>
+          <Tab>
+            <Identity>TabID-4934-32726</Identity>
+            <TabName>Build</TabName>
+            <Factory>Build</Factory>
+            <Session/>
+          </Tab>
+          <Tab>
+            <Identity>TabID-24758-1019</Identity>
+            <TabName>Find in Files</TabName>
+            <Factory>Find-in-Files</Factory>
+            <Session/>
+          </Tab>
+        </Tabs>
+        
+      <SelectedTab>0</SelectedTab></Wnd3></Windows>
+    <Editor>
+      
+      
+      
+      
+    <Pane><Tab><Factory>TextEditor</Factory><Filename>C:\projekte\csProjects\k-os\examples\Ex01\Os_Cfg.h</Filename><XPos>0</XPos><YPos>162</YPos><SelStart>4697</SelStart><SelEnd>4702</SelEnd></Tab><Tab><Factory>TextEditor</Factory><Filename>C:\projekte\csProjects\k-os\examples\Ex01\Os_Cfg.c</Filename><XPos>0</XPos><YPos>87</YPos><SelStart>3856</SelStart><SelEnd>3875</SelEnd></Tab><Tab><Factory>TextEditor</Factory><Filename>C:\projekte\csProjects\k-os\src\Os_Evt.c</Filename><XPos>0</XPos><YPos>0</YPos><SelStart>1270</SelStart><SelEnd>1270</SelEnd></Tab><Tab><Factory>TextEditor</Factory><Filename>C:\projekte\csProjects\k-os\src\Os_Exec.c</Filename><XPos>0</XPos><YPos>177</YPos><SelStart>4758</SelStart><SelEnd>4758</SelEnd></Tab><Tab><Factory>TextEditor</Factory><Filename>C:\projekte\csProjects\k-os\src\Os_Res.c</Filename><XPos>0</XPos><YPos>57</YPos><SelStart>1964</SelStart><SelEnd>1964</SelEnd></Tab><Tab><Factory>TextEditor</Factory><Filename>C:\projekte\csProjects\k-os\inc\Os_Types.h</Filename><XPos>0</XPos><YPos>287</YPos><SelStart>8211</SelStart><SelEnd>8211</SelEnd></Tab><Tab><Factory>TextEditor</Factory><Filename>C:\projekte\csProjects\k-os\src\Os_Task.c</Filename><XPos>0</XPos><YPos>38</YPos><SelStart>1655</SelStart><SelEnd>1655</SelEnd></Tab><Tab><Factory>TextEditor</Factory><Filename>C:\projekte\csProjects\k-os\src\Os_Mlq.c</Filename><XPos>0</XPos><YPos>107</YPos><SelStart>3159</SelStart><SelEnd>3159</SelEnd></Tab><Tab><Factory>TextEditor</Factory><Filename>C:\projekte\csProjects\k-os\examples\Ex01\app.c</Filename><XPos>0</XPos><YPos>194</YPos><SelStart>4237</SelStart><SelEnd>4237</SelEnd></Tab><Tab><Factory>TextEditor</Factory><Filename>C:\projekte\csProjects\k-os\src\Os_Port.c</Filename><XPos>0</XPos><YPos>73</YPos><SelStart>3036</SelStart><SelEnd>3036</SelEnd></Tab><Tab><Factory>TextEditor</Factory><Filename>C:\projekte\csProjects\k-os\src\Os_Ctr.c</Filename><XPos>0</XPos><YPos>149</YPos><SelStart>5190</SelStart><SelEnd>5190</SelEnd></Tab><Tab><Factory>TextEditor</Factory><Filename>C:\projekte\csProjects\k-os\inc\Os_Macros.h</Filename><XPos>0</XPos><YPos>338</YPos><SelStart>12015</SelStart><SelEnd>12015</SelEnd></Tab><Tab><Factory>TextEditor</Factory><Filename>C:\projekte\csProjects\k-os\src\Os_Alm.c</Filename><XPos>0</XPos><YPos>12</YPos><SelStart>1353</SelStart><SelEnd>1353</SelEnd></Tab><Tab><Factory>TextEditor</Factory><Filename>C:\projekte\csProjects\common\src\Utl.c</Filename><XPos>0</XPos><YPos>22</YPos><SelStart>1395</SelStart><SelEnd>1395</SelEnd></Tab><Tab><Factory>TextEditor</Factory><Filename>C:\projekte\csProjects\test_stage\s12can\TpSim.c</Filename><XPos>0</XPos><YPos>322</YPos><SelStart>7965</SelStart><SelEnd>7965</SelEnd></Tab><Tab><Factory>TextEditor</Factory><Filename>C:\projekte\csProjects\k-os\inc\Os_Alm.h</Filename><XPos>0</XPos><YPos>0</YPos><SelStart>1125</SelStart><SelEnd>1125</SelEnd></Tab><Tab><Factory>TextEditor</Factory><Filename>C:\projekte\csProjects\common\inc\Std_Macros.h</Filename><XPos>0</XPos><YPos>0</YPos><SelStart>913</SelStart><SelEnd>913</SelEnd></Tab><ActiveTab>16</ActiveTab></Pane><ActivePane>0</ActivePane><Sizes><Pane><X>1000000</X><Y>1000000</Y></Pane></Sizes><SplitMode>1</SplitMode></Editor>
+    <Positions>
+      
+      
+      
+      
+      
+    <Top><Row0><Sizes><Toolbar-0037c330><key>iaridepm1</key></Toolbar-0037c330></Sizes></Row0></Top><Left><Row0><Sizes><Wnd2><Rect><Top>-2</Top><Left>-2</Left><Bottom>722</Bottom><Right>260</Right><x>-2</x><y>-2</y><xscreen>200</xscreen><yscreen>214</yscreen><sizeHorzCX>156250</sizeHorzCX><sizeHorzCY>218814</sizeHorzCY><sizeVertCX>204688</sizeVertCX><sizeVertCY>740286</sizeVertCY></Rect></Wnd2></Sizes></Row0></Left><Right><Row0><Sizes/></Row0></Right><Bottom><Row0><Sizes><Wnd3><Rect><Top>-2</Top><Left>-2</Left><Bottom>212</Bottom><Right>1282</Right><x>-2</x><y>-2</y><xscreen>1284</xscreen><yscreen>214</yscreen><sizeHorzCX>1003125</sizeHorzCX><sizeHorzCY>218814</sizeHorzCY><sizeVertCX>156250</sizeVertCX><sizeVertCY>218814</sizeVertCY></Rect></Wnd3></Sizes></Row0></Bottom><Float><Sizes/></Float></Positions>
+  </Desktop>
+</Workspace>
+
+
