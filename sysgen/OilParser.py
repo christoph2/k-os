@@ -319,15 +319,16 @@ class OILParser(GenericASTBuilder):
     def __init__(self, AST, start):
         GenericASTBuilder.__init__(self, AST, start)
 
-	def error(self, token):
-		print "*** Syntax error at '%s' (line %u) ***" % (token, token.lineno)
-		raise SystemExit
+    def error(self, token):
+        print token
+        print "*** Syntax error at '%s' (line %u) ***" % (token, token.lineno)
+        raise SystemExit
 
     def p_expr(self, args):
         """
             file ::= OIL_version implementation_definition application_definition
 
-            OIL_version ::=	OIL_VERSION = version description ;
+            OIL_version ::=	OIL_VERSION = version description ;            
 
             version ::= string
 
@@ -456,9 +457,10 @@ class OILParser(GenericASTBuilder):
             object ::= object_lexeme
 
             boolean ::= TRUE
-            boolean ::= FALSE            
+            boolean ::= FALSE
+                        
         """
-
+##line_no
 def AddImplementationList(node,Accum):
     for k in node._kids:
         if k.type=='implementation_list':

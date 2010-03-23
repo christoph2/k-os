@@ -6,9 +6,27 @@
 */
 #include <oil25int.oil>
 
-OSEK OSEK {
+CPU hc12 {
+APPMODE AppMode1;
 
-OS	ExampleOS {
+COUNTER HardwareCounter {
+	MAXALLOWEDVALUE = 100000;
+	TICKSPERBASE = 1000;
+	MINCYCLE = 1;
+	TYPE = HARDWARE;
+	COUNTER = HWCOUNTER0;
+};
+
+COUNTER SoftwareCounter {
+	MAXALLOWEDVALUE = 100000;
+	TICKSPERBASE = 100;
+	MINCYCLE = 1;
+	TYPE = SOFTWARE;
+};
+
+
+/*
+OS  ExampleOS {
 	STATUS = EXTENDED;
    STARTUPHOOK = FALSE;
    ERRORHOOK = TRUE;
@@ -174,5 +192,6 @@ ALARM SetEventTaskA {
 		APPMODE = AppMode1;
 	};
 };
-
+*/
 };
+

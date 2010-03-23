@@ -87,6 +87,7 @@ def test():
 
     print "\nStage I. Preprocessing..."
     OilPreproc.Parser(args[0])
+    OilParser.ParseOil(os.path.splitext(os.path.abspath(args[0]))[0]+'.i')
 
 
 if __name__=='__main__':

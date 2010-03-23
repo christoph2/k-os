@@ -50,6 +50,7 @@ class OilScanner(GenericScanner):
     def __init__(self, flags=0):
         GenericScanner.__init__(self,flags)
         self.lineno=1
+        self.filename=""
         
     def tokenize(self, input):
         self.rv = []
@@ -74,11 +75,11 @@ class OilScanner(GenericScanner):
         if s in KW_LIST:
             self.rv.append(Token(type=s,lineno=self.lineno))
         elif s in OBJ_LIST:
-            self.rv.append(Token('object_lexeme',s))
+            self.rv.append(Token('object_lexeme',s,lineno=self.lineno))
         elif s in OBJ_TYPE_LIST:
-            self.rv.append(Token('object_ref_lexeme',s))
+            self.rv.append(Token('object_ref_lexeme',s,lineno=self.lineno))
         else:
-            self.rv.append(Token('name', s))
+            self.rv.append(Token('name', s,lineno=self.lineno))
 
     def t_hex_const(self,s):
         r" 0[xX][0-9a-fA-F]+ "
@@ -106,22 +107,16 @@ class OilScanner(GenericScanner):
 
 
     def t_line_directive(self,s):
-        r'  \#[ \t]*line[ \t]*[0-9]+'   ### r' ["].*["] '
-##  #line 106 "C:\\projekte\\csProjects\\common\\inc\\Std_Macros.h"        
-##        r"  #line[ \t]+[0-9]+ "        
-        file=""
-
+        r'  \#[ \t]*line[ \t]*([0-9]+?)[ \t]*?".*"'
         elems=s.split()
-        line=int(elems[1])
-#        file=elems[2]
-        
-        print "LINE '%s':%d" % (file,line)
-        self.rv.append(Token('line_directive',(file,line)))
-
+        ## print elems
+        self.lineno=int(elems[1])
+        self.filename=elems[2]                
 
 def test():
+    ##line 106 "C:\projekte\csProjects\k-os\config\oil\oil25int.oil"
     m="""
-        #line 106
+        #line 106   "C:\projekte\csProjects\k-os\config\oil\oil25int.oil"
         OSEK OSEK {
 
             OS	ExampleOS {

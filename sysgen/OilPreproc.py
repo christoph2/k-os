@@ -80,11 +80,11 @@ def TryOpen(fname):
     else:
         return True
 
+def lineDirective(file_name,line_no):
+    global of
+    print >> of,'#line %u "%s"' % (line_no,file_name)
+
 def Parse(fname):
-    ##
-    ##  todo: emit 'line' directives !!!
-    ##      #line 106 "C:\\projekte\\csProjects\\common\\inc\\Std_Macros.h"
-    ##
     try:    
         inf=open(fname)
     except IOError as e:
@@ -95,13 +95,15 @@ def Parse(fname):
     print " SCANNING: '%s' ..." % (fname)
     print '=' * 79
 
+    lineDirective(fname,1)
+
     state=SCANNING    
     cmt_start_line=0
     inc_path=None
     FileFound=False    
     AddToFileList(fname)
     
-    for line_no,line in enumerate(inf):        
+    for line_no,line in enumerate(inf,1):        
         if state==SCANNING:
             tmp_line=StripStrings(line)
             start_comment_tmp=START_COMMENT.search(tmp_line)
@@ -146,7 +148,7 @@ def Parse(fname):
 
                     if FileFound:
                         Parse(inc_path)
-                        print "UND ZURUECK!!!",line_no  ## todo: Müsste die Zeilen-Nr. nicht erhöt sein???
+                        lineDirective(fname,line_no+1)
                     else:
                         print "Could not open include file '%s'.\n" % (incfile)
                         sys.exit(1)
@@ -162,11 +164,13 @@ def Parse(fname):
                 print >> of
             else:
                 print >> of
-
-    print "No. of Lines: ",line_no
     inf.close()
 
 def Parser(fname):
+    inc_paths=os.getenv('KOS_INCLUDE')
+    if inc_paths is not None:
+        for p in inc_paths.split(';'):
+            AddToPathList(p)            
     global of    
     of=CreateOutFile(fname)
     Parse(fname)
