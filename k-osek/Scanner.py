@@ -46,7 +46,7 @@ OBJ_TYPE_LIST=("ALARM_TYPE","APPMODE_TYPE","COM_TYPE",
 BOOL_VALUES=("TRUE","FALSE")
 
 
-class OilScanner(GenericScanner):    
+class Scanner(GenericScanner):    
     def __init__(self, flags=0):
         GenericScanner.__init__(self,flags)
         self.lineno=1
@@ -127,7 +127,7 @@ def test():
             };
         }
     """    
-    s=OilScanner()
+    s=Scanner()
     s.tokenize(m)
     
 test()

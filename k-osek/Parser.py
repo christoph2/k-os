@@ -25,7 +25,7 @@ __copyright__="""
 """
 
 from spark import *
-from OilScanner import OilScanner
+from Scanner import Scanner
 from AST import AST
 import GenORTI
 import GenCfg
@@ -315,7 +315,7 @@ class Parameter(object):
         self.description=description
 
 
-class OILParser(GenericASTBuilder):
+class Parser(GenericASTBuilder):
     def __init__(self, AST, start):
         GenericASTBuilder.__init__(self, AST, start)
 
@@ -726,11 +726,11 @@ class TypeCheck(GenericASTTraversal):
 
 def scan(f):
     input=f.read()
-    scanner=OilScanner(re.LOCALE)
+    scanner=Scanner(re.LOCALE)
     return scanner.tokenize(input)
 
 def parse(tokens,start):
-    parser=OILParser(AST,start)
+    parser=Parser(AST,start)
     r=parser.parse(tokens)
     return r
 
@@ -758,3 +758,4 @@ def test():
         
 if __name__=="__main__":
     test()
+
