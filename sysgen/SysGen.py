@@ -6,7 +6,7 @@ __version__="0.9.0"
 __copyright__="""
    k_os (Konnex Operating-System based on the OSEK/VDX-Standard).
  
-   (C) 2007-2009 by Christoph Schueler <chris@konnex-tools.de,
+   (C) 2007-2010 by Christoph Schueler <chris@konnex-tools.de,
                                         cpu12.gems@googlemail.com>
   
    All Rights Reserved
@@ -28,19 +28,19 @@ __copyright__="""
 
 import os
 from optparse import OptionParser,OptionGroup
-import OilParser
-import OilPreproc 
+import Parser
+import Preproc 
 
 
 def SetIncludePaths(paths):
     inc_paths=os.getenv('KOS_INCLUDE')
     if inc_paths is not None:
         for p in inc_paths.split(';'):
-            OilPreproc.AddToPathList(p)
+            Preproc.AddToPathList(p)
 
     if paths is not None:
         for p in paths:
-            OilPreproc.AddToPathList(p)            
+            Preproc.AddToPathList(p)            
 
 
 def test():
@@ -86,8 +86,8 @@ def test():
         op.error("incorrect number of arguments")
 
     print "\nStage I. Preprocessing..."
-    OilPreproc.Parser(args[0])
-    OilParser.ParseOil(os.path.splitext(os.path.abspath(args[0]))[0]+'.i')
+    Preproc.Parser(args[0])
+    Parser.ParseOil(os.path.splitext(os.path.abspath(args[0]))[0]+'.i')
 
 
 if __name__=='__main__':

@@ -5,7 +5,7 @@ __version__="0.9.0"
 __copyright__="""
    k_os (Konnex Operating-System based on the OSEK/VDX-Standard).
  
-  (C) 2007-2009 by Christoph Schueler <chris@konnex-tools.de>
+  (C) 2007-2010 by Christoph Schueler <chris@konnex-tools.de>
   
    All Rights Reserved
  
@@ -63,7 +63,6 @@ NUMERIC_RANGES={'UINT32': UINT32_RANGE,'INT32': INT32_RANGE,'UINT64':
 #
 # Implementation-Definition
 #
-
 class ImplRefDef(object):
     def __init__(self,object_ref_type,name,multiple_specifier,description):
         self.object_ref_type=object_ref_type
@@ -71,9 +70,9 @@ class ImplRefDef(object):
         self.multiple_specifier=multiple_specifier
         self.description=description
 
+
 class ImplAttrDef(object):
-    def __init__(self,name,attrType,auto_specifier,range,
-                 multiple_specifier,default,description):
+    def __init__(self,name,attrType,auto_specifier,range,multiple_specifier,default,description):
         self.name=name
         self.attrType=attrType
         self.auto_specifier=auto_specifier
@@ -82,18 +81,19 @@ class ImplAttrDef(object):
         self.default=default        
         self.description=description
 
+
 class BoolValues(object):
-    def __init__(self,true_parameter_list,true_description,false_parameter_list,
-                 false_description):
+    def __init__(self,true_parameter_list,true_description,false_parameter_list,false_description):
         self.true_parameter_list=true_parameter_list
         self.true_description=true_description
         self.false_parameter_list=false_parameter_list
         self.false_description=false_description
 
-            
+
 class ImplSpec(object):
     def __init__(self,name):        
         self.defs=dict()
+
 
 Alarm_ImplDef=ImplSpec('ALARM')
 Appmode_ImplDef=ImplSpec('APPMODE')
@@ -108,10 +108,12 @@ Os_ImplDef=ImplSpec('OS')
 Resource_ImplDef=ImplSpec('RESOURCE')
 Task_ImplDef=ImplSpec('TASK')
 
+
 ImplDefMap={"ALARM":Alarm_ImplDef,"APPMODE":Appmode_ImplDef,"COM":Com_ImplDef,
             "COUNTER":Counter_ImplDef,"EVENT":Event_ImplDef,"IDPU":Idpu_ImplDef,
             "ISR":Isr_ImplDef,"MESSAGE":Message_ImplDef,"NM":Nm_ImplDef,
             "OS":Os_ImplDef,"RESOURCE":Resource_ImplDef,"TASK":Task_ImplDef}
+
 
 class Range(object):
     def __init__(self,lhs,rhs):
@@ -127,13 +129,16 @@ class Range(object):
     def GetRange(self):
         return (self.lhs,self.rhs)
 
+
 class NumberRange(Range):
     def __init__(self,lhs,rhs):
         Range.__init__(self,lhs,rhs)
 
+
 class NumberRangeRange(NumberRange):
     def __init__(self,lhs,rhs):
         NumberRange.__init__(self,lhs,rhs)
+
 
 
 class NumberRangeList(NumberRange):
@@ -149,9 +154,11 @@ class NumberRangeList(NumberRange):
     def GetRange(self):
         return self.lhs        
 
+
 class FloatRange(Range):
     def __init__(self,lhs,rhs):
         Range.__init__(self,lhs,rhs)
+
 
 class EnumRange(Range):
     def __init__(self,lhs):
@@ -174,6 +181,7 @@ def GetParameterDefinition(obj,name,path=[]):
     for p in path:
         pass
 
+
 def GetParameterPathToRootObject(obj,param):
     path=[]
     path.append(obj.name)
@@ -183,12 +191,14 @@ def GetParameterPathToRootObject(obj,param):
         parent=parent.parent
     return (parent,path)
 
+
 class ParameterContainer(dict):
     def __init__(self,name):
         self.name=name
         
     def __getitem__(self,index):
         return self.get(index)        
+
 
 def NumericRangeCheck(attr,impldef,type_range):
     value=attr.attribute_value.value
@@ -207,11 +217,12 @@ def NumericRangeCheck(attr,impldef,type_range):
         return False
     return True
 
+
 def RangeCheck(attr,impldef):
     formal=impldef.attrType
     value=attr.attribute_value.value
 
-    if formal in ['UINT32','INT32','UINT64','INT64','FLOAT']:
+    if formal in ('UINT32','INT32','UINT64','INT64','FLOAT'):
        if not NumericRangeCheck(attr,impldef,NUMERIC_RANGES[formal]):
            return False        
     elif formal=='ENUM':        
@@ -220,6 +231,7 @@ def RangeCheck(attr,impldef):
             print "Undefined emumerator '%s' for attribute '%s', expected %s." % (value,attr.attribute_name,enum)
             return False
     return True
+
 
 def TypeCompat(attr,impldef):
     TypeMap={'UINT32': 'number','INT32': 'number','UINT64': 'number',
@@ -235,6 +247,7 @@ def TypeCompat(attr,impldef):
         return False
     else:
         return True
+
 
 def SemanticCheck(attr,impldef):
     if isinstance(attr,NestedParameter):
@@ -253,6 +266,7 @@ def SemanticCheck(attr,impldef):
         if not RangeCheck(attr,impldef):
             return False        
     return True
+
 
 #
 # Parser-Objects.
@@ -276,7 +290,6 @@ class ObjectDefinition(dict):
                     return            
             else:
                 self[name]=[]
-
             if not SemanticCheck(value,pd):
                 return
             self[name].append(value)
@@ -298,6 +311,7 @@ class NestedParameter(object):
             self.params[name]=[]
             self.params[name].append(value)
 
+
 class AttributeValue(object):
     def __init__(self,type,value,parameterised=False,parameter_list=None):
         self.type=type
@@ -307,6 +321,7 @@ class AttributeValue(object):
 
     def __repr__(self):
         return (self.value)
+
 
 class Parameter(object):
     def __init__(self,attribute_name,attribute_value,description):
@@ -460,6 +475,7 @@ class Parser(GenericASTBuilder):
             boolean ::= FALSE
                         
         """
+
 ##line_no
 def AddImplementationList(node,Accum):
     for k in node._kids:
@@ -468,12 +484,14 @@ def AddImplementationList(node,Accum):
         else:
             Accum.append(k.exprValue)
 
+
 def AddNumberList(nl,Accum):
     if len(nl._kids)==1:        
         Accum.append(nl._kids[0].exprValue)
     elif len(nl._kids)==3:        
         Accum.append(nl._kids[2].exprValue)
         AddNumberList(nl._kids[0],Accum)
+
 
 def AddEnumeratorList(enum,Accum):
     if len(enum._kids)==1:        
@@ -482,12 +500,14 @@ def AddEnumeratorList(enum,Accum):
         Accum.append(enum._kids[2].exprValue)
         AddEnumeratorList(enum._kids[0],Accum)
 
+
 def AddImplDefList(dl,Accum):
     for k in dl._kids:
         if k.type=='impl_def_list':
             AddImplDefList(k,Accum)
         else:
             Accum.append(k.exprValue)        
+
 
 def AddParamter(obj,param):
     if param.exprValue.attribute_value.parameterised==True:
@@ -497,12 +517,14 @@ def AddParamter(obj,param):
     else:
         obj.AddParameter(param.exprValue.attribute_name,param.exprValue)
 
+
 def AddParameterList(obj,params):
     for p in params._kids:
         if (p.type=='parameter_list'):
             AddParameterList(obj,p)
         else:
             AddParamter(obj,p)            
+
 
 def AddNestedParameter(parent,name,params):
     n=NestedParameter(name,parent)
@@ -758,4 +780,3 @@ def test():
         
 if __name__=="__main__":
     test()
-
