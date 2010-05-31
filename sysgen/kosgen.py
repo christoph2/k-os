@@ -29,7 +29,9 @@ __copyright__="""
 import os
 from optparse import OptionParser,OptionGroup
 import Parser
-import Preproc 
+import Preproc
+import GenCfg
+from  Error import OILError
 
 
 def SetIncludePaths(paths):
@@ -40,16 +42,16 @@ def SetIncludePaths(paths):
 
     if paths is not None:
         for p in paths:
-            Preproc.AddToPathList(p)            
+            Preproc.AddToPathList(p)
 
 
-def test():
+def main():
     usage = "usage: %prog [options] oil_file"
 
     options=[]
     args=[]
 
-    op=OptionParser(usage=usage,version="%prog " +__version__,description="Generate KOS-Configuration from '.oil'-File.")
+    op=OptionParser(usage=usage,version="%prog " +__version__,description="Generate K-OS-Configuration from '.oil'-File.")
     op.add_option("-f","--command-file",type="string",metavar="FILE",
                   dest="command_file",help="read options from command-FILE")
 
@@ -57,7 +59,7 @@ def test():
     input_group.add_option("-I","--include-path",dest="inc_path",action="append",metavar="dir",
         help="Add directory to the list of directories to be searched for include files. "
         "Environment-Variable 'KOS_INCLUDE' is also used to locate Include-Files.")
-    
+
     op.add_option_group(input_group)
 
     group=OptionGroup(op,"Output")
@@ -69,27 +71,35 @@ def test():
     group.add_option("-t","--test",help="verify only, don't generate anything",
                      dest="test",action="store_true",default=False)
 
-##
-##  todo: Opt. 'Generate AR-XML'.
-##
-    
-    op.add_option_group(group)    
+    op.add_option_group(group)
 
-    (options, args) = op.parse_args()
+    (options, args)=op.parse_args()
 
     SetIncludePaths(options.inc_path)
 
     if len(args)==0:
         op.error("no input file")
-    
+
     if len(args)!=1:
         op.error("incorrect number of arguments")
 
+    error=OILError()
+
     print "\nStage I. Preprocessing..."
-    Preproc.Parser(args[0])
-    Parser.ParseOil(os.path.splitext(os.path.abspath(args[0]))[0]+'.i')
+    Preproc.Parser(args[0],errorObj=error)
+    
+    try:
+        fileName=os.path.splitext(os.path.abspath(args[0]))[0]+'.i'
+        inFile=open(fileName)
+    except IOError:
+        errObj.fatalError("Could not open file '%s'.\n" % (fname))
+    else:
+        input=inFile.read()
+        ImplDefMap,AppDefMap=Parser.ParseOil(input,errorObj=error)
+        if options.test==False:
+            GenCfg.Generate(os.path.splitext(args[0])[0],AppDefMap,errorObj=error)
 
 
 if __name__=='__main__':
-    test()
+    main()
 

@@ -1,10 +1,11 @@
+# -*- coding: latin-1 -*-
 
 __version__="0.9.0"
 
 __copyright__="""
    k_os (Konnex Operating-System based on the OSEK/VDX-Standard).
  
-   (C) 2007-2009 by Christoph Schueler <chris@konnex-tools.de,
+   (C) 2007-2010 by Christoph Schueler <chris@konnex-tools.de,
                                         cpu12.gems@googlemail.com>
   
    All Rights Reserved
@@ -24,66 +25,46 @@ __copyright__="""
   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 """
 
-PROLOGUE="""/*
-**
-**		!!! AUTOMATICALLY GENERATED FILE - DO NOT EDIT !!!
-**
-*/
-#if !defined(__OSCONFIG_H)
-#define	__OSCONFIG_H
-
-/**********************************************************************************************************
-*                                          OS-Configuration Part
-**********************************************************************************************************/
-"""
-
-EPILOGUE="""
-#endif	/* __OSCONFIG_H */
-"""
-
-def itemgetter(*items):
-    if len(items) == 1:
-        item = items[0]
-        def g(obj):
-            return obj[item]
-    else:
-        def g(obj):
-            return tuple(obj[item] for item in items)
-    return g
-
-#"""
+import inspect,types
+from Cheetah.Template import Template
 
 
-def Generate(fname,AppDef): 
-    f=file(fname+".h","w")
+def simplifiedApplicationDefinition(appDefs):
+    return ApplicationDefinition(appDefs)
 
-    print >> f,PROLOGUE
-
-    os=AppDef["OS"].items()[0][1]
-        
-    print >> f,"#define	OS_%s_STATUS" % (os["STATUS"][0].attribute_value)
-    print >> f,"#define	OS_%s" % (os["CC"][0].attribute_value)
-
+class ApplicationDefinition(object):
     """
-    print filter(lambda attr: os[attr][0].attribute_value.value=='TRUE',["STARTUPHOOK",
-        "ERRORHOOK","SHUTDOWNHOOK","PRETASKHOOK","POSTTASKHOOK","USEGETSERVICEID",
-        "USEPARAMETERACCESS","USERESSCHEDULER"])
+    this class makes the OSEK-Application-Definition more accessible.
     """
+    def __init__(self,appDefs):
+        for name,appDef in appDefs.items():
+            attr=name.lower()
+            
+            for a in appDef.values():
+                for key,value in a.items():
+                    self.setValues(value)
+            if attr not in ('com','nm','os'):
+                attr+='s'
+                setattr(self,attr,[x for x in appDef.values()])
+            elif len(appDef)>0:
+                setattr(self,attr,appDef.values()[0])
+                
+    def setValues(self,obj):
+        "Create shortcuts to values."
+        if isinstance(obj,types.ListType):
+            for o in obj:
+                self.setValues(o)
+        else:
+            setattr(obj,'value',obj.attribute_value.value)
 
-##    '"IDLETIMEHOOK","O1SCHEDULER"'
-    
-    for attr in ["STARTUPHOOK","ERRORHOOK","SHUTDOWNHOOK","PRETASKHOOK",
-              "POSTTASKHOOK","USEGETSERVICEID","USEPARAMETERACCESS","USERESSCHEDULER"]:
-        if os[attr][0].attribute_value.value=='TRUE':
-            print >> f,"#define OS_USE_%s" % (attr)
 
-    print >> f,"""
-/**********************************************************************************************************
-*                                         APP-Configuration Part
-**********************************************************************************************************/
-         """
+def Generate(fname,AppDef,errorObj): 
+    print
+    print "Generating Configuration Files..."
+    print
 
-    print >> f,EPILOGUE
+    app=simplifiedApplicationDefinition(AppDef)
 
-    f.close()
-    
+    nameSpace={'app' : app}
+    tmpl=Template(file='hfile.tmpl', searchList=[nameSpace])
+    print tmpl

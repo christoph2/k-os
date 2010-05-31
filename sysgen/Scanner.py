@@ -5,7 +5,7 @@ __version__="0.9.0"
 __copyright__="""
    k_os (Konnex Operating-System based on the OSEK/VDX-Standard).
  
-   (C) 2007-2009 by Christoph Schueler <chris@konnex-tools.de,
+   (C) 2007-2010 by Christoph Schueler <chris@konnex-tools.de,
                                         cpu12.gems@googlemail.com>
   
    All Rights Reserved
@@ -54,7 +54,7 @@ class Scanner(GenericScanner):
         
     def tokenize(self, input):
         self.rv = []
-        GenericScanner.tokenize(self, input)        
+        GenericScanner.tokenize(self, input)
         return self.rv
 
     def t_whitespace(self, s):
@@ -62,7 +62,7 @@ class Scanner(GenericScanner):
 
     def t_str_const(self, s):
         r' ["].*["] '
-        self.rv.append(Token('string', s))
+        self.rv.append(Token('string', s,lineno=self.lineno,filename=self.filename))
 
     def t_comment(self,s):
         r" ((?:\/\*(?:[^*]|(?:\*+[^*\/]))*\*+\/)|(?:\/\/.*)) "
@@ -73,33 +73,33 @@ class Scanner(GenericScanner):
     def t_name(self, s):
         r" [a-zA-Z_][a-zA-Z0-9_]* "
         if s in KW_LIST:
-            self.rv.append(Token(type=s,lineno=self.lineno))
+            self.rv.append(Token(type=s,lineno=self.lineno,filename=self.filename))
         elif s in OBJ_LIST:
-            self.rv.append(Token('object_lexeme',s,lineno=self.lineno))
+            self.rv.append(Token('object_lexeme',s,lineno=self.lineno,filename=self.filename))
         elif s in OBJ_TYPE_LIST:
-            self.rv.append(Token('object_ref_lexeme',s,lineno=self.lineno))
+            self.rv.append(Token('object_ref_lexeme',s,lineno=self.lineno,filename=self.filename))
         else:
-            self.rv.append(Token('name', s,lineno=self.lineno))
+            self.rv.append(Token('name', s,lineno=self.lineno,filename=self.filename))
 
     def t_hex_const(self,s):
         r" 0[xX][0-9a-fA-F]+ "
-        self.rv.append(Token('number', long(s,16)))
+        self.rv.append(Token('number', long(s,16),lineno=self.lineno,filename=self.filename))
 
     def t_dec_const(self,s):
         r" [+-]?[0-9]+ "
-        self.rv.append(Token('number', long(s,10)))
+        self.rv.append(Token('number', long(s,10),lineno=self.lineno,filename=self.filename))
 
     def t_float_const(self,s):
         r" [+-]?[0-9]+\.[0-9]+([eE][+-]?[0-9]+)? "
-        self.rv.append(Token('float', float(s)))        
+        self.rv.append(Token('float', float(s),lineno=self.lineno,filename=self.filename))
 
     def t_range(self,s):
         r' \.\. '
-        self.rv.append(Token(type='range_op'))
+        self.rv.append(Token(type='range_op',lineno=self.lineno,filename=self.filename))
 
     def t_ops(self,s):
         r" [(){}\[\]=;:,] "
-        self.rv.append(Token(type=s))
+        self.rv.append(Token(type=s,lineno=self.lineno,filename=self.filename))
 
     def t_newline(self,s):
         r" [\n] "
@@ -110,24 +110,17 @@ class Scanner(GenericScanner):
         r'  \#[ \t]*line[ \t]*([0-9]+?)[ \t]*?".*"'
         elems=s.split()
         ## print elems
-        self.lineno=int(elems[1])
-        self.filename=elems[2]                
+        self.lineno=int(elems[1])-1
+        self.filename=elems[2]
+##        self.rv.append(Token(type='line',lineno=self.lineno,attr=self.filename))
 
-def test():
-    ##line 106 "C:\projekte\csProjects\k-os\config\oil\oil25int.oil"
-    m="""
-        #line 106   "C:\projekte\csProjects\k-os\config\oil\oil25int.oil"
-        OSEK OSEK {
-
-            OS	ExampleOS {
-                STATUS = EXTENDED;
-                STARTUPHOOK = FALSE;
-                ERRORHOOK = TRUE;
-                SHUTDOWNHOOK = FALSE;
-            };
-        }
-    """    
-    s=Scanner()
-    s.tokenize(m)
-    
-test()
+"""
+    def t_default(self, s):
+        r'( . | \n )+'
+        lineno=self.lineno
+        #line=self.string.splitlines()
+        #line=line[lineno]
+        line=self.string[self.pos-1]
+        print "Specification error: unmatched input at line %u: '%s'" % (lineno,s.splitlines()[0])
+        raise SystemExit
+"""

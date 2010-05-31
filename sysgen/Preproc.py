@@ -5,7 +5,7 @@ __version__="0.9.0"
 __copyright__="""
    k_os (Konnex Operating-System based on the OSEK/VDX-Standard).
  
-   (C) 2007-2009 by Christoph Schueler <chris@konnex-tools.de,
+   (C) 2007-2010 by Christoph Schueler <chris@konnex-tools.de,
                                         cpu12.gems@googlemail.com>
   
    All Rights Reserved
@@ -34,24 +34,17 @@ MULTI_LINE_COMMENT=1
 
 FileList=[]
 PathList=[]
-LineNoMap={}
 
 of=None
 
 E_UNBALANCED_DELIMS=1
 
-#
-#os.pathsep
-#
 
 INCLUDE_DIRECTIVE=re.compile(r'[ \t]*?#[ \t]*?include[ \t]*?(?P<sdelim>[<"])(?P<incfile>.*?)(?P<edelim>[>"])(?P<rest>.*)')
 STRING=re.compile(r'(?P<before>.*?)["](?P<string>.*?)["](?P<after>.*)')
 START_COMMENT=re.compile(r'\/(?P<char>\/|\*)')
 END_COMMENT=re.compile(r'\*\/')
-
-def SevereError(fname,line_no,code,message):
-    print "P%04u:%s:%04u: %s." %(code,os.path.basename(fname),line_no,message)
-    sys.exit()
+USE_FILE=re.compile(r'\s*?USE\s*?=\s*?"(?P<includeFile>.*?)"\s*?;.*')
 
 def StripStrings(line):
     match=STRING.match(line)
@@ -84,7 +77,11 @@ def lineDirective(file_name,line_no):
     global of
     print >> of,'#line %u "%s"' % (line_no,file_name)
 
-def Parse(fname):
+
+def locateIncludeFile(fileName): pass
+
+
+def Parse(fname,errorObj):
     try:    
         inf=open(fname)
     except IOError as e:
@@ -100,7 +97,8 @@ def Parse(fname):
     state=SCANNING    
     cmt_start_line=0
     inc_path=None
-    FileFound=False    
+    FileFound=False
+    useFiles=[]
     AddToFileList(fname)
     
     for line_no,line in enumerate(inf,1):        
@@ -129,15 +127,19 @@ def Parse(fname):
                 sdelim,incfile,edelim,_=include_stmt.groups(('sdelim','incfile','edelim','rest'))
 
                 if (sdelim=='"' and edelim!='"') or (sdelim=='<' and edelim!='>'):
-                    SevereError(fname,line_no,E_UNBALANCED_DELIMS,'Unbalanced deliminiters '+sdelim+','+edelim+' in #include-statement')
+                    ## todo: Error-Module!!!
+                    errorObj.fatalError('Unbalanced deliminiters '+sdelim+','+edelim+' in #include-statement',
+                        filename=fname,lineno=line_no)
                 else:
                     ## Warn, if no comment.                    
                     print >> of,'\n',
+################
+# todo: Fkt. locateIncludeFile
+################
                     if sdelim=='"':
                         ## Try current directory first.
                         inc_path=os.path.join(os.path.curdir,incfile)
                         FileFound=TryOpen(inc_path)
-
                     if not FileFound:
                         for p in PathList:
                             inc_path=os.path.join(p,incfile)
@@ -145,16 +147,18 @@ def Parse(fname):
                             if FileFound:
                                 break
                                 print "FOUND: ",inc_path
-
+################
                     if FileFound:
-                        Parse(inc_path)
+                        Parse(inc_path,errorObj)
                         lineDirective(fname,line_no+1)
                     else:
-                        print "Could not open include file '%s'.\n" % (incfile)
-                        sys.exit(1)
+                        errorObj.fatalError("Could not open include file '%s'.\n" % (incfile,),
+                            filename=fname,lineno=line_no)
             else:
+                uf=USE_FILE.match(line)
+                if uf is not None:
+                    useFiles.append(uf.groupdict('includeFile'))                    
                 print >> of,line,
-
         elif state==MULTI_LINE_COMMENT:
             end_comment=END_COMMENT.search(line)
             if end_comment is not None:
@@ -166,16 +170,15 @@ def Parse(fname):
                 print >> of
     inf.close()
 
-def Parser(fname):
+def Parser(fname,errorObj):
     inc_paths=os.getenv('KOS_INCLUDE')
     if inc_paths is not None:
         for p in inc_paths.split(';'):
             AddToPathList(p)            
     global of    
     of=CreateOutFile(fname)
-    Parse(fname)
-    of.close()    
-
+    Parse(fname,errorObj)
+    of.close()
 
 if __name__=='__main__':
     Parser(r'test.oil')

@@ -1,9 +1,11 @@
+# -*- coding: latin-1 -*-
+
 __version__="0.9.0"
 
 __copyright__="""
    k_os (Konnex Operating-System based on the OSEK/VDX-Standard).
  
-  (C) 2007-2009 by Christoph Schueler <chris@konnex-tools.de>
+  (C) 2007-2010 by Christoph Schueler <chris@konnex-tools.de>
   
    All Rights Reserved
  
@@ -23,10 +25,11 @@ __copyright__="""
 """
 
 class Token(object):
-    def __init__(self, type, attr=None,lineno='???'):
+    def __init__(self, type, attr=None,lineno='???',filename=''):
         self.type = type
         self.attr = attr
-        self.lineno=lineno        
+        self.lineno=lineno
+        self.filename=filename
 
     def __cmp__(self, o):
         return cmp(self.type, o)
@@ -35,4 +38,4 @@ class Token(object):
         raise IndexError
 
     def __repr__(self):
-        return "- TOKEN (type): "+str(self.type)+" (attr): "+str(self.attr)+" -"
+        return "TOKEN <type: '%s' attr: '%s'>" % (self.type,self.attr)

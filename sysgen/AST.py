@@ -3,7 +3,7 @@ __version__="0.9.0"
 __copyright__="""
    k_os (Konnex Operating-System based on the OSEK/VDX-Standard).
  
-  (C) 2007-2009 by Christoph Schueler <chris@konnex-tools.de>
+  (C) 2007-2010 by Christoph Schueler <chris@konnex-tools.de>
   
    All Rights Reserved
  
@@ -30,14 +30,14 @@ class AST(object):
     def __getitem__(self, i):
         return self._kids[i]
 
-	def __len__(self):
-		return len(self._kids)
+    def __len__(self):
+        return len(self._kids)
 
     def __setslice__(self, low, high, seq):
         self._kids[low:high] = seq
 
-	def __cmp__(self, o):
-		return cmp(self.type, o)
+    def __cmp__(self, o):
+        return cmp(self.type, o)
 
     def __repr__(self):
         return str(self.type)

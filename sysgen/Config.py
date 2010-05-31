@@ -6,7 +6,7 @@ __version__="0.9.0"
 __copyright__="""
    k_os (Konnex Operating-System based on the OSEK/VDX-Standard).
  
-  (C) 2007-2009 by Christoph Schueler <chris@konnex-tools.de>
+  (C) 2007-2010 by Christoph Schueler <chris@konnex-tools.de>
   
    All Rights Reserved
  
