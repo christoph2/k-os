@@ -29,8 +29,34 @@ import inspect,types
 from Cheetah.Template import Template
 
 
+errObj=None
+
+
 def simplifiedApplicationDefinition(appDefs):
-    return ApplicationDefinition(appDefs)
+    standardResources=[]
+    internalResources=[]
+    linkedResources=[]
+    app=ApplicationDefinition(appDefs)
+    for resource in app.resources:
+        for key,value in resource.items():
+            if key=='RESOURCEPROPERTY':
+                pass
+                if value.value=='STANDARD':
+                    standardResources.append(value)
+                elif value.value=='INTERNAL':
+                    internalResources.append(value)
+                elif value.value=='LINKED':
+                    linkedResources.append(value)
+                else:
+                    raise ValueError("Invalid Resourceproperty '%s'." % (value.value,))
+    del app.resources
+    setattr(app,'standardResources',standardResources)
+    setattr(app,'internalResources',internalResources)
+    setattr(app,'linkedResources',linkedResources)
+    if len(app.linkedResources)>0:
+        errObj.error("FIXME: Add support for linked resources.",filename="GenCfg.py")
+    return app
+
 
 class ApplicationDefinition(object):
     """
@@ -58,11 +84,13 @@ class ApplicationDefinition(object):
             setattr(obj,'value',obj.attribute_value.value)
 
 
-def Generate(fname,AppDef,errorObj): 
+def Generate(fname,AppDef,errorObj):
+    global errObj
     print
     print "Generating Configuration Files..."
     print
 
+    errObj=errorObj
     app=simplifiedApplicationDefinition(AppDef)
 
     nameSpace={'app' : app}

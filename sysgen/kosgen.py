@@ -71,6 +71,12 @@ def main():
     group.add_option("-t","--test",help="verify only, don't generate anything",
                      dest="test",action="store_true",default=False)
 
+    group.add_option("-V","--verbose",help="print Information messages",
+                     dest="verbose",action="store_true",default=False)
+
+    group.add_option("-S","--silent",help="don't print any messages.",
+                     dest="silent",action="store_true",default=False)
+
     op.add_option_group(group)
 
     (options, args)=op.parse_args()
@@ -82,8 +88,8 @@ def main():
 
     if len(args)!=1:
         op.error("incorrect number of arguments")
-
-    error=OILError()
+        
+    error=OILError(verbose=options.verbose,silent=options.silent)
 
     print "\nStage I. Preprocessing..."
     Preproc.Parser(args[0],errorObj=error)

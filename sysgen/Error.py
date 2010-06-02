@@ -28,35 +28,38 @@ import sys
 
 
 class OILError(object):
-    def __init__(self,outFile=sys.stderr):
+    def __init__(self,outFile=sys.stderr,verbose=False,silent=False):
         self.fatalErrorCounter=0
         self.errorCounter=0
         self.warningCounter=0
         self.informationCounter=0
         self.outFile=outFile
+        self.verbose=verbose
+        self.silent=silent
 
-    def printMessage(self,_type,message,lineno=None,filename=None,number=None):
-        
-        if lineno and filename:
-            self.outFile.write("%s[%s]:%s:%s - %s\n" % (_type,number,filename,lineno,message))
-        elif filename:
-            self.outFile.write("%s[%s]:%s - %s\n" % (_type,number,filename,message))
-        else:
-            self.outFile.write("%s[%s] - %s\n" % (_type,number,message))
+    def printMessage(self,_type,message,lineno=None,filename=None,code=None):
+        if self.silent==False:
+            if lineno and filename:
+                self.outFile.write("%s[%s]:%s:%s - %s\n" % (_type,code,filename,lineno,message))
+            elif filename:
+                self.outFile.write("%s[%s]:%s - %s\n" % (_type,code,filename,message))
+            else:
+                self.outFile.write("%s[%s] - %s\n" % (_type,code,message))
 
-    def fatalError(self,message,lineno=None,filename=None,number=None):
-        self.printMessage("FATAL ERROR",message,lineno,filename,number)
+    def fatalError(self,message,lineno=None,filename=None,code=''):
+        self.printMessage("FATAL ERROR",message,lineno,filename,"F-"+code)
         self.fatalErrorCounter+=1
         sys.exit(1)
 
-    def error(self,message,lineno=None,filename=None,number=None):
-        self.printMessage("ERROR",message,lineno,filename,number)
+    def error(self,message,lineno=None,filename=None,code=''):
+        self.printMessage("ERROR",message,lineno,filename,"E-"+code)
         self.errorCounter+=1
 
-    def warning(self,message,lineno=None,filename=None,number=None):
-        self.printMessage("WARNING",message,lineno,filename,number)
+    def warning(self,message,lineno=None,filename=None,code=''):
+        self.printMessage("WARNING",message,lineno,filename,"W-"+code)
         self.warningCounter+=1
         
-    def information(self,message,lineno=None,filename=None,number=None):
-        self.printMessage("INFORMATION",message,lineno,filename,number)
+    def information(self,message,lineno=None,filename=None,code=''):
+        if self.verbose:
+            self.printMessage("INFORMATION",message,lineno,filename,"I-"+code)
         self.informationCounter+=1

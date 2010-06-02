@@ -25,12 +25,15 @@ __copyright__="""
 """
 
 from spark import *
+import types
 from Scanner import Scanner
 from AST import AST
 import GenORTI
 import GenCfg
 
 EMPTY_APP_DEF="CPU cpu {};"
+
+MAX_PRIORITIES=16   ## todo: Cfg. !!!
 
 data=[]
 
@@ -39,22 +42,21 @@ Appmodes={}
 Com={}
 Counters={}
 Events={}
-Idpus={}
+Ipdus={}
 Isrs={}
 Messages={}
+NetworkMessages={}
 Nm={}
 Os={}
 Resources={}
 Tasks={}
 
-Priorities={}
-
 errObj=None
 
 AppDefMap={
-    "ALARM":Alarms,"APPMODE":Appmodes,"COM":Com,"COUNTER":Counters,
-    "EVENT":Events,"IDPU":Idpus,"ISR":Isrs,"MESSAGE":Messages,
-    "NM":Nm,"OS":Os,"RESOURCE":Resources,"TASK":Tasks
+    "ALARM" : Alarms, "APPMODE" : Appmodes, "COM" : Com, "COUNTER" : Counters, "EVENT":Events,
+    "IPDU" : Ipdus, "ISR" : Isrs, "MESSAGE" : Messages, "NETWORKMESSAGE" : NetworkMessages,
+    "NM" : Nm, "OS" : Os, "RESOURCE" : Resources, "TASK" : Tasks
 }
 
 
@@ -66,10 +68,11 @@ FLOAT_RANGE=('FLOAT',-(1-(2**-24))*(2**127),(1-(2**-24))*(2**128))
 
 
 NUMERIC_RANGES={
-    'UINT32': UINT32_RANGE, 'INT32' : INT32_RANGE,
-    'UINT64': UINT64_RANGE, 'INT64' : INT64_RANGE,
-    'FLOAT' : FLOAT_RANGE
+    'UINT32' : UINT32_RANGE, 'INT32' : INT32_RANGE,
+    'UINT64' : UINT64_RANGE, 'INT64' : INT64_RANGE,
+    'FLOAT'  : FLOAT_RANGE
 }
+
 
 ##
 ##  Helper-Functions.
@@ -98,7 +101,7 @@ class ImplAttrDef(object):
     def __init__(self,name,attrType,auto_specifier,range,multiple_specifier,default,description):
         self.name=name
         self.attrType=attrType
-        self.auto_specifier=auto_specifier
+        self.auto_specifier=auto_specifier  # todo: withAuto
         self.range=range
         self.multiple_specifier=multiple_specifier
         self.default=default
@@ -123,19 +126,24 @@ Appmode_ImplDef=ImplSpec('APPMODE')
 Com_ImplDef=ImplSpec('COM')
 Counter_ImplDef=ImplSpec('COUNTER')
 Event_ImplDef=ImplSpec('EVENT')
-Idpu_ImplDef=ImplSpec('IDPU')
+Ipdu_ImplDef=ImplSpec('IPDU')
 Isr_ImplDef=ImplSpec('ISR')
 Message_ImplDef=ImplSpec('MESSAGE')
+NetworkMessage_ImplDef=ImplSpec('NETWORKMESSAGE')
 Nm_ImplDef=ImplSpec('NM')
 Os_ImplDef=ImplSpec('OS')
 Resource_ImplDef=ImplSpec('RESOURCE')
 Task_ImplDef=ImplSpec('TASK')
 
 
-ImplDefMap={"ALARM":Alarm_ImplDef,"APPMODE":Appmode_ImplDef,"COM":Com_ImplDef,
-            "COUNTER":Counter_ImplDef,"EVENT":Event_ImplDef,"IDPU":Idpu_ImplDef,
-            "ISR":Isr_ImplDef,"MESSAGE":Message_ImplDef,"NM":Nm_ImplDef,
-            "OS":Os_ImplDef,"RESOURCE":Resource_ImplDef,"TASK":Task_ImplDef}
+ImplDefMap={"ALARM" : Alarm_ImplDef, "APPMODE" : Appmode_ImplDef,
+            "COM" : Com_ImplDef, "COUNTER" : Counter_ImplDef,
+            "EVENT" : Event_ImplDef, "IPDU" : Ipdu_ImplDef,
+            "ISR" : Isr_ImplDef, "MESSAGE" : Message_ImplDef,
+            "NETWORKMESSAGE" : NetworkMessage_ImplDef,
+            "NM" : Nm_ImplDef, "OS" : Os_ImplDef,
+            "RESOURCE" : Resource_ImplDef, "TASK" : Task_ImplDef
+}
 
 
 class Range(object):
@@ -205,7 +213,6 @@ def GetParameterDefinition(obj,name,path=[]):
 
 
 def GetParameterPathToRootObject(obj,param):
-    # Hinweis: eigentlich müssen die Objekt-Typen aufgezeichnet werden!!!
     path=[]
     path.append((obj.name,type(obj)))
 #    parent=obj.parent
@@ -253,11 +260,16 @@ def RangeCheck(attr,impldef):
            return False
     elif formal=='ENUM':
         if not impldef.range.Check(value):
-            enum=impldef.range.GetRange()
-            errObj.error("Undefined emumerator '%s' for attribute '%s', expected %s." %
-                (value,attr.attribute_name,enum)
-                )
-            return False
+            if value=='AUTO':
+                if impldef.auto_specifier==False:
+                    errObj.error("AUTO-Specifier for attribute '%s' not permitted." % attr.attribute_name)
+                    return False
+            else:
+                enum=impldef.range.GetRange()
+                errObj.error("Undefined emumerator '%s' for attribute '%s', expected %s." %
+                    (value,attr.attribute_name,enum)
+                    )
+                return False
     return True
 
 
@@ -310,13 +322,6 @@ class ObjectDefinition(dict):
 
     def AddParameter(self,name,value):
         pd=GetParameterDefinition(self,name)
-
-        if name=='PRIORITY':
-            priority=value.attribute_value.value
-            if not Priorities.has_key(priority):
-                Priorities[priority]=[]
-            Priorities[priority].append(self.name)
-
         if pd is None:
             errObj.error("Unknown attribute '%s' for object '%s'." % (name,self.type))
         else:
@@ -377,7 +382,7 @@ class AttributeValue(object):
 
 
 class Parameter(object):
-    def __init__(self,attribute_name,attribute_value,description):
+    def __init__(self,attribute_name,attribute_value,description=None):
         self.attribute_name=attribute_name
         self.attribute_value=attribute_value
         self.description=description
@@ -541,7 +546,7 @@ def AddImplementationList(node,Accum):
 def AddNumberList(nl,Accum):
     if len(nl._kids)==1:        
         Accum.append(nl._kids[0].exprValue)
-    elif len(nl._kids)==3:        
+    elif len(nl._kids)==3:
         Accum.append(nl._kids[2].exprValue)
         AddNumberList(nl._kids[0],Accum)
 
@@ -594,11 +599,17 @@ class TypeCheck(GenericASTTraversal):
         GenericASTTraversal.__init__(self, ast)
         self.postorder()
 
+    def setDefaultValue(self,left,right):
+        if hasattr(right,'exprValue'):
+            left.exprValue=right.exprValue
+        else:
+            left.exprValue=right.type ## AUTO
+
+
 ##
 ##  Implementation-Definition
 ##
     def n_OIL_version(self,node): pass
-#        print "OIL-Version: ",node[2][0].exprValue
 
     def n_application_definition(self,node):
         name=node[1].exprValue
@@ -647,13 +658,13 @@ class TypeCheck(GenericASTTraversal):
 
     def n_default_bool(self,node):
         if node._kids!=[]:
-            node.exprValue=node[1].exprValue
+            node.exprValue=strToBool(node[1].exprValue)
         else:
             node.exprValue=None
 
     def n_default_name(self,node):
         if node._kids!=[]:
-            node.exprValue=node[1].exprValue
+            self.setDefaultValue(node,node[1])
         else:
             node.exprValue=None
 
@@ -664,14 +675,14 @@ class TypeCheck(GenericASTTraversal):
             node.exprValue=None
 
     def n_default_number(self,node):
-        if node._kids!=[]:
-            node.exprValue=node[1].exprValue
+        if node._kids!=[]:            
+            self.setDefaultValue(node,node[1])
         else:
             node.exprValue=None
 
     def n_default_float(self,node):
         if node._kids!=[]:
-            node.exprValue=node[1].exprValue
+            self.setDefaultValue(node,node[1])
         else:
             node.exprValue=None
 
@@ -815,6 +826,115 @@ def BuildAndCheck(ast):
     return ast
 
 
+def autoHandler(obj,attr,implDef):  # todo: we need the appDef!!!
+    if obj=='OS' and attr=='CC':
+        pass
+
+
+def getAutoParameter(parameter,autoParameter):
+    for p in parameter:
+        if isinstance(p,types.ListType):
+            getAutoParameter(p,autoParameter)
+        else:
+            if p.attribute_value.value=='AUTO':
+                autoParameter.append(p)
+
+
+def setDefaults():
+    Priorities={}
+    ECCx=False
+    osCC=None
+    numNonTasks=0
+    numPreTasks=0
+    multipleActivations=False
+    if not AppDefMap.get("OS"):
+        errObj.error("Missing required Object 'OS'.")
+    elif len(AppDefMap.get("OS"))>1:
+        errObj.error("There must be exactly one 'OS'-Object.")
+    if AppDefMap.get("COM") and len(AppDefMap.get("COM"))>1:
+        errObj.error("There can be at most one 'COM'-Object.")
+    if AppDefMap.get("NM") and len(AppDefMap.get("NM"))>1:
+        errObj.error("There can be at most one 'NM'-Object.")
+    for objType,appDef1 in AppDefMap.items():
+        implDefs=ImplDefMap[objType].defs
+        implAttrs=implDefs.keys()
+        print objType
+        for objName,appDef2 in appDef1.items():
+            appAttrs=appDef2.keys()
+            autoParameter=[]
+            getAutoParameter(appDef2.values(),autoParameter)
+            for p in autoParameter:
+                attr=p.attribute_name
+                implDef=implDefs[attr]
+                autoHandler(objType,attr,implDef)
+            for attr in filter(lambda x: x not in appAttrs,implAttrs):
+                implDef=implDefs[attr]
+                if isinstance(implDef,ImplAttrDef):
+                    if implDef.default is None and implDef.multiple_specifier==False:
+                        errObj.error("Missing required attribute '%s:%s'." % (objName,attr))
+                    elif implDef.auto_specifier==False and implDef.default=='AUTO':
+                        errObj.error(
+                            "'%s%s' - Errornous Implementation Definition: Default value 'AUTO' used without 'WITH_AUTO." %
+                            (objType,attr)
+                        )
+                    elif implDef.default is not None:
+                        if implDef.default=='AUTO':
+                            appDef2[attr]=Parameter(attr,AttributeValue(implDef.attrType,None))
+                            autoHandler(objType,attr,implDef)
+                        else:
+                            errObj.information("Setting '%s:%s' to  default value '%s'." % (objName,attr,implDef.default))
+                            appDef2[attr]=Parameter(attr,AttributeValue(implDef.attrType,implDef.default))
+                elif isinstance(implDef,ImplRefDef):
+                    if implDef.multiple_specifier==False:
+                        errObj.error("Missing required attribute '%s:%s'." % (objName,attr))
+                else:
+                    errObj.fatalError("Definition neither 'ImplAttrDef' nor 'ImplRefDef'.")
+            if objType=='TASK':
+                priority=appDef2['PRIORITY'].attribute_value.value
+                if not Priorities.has_key(priority):
+                    Priorities[priority]=[]
+                Priorities[priority].append(appDef2)
+                appDef2['RELATIVE_PRIORITY']=appDef2['PRIORITY']    ## rename.
+                appDef2['RELATIVE_PRIORITY'].attribute_name='RELATIVE_PRIORITY'
+                del appDef2['PRIORITY']
+                if appDef2['SCHEDULE'].attribute_value.value=='FULL':
+                    numPreTasks+=1
+                else:
+                    numNonTasks+=1
+                if appDef2['ACTIVATION'].attribute_value.value>1:
+                    multipleActivations=True
+                    ECCx=True
+            elif objType=='OS':
+                osCC=appDef2['CC']
+                pass    # todo: Sonderbehandlung f. 'CC'!!!
+            print objName,appDef2
+            print
+    if len(Priorities)>MAX_PRIORITIES:
+        errObj.error(
+            "This OSEK-OS-Implementation supports at most %s Priority-Levels (Application uses %s)" %
+            (MAX_PRIORITIES,len(Priorities))
+        )
+    xCC2=False
+    for num,level in enumerate(Priorities.values(),1):
+        if len(level)>1:
+            xCC2=True
+        for p in level:
+            p['PRIORITY']=Parameter('PRIORITY',AttributeValue('number',num))
+    if osCC.attribute_value.value=='AUTO':
+        xCC2=xCC2 or multipleActivations
+        if ECCx==False:
+            if xCC2==False: cc='BCC1'
+            else:           cc='BCC2'
+        else:
+            if xCC2==False: cc='ECC1'
+            else:           cc='ECC2'
+        osCC.attribute_value.value=cc
+    else:
+        pass
+        "WARNING: Calculated CC, requested CC"
+        "ERROR: Incompatible CC, required: %s"
+
+
 def ParseOil(input,errorObj):
     global data
     global errObj
@@ -822,6 +942,7 @@ def ParseOil(input,errorObj):
     errObj=errorObj
 
     data=BuildAndCheck(parse(scan(input),'file'))
+    setDefaults()
     return (ImplDefMap,AppDefMap)
 
 
