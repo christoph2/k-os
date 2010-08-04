@@ -25,11 +25,23 @@ __copyright__="""
   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 """
 
+'''
+try:
+    import psyco
+    psyco.full()
+except ImportError:
+    pass
+'''
+
+import string
+import sys
+import time
 import inspect,types
 from Cheetah.Template import Template
-
+import ORTICfg
 
 errObj=None
+app=None
 
 
 def simplifiedApplicationDefinition(appDefs):
@@ -40,13 +52,12 @@ def simplifiedApplicationDefinition(appDefs):
     for resource in app.resources:
         for key,value in resource.items():
             if key=='RESOURCEPROPERTY':
-                pass
                 if value.value=='STANDARD':
-                    standardResources.append(value)
+                    standardResources.append(resource)
                 elif value.value=='INTERNAL':
-                    internalResources.append(value)
+                    internalResources.append(resource)
                 elif value.value=='LINKED':
-                    linkedResources.append(value)
+                    linkedResources.append(resource)
                 else:
                     raise ValueError("Invalid Resourceproperty '%s'." % (value.value,))
     del app.resources
@@ -55,6 +66,11 @@ def simplifiedApplicationDefinition(appDefs):
     setattr(app,'linkedResources',linkedResources)
     if len(app.linkedResources)>0:
         errObj.error("FIXME: Add support for linked resources.",filename="GenCfg.py")
+    for num,task in enumerate(app.tasks):
+        if task.has_key('EVENT') and len(task['EVENT']):
+            task.taskType='BASIC'
+        else:
+            task.taskType='EXTENDED'
     return app
 
 
@@ -84,8 +100,76 @@ class ApplicationDefinition(object):
             setattr(obj,'value',obj.attribute_value.value)
 
 
-def Generate(fname,AppDef,errorObj):
+def writeTemplate(tmplFileName,outFileName,nameSpace):
+    outFile=file(outFileName,'wt')
+    tmpl=Template(file=tmplFileName, searchList=[nameSpace])
+    print >> outFile, tmpl
+    outFile.close()
+
+
+def enumerateServices():
+    res=[]
+    for num,line in enumerate(ORTICfg.SERVICE_IDS):
+        key,value=line
+        str='            "%s" = %s' % (key,value)
+        if num<len(ORTICfg.SERVICE_IDS)-1:
+            str=str+","
+        else:
+            pass
+        res.append(str)
+    return '\n'.join(res)
+
+
+def enumerateStatusCodes():
+    res=[]
+    for num,line in enumerate(ORTICfg.STATUS_TYPES):
+        key,value=line
+        str='            "%s" = %s' % (key,value)
+        if num<len(ORTICfg.STATUS_TYPES)-1:
+            str=str+","
+        else:
+            pass
+        res.append(str)
+    return '\n'.join(res)
+
+
+def enumerateTasks():
+    res=[]
+    for num,task in enumerate(app.tasks,1):
+        str='            "%s" = "&(OS_TCB[%u])"' % (task.name,num)
+        if num<len(app.tasks):
+            str=str+","
+        else:
+            pass
+        res.append(str)
+    return '\n'.join(res)
+
+
+osVars={
+    "lastError" : "OsLastError",
+    "serviceID" : "Os_ServiceContext.id",
+    "appMode" : "Os_AppMode",
+    "isrID"     : "OsCurrentISRID",
+    "runningTask" : "OsCurrentTID",
+    "runningTaskPriority" : "OsCurrentTCB->CurrentPriority"
+}
+
+"""
+    TRACE:
+    =====
+    - RUNNING[TASK|ID]ID
+    - Event set, waiting for
+    - Resource Lock
+    - Alarm expired
+"""
+
+from collections import namedtuple
+
+Stack=namedtuple("Stack","direction fillpattern")
+
+def Generate(fname,AppDef,Info,errorObj):
     global errObj
+    global app
     print
     print "Generating Configuration Files..."
     print
@@ -93,6 +177,23 @@ def Generate(fname,AppDef,errorObj):
     errObj=errorObj
     app=simplifiedApplicationDefinition(AppDef)
 
-    nameSpace={'app' : app}
-    tmpl=Template(file='hfile.tmpl', searchList=[nameSpace])
-    print tmpl
+    Info['stack']=Stack("DOWN",0x00)
+
+    namespace={'app' : app, 'cfg' : ORTICfg, 'osVars' : osVars, 'info' : Info,
+        'enumerateServices' : enumerateServices,
+        'enumerateStatusCodes': enumerateStatusCodes,
+        "enumerateTasks" : enumerateTasks,
+        "sys" : sys, "time" : time
+    }
+
+    writeTemplate('hfile.tmpl','Os_Cfg.h',namespace)
+    writeTemplate('cfile.tmpl','Os_Cfg.c',namespace)
+    writeTemplate('ortifile.tmpl','App.ort',namespace)
+
+
+def main():
+    print enumerateServices()
+
+
+if __name__=='__main__':
+    main()

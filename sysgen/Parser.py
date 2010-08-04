@@ -24,6 +24,14 @@ __copyright__="""
   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 """
 
+'''
+try:
+    import psyco
+    psyco.full()
+except ImportError:
+    pass
+'''
+
 from spark import *
 import types
 from Scanner import Scanner
@@ -51,12 +59,16 @@ Os={}
 Resources={}
 Tasks={}
 
+Info={} ## unsorted Items.
+
 errObj=None
+
+References={}
 
 AppDefMap={
     "ALARM" : Alarms, "APPMODE" : Appmodes, "COM" : Com, "COUNTER" : Counters, "EVENT":Events,
     "IPDU" : Ipdus, "ISR" : Isrs, "MESSAGE" : Messages, "NETWORKMESSAGE" : NetworkMessages,
-    "NM" : Nm, "OS" : Os, "RESOURCE" : Resources, "TASK" : Tasks
+    "NM" : Nm, "OS" : Os, "RESOURCE" : Resources, "TASK" : Tasks,
 }
 
 
@@ -87,7 +99,7 @@ def strToBool(str):
 
 
 ##
-##  Implementation-Definition
+##  Implementation-Definition.
 ##
 class ImplRefDef(object):
     def __init__(self,object_ref_type,name,multiple_specifier,description):
@@ -205,7 +217,7 @@ def GetParameterDefinition(obj,name,path=[]):
     ##
     ## returns None | Parameter-Description
     ##
-    map=ImplDefMap[obj.type]
+    map=ImplDefMap.get(obj.type)    # ImplDefMap[obj.type]
     if path==[]:
         return map.defs.get(name)
     for p in path:
@@ -251,63 +263,6 @@ def NumericRangeCheck(attr,impldef,type_range):
     return True
 
 
-def RangeCheck(attr,impldef):
-    formal=impldef.attrType
-    value=attr.attribute_value.value
-
-    if formal in ('UINT32','INT32','UINT64','INT64','FLOAT'):
-       if not NumericRangeCheck(attr,impldef,NUMERIC_RANGES[formal]):
-           return False
-    elif formal=='ENUM':
-        if not impldef.range.Check(value):
-            if value=='AUTO':
-                if impldef.auto_specifier==False:
-                    errObj.error("AUTO-Specifier for attribute '%s' not permitted." % attr.attribute_name)
-                    return False
-            else:
-                enum=impldef.range.GetRange()
-                errObj.error("Undefined emumerator '%s' for attribute '%s', expected %s." %
-                    (value,attr.attribute_name,enum)
-                    )
-                return False
-    return True
-
-
-def TypeCompat(attr,impldef):
-    TypeMap={'UINT32': 'number','INT32': 'number','UINT64': 'number',
-             'INT64': 'number','FLOAT': 'float','ENUM': 'name',
-             'STRING': 'string','BOOLEAN': 'boolean'}
-
-    actual_type=attr.attribute_value.type
-    if actual_type=='name' and attr.attribute_value.value=='AUTO':
-        return True
-    expected_type=TypeMap[impldef.attrType]
-    if expected_type!=actual_type:
-        errObj.error("<%s>-token for attribute '%s' expected." % (expected_type,attr.attribute_name))
-        return False
-    else:
-        return True
-
-
-def SemanticCheck(attr,impldef):
-    if isinstance(attr,NestedParameter):
-        return ## todo: Implement!!!
-    if attr.attribute_value.value=='AUTO':
-        if impldef.auto_specifier==False:
-            errObj.error("AUTO-Specifier for attribute '%s' not permitted." % attr.attribute_name)
-            return False
-    if isinstance(impldef,ImplRefDef):
-        if attr.attribute_value.value not in AppDefMap[impldef.name]:
-            errObj.error("Undefined Reference to %s '%s'." % (impldef.name,attr.attribute_value.value))
-            return False
-    else:
-        if not TypeCompat(attr,impldef):
-            return False
-        if not RangeCheck(attr,impldef):
-            return False
-    return True
-
-
 ##
 ##  Parser-Objects.
 ##
@@ -333,12 +288,64 @@ class ObjectDefinition(dict):
             else:
                 if multipleAttrs==True:
                     self[name]=[]
-            if not SemanticCheck(value,pd):
+            if not self.SemanticCheck(value,pd):
                 return
             if multipleAttrs==True:
                 self[name].append(value)
             else:
                 self[name]=value
+
+    def SemanticCheck(self,attr,impldef):
+        if isinstance(attr,NestedParameter):
+            return ## todo: Implement!!!
+        if attr.attribute_value.value=='AUTO':
+            if impldef.auto_specifier==False:
+                errObj.error("AUTO-Specifier for attribute '%s' not permitted." % attr.attribute_name)
+                return False
+        if isinstance(impldef,ImplRefDef):
+            References.setdefault(self.name,[]).append(attr)
+        else:
+            if not self.TypeCompat(attr,impldef):
+                return False
+            if not self.RangeCheck(attr,impldef):
+                return False
+        return True
+
+    def RangeCheck(self,attr,impldef):
+        formal=impldef.attrType
+        value=attr.attribute_value.value
+
+        if formal in ('UINT32','INT32','UINT64','INT64','FLOAT'):
+           if not NumericRangeCheck(attr,impldef,NUMERIC_RANGES[formal]):
+               return False
+        elif formal=='ENUM':
+            if not impldef.range.Check(value):
+                if value=='AUTO':
+                    if impldef.auto_specifier==False:
+                        errObj.error("AUTO-Specifier for attribute '%s' not permitted." % attr.attribute_name)
+                        return False
+                else:
+                    enum=impldef.range.GetRange()
+                    errObj.error("Undefined emumerator '%s' for attribute '%s', expected %s." %
+                        (value,attr.attribute_name,enum)
+                        )
+                    return False
+        return True
+
+    def TypeCompat(self,attr,impldef):
+        TypeMap={'UINT32': 'number','INT32': 'number','UINT64': 'number',
+                 'INT64': 'number','FLOAT': 'float','ENUM': 'name',
+                 'STRING': 'string','BOOLEAN': 'boolean'}
+
+        actual_type=attr.attribute_value.type
+        if actual_type=='name' and attr.attribute_value.value=='AUTO':
+            return True
+        expected_type=TypeMap[impldef.attrType]
+        if expected_type!=actual_type:
+            errObj.error("<%s>-token for attribute '%s' expected." % (expected_type,attr.attribute_name))
+            return False
+        else:
+            return True
 
 
 class NestedParameter(object):
@@ -350,18 +357,8 @@ class NestedParameter(object):
         self.root,self.path=GetParameterPathToRootObject(self,name)
         pd=GetParameterDefinition(self.root,name,self.path)
 
-
     def AddParameter(self,name,value):
-        """
-        if name in self.params:
-            self.params[name].append(value)
-        else:
-            self.params[name]={}
-            self.params[name].append(value)
-        """
-        if name not in self.params:
-            self.params[name]=[]
-        self.params[name].append(value)
+        self.params.setdefault(name,[]).append(value)
         """
         if isinstance(value,Parameter):
             self.params[name][value.attribute_value.value]=value
@@ -402,7 +399,7 @@ class Parser(GenericASTBuilder):
         """
             file ::= OIL_version implementation_definition application_definition
 
-            OIL_version ::= OIL_VERSION = version description ;            
+            OIL_version ::= OIL_VERSION = version description ;
 
             version ::= string
 
@@ -544,7 +541,7 @@ def AddImplementationList(node,Accum):
 
 
 def AddNumberList(nl,Accum):
-    if len(nl._kids)==1:        
+    if len(nl._kids)==1:
         Accum.append(nl._kids[0].exprValue)
     elif len(nl._kids)==3:
         Accum.append(nl._kids[2].exprValue)
@@ -675,7 +672,7 @@ class TypeCheck(GenericASTTraversal):
             node.exprValue=None
 
     def n_default_number(self,node):
-        if node._kids!=[]:            
+        if node._kids!=[]:
             self.setDefaultValue(node,node[1])
         else:
             node.exprValue=None
@@ -826,7 +823,8 @@ def BuildAndCheck(ast):
     return ast
 
 
-def autoHandler(obj,attr,implDef):  # todo: we need the appDef!!!
+def autoHandler(obj,attr,appDef,implDef,autoList):
+    autoList.append((obj,attr,appDef,implDef))
     if obj=='OS' and attr=='CC':
         pass
 
@@ -847,6 +845,14 @@ def setDefaults():
     numNonTasks=0
     numPreTasks=0
     multipleActivations=False
+    autoList=[]
+
+    for objName,references in References.items():
+        for reference in references:
+            if reference.attribute_value.value not in AppDefMap[reference.attribute_name]:
+                errObj.error("Undefined Reference '%s:%s' (%s)." %
+                    (objName,reference.attribute_value.value,reference.attribute_name)
+                )
     if not AppDefMap.get("OS"):
         errObj.error("Missing required Object 'OS'.")
     elif len(AppDefMap.get("OS"))>1:
@@ -858,7 +864,6 @@ def setDefaults():
     for objType,appDef1 in AppDefMap.items():
         implDefs=ImplDefMap[objType].defs
         implAttrs=implDefs.keys()
-        print objType
         for objName,appDef2 in appDef1.items():
             appAttrs=appDef2.keys()
             autoParameter=[]
@@ -866,7 +871,7 @@ def setDefaults():
             for p in autoParameter:
                 attr=p.attribute_name
                 implDef=implDefs[attr]
-                autoHandler(objType,attr,implDef)
+                autoHandler(objType,attr,(appDef1,appDef2),implDef,autoList)
             for attr in filter(lambda x: x not in appAttrs,implAttrs):
                 implDef=implDefs[attr]
                 if isinstance(implDef,ImplAttrDef):
@@ -880,7 +885,7 @@ def setDefaults():
                     elif implDef.default is not None:
                         if implDef.default=='AUTO':
                             appDef2[attr]=Parameter(attr,AttributeValue(implDef.attrType,None))
-                            autoHandler(objType,attr,implDef)
+                            autoHandler(objType,attr,(appDef2,),implDef,autoList)
                         else:
                             errObj.information("Setting '%s:%s' to  default value '%s'." % (objName,attr,implDef.default))
                             appDef2[attr]=Parameter(attr,AttributeValue(implDef.attrType,implDef.default))
@@ -903,17 +908,17 @@ def setDefaults():
                     numNonTasks+=1
                 if appDef2['ACTIVATION'].attribute_value.value>1:
                     multipleActivations=True
-                    ECCx=True
+                    ECCx=True   ## todo: check NoOfEvent!!!
             elif objType=='OS':
                 osCC=appDef2['CC']
-                pass    # todo: Sonderbehandlung f. 'CC'!!!
-            print objName,appDef2
-            print
-    if len(Priorities)>MAX_PRIORITIES:
+    numberOfDistinctPriorities=len(Priorities)
+    if numberOfDistinctPriorities>MAX_PRIORITIES:
         errObj.error(
             "This OSEK-OS-Implementation supports at most %s Priority-Levels (Application uses %s)" %
-            (MAX_PRIORITIES,len(Priorities))
+            (MAX_PRIORITIES,numberOfDistinctPriorities)
         )
+    Info['numberOfDistinctPriorities']=numberOfDistinctPriorities
+    ## todo: Queue-Layout belongs to 'Info'!!!
     xCC2=False
     for num,level in enumerate(Priorities.values(),1):
         if len(level)>1:
@@ -943,7 +948,7 @@ def ParseOil(input,errorObj):
 
     data=BuildAndCheck(parse(scan(input),'file'))
     setDefaults()
-    return (ImplDefMap,AppDefMap)
+    return (ImplDefMap,AppDefMap,Info)
 
 
 def main():

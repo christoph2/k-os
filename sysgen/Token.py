@@ -24,6 +24,14 @@ __copyright__="""
   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 """
 
+'''
+try:
+    import psyco
+    psyco.full()
+except ImportError:
+    pass
+'''
+
 class Token(object):
     def __init__(self, type, attr=None,lineno='???',filename=''):
         self.type = type

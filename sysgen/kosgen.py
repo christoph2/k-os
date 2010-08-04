@@ -26,6 +26,14 @@ __copyright__="""
   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 """
 
+'''
+try:
+    import psyco
+    psyco.full()
+except ImportError:
+    pass
+'''
+
 import os
 from optparse import OptionParser,OptionGroup
 import Parser
@@ -33,6 +41,10 @@ import Preproc
 import GenCfg
 from  Error import OILError
 
+from collections import namedtuple
+
+
+Register=namedtuple('Register','name type offset')
 
 def SetIncludePaths(paths):
     inc_paths=os.getenv('KOS_INCLUDE')
@@ -43,7 +55,6 @@ def SetIncludePaths(paths):
     if paths is not None:
         for p in paths:
             Preproc.AddToPathList(p)
-
 
 def main():
     usage = "usage: %prog [options] oil_file"
@@ -88,12 +99,12 @@ def main():
 
     if len(args)!=1:
         op.error("incorrect number of arguments")
-        
+
     error=OILError(verbose=options.verbose,silent=options.silent)
 
     print "\nStage I. Preprocessing..."
     Preproc.Parser(args[0],errorObj=error)
-    
+
     try:
         fileName=os.path.splitext(os.path.abspath(args[0]))[0]+'.i'
         inFile=open(fileName)
@@ -101,11 +112,23 @@ def main():
         errObj.fatalError("Could not open file '%s'.\n" % (fname))
     else:
         input=inFile.read()
-        ImplDefMap,AppDefMap=Parser.ParseOil(input,errorObj=error)
+        implDefMap,appDefMap,info=Parser.ParseOil(input,errorObj=error)
         if options.test==False:
-            GenCfg.Generate(os.path.splitext(args[0])[0],AppDefMap,errorObj=error)
-
+            ## todo: Cfg.-File!!!
+            info['vendor']='K_OS'
+            info['version']=__version__.replace('.','_')
+            info['koilVersion']="2.2"
+            info['osekVersion']="2.2"
+            info['context']=(
+                Register('PC',"unsigned short", 8),
+                Register('Y',"unsigned short", 6),
+                Register('X',"unsigned short", 4),
+                Register('D',"unsigned short", 2),
+                Register('A',"unsigned char", 2),
+                Register('B',"unsigned char", 1),
+                Register('CCR',"unsigned char", 0),
+            )
+            GenCfg.Generate(os.path.splitext(args[0])[0],appDefMap,info,errorObj=error)
 
 if __name__=='__main__':
     main()
-

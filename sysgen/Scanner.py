@@ -25,6 +25,14 @@ __copyright__="""
   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 """
 
+'''
+try:
+    import psyco
+    psyco.full()
+except ImportError:
+    pass
+'''
+
 from spark import GenericScanner
 from  Token import Token
 
@@ -46,7 +54,7 @@ OBJ_TYPE_LIST=("ALARM_TYPE","APPMODE_TYPE","COM_TYPE",
 BOOL_VALUES=("TRUE","FALSE")
 
 
-class Scanner(GenericScanner):    
+class Scanner(GenericScanner):
     def __init__(self, flags=0):
         GenericScanner.__init__(self,flags)
         self.lineno=1
