@@ -1,0 +1,190 @@
+/*
+**
+**  !!! AUTOMATICALLY GENERATED FILE - DO NOT EDIT !!!
+**
+**
+**  GENERATED WITH  : '${sys.argv[0]}', Part of k_os (Konnex Operating-System based on the OSEK/VDX-Standard).
+**  VERSION:        . ${$info.version}
+**  DATE            : ${time.ctime()}
+**
+*/
+\#if !defined(__OS_CFG_H)
+\#define __OS_CFG_H
+
+\#ifdef __cplusplus
+extern "C"
+{
+\#endif  /* __cplusplus */
+
+/******************************************************************************
+*                            OS-Configuration Part
+******************************************************************************/
+
+\#define OS_AUTOSAR
+\#define USE_ORTI
+\#undef OS_USE_DO_WHILE_BLOCKS
+\#define DEBUG
+\#define OS_EXTENDED_STATUS  /* #define OS_STANDARD_STATUS */
+
+\#if !defined(OS_EXTENDED_STATUS) && !defined(OS_STANDARD_STATUS) 
+    \#define OS_STANDARD_STATUS	    /* OS_EXTENDED_STATUS */
+\#endif
+
+/*  OSEK-OS Conformance Class    */
+\#define OS_${app.os.CC.value}
+
+/*  OSEK-OS Scheduling Policy    */
+\#define OS_SCHED_POLICY_NON    /* OS_SCHED_POLICY_PRE OS_SCHED_POLICY_MIX  */
+\#define OS_USE_O1SCHEDULER
+#if 0
+#define OS_SCHEDULE_MIX         /* OS_SCHEDULE_PRE  OS_SCHEDULE_NON */
+#end if
+
+\#define OS_SCHEDUDLER_PQ_SIZE   16
+
+\#define OS_DISTINCT_PRIORITIES         ((uint8)$info.numberOfDistinctPriorities)
+\#define OS_MLQ_NUMBER_OF_PRIORITIES    OS_DISTINCT_PRIORITIES
+
+#if $app.os.STARTUPHOOK.value==True
+\#define OS_USE_STARTUPHOOK
+#end if
+#if $app.os.SHUTDOWNHOOK.value==True
+\#define OS_USE_SHUTDOWNHOOK
+#end if
+#if $app.os.PRETASKHOOK.value==True
+\#define OS_USE_PRETASKHOOK
+#end if
+#if $app.os.POSTTASKHOOK.value==True
+\#define OS_USE_POSTTASKHOOK
+#end if
+#if $app.os.ERRORHOOK.value==True
+\#define OS_USE_ERRORHOOK
+#end if
+#if $app.os.USERESSCHEDULER.value==True
+\#define OS_USE_RESSCHEDULER
+#end if
+#if $app.os.USEGETSERVICEID.value==True
+\#define OS_USE_GETSERVICEID
+#end if
+#if $app.os.USEPARAMETERACCESS.value==True
+\#define OS_USE_PARAMETERACCESS
+#end if
+#if 0
+\#define OS_USE_IDLETIMEHOOK
+\#define OS_USE_STACKCHECKING
+\#define OS_USE_CALLEVEL_CHECK
+
+\#if defined(OS_USE_CALLEVEL_CHECK) && !defined(OS_EXTENDED_STATUS)
+    \#undef OS_USE_CALLEVEL_CHECK
+\#endif
+#end if
+
+#if $len($app.alarms)>0
+\#define OS_USE_ALARMS
+#end if
+#if $len($app.events)>0
+\#define OS_USE_EVENTS
+#end if
+\#define OS_USE_INTERNAL_RESOURCES
+\#define OS_USE_RESOURCES
+\#define OS_USE_SCHEDULE_TABLES
+\#define OS_SAVE_STARTUP_CTX 
+
+
+/*** OSEK-COM ***/
+\#define OS_USE_COM
+
+\#if defined(OS_USE_COM)
+    \#define COM_USE_ERROR_HOOK
+    \#define COM_USE_GETSERVICEID
+    \#define COM_USE_PARAMETERACCESS
+    \#define COM_START_COM_EXTENSION
+    \#define COM_STANDARD_STATUS
+    \#define COM_EXTENDED_STATUS
+    \#define LOCALMESSAGESONLY 1
+\#endif /* OS_USE_COM */
+
+/******************************************************************************
+*                           APP-Configuration Part
+******************************************************************************/
+
+#set $numTasks=$len($app.tasks)
+#set $numAlarms=$len($app.alarms)
+#set $numCounters=$len($app.counters)
+
+
+\#define OS_NUMBER_OF_TASKS         ((uint8)$($numTasks+1))
+\#define OS_NUMBER_OF_ALARMS        ((uint8)$numAlarms)
+\#define OS_NUMBER_OF_COUNTERS      ((uint8)$len($app.counters))
+\#define OS_NUMBER_OF_EVENTS        ((uint8)$len($app.events))
+\#define OS_NUMBER_OF_RESOURCES     ((uint8)$len($app.standardResources))
+\#define OS_NUMBER_OF_INT_RESOURCES ((uint8)$len($app.internalResources))
+
+\#include "Os_Defs.h"
+\#include "Os_Port.h"
+
+/*
+**  Tasks.
+*/
+\#define IDLETASK_STACK_SIZE        ((uint8)$app.os.IDLETASKSTACKSIZE.value)
+
+#for $task in $app.tasks
+\#define ${task.name.upper}_STACK_SIZE  ((uint8)$task.STACKSIZE.value)
+extern uint8 ${task.name}_Stack[${task.name.upper}_STACK_SIZE];
+
+#end for
+extern uint8 ISR_Stack[ISR_STACK_SIZE];
+extern uint8 IdleTask_Stack[IDLETASK_STACK_SIZE];
+
+extern OsTCBType OS_TCB[OS_NUMBER_OF_TASKS];
+extern const OsTaskConfigurationType OS_TaskConf[OS_NUMBER_OF_TASKS];
+
+#for $num,$task in $enumerate($app.tasks,1)
+DeclareTask(${task.name});
+\#define ${task.name}((TaskType)${num})
+
+#end for
+
+/*
+**  Resources.
+*/
+#if $len($app.standardResources)>0
+extern const OsResourceConfigurationType OS_ResourceConf[];
+extern OsResourceType Os_Resources[];
+#end if
+#if $len($app.internalResources)>0
+extern const OsResourceConfigurationType OS_IntResourceConf[];
+#end if
+
+/*
+**  Counters.
+*/
+
+/*
+**  Alarms.
+*/
+#if ($numAlarms>16) and ($numAlarms<=32)
+typedef uint32 Os_AlarmStateType;
+#elif ($numAlarms>8)
+typedef uint16 Os_AlarmStateType;
+#elif ($numAlarms>=0)
+typedef uint8 Os_AlarmStateType;
+#end if
+
+#for $num,$alarm in $enumerate($app.alarms)
+\#define ${alarm.name}  ((AlarmType)${num})
+#end for
+#if $numAlarms>0
+extern volatile OSAlarm OS_AlarmValue[OS_NUMBER_OF_ALARMS];
+extern const AlarmConfigurationType OS_AlarmConf[OS_NUMBER_OF_ALARMS];
+#end if
+
+#if 0
+\#define COM_NUMBER_OF_MESSAGES    ((uint8)???)
+#end if
+
+\#ifdef __cplusplus
+}
+\#endif  /* __cplusplus */
+
+\#endif /* __OS_CFG_H */

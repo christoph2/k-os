@@ -1,0 +1,85 @@
+/*
+**
+**  !!! AUTOMATICALLY GENERATED FILE - DO NOT EDIT !!!
+**
+**
+**  GENERATED WITH  : '${sys.argv[0]}', Part of k_os (Konnex Operating-System based on the OSEK/VDX-Standard).
+**  VERSION:        . ${$info.version}
+**  DATE            : ${time.ctime()}
+**
+*/
+\#include "Os_Cfg.h"
+
+#def getTaskFlags($task)
+    #set $flags=[]
+    #if $task.get('EVENT') and $len($task.EVENT)
+    #silent $flags.append('OS_TASK_ATTR_EXTENDED')
+    #end if
+    #if $task.SCHEDULE.value=='FULL'
+    #silent $flags.append('OS_TASK_ATTR_FULLPREEMPT')
+    #end if
+    #if $flags
+    ${'|'.join($flags)},#slurp
+    #else
+    ((uint8)0x00),#slurp
+    #end if
+#end def
+
+#for $task in $app.tasks
+uint8 ${task.name}_Stack[${task.name.upper}_STACK_SIZE];
+#end for
+
+uint8 ISR_Stack[ISR_STACK_SIZE];
+uint8 IdleTask_Stack[IDLETASK_STACK_SIZE];
+
+#*
+
+OS_DISTINCT_PRIORITIES
+static TaskType MLQ_QueueData[10];  /*  OS_NUMBER_OF_TASKS */
+
+const QueueConfigurationType MLQ_QueueDef[OS_MLQ_NUMBER_OF_PRIORITIES]={ /* MLQ_ReadyQueueDefs */
+    {(uint8)3,&MLQ_QueueData[0]},
+    {(uint8)3,&MLQ_QueueData[3]},
+    {(uint8)4,&MLQ_QueueData[6]}
+};
+
+
+*#
+
+const OsTaskConfigurationType OS_TaskConf[OS_NUMBER_OF_TASKS]={
+{
+    GetTaskName(OsExec_IdleTask),
+    (uint8*)IdleTask_Stack,
+    IDLETASK_STACK_SIZE,
+    ((PriorityType)0),
+    OS_TASK_ATTR_FULLPREEMPT,
+    #if $app.os.CC.value in ('BCC2','ECC2')
+    (uint8)1,
+    #end if
+    OS_AUTOSTART_ALWAYS,
+\#if defined(OS_USE_INTERNAL_RESOURCES)
+    INTERNAL_RES_NONE,
+\#endif
+}
+#for $task in $app.tasks
+{
+    GetTaskName($task.name),
+    (uint8*)${task.name}_Stack,
+    ${task.name.upper}_STACK_SIZE,
+    OSDEFINEPRIORITY(INVERT_NIBBLE($task.PRIORITY.value-1)),
+$getTaskFlags($task)
+#if $app.os.CC.value in ('BCC2','ECC2')
+    (uint8)$task.ACTIVATION.value,
+#end if
+    (AppModeType)0x01,                              /*  Autostart */
+\#if defined(OS_USE_INTERNAL_RESOURCES)
+    INTERNAL_RES_NONE /*INTERNAL_RES_SCHEDULER - besser: INTERNAL_NONPREEMPT_SCHEDULER*/, 
+\#endif
+},
+#end for
+};
+
+/*
+**  ISR2-Wrapper.
+*/
+IMPLEMENT_ISR2_VECTOR(OSSystemTimerVector)

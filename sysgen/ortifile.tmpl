@@ -1,0 +1,166 @@
+/*
+**
+**  !!! AUTOMATICALLY GENERATED FILE - DO NOT EDIT !!!
+**
+**
+**  GENERATED WITH  : '${sys.argv[0]}', Part of k_os (Konnex Operating-System based on the OSEK/VDX-Standard).
+**  VERSION:        . ${$info.version}
+**  DATE            : ${time.ctime()}
+**
+*/
+
+/*
+**
+**  Information Section.
+**
+*/
+
+
+VERSION {
+    KOIL        = "$info.koilVersion";
+    OSSEMANTICS = "ORTI", "$info.osekVersion";
+};
+
+
+/*
+**
+**  Implementation Section.
+**
+*/
+#slurp
+#set $line=None
+#set $num=0
+#errorCatcher Echo
+
+IMPLEMENTATION ${info.vendor}_${info.version}_ORTI {
+    OS {
+        TOTRACE ENUM "uint8" [
+$enumerateServices()
+        ] SERVICETRACE, "OS Service Watches";
+
+        ENUM "uint8" [
+$enumerateStatusCodes()
+        ] LASTERROR, "Last OSEK error";
+        
+        ENUM [
+$enumerateTasks()
+        ] RUNNINGTASK, "Running Task Identification";
+    }, "OS";
+
+    TASK {
+        STRING vs_Base_Priority, "Configured Base Priority";
+        STRING vs_Schedule, "Schedule";
+        STRING vs_Task_Type, "Task Type";
+        CTYPE "uint8" vs_Events_Set, "Events Set";
+        CTYPE "uint8" vs_Events_WaitingFor, "Events Waiting for";
+    }, "Tasks";
+
+    ALARM {
+        CTYPE "uint16" ALARMTIME, "Alarm Time"; // Alarmtime_t oder so!!!
+        CTYPE "uint16" CYCLETIME, "Cycle Time";
+        // STATE
+        STRING ACTION, "associated Action";
+        STRING COUNTER, "associated Counter";
+    }, "Alarms";
+
+    RESOURCE {
+        // todo: 'STATE' u. 'LOCKER' !!!
+        STRING PRIORITY, "Ceiling priority";
+    }, "Resources";
+
+    CONTEXT {
+#for $name,$type_,_ in $info.context
+        CTYPE "$type_" _CPU_$name, "CPU Register $name";
+#end for
+## todo: Task-Stackpointer!? (last used, next avail)
+        CYTPE "unsigned char" VALID;
+    }, "Task Context";
+    
+    STACK {
+        CTYPE "uint16" SIZE, "Stacksize in Bytes";
+        CTYPE "uint16*" BASEADDRESS, "Base Address";    // AddressType oder so!!!
+        STRING STACKDIRECTION, "Stack Direction";
+        CTYPE "uint8" FILLPATTERN, "Stack Fill Pattern";
+        
+    }, "Stacks";
+}; /* END OF IMPLEMENTATION */
+
+/*
+**
+**  Information Section.
+**
+*/
+
+OS ${info.vendor}_${info.version}_arch {
+    RUNNINGTASK         = "$osVars.runningTask";
+    RUNNINGTASKPRIORITY = "$osVars.runningTaskPriority";
+    RUNNINGISR2         = "$osVars.isrID";
+    SERVICETRACE        = "$osVars.serviceID";
+    LASTERROR           = "$osVars.lastError";
+    CURRENTAPPMODE      = "$osVars.appMode";
+};
+
+#for $num,$task in $enumerate($app.tasks,1)
+TASK $task.name {
+    PRIORITY            = "(OS_TCB[$num].CurrentPriority)";
+    STATE               = "(OS_TCB[$num].State)";
+    STACK               = "&(${task.name}_Stack[0])";
+    CURRENTACTIVATIONS  = "(OS_TCB[$num].Activations)";
+    CONTEXT             = "CONTEXT_$task.name";
+    vs_Base_Priority    = "$task.RELATIVE_PRIORITY.value";
+    vs_Schedule         = "$task.SCHEDULE.value";
+    vs_Task_Type        = "$task.taskType";
+    vs_Events_WaitingFor= "(OS_TCB[$num].EventsSet)"
+    vs_Events_Set       = "(OS_TCB[$num].EventsWaitingFor)"
+};
+
+STACK ${task.name}_Stack {
+    SIZE                = "(OS_TaskConf[$num].StackSize)";
+    STACKDIRECTION      = "${info.stack.direction}";
+    BASEADDRESS         = "&(${task.name}_Stack[0])";
+    FILLPATTERN         = "${info.stack.fillpattern}";
+};
+
+CONTEXT CONTEXT_$task.name {
+#for $name,$type_,$offs in $info.context
+    _CPU_$name = "(($type_ *)(OS_TCB[$num].Stackpointer))[$offs]";
+#end for
+    VALID = "((OS_TCB[$num].State!=SUSPENDED) && (OS_TCB[$num].State!=RUNNING))";
+};
+
+#*
+typedef struct tagOsTCBType {
+    uint8 *Stackpointer; /* todo: 'StackPointerType! */
+    TaskStateType State;
+    uint8 Activations;
+    EventMaskType EventsSet,EventsWaitingFor;
+    uint8 ResourceCount;
+    PriorityType CurrentPriority;
+} OsTCBType;
+
+typedef struct tagOsTaskConfigurationType {
+    TaskFunctionType TaskFunction;
+    uint8 *StackStart;
+    uint8 StackSize;
+    PriorityType Priority;
+    uint8 Flags;
+    uint8 MaxActivations;
+    AppModeType Autostart;
+    ResourceType InternalResource;
+} OsTaskConfigurationType;
+*#
+#end for
+
+#for $num,$alarm in $enumerate($app.alarms,1)
+ALARM ${alarm.name} {
+
+};
+
+#end for
+
+#for $num,$res in $enumerate($app.standardResources,1)
+RESOURCE ${res.name} {
+
+};
+
+#end for
