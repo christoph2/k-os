@@ -5,7 +5,8 @@ __version__="0.9.0"
 __copyright__="""
    k_os (Konnex Operating-System based on the OSEK/VDX-Standard).
  
-  (C) 2007-2010 by Christoph Schueler <chris@konnex-tools.de>
+   (C) 2007-2010 by Christoph Schueler <github.com/Christoph2,
+                                        cpu12.gems@googlemail.com>
   
    All Rights Reserved
  
@@ -36,8 +37,6 @@ from spark import *
 import types
 from Scanner import Scanner
 from AST import AST
-import GenORTI
-import GenCfg
 
 EMPTY_APP_DEF="CPU cpu {};"
 
@@ -70,7 +69,6 @@ AppDefMap={
     "IPDU" : Ipdus, "ISR" : Isrs, "MESSAGE" : Messages, "NETWORKMESSAGE" : NetworkMessages,
     "NM" : Nm, "OS" : Os, "RESOURCE" : Resources, "TASK" : Tasks,
 }
-
 
 UINT32_RANGE=('UINT32',0,(2**32)-1)
 INT32_RANGE=('INT32',-(2**31),(2**31)-1)
@@ -217,23 +215,36 @@ def GetParameterDefinition(obj,name,path=[]):
     ##
     ## returns None | Parameter-Description
     ##
-    map=ImplDefMap.get(obj.type)    # ImplDefMap[obj.type]
+    
+    ##
+    ## todo: Pfad speichern (wg. Fehler-Meldung!!!)
+    ##
+    
+    map=ImplDefMap.get(obj.type)
+    return map.defs.get(name)
+    """
     if path==[]:
         return map.defs.get(name)
-    for p in path:
-        pass
+    parentType=obj.type
+    if map.defs.get(name) is None:
+        errObj.error("Objecttype '%s' doesn't  has an Parameter '%s'." % (parentType,name))
+        return None
+    for type_,paramType in path:
+        parentType=type_
+#        map=map.defs.get(_type)
+    return map.defs.get(name)
+    """
 
 
 def GetParameterPathToRootObject(obj,param):
     path=[]
     path.append((obj.name,type(obj)))
-#    parent=obj.parent
     tobj=obj
-#    while not isinstance(parent,ObjectDefinition):
     while tobj.parent:
         #parent=parent.parent
         tobj=tobj.parent
-        path.insert(0,(tobj.name,tobj.type))
+        if not isinstance(tobj,ObjectDefinition):
+            path.insert(0,(tobj.name,tobj.type))
     return (tobj,path)
 
 
@@ -295,9 +306,45 @@ class ObjectDefinition(dict):
             else:
                 self[name]=value
 
+    def checkNestedParam(self,attr):
+        if attr.implDef.attrType=='BOOLEAN':
+            if attr.value==True:
+                validParams=attr.implDef.range.true_parameter_list
+            else:
+                validParams=attr.implDef.range.false_parameter_list
+            validParamValues=[v[1].name for v in validParams]
+            '''
+            if attr.name not in validParamValues:
+                errObj.error("Invalid Value '%s' for Parameter '%s::%s'." % (
+                    attr.name,self.name,'::'.join([p[0] for p in attr.path]))
+                )
+                return False
+            '''
+        elif attr.implDef.attrType=='ENUM':
+            validParams=attr.implDef.range.lhs
+            validParamValues=[v[0] for v in validParams]
+            if attr.value not in validParamValues:
+                errObj.error("Invalid Value '%s' for Parameter '%s::%s'." % (
+                    attr.value,self.name,'::'.join([p[0] for p in attr.path]))
+                )
+                return False
+            else:
+                pass
+        for paramType,paramList in attr.params.items():
+            for param in paramList:
+                if isinstance(param,NestedParameter):
+                    return self.checkNestedParam(param)
+                else:
+                    if param.attribute_name not in validParamValues:
+                        return False    ## todo Error-Handling!!!
+                    else:
+                        implDef=[v[1] for v in validParams if v[1].name==param.attribute_name][0]
+                        return self.SemanticCheck(param,implDef)
+        return True
+
     def SemanticCheck(self,attr,impldef):
         if isinstance(attr,NestedParameter):
-            return ## todo: Implement!!!
+            return self.checkNestedParam(attr)
         if attr.attribute_value.value=='AUTO':
             if impldef.auto_specifier==False:
                 errObj.error("AUTO-Specifier for attribute '%s' not permitted." % attr.attribute_name)
@@ -349,13 +396,14 @@ class ObjectDefinition(dict):
 
 
 class NestedParameter(object):
-    def __init__(self,name,parent):
+    def __init__(self,name,value,parent):
         self.name=name
+        self.value=value
         self.parent=parent
         self.params=dict()
         self.type=name  ## todo: TEST!!!
         self.root,self.path=GetParameterPathToRootObject(self,name)
-        pd=GetParameterDefinition(self.root,name,self.path)
+        self.implDef=GetParameterDefinition(self.root,name,self.path)
 
     def AddParameter(self,name,value):
         self.params.setdefault(name,[]).append(value)
@@ -567,6 +615,7 @@ def AddImplDefList(dl,Accum):
 def AddParamter(obj,param):
     if param.exprValue.attribute_value.parameterised==True:
         n=AddNestedParameter(obj,param.exprValue.attribute_name,
+            param.exprValue.attribute_value.value,
             param.exprValue.attribute_value.parameter_list)
         obj.AddParameter(param.exprValue.attribute_name,n)
     else:
@@ -581,8 +630,8 @@ def AddParameterList(obj,params):
             AddParamter(obj,p)
 
 
-def AddNestedParameter(parent,name,params):
-    n=NestedParameter(name,parent)
+def AddNestedParameter(parent,name,value,params):
+    n=NestedParameter(name,value,parent)
     for p in params:
         if p.type=='parameter_list':
             AddParameterList(n,p)
@@ -830,12 +879,12 @@ def autoHandler(obj,attr,appDef,implDef,autoList):
 
 
 def getAutoParameter(parameter,autoParameter):
-    for p in parameter:
-        if isinstance(p,types.ListType):
-            getAutoParameter(p,autoParameter)
+    for param in parameter:
+        if isinstance(param,types.ListType):
+            getAutoParameter(param,autoParameter)
         else:
-            if p.attribute_value.value=='AUTO':
-                autoParameter.append(p)
+            if not isinstance(param,NestedParameter) and param.attribute_value.value=='AUTO':
+                autoParameter.append(param)
 
 
 def setDefaults():
@@ -952,9 +1001,12 @@ def ParseOil(input,errorObj):
 
 
 def main():
+    """
     ImplDef,AppDef=ParseOil(r"test.oil")
     GenORTI.Generate("test.ort",AppDef)
     GenCfg.Generate("test",AppDef)
+    """
+    pass
 
 if __name__=="__main__":
     main()

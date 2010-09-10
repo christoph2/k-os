@@ -152,7 +152,6 @@ def Parse(fname,errorObj):
             if includeStmt is not None:
                 sdelim,incfile,edelim,_=includeStmt.groups(('sdelim','incfile','edelim','rest'))
                 if (sdelim=='"' and edelim!='"') or (sdelim=='<' and edelim!='>'):
-                    ## todo: Error-Module!!!
                     errorObj.fatalError('Unbalanced deliminiters '+sdelim+','+edelim+' in #include-statement',
                         filename=fname,lineno=lineNo)
                 else:
@@ -181,7 +180,6 @@ def Parse(fname,errorObj):
                 print >> of
     for f in useFiles:
         found,incPath=locateIncludeFile(sdelim=='"',incfile)
-        
     inf.close()
 
 

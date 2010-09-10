@@ -4,8 +4,8 @@ __version__="0.9.0"
 
 __copyright__="""
    k_os (Konnex Operating-System based on the OSEK/VDX-Standard).
- 
-   (C) 2007-2010 by Christoph Schueler <chris@konnex-tools.de,
+
+   (C) 2007-2010 by Christoph Schueler <github.com/Christoph2,
                                         cpu12.gems@googlemail.com>
   
    All Rights Reserved
@@ -39,6 +39,7 @@ import time
 import inspect,types
 from Cheetah.Template import Template
 import ORTICfg
+from Parser import NestedParameter
 
 errObj=None
 app=None
@@ -74,6 +75,10 @@ def simplifiedApplicationDefinition(appDefs):
     return app
 
 
+"""
+    todo: Create Dictionary for Autostart-Bitmaps!!!
+"""
+
 class ApplicationDefinition(object):
     """
     this class makes the OSEK-Application-Definition more accessible.
@@ -97,7 +102,12 @@ class ApplicationDefinition(object):
             for o in obj:
                 self.setValues(o)
         else:
-            setattr(obj,'value',obj.attribute_value.value)
+            if isinstance(obj,NestedParameter):
+                for _,paramList in obj.params.items():
+                    for param in paramList:
+                        self.setValues(param)
+            else:
+                setattr(obj,'value',obj.attribute_value.value)
 
 
 def writeTemplate(tmplFileName,outFileName,nameSpace):
