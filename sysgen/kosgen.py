@@ -5,12 +5,12 @@ __version__="0.9.0"
 
 __copyright__="""
    k_os (Konnex Operating-System based on the OSEK/VDX-Standard).
- 
+
    (C) 2007-2010 by Christoph Schueler <github.com/Christoph2,
                                         cpu12.gems@googlemail.com>
-  
+
    All Rights Reserved
- 
+
   This program is free software; you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
   the Free Software Foundation; either version 2 of the License, or
@@ -45,6 +45,7 @@ from collections import namedtuple
 
 
 Register=namedtuple('Register','name type offset')
+
 
 def SetIncludePaths(paths):
     inc_paths=os.getenv('KOS_INCLUDE')
@@ -120,13 +121,13 @@ def main():
             info['koilVersion']="2.2"
             info['osekVersion']="2.2"
             info['context']=(
-                Register('PC',"unsigned short", 8),
-                Register('Y',"unsigned short", 6),
-                Register('X',"unsigned short", 4),
-                Register('D',"unsigned short", 2),
-                Register('A',"unsigned char", 2),
-                Register('B',"unsigned char", 1),
-                Register('CCR',"unsigned char", 0),
+                Register('PC',  "unsigned short", 8),
+                Register('Y',   "unsigned short", 6),
+                Register('X',   "unsigned short", 4),
+                Register('D',   "unsigned short", 2),
+                Register('A',   "unsigned char",  2),
+                Register('B',   "unsigned char",  1),
+                Register('CCR', "unsigned char",  0),
             )
             GenCfg.Generate(os.path.splitext(args[0])[0],appDefMap,info,errorObj=error)
 

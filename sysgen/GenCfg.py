@@ -33,6 +33,9 @@ except ImportError:
     pass
 '''
 
+from collections import namedtuple
+import os
+import stat
 import string
 import sys
 import time
@@ -43,7 +46,7 @@ from Parser import NestedParameter
 
 errObj=None
 app=None
-
+info=None
 
 def simplifiedApplicationDefinition(appDefs):
     standardResources=[]
@@ -75,13 +78,9 @@ def simplifiedApplicationDefinition(appDefs):
     return app
 
 
-"""
-    todo: Create Dictionary for Autostart-Bitmaps!!!
-"""
-
 class ApplicationDefinition(object):
     """
-    this class makes the OSEK-Application-Definition more accessible.
+    This class makes the OSEK-Application-Definition more accessible.
     """
     def __init__(self,appDefs):
         for name,appDef in appDefs.items():
@@ -111,10 +110,13 @@ class ApplicationDefinition(object):
 
 
 def writeTemplate(tmplFileName,outFileName,nameSpace):
+    os.chmod(outFileName,stat.S_IWRITE or stat.S_IREAD)
+    os.unlink(outFileName)
     outFile=file(outFileName,'wt')
     tmpl=Template(file=tmplFileName, searchList=[nameSpace])
     print >> outFile, tmpl
     outFile.close()
+    os.chmod(outFileName,os.O_RDONLY)
 
 
 def enumerateServices():
@@ -124,8 +126,6 @@ def enumerateServices():
         str='            "%s" = %s' % (key,value)
         if num<len(ORTICfg.SERVICE_IDS)-1:
             str=str+","
-        else:
-            pass
         res.append(str)
     return '\n'.join(res)
 
@@ -137,23 +137,41 @@ def enumerateStatusCodes():
         str='            "%s" = %s' % (key,value)
         if num<len(ORTICfg.STATUS_TYPES)-1:
             str=str+","
-        else:
-            pass
+        res.append(str)
+    return '\n'.join(res)
+
+
+def enumeratePriorities():
+    ## todo: PRIO_RES_SCHEDULER and IDLE !!!
+    global info
+    res=[]
+    for num,(key,value) in enumerate(info['priorityMap'].items()):
+        str='            "%s" = %s' % (key,value)
+        if num<len(info['priorityMap'])-1:
+            str=str+","
         res.append(str)
     return '\n'.join(res)
 
 
 def enumerateTasks():
-    res=[]
+    res=['            "IdleTask" = "&(OS_TCB[0])",']
     for num,task in enumerate(app.tasks,1):
         str='            "%s" = "&(OS_TCB[%u])"' % (task.name,num)
         if num<len(app.tasks):
             str=str+","
-        else:
-            pass
         res.append(str)
     return '\n'.join(res)
 
+
+def enumerateISR2s():
+    res=[]
+    for num,isr in enumerate(app.isrs,0):
+        if isr['CATEGORY'].value==2:
+            str='            "%s" = "%u"' % (isr.name,num)
+            if num<len(app.isrs)-1:
+                str=str+","
+            res.append(str)
+    return '\n'.join(res)
 
 osVars={
     "lastError" : "OsLastError",
@@ -173,13 +191,13 @@ osVars={
     - Alarm expired
 """
 
-from collections import namedtuple
 
 Stack=namedtuple("Stack","direction fillpattern")
 
 def Generate(fname,AppDef,Info,errorObj):
     global errObj
     global app
+    global info
     print
     print "Generating Configuration Files..."
     print
@@ -188,11 +206,13 @@ def Generate(fname,AppDef,Info,errorObj):
     app=simplifiedApplicationDefinition(AppDef)
 
     Info['stack']=Stack("DOWN",0x00)
+    info=Info
 
     namespace={'app' : app, 'cfg' : ORTICfg, 'osVars' : osVars, 'info' : Info,
         'enumerateServices' : enumerateServices,
         'enumerateStatusCodes': enumerateStatusCodes,
-        "enumerateTasks" : enumerateTasks,
+        "enumerateTasks" : enumerateTasks, "enumeratePriorities": enumeratePriorities,
+        "enumerateISR2s": enumerateISR2s,
         "sys" : sys, "time" : time
     }
 

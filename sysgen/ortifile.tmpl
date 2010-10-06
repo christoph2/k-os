@@ -4,18 +4,17 @@
 **
 **
 **  GENERATED WITH  : '${sys.argv[0]}', Part of k_os (Konnex Operating-System based on the OSEK/VDX-Standard).
-**  VERSION:        . ${$info.version}
+**  VERSION:        : ${$info.version}
 **  DATE            : ${time.ctime()}
 **
 */
+
 
 /*
 **
 **  Information Section.
 **
 */
-
-
 VERSION {
     KOIL        = "$info.koilVersion";
     OSSEMANTICS = "ORTI", "$info.osekVersion";
@@ -31,12 +30,19 @@ VERSION {
 #set $line=None
 #set $num=0
 #errorCatcher Echo
-
 IMPLEMENTATION ${info.vendor}_${info.version}_ORTI {
     OS {
         TOTRACE ENUM "uint8" [
 $enumerateServices()
         ] SERVICETRACE, "OS Service Watches";
+
+        ENUM "uint8" [
+$enumeratePriorities()
+        ] RUNNINGTASKPRIORITY, "Priority of running Task";
+
+        ENUM "uint8" [
+$enumerateISR2s()
+        ] RUNNINGISR2, "Running ISR of category 2";
 
         ENUM "uint8" [
 $enumerateStatusCodes()
@@ -45,9 +51,43 @@ $enumerateStatusCodes()
         ENUM [
 $enumerateTasks()
         ] RUNNINGTASK, "Running Task Identification";
+
+        ENUM "uint8" [
+            "DEFAULT APPMODE" = 0
+        ] CURRENTAPPMODE, "Current application mode";
     }, "OS";
 
     TASK {
+        ENUM "uint8" [
+$enumeratePriorities()
+        ] PRIORITY, "Actual Priority";
+        ENUM "uint8" [
+            "SUSPENDED" = 0,
+            "READY"     = 1,
+            "RUNNING"   = 2,
+            "WAITING"   = 3
+        ] STATE, "Current Task State";
+        ENUM "uint8 *" [
+#for $num,$task in $enumerate($app.tasks,0)
+            "Stack${num}" : ${task.name}_Stack = "&(${task.name}_Stack[0])"#slurp
+#if $num<len($app.tasks)-1
+,
+#else
+
+#end if
+#end for
+        ] STACK, "Task Stack";
+        ENUM "uint8 *" [
+#for $num,$task in $enumerate($app.tasks,0)
+            "CONTEXT_${task.name}" : CONTEXT_${task.name} = $num#slurp
+#if $num<len($app.tasks)-1
+,
+#else
+
+#end if
+#end for
+        ] CONTEXT, "Task Context";
+        CTYPE "uint8" CURRENTACTIVATIONS, "Current Activations";
         STRING vs_Base_Priority, "Configured Base Priority";
         STRING vs_Schedule, "Schedule";
         STRING vs_Task_Type, "Task Type";
@@ -56,15 +96,31 @@ $enumerateTasks()
     }, "Tasks";
 
     ALARM {
-        CTYPE "uint16" ALARMTIME, "Alarm Time"; // Alarmtime_t oder so!!!
+        CTYPE "uint16" ALARMTIME, "Alarm Time"; /* Alarmtime_t oder so!!! */
         CTYPE "uint16" CYCLETIME, "Cycle Time";
-        // STATE
+        ENUM [
+            "STOPPED" = 0,
+            "RUNNING" = 1
+        ] STATE, "Alarm State";
         STRING ACTION, "associated Action";
         STRING COUNTER, "associated Counter";
     }, "Alarms";
 
     RESOURCE {
-        // todo: 'STATE' u. 'LOCKER' !!!
+        ENUM "uint8" [
+            "UNLOCKED"=0,
+            "LOCKED"=1
+        ] STATE, "Resource State";
+        ENUM "uint8" [
+#for $num,$task in $enumerate($app.tasks,1)
+            "$task.name"=$num#slurp
+#if $num<len($app.tasks)
+,
+#else
+
+#end if
+#end for
+        ] LOCKER, "Resource Locker";
         STRING PRIORITY, "Ceiling priority";
     }, "Resources";
 
@@ -75,22 +131,20 @@ $enumerateTasks()
 ## todo: Task-Stackpointer!? (last used, next avail)
         CYTPE "unsigned char" VALID;
     }, "Task Context";
-    
     STACK {
         CTYPE "uint16" SIZE, "Stacksize in Bytes";
-        CTYPE "uint16*" BASEADDRESS, "Base Address";    // AddressType oder so!!!
+        CTYPE "uint16*" BASEADDRESS, "Base Address";    /* AddressType oder so!!! */
         STRING STACKDIRECTION, "Stack Direction";
         CTYPE "uint8" FILLPATTERN, "Stack Fill Pattern";
-        
     }, "Stacks";
 }; /* END OF IMPLEMENTATION */
+
 
 /*
 **
 **  Information Section.
 **
 */
-
 OS ${info.vendor}_${info.version}_arch {
     RUNNINGTASK         = "$osVars.runningTask";
     RUNNINGTASKPRIORITY = "$osVars.runningTaskPriority";
@@ -110,8 +164,8 @@ TASK $task.name {
     vs_Base_Priority    = "$task.RELATIVE_PRIORITY.value";
     vs_Schedule         = "$task.SCHEDULE.value";
     vs_Task_Type        = "$task.taskType";
-    vs_Events_WaitingFor= "(OS_TCB[$num].EventsSet)"
-    vs_Events_Set       = "(OS_TCB[$num].EventsWaitingFor)"
+    vs_Events_WaitingFor= "(OS_TCB[$num].EventsSet)";
+    vs_Events_Set       = "(OS_TCB[$num].EventsWaitingFor)";
 };
 
 STACK ${task.name}_Stack {
@@ -151,16 +205,31 @@ typedef struct tagOsTaskConfigurationType {
 *#
 #end for
 
-#for $num,$alarm in $enumerate($app.alarms,1)
+#for $num,$alarm in $enumerate($app.alarms,1)   ## check: eigentlich '0'???
 ALARM ${alarm.name} {
-
+    ALARMTIME = "OS_AlarmValue[$num].ExpireCounter";
+    CYCLETIME = "OS_AlarmValue[$num].CycleCounter";
+    STATE     = "((OsAlm_ActiveAlarms & (1 << $num))!=0) ? 1 : 0";  ## todo: 'bitSet' statt 1<<$num!!!
+    ACTION    = "$alarmAction($alarm)";
+    COUNTER   = "$alarm.COUNTER.value";
 };
 
 #end for
-
-#for $num,$res in $enumerate($app.standardResources,1)
+#for $num,$res in $enumerate($app.standardResources,0)
 RESOURCE ${res.name} {
-
+    PRIORITY = "TASK: ${res.relativeCeilingPriority}";
+    LOCKER   = "&Os_Resources[$num].Locker";
+    STATE    = "&Os_Resources[$num].Locker != INVALID_TASK";
 };
 
 #end for
+#def alarmAction($alarm)
+#if $alarm.ACTION.value=='ACTIVATETASK'
+#set $action='ActivateTask: '
+#elif $alarm.ACTION.value=='SETEVENT'
+#set $action='SetEvent: '
+#elif $alarm.ACTION.value=='ALARMCALLBACK'
+#set $action='AlarmCallback: '
+#end if
+$action#slurp
+#end def

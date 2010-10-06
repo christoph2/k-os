@@ -4,7 +4,7 @@
 **
 **
 **  GENERATED WITH  : '${sys.argv[0]}', Part of k_os (Konnex Operating-System based on the OSEK/VDX-Standard).
-**  VERSION:        . ${$info.version}
+**  VERSION:        : ${$info.version}
 **  DATE            : ${time.ctime()}
 **
 */
@@ -27,7 +27,7 @@ extern "C"
 \#define OS_EXTENDED_STATUS  /* #define OS_STANDARD_STATUS */
 
 \#if !defined(OS_EXTENDED_STATUS) && !defined(OS_STANDARD_STATUS) 
-    \#define OS_STANDARD_STATUS	    /* OS_EXTENDED_STATUS */
+    \#define OS_STANDARD_STATUS    /* OS_EXTENDED_STATUS */
 \#endif
 
 /*  OSEK-OS Conformance Class    */
@@ -112,6 +112,10 @@ extern "C"
 #set $numAlarms=$len($app.alarms)
 #set $numCounters=$len($app.counters)
 
+#if 0
+\#define OS_MLQ_QUEUE_SIZE ((uint8)???)
+#end if
+##\#define OS_MLQ_NUMBER_OF_PRIORITIES    ((uint8)$info.numberOfDistinctPriorities)
 
 \#define OS_NUMBER_OF_TASKS         ((uint8)$($numTasks+1))
 \#define OS_NUMBER_OF_ALARMS        ((uint8)$numAlarms)
@@ -124,9 +128,19 @@ extern "C"
 \#include "Os_Port.h"
 
 /*
-**  Tasks.
+**
+**  Scheduler.
+**
 */
-\#define IDLETASK_STACK_SIZE        ((uint8)$app.os.IDLETASKSTACKSIZE.value)
+extern const OsMLQ_QueueConfigurationType MLQ_QueueDef[];
+
+/*
+**
+**  Tasks.
+**
+*/
+\#define IDLE_TASK_STACK_SIZE       ((uint8)$app.os.IDLE_TASK_STACK_SIZE.value)
+\#define ISR_STACK_SIZE             ((uint8)$app.os.ISR_STACK_SIZE.value)
 
 #for $task in $app.tasks
 \#define ${task.name.upper}_STACK_SIZE  ((uint8)$task.STACKSIZE.value)
@@ -134,19 +148,21 @@ extern uint8 ${task.name}_Stack[${task.name.upper}_STACK_SIZE];
 
 #end for
 extern uint8 ISR_Stack[ISR_STACK_SIZE];
-extern uint8 IdleTask_Stack[IDLETASK_STACK_SIZE];
+extern uint8 IdleTask_Stack[IDLE_TASK_STACK_SIZE];
 
 extern OsTCBType OS_TCB[OS_NUMBER_OF_TASKS];
 extern const OsTaskConfigurationType OS_TaskConf[OS_NUMBER_OF_TASKS];
 
 #for $num,$task in $enumerate($app.tasks,1)
 DeclareTask(${task.name});
-\#define ${task.name}((TaskType)${num})
+\#define ${task.name}   ((TaskType)${num})
 
 #end for
 
 /*
+**
 **  Resources.
+**
 */
 #if $len($app.standardResources)>0
 extern const OsResourceConfigurationType OS_ResourceConf[];
@@ -157,12 +173,39 @@ extern const OsResourceConfigurationType OS_IntResourceConf[];
 #end if
 
 /*
-**  Counters.
+**  Resource handles.
 */
+#if $len($app.standardResources)>0
+#for $num,$res in $enumerate($app.standardResources,1)
+\#define ${res.name}    ((uint8)$num)
+#end for
+#end if
+
+#if len($app.counters)>0
+/*
+**
+**  Counters.
+**
+*/
+extern volatile TickType Os_CounterValues[OS_NUMBER_OF_COUNTERS];
+extern const CounterConfigurationType __OS_CounterDefs[OS_NUMBER_OF_COUNTERS];
+
+#for $num,$counter in $enumerate($app.counters)
+
+/* ${counter.name} */
+\#define OSMAXALLOWEDVALUE_${counter.name}  ((TickType)${counter.MAXALLOWEDVALUE.value})
+\#define OSTICKSPERBASE_${counter.name}     ((TickType)${counter.TICKSPERBASE.value})
+\#define OSMINCYCLE_${counter.name}         ((TickType)${counter.MINCYCLE.value})
+
+#end for
+#end if
 
 /*
+**
 **  Alarms.
+**
 */
+## todo: Parameter: 'OS_FEATURE_AUTOSTART_ALARMS'!!!
 #if ($numAlarms>16) and ($numAlarms<=32)
 typedef uint32 Os_AlarmStateType;
 #elif ($numAlarms>8)
@@ -174,7 +217,18 @@ typedef uint8 Os_AlarmStateType;
 #for $num,$alarm in $enumerate($app.alarms)
 \#define ${alarm.name}  ((AlarmType)${num})
 #end for
+
 #if $numAlarms>0
+#set $callbacks=[$x for $x in $app.alarms if $x.ACTION.value=='ALARMCALLBACK']
+#if $callbacks
+/*
+**  Callbacks.
+*/
+#for $callback in $callbacks
+DeclareAlarmCallback($callback.ACTION.params.ALARMCALLBACKNAME[0].value);
+#end for
+#end if
+
 extern volatile OSAlarm OS_AlarmValue[OS_NUMBER_OF_ALARMS];
 extern const AlarmConfigurationType OS_AlarmConf[OS_NUMBER_OF_ALARMS];
 #end if

@@ -4,7 +4,7 @@
 **
 **
 **  GENERATED WITH  : '${sys.argv[0]}', Part of k_os (Konnex Operating-System based on the OSEK/VDX-Standard).
-**  VERSION:        . ${$info.version}
+**  VERSION:        : ${$info.version}
 **  DATE            : ${time.ctime()}
 **
 */
@@ -24,33 +24,33 @@
     ((uint8)0x00),#slurp
     #end if
 #end def
-
+#def alarmAction($alarm)
+#if $alarm.ACTION.value=='ACTIVATETASK'
+#set $action='ALM_ACTIVATETASK,{(void*)GetTaskName('+$alarm.ACTION.params.TASK[0].value+')}'
+#elif $alarm.ACTION.value=='SETEVENT'
+#set $action='ALM_SETEVENT'
+#elif $alarm.ACTION.value=='ALARMCALLBACK'
+#set $action='ALM_CALLBACK,{(void*)GetAlarmCallbackName('+$alarm.ACTION.params.ALARMCALLBACKNAME[0].value+')}'
+#end if
+$action#slurp
+#end def
+/*
+**
+**  Tasks.
+**
+*/
 #for $task in $app.tasks
 uint8 ${task.name}_Stack[${task.name.upper}_STACK_SIZE];
 #end for
 
 uint8 ISR_Stack[ISR_STACK_SIZE];
-uint8 IdleTask_Stack[IDLETASK_STACK_SIZE];
-
-#*
-
-OS_DISTINCT_PRIORITIES
-static TaskType MLQ_QueueData[10];  /*  OS_NUMBER_OF_TASKS */
-
-const QueueConfigurationType MLQ_QueueDef[OS_MLQ_NUMBER_OF_PRIORITIES]={ /* MLQ_ReadyQueueDefs */
-    {(uint8)3,&MLQ_QueueData[0]},
-    {(uint8)3,&MLQ_QueueData[3]},
-    {(uint8)4,&MLQ_QueueData[6]}
-};
-
-
-*#
+uint8 IdleTask_Stack[IDLE_TASK_STACK_SIZE];
 
 const OsTaskConfigurationType OS_TaskConf[OS_NUMBER_OF_TASKS]={
 {
     GetTaskName(OsExec_IdleTask),
     (uint8*)IdleTask_Stack,
-    IDLETASK_STACK_SIZE,
+    IDLE_TASK_STACK_SIZE,
     ((PriorityType)0),
     OS_TASK_ATTR_FULLPREEMPT,
     #if $app.os.CC.value in ('BCC2','ECC2')
@@ -60,24 +60,137 @@ const OsTaskConfigurationType OS_TaskConf[OS_NUMBER_OF_TASKS]={
 \#if defined(OS_USE_INTERNAL_RESOURCES)
     INTERNAL_RES_NONE,
 \#endif
-}
+},
 #for $task in $app.tasks
 {
     GetTaskName($task.name),
     (uint8*)${task.name}_Stack,
     ${task.name.upper}_STACK_SIZE,
-    OSDEFINEPRIORITY(INVERT_NIBBLE($task.PRIORITY.value-1)),
+    INVERT_NIBBLE($task.PRIORITY.value-1),
 $getTaskFlags($task)
 #if $app.os.CC.value in ('BCC2','ECC2')
     (uint8)$task.ACTIVATION.value,
 #end if
-    (AppModeType)0x01,                              /*  Autostart */
+## Autostart.
+#if $task.AUTOSTART.value==True
+    *** AUTOSTART  ***
+    #for $mode in $task.AUTOSTART.params['APPMODE']
+    $mode.value
+    #end for
+#else
+    OS_AUTOSTART_NEVER,
+#end if
 \#if defined(OS_USE_INTERNAL_RESOURCES)
     INTERNAL_RES_NONE /*INTERNAL_RES_SCHEDULER - besser: INTERNAL_NONPREEMPT_SCHEDULER*/, 
 \#endif
 },
 #end for
 };
+
+
+/*
+**
+**  Resources.
+**
+*/
+#if $len($app.standardResources)>0
+const OsResourceConfigurationType OS_ResourceConf[OS_NUMBER_OF_RESOURCES]={
+#for $res in $app.standardResources
+    {INVERT_NIBBLE($res.ceilingPriority)},#slurp
+#if $res.description
+  /* $res.name [$res.description] */
+#else
+  /* $res.name */
+#end if
+#end for
+};
+
+/* Dynamic parameters of Resources*/
+OsResourceType Os_Resources[OS_NUMBER_OF_RESOURCES];
+#end if
+
+#if $len($app.internalResources)>0
+const OsResourceConfigurationType OS_IntResourceConf[OS_NUMBER_OF_INT_RESOURCES+1]={
+    {PRIO_SCHEDULER},    /* Index #0 ==> PRIO_SCHEDULER */
+#for $res in $app.internalResources
+    {INVERT_NIBBLE($res.ceilingPriority)},#slurp
+#if $res.description
+  /* $res.name [$res.description] */
+#else
+  /* $res.name */
+#end if
+#end for
+};
+#end if
+
+
+/*
+**
+**  Counters.
+**
+*/
+volatile TickType Os_CounterValues[OS_NUMBER_OF_COUNTERS];
+
+const CounterConfigurationType __OS_CounterDefs[OS_NUMBER_OF_COUNTERS]={
+#for $num,$counter in $enumerate($app.counters)
+    {
+        &Os_CounterValues[$num],
+        {
+            OSMAXALLOWEDVALUE_${counter.name},
+            OSTICKSPERBASE_${counter.name},
+            OSMINCYCLE_${counter.name}
+        },
+        (uint8)1,
+        AlarmsFor${counter.name}
+    },
+#end for
+};
+
+/*
+**
+**  Alarms.
+**
+*/
+volatile OSAlarm OS_AlarmValue[OS_NUMBER_OF_ALARMS];
+
+const AlarmConfigurationType OS_AlarmConf[OS_NUMBER_OF_ALARMS]{
+#for $num,$alarm in $enumerate($app.alarms)
+    {
+        $alarm.COUNTER.value,
+        $alarmAction($alarm),
+        ((AppModeType)0x01),
+#if $alarm.AUTOSTART.value==True
+        (TickType)$alarm.AUTOSTART.params.ALARMTIME[0].value,
+        (TickType)$alarm.AUTOSTART.params.CYCLETIME[0].value
+#else
+        (TickType)0,
+        (TickType)0,
+#end if
+    },
+#end for
+};
+
+/*
+**
+**  Scheduler.
+**
+*/
+static TaskType MLQ_QueueData[10];  /*  OS_NUMBER_OF_TASKS | OS_DISTINCT_PRIORITIES | OS_MLQ_QUEUE_SIZE */
+
+const OsMLQ_QueueConfigurationType MLQ_QueueDef[OS_MLQ_NUMBER_OF_PRIORITIES]={
+#for $prio in $range($info.numberOfDistinctPriorities)
+    {(uint8)3,&MLQ_QueueData[0]},
+    {(uint8)3,&MLQ_QueueData[3]},
+    {(uint8)4,&MLQ_QueueData[6]}
+#end for
+};
+
+#*
+OsApplicationHooks
+    OsAppErrorHook
+    OsAppShutdownHook
+    OsAppStartupHook
+*#
 
 /*
 **  ISR2-Wrapper.

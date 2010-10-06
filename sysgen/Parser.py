@@ -212,28 +212,8 @@ class EnumRange(Range):
 
 
 def GetParameterDefinition(obj,name,path=[]):
-    ##
-    ## returns None | Parameter-Description
-    ##
-    
-    ##
-    ## todo: Pfad speichern (wg. Fehler-Meldung!!!)
-    ##
-    
     map=ImplDefMap.get(obj.type)
     return map.defs.get(name)
-    """
-    if path==[]:
-        return map.defs.get(name)
-    parentType=obj.type
-    if map.defs.get(name) is None:
-        errObj.error("Objecttype '%s' doesn't  has an Parameter '%s'." % (parentType,name))
-        return None
-    for type_,paramType in path:
-        parentType=type_
-#        map=map.defs.get(_type)
-    return map.defs.get(name)
-    """
 
 
 def GetParameterPathToRootObject(obj,param):
@@ -241,7 +221,6 @@ def GetParameterPathToRootObject(obj,param):
     path.append((obj.name,type(obj)))
     tobj=obj
     while tobj.parent:
-        #parent=parent.parent
         tobj=tobj.parent
         if not isinstance(tobj,ObjectDefinition):
             path.insert(0,(tobj.name,tobj.type))
@@ -308,18 +287,30 @@ class ObjectDefinition(dict):
 
     def checkNestedParam(self,attr):
         if attr.implDef.attrType=='BOOLEAN':
+            if not isinstance(attr.value,types.BooleanType):
+                errObj.error("Parameter '%s::%s' must be of type BOOLEAN." % (
+                    self.name,'::'.join([p[0] for p in attr.path]))
+                )
+                return False
             if attr.value==True:
                 validParams=attr.implDef.range.true_parameter_list
             else:
                 validParams=attr.implDef.range.false_parameter_list
             validParamValues=[v[1].name for v in validParams]
-            '''
-            if attr.name not in validParamValues:
-                errObj.error("Invalid Value '%s' for Parameter '%s::%s'." % (
-                    attr.name,self.name,'::'.join([p[0] for p in attr.path]))
-                )
-                return False
-            '''
+            for paramType,paramList in attr.params.items():
+                for param in paramList:
+                    if isinstance(param,NestedParameter):
+                        return self.checkNestedParam(param)
+                    else:
+                        if param.attribute_name not in validParamValues:
+                            errObj.error("Invalid Parameter '%s::%s::%s'." % (
+                                self.name,'::'.join([p[0] for p in attr.path]),param.attribute_name)
+                            )
+                            return False
+                        else:
+                            implDef=[v[1] for v in validParams if v[1].name==param.attribute_name][0]
+                            return self.SemanticCheck(param,implDef)
+
         elif attr.implDef.attrType=='ENUM':
             validParams=attr.implDef.range.lhs
             validParamValues=[v[0] for v in validParams]
@@ -329,17 +320,17 @@ class ObjectDefinition(dict):
                 )
                 return False
             else:
-                pass
-        for paramType,paramList in attr.params.items():
-            for param in paramList:
-                if isinstance(param,NestedParameter):
-                    return self.checkNestedParam(param)
+                implDef=[x[1][0][1] for x in validParams if x[0]==attr.value]
+                paramType,param=attr.params.items()[0]
+                param=param[0]
+                if paramType!=implDef[0].name:
+                    errObj.error("%s? Expected '%s::%s::%s'." %
+                        (paramType,self.name,
+                         '::'.join([p[0] for p in attr.path]),implDef[0].name)
+                    )
+                    return False
                 else:
-                    if param.attribute_name not in validParamValues:
-                        return False    ## todo Error-Handling!!!
-                    else:
-                        implDef=[v[1] for v in validParams if v[1].name==param.attribute_name][0]
-                        return self.SemanticCheck(param,implDef)
+                    return self.SemanticCheck(param,implDef[0])
         return True
 
     def SemanticCheck(self,attr,impldef):
@@ -388,6 +379,8 @@ class ObjectDefinition(dict):
         if actual_type=='name' and attr.attribute_value.value=='AUTO':
             return True
         expected_type=TypeMap[impldef.attrType]
+        if actual_type=='name' and expected_type=='string':
+            return True
         if expected_type!=actual_type:
             errObj.error("<%s>-token for attribute '%s' expected." % (expected_type,attr.attribute_name))
             return False
@@ -401,18 +394,12 @@ class NestedParameter(object):
         self.value=value
         self.parent=parent
         self.params=dict()
-        self.type=name  ## todo: TEST!!!
+        self.type=name
         self.root,self.path=GetParameterPathToRootObject(self,name)
         self.implDef=GetParameterDefinition(self.root,name,self.path)
 
     def AddParameter(self,name,value):
         self.params.setdefault(name,[]).append(value)
-        """
-        if isinstance(value,Parameter):
-            self.params[name][value.attribute_value.value]=value
-        elif isinstance(value,NestedParameter):
-            self.params[name][value.name]=value
-        """
 
 
 class AttributeValue(object):
@@ -508,7 +495,7 @@ class Parser(GenericASTBuilder):
             enumeration ::= [ enumerator_list ]
 
             enumerator_list ::= enumerator
-            enumerator_list ::=	enumerator_list , enumerator
+            enumerator_list ::= enumerator_list , enumerator
 
             enumerator ::= name description
             enumerator ::= name impl_parameter_list description
@@ -838,7 +825,6 @@ class TypeCheck(GenericASTTraversal):
                 ev=AttributeValue('boolean',strToBool(node[0].exprValue))
         else:
             ev=AttributeValue(node[0].type,node[0].exprValue)
-
         node.exprValue=ev
 
     def n_parameter(self,node):
@@ -850,7 +836,12 @@ class TypeCheck(GenericASTTraversal):
         name=node[0][1].exprValue
         obj_map=AppDefMap[obj]
         if name not in obj_map:
-            obj_map[name]=ObjectDefinition(name,obj)
+            descr=None
+            if len(node)==3 and node[1].exprValue:
+                descr=node[1].exprValue.exprValue
+            elif len(node)==6 and node[4].exprValue:
+                descr=node[4].exprValue.exprValue
+            obj_map[name]=ObjectDefinition(name,obj,descr)
             o=obj_map[name]
         if len(node._kids)==6:
             AddParameterList(obj_map[name],node[2])
@@ -886,6 +877,10 @@ def getAutoParameter(parameter,autoParameter):
             if not isinstance(param,NestedParameter) and param.attribute_value.value=='AUTO':
                 autoParameter.append(param)
 
+##
+## todo: 'MinCycleTime' bei AUTOSTART-Alarms überprüfen !!!
+##
+
 
 def setDefaults():
     Priorities={}
@@ -895,6 +890,19 @@ def setDefaults():
     numPreTasks=0
     multipleActivations=False
     autoList=[]
+
+    usedResources={}
+    for key,values in dict([(t[0],t[1]['RESOURCE']) for t in AppDefMap['TASK'].items()]).items():
+        for value in values:
+            usedResources.setdefault(value.attribute_value.value,[]).append(key)
+    for key,value in usedResources.items():
+        ## Calculate Ceiling Priority.
+        try:
+            AppDefMap['RESOURCE'][key].relativeCeilingPriority=max(
+                [AppDefMap['TASK'][v]['PRIORITY'].attribute_value.value for v in value]
+            )
+        except KeyError:
+            pass    # Ignore non-existent Resources for now.
 
     for objName,references in References.items():
         for reference in references:
@@ -945,9 +953,7 @@ def setDefaults():
                     errObj.fatalError("Definition neither 'ImplAttrDef' nor 'ImplRefDef'.")
             if objType=='TASK':
                 priority=appDef2['PRIORITY'].attribute_value.value
-                if not Priorities.has_key(priority):
-                    Priorities[priority]=[]
-                Priorities[priority].append(appDef2)
+                Priorities.setdefault(priority,[]).append(appDef2)
                 appDef2['RELATIVE_PRIORITY']=appDef2['PRIORITY']    ## rename.
                 appDef2['RELATIVE_PRIORITY'].attribute_name='RELATIVE_PRIORITY'
                 del appDef2['PRIORITY']
@@ -963,17 +969,26 @@ def setDefaults():
     numberOfDistinctPriorities=len(Priorities)
     if numberOfDistinctPriorities>MAX_PRIORITIES:
         errObj.error(
-            "This OSEK-OS-Implementation supports at most %s Priority-Levels (Application uses %s)" %
+            "This OSEK-OS-Implementation supports at most %u Priority-Levels (Application uses %u)" %
             (MAX_PRIORITIES,numberOfDistinctPriorities)
         )
     Info['numberOfDistinctPriorities']=numberOfDistinctPriorities
-    ## todo: Queue-Layout belongs to 'Info'!!!
     xCC2=False
-    for num,level in enumerate(Priorities.values(),1):
-        if len(level)>1:
+
+    ## todo: Queue-Layout belongs to 'Info'!!!
+    priorityMap=dict()
+    for num,levelObjs in enumerate(Priorities.values(),1):
+        if len(levelObjs)>1:
             xCC2=True
-        for p in level:
-            p['PRIORITY']=Parameter('PRIORITY',AttributeValue('number',num))
+        levelPriority=levelObjs[0]['RELATIVE_PRIORITY'].attribute_value.value
+        priorityMap[levelPriority]=num
+        for g in filter(lambda r: r.relativeCeilingPriority==levelPriority,
+            AppDefMap['RESOURCE'].values()
+        ):
+            g.ceilingPriority=num
+        for obj in levelObjs:
+            obj['PRIORITY']=Parameter('PRIORITY',AttributeValue('number',num))
+    Info['priorityMap']=priorityMap
     if osCC.attribute_value.value=='AUTO':
         xCC2=xCC2 or multipleActivations
         if ECCx==False:
@@ -998,15 +1013,3 @@ def ParseOil(input,errorObj):
     data=BuildAndCheck(parse(scan(input),'file'))
     setDefaults()
     return (ImplDefMap,AppDefMap,Info)
-
-
-def main():
-    """
-    ImplDef,AppDef=ParseOil(r"test.oil")
-    GenORTI.Generate("test.ort",AppDef)
-    GenCfg.Generate("test",AppDef)
-    """
-    pass
-
-if __name__=="__main__":
-    main()
