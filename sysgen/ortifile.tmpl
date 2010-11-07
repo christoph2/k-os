@@ -1,4 +1,27 @@
 /*
+   k_os (Konnex Operating-System based on the OSEK/VDX-Standard).
+
+ * (C) 2007-2010 by Christoph Schueler <github.com/Christoph2,
+ *                                      cpu12.gems@googlemail.com>
+
+   All Rights Reserved
+
+   This program is free software; you can redistribute it and/or modify
+   it under the terms of the GNU General Public License as published by
+   the Free Software Foundation; version 2 of the License.
+
+   This program is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+   GNU General Public License for more details.
+
+   You should have received a copy of the GNU General Public License
+   along with this program; if not, write to the Free Software
+   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+
+   s. FLOSS-EXCEPTION.txt
+*/
+/*
 **
 **  !!! AUTOMATICALLY GENERATED FILE - DO NOT EDIT !!!
 **
@@ -53,7 +76,14 @@ $enumerateTasks()
         ] RUNNINGTASK, "Running Task Identification";
 
         ENUM "uint8" [
-            "DEFAULT APPMODE" = 0
+            "DEFAULT APPMODE" = 0,
+#for $num,$appmode in $enumerate($app.appmodes,0)
+            "$appmode.name" = $appmode.value#slurp
+#if $num<$len($app.appmodes)-1
+,#slurp
+#end if
+
+#end for
         ] CURRENTAPPMODE, "Current application mode";
     }, "OS";
 
@@ -95,9 +125,17 @@ $enumeratePriorities()
         CTYPE "uint8" vs_Events_WaitingFor, "Events Waiting for";
     }, "Tasks";
 
+    vs_COUNTER {
+        CTYPE "TickType" vs_MAXALLOWEDVALUE, "Maximum possible allowed count value";
+        CTYPE "TickType" vs_MINCYCLE, "Minimum allowed number of ticks for a cyclic alarm";
+        CTYPE "TickType" vs_TICKSPERBASE, "Number of ticks required to reach a counter-specific";
+        STRING vs_TYPE, "Type of counter";
+        CTYPE "TickType" vs_CURRENTVALUE, "Current Value";
+    }, "Counters";
+
     ALARM {
-        CTYPE "uint16" ALARMTIME, "Alarm Time"; /* Alarmtime_t oder so!!! */
-        CTYPE "uint16" CYCLETIME, "Cycle Time";
+        CTYPE "TickType" ALARMTIME, "Alarm Time";
+        CTYPE "TickType" CYCLETIME, "Cycle Time";
         ENUM [
             "STOPPED" = 0,
             "RUNNING" = 1
@@ -112,6 +150,7 @@ $enumeratePriorities()
             "LOCKED"=1
         ] STATE, "Resource State";
         ENUM "uint8" [
+            "NONE" = 0,
 #for $num,$task in $enumerate($app.tasks,1)
             "$task.name"=$num#slurp
 #if $num<len($app.tasks)
@@ -128,8 +167,7 @@ $enumeratePriorities()
 #for $name,$type_,_ in $info.context
         CTYPE "$type_" _CPU_$name, "CPU Register $name";
 #end for
-## todo: Task-Stackpointer!? (last used, next avail)
-        CYTPE "unsigned char" VALID;
+        CTYPE "unsigned char" VALID;
     }, "Task Context";
     STACK {
         CTYPE "uint16" SIZE, "Stacksize in Bytes";
@@ -160,7 +198,7 @@ TASK $task.name {
     STATE               = "(OS_TCB[$num].State)";
     STACK               = "&(${task.name}_Stack[0])";
     CURRENTACTIVATIONS  = "(OS_TCB[$num].Activations)";
-    CONTEXT             = "CONTEXT_$task.name";
+    CONTEXT             = "${num-1}";
     vs_Base_Priority    = "$task.RELATIVE_PRIORITY.value";
     vs_Schedule         = "$task.SCHEDULE.value";
     vs_Task_Type        = "$task.taskType";
@@ -177,39 +215,37 @@ STACK ${task.name}_Stack {
 
 CONTEXT CONTEXT_$task.name {
 #for $name,$type_,$offs in $info.context
-    _CPU_$name = "(($type_ *)(OS_TCB[$num].Stackpointer))[$offs]";
+#if $name=='D'
+    _CPU_$name = "($type_ ) ( (*(OS_TCB[$num].Stackpointer + $offs)) | (*(OS_TCB[$num].Stackpointer + ${offs+1}) << 8 ) )";
+#else
+    _CPU_$name = "*($type_ *)((uint8*)(OS_TCB[$num].Stackpointer + $offs))";
+#end if
 #end for
     VALID = "((OS_TCB[$num].State!=SUSPENDED) && (OS_TCB[$num].State!=RUNNING))";
 };
 
-#*
-typedef struct tagOsTCBType {
-    uint8 *Stackpointer; /* todo: 'StackPointerType! */
-    TaskStateType State;
-    uint8 Activations;
-    EventMaskType EventsSet,EventsWaitingFor;
-    uint8 ResourceCount;
-    PriorityType CurrentPriority;
-} OsTCBType;
-
-typedef struct tagOsTaskConfigurationType {
-    TaskFunctionType TaskFunction;
-    uint8 *StackStart;
-    uint8 StackSize;
-    PriorityType Priority;
-    uint8 Flags;
-    uint8 MaxActivations;
-    AppModeType Autostart;
-    ResourceType InternalResource;
-} OsTaskConfigurationType;
-*#
 #end for
 
-#for $num,$alarm in $enumerate($app.alarms,1)   ## check: eigentlich '0'???
+#for $num,$counter in $enumerate($app.counters)
+vs_COUNTER $(counter.name) {
+    vs_MAXALLOWEDVALUE  = "$counter.MAXALLOWEDVALUE.value";
+    vs_MINCYCLE         = "$counter.MINCYCLE.value";
+    vs_TICKSPERBASE     = "$counter.TICKSPERBASE.value";
+    vs_CURRENTVALUE     = "Os_CounterValues[$num]";
+    vs_TYPE             = "$counter.TYPE.value#slurp
+#if $counter.TYPE.value=='HARDWARE'
+ [Driver: ${counter.TYPE.DRIVER.value}]#slurp
+#end if
+";
+};
+
+#end for
+
+#for $num,$alarm in $enumerate($app.alarms,0)
 ALARM ${alarm.name} {
     ALARMTIME = "OS_AlarmValue[$num].ExpireCounter";
     CYCLETIME = "OS_AlarmValue[$num].CycleCounter";
-    STATE     = "((OsAlm_ActiveAlarms & (1 << $num))!=0) ? 1 : 0";  ## todo: 'bitSet' statt 1<<$num!!!
+    STATE     = "((OsAlm_ActiveAlarms & (1 << $num))!=0) ? 1 : 0";
     ACTION    = "$alarmAction($alarm)";
     COUNTER   = "$alarm.COUNTER.value";
 };
@@ -217,19 +253,20 @@ ALARM ${alarm.name} {
 #end for
 #for $num,$res in $enumerate($app.standardResources,0)
 RESOURCE ${res.name} {
+## todo: Priority of Locker!
     PRIORITY = "TASK: ${res.relativeCeilingPriority}";
-    LOCKER   = "&Os_Resources[$num].Locker";
-    STATE    = "&Os_Resources[$num].Locker != INVALID_TASK";
+    LOCKER   = "Os_Resources[$num].Locker";
+    STATE    = "Os_Resources[$num].Locker != INVALID_TASK";
 };
 
 #end for
 #def alarmAction($alarm)
 #if $alarm.ACTION.value=='ACTIVATETASK'
-#set $action='ActivateTask: '
+#set $action='ActivateTask ['+$alarm.ACTION['TASK'].value+']'
 #elif $alarm.ACTION.value=='SETEVENT'
-#set $action='SetEvent: '
+#set $action='SetEvent ['+$alarm.ACTION['TASK'].value+':'+$alarm.ACTION['EVENT'].value+']'
 #elif $alarm.ACTION.value=='ALARMCALLBACK'
-#set $action='AlarmCallback: '
+#set $action='AlarmCallback ['+$alarm.ACTION['ALARMCALLBACKNAME'].value+']'
 #end if
 $action#slurp
 #end def

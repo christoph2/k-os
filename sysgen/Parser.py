@@ -23,6 +23,8 @@ __copyright__="""
   You should have received a copy of the GNU General Public License along
   with this program; if not, write to the Free Software Foundation, Inc.,
   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+
+   s. FLOSS-EXCEPTION.txt
 """
 
 '''
@@ -115,6 +117,22 @@ class ImplAttrDef(object):
         self.range=range
         self.multiple_specifier=multiple_specifier
         self.default=default
+        if default is not None:
+            if attrType=='ENUM':
+                values=[v[0] for v in range.lhs]    #attrType ,UINT32,UINT64,FLOAT
+                if self.default=='AUTO':
+                    pass
+                else:
+                    if self.default not in [v[0] for v in range.lhs]:
+                        errObj.error("Errornous Implementation Attribute '%s': DEFAULT-Value (%s) out of range." % (self.name,self.default))
+            elif attrType in ('UINT32','UINT64','FLOAT'):
+                if range is not None:
+                    if default<range.lhs or default>range.rhs:
+                        errObj.error("Errornous Implementation Attribute '%s': DEFAULT-Value (%s) out of range." % (self.name,self.default))
+            elif attrType=='BOOLEAN':
+                pass
+            else:
+                pass
         self.description=description
 
 
@@ -244,7 +262,7 @@ def NumericRangeCheck(attr,impldef,type_range):
             range=impldef.range.GetRange()
             errObj.error("%s-Value for attribute '%s' out of defined range, valid: %s." % \
                 (impldef.attrType,attr.attribute_name,str(impldef.range)))
-            return False    
+            return False
     typename,min,max=type_range
     if not (min <= value <= max):
         errObj.error("%s-Value for attribute '%s' out of datatype-range: valid: [%s .. %s]." % \
@@ -262,7 +280,7 @@ class ObjectDefinition(dict):
         self.type=type
         self.description=description
         self.path=[]
-        
+
         self.parent=None
 
     def AddParameter(self,name,value):
@@ -297,8 +315,23 @@ class ObjectDefinition(dict):
             else:
                 validParams=attr.implDef.range.false_parameter_list
             validParamValues=[v[1].name for v in validParams]
-            for paramType,paramList in attr.params.items():
-                for param in paramList:
+            for paramType,paramList in attr.items():
+                implDef=attr[paramType]
+                if isinstance(paramList,types.ListType):
+                    for param in paramList:
+                        if isinstance(param,NestedParameter):
+                            return self.checkNestedParam(param)
+                        else:
+                            if param.attribute_name not in validParamValues:
+                                errObj.error("Invalid Parameter '%s::%s::%s'." % (
+                                    self.name,'::'.join([p[0] for p in attr.path]),param.attribute_name)
+                                )
+                                return False
+                            else:
+                                implDef=[v[1] for v in validParams if v[1].name==param.attribute_name][0]
+                                return self.SemanticCheck(param,implDef)
+                else:
+                    param=paramList
                     if isinstance(param,NestedParameter):
                         return self.checkNestedParam(param)
                     else:
@@ -321,8 +354,7 @@ class ObjectDefinition(dict):
                 return False
             else:
                 implDef=[x[1][0][1] for x in validParams if x[0]==attr.value]
-                paramType,param=attr.params.items()[0]
-                param=param[0]
+                paramType,param=attr.items()[0]
                 if paramType!=implDef[0].name:
                     errObj.error("%s? Expected '%s::%s::%s'." %
                         (paramType,self.name,
@@ -388,18 +420,20 @@ class ObjectDefinition(dict):
             return True
 
 
-class NestedParameter(object):
+class NestedParameter(dict):
     def __init__(self,name,value,parent):
         self.name=name
         self.value=value
         self.parent=parent
-        self.params=dict()
         self.type=name
         self.root,self.path=GetParameterPathToRootObject(self,name)
         self.implDef=GetParameterDefinition(self.root,name,self.path)
 
     def AddParameter(self,name,value):
-        self.params.setdefault(name,[]).append(value)
+        if self.implDef.multiple_specifier==True:
+            self.setdefault(name,[]).append(value)
+        else:
+            self[name]=value
 
 
 class AttributeValue(object):
@@ -413,7 +447,7 @@ class AttributeValue(object):
         return (self.value)
 
 
-class Parameter(object):
+class Parameter(dict):    ## object
     def __init__(self,attribute_name,attribute_value,description=None):
         self.attribute_name=attribute_name
         self.attribute_value=attribute_value
@@ -550,7 +584,7 @@ class Parser(GenericASTBuilder):
 
             attribute_name ::= name
             attribute_name ::= object
-            
+
             attribute_value ::= name
             attribute_value ::= name { parameter_list }
             attribute_value ::= boolean
@@ -863,9 +897,35 @@ def BuildAndCheck(ast):
     return ast
 
 
+def bitCount(mask):
+    cnt=0
+    while mask!=0:
+        mask>>=1
+        cnt=+1
+    return cnt
+
+
+def partitionByPredicate(list_,pred):
+    not_ = lambda f: lambda x, f=f: not f(x)
+    if not hasattr(list_,'__iter__'):
+        raise TypeError("Parameter 'list_' is not a iteratable.")
+    if not callable(pred):
+        raise TypeError("Parameter 'pred' must be callable.")
+    if list_ is None:
+        return ([],[])
+    part1=filter(pred,list_)
+    part2=filter(not_(pred),list_)
+    return (part1,part2)
+
+
 def autoHandler(obj,attr,appDef,implDef,autoList):
     autoList.append((obj,attr,appDef,implDef))
     if obj=='OS' and attr=='CC':
+        pass # appDef[1][attr].attribute_value='AUTO'
+    elif obj=='TASK':
+        if attr=='TYPE':
+            pass
+    elif obj=='EVENT':
         pass
 
 
@@ -877,9 +937,87 @@ def getAutoParameter(parameter,autoParameter):
             if not isinstance(param,NestedParameter) and param.attribute_value.value=='AUTO':
                 autoParameter.append(param)
 
-##
-## todo: 'MinCycleTime' bei AUTOSTART-Alarms überprüfen !!!
-##
+
+def mapTasksToEvents():
+    mapping=dict()
+    for task,events in [
+        (t.name,t['EVENT']) for t in (task for task in AppDefMap['TASK'].values() if 'EVENT' in task)
+    ]:
+        for event in events:
+            mapping.setdefault(event.attribute_value.value,[]).append(task)
+    return mapping
+
+
+def checkBoolean(appDef,objName,attr,implDef,autoList):
+    if attr=='ORTI_DEBUG':
+        pass
+    if isinstance(appDef[attr],NestedParameter):
+        print "NESTED"
+    else:
+        paramList=None
+        if implDef.range is not None:
+            if appDef[attr].attribute_value.value==True:
+                paramList=implDef.range.true_parameter_list
+            else:
+                paramList=implDef.range.false_parameter_list
+        else:
+            pass
+        if paramList is not None:
+            print "PARAM-LIST: '%s'." % paramList
+            for param in paramList:
+                checkAttr(appDef[attr],objName,param[1].name,param[1],autoList)
+        else:
+            pass
+
+
+def checkEnum(appDef,objName,attr,implDef,autoList):
+    if isinstance(appDef[attr],NestedParameter):
+        print "NESTED"
+    elif appDef[attr].attribute_value.parameterised:
+        pass
+
+
+def checkAttr(appDef,objName,attr,implDef,autoList):
+    attrValue=None
+    if attr in appDef:
+        if isinstance(appDef[attr],NestedParameter):
+            attrValue=appDef[attr].value
+        else:
+            if not isinstance(appDef[attr],types.ListType):
+                if hasattr(appDef[attr],'attribute_value'):
+                    attrValue=appDef[attr].attribute_value.value
+                else:
+                    pass
+            else:
+                pass
+    else:
+        attrValue=None
+    if isinstance(implDef,ImplAttrDef):
+        if implDef.default is None and implDef.multiple_specifier==False and attrValue is None:
+            errObj.error("Missing required attribute '%s:%s'." % (objName,attr))
+        elif implDef.auto_specifier==False and implDef.default=='AUTO':
+            errObj.error(
+                "'%s%s' - Errornous Implementation Definition: Default value 'AUTO' used without 'WITH_AUTO." %
+                (objType,attr)
+            )
+        elif implDef.default is not None:
+            if implDef.default=='AUTO':
+                if appDef.type!='OS' and attr!='CC':
+                    appDef[attr]=Parameter(attr,AttributeValue(implDef.attrType,None))
+                objType=appDef.type
+#                autoHandler(objType,attr,(appDef,),implDef,autoList)
+            elif attrValue is None:
+                errObj.information("Setting '%s:%s' to  default value '%s'." % (objName,attr,implDef.default))
+                appDef[attr]=Parameter(attr,AttributeValue(implDef.attrType,implDef.default))
+        if implDef.attrType=='BOOLEAN':
+            checkBoolean(appDef,objName,attr,implDef,autoList)
+        elif implDef.attrType=='ENUM':
+            checkEnum(appDef,objName,attr,implDef,autoList)
+    elif isinstance(implDef,ImplRefDef):
+        if implDef.multiple_specifier==False and attrValue is None:
+            errObj.error("Missing required attribute '%s:%s'." % (objName,attr))
+    else:
+        errObj.fatalError("Definition neither 'ImplAttrDef' nor 'ImplRefDef'.")
 
 
 def setDefaults():
@@ -890,6 +1028,7 @@ def setDefaults():
     numPreTasks=0
     multipleActivations=False
     autoList=[]
+    eventsToTasksMapping=dict()
 
     usedResources={}
     for key,values in dict([(t[0],t[1]['RESOURCE']) for t in AppDefMap['TASK'].items()]).items():
@@ -904,12 +1043,56 @@ def setDefaults():
         except KeyError:
             pass    # Ignore non-existent Resources for now.
 
+    for num,appmode in enumerate(AppDefMap['APPMODE'].values()):
+        appmode.value=1<<num
+
     for objName,references in References.items():
         for reference in references:
             if reference.attribute_value.value not in AppDefMap[reference.attribute_name]:
                 errObj.error("Undefined Reference '%s:%s' (%s)." %
                     (objName,reference.attribute_value.value,reference.attribute_name)
                 )
+    events=AppDefMap['EVENT']
+    masks=frozenset([2**i for i in range(16)])
+#    eventMasks=[e['MASK'].attribute_value.value for e in events]
+#    m0=mapTasksToEvents()
+    for eventName,taskNames in mapTasksToEvents().items():
+        mask=1
+        for taskName in taskNames:
+#            eventsToTasksMapping.setdefault(eventName,[]).append(taskName)
+#            t0=filter(lambda x: x,[t for t in AppDefMap['TASK'][taskName]['EVENT'] if t.attribute_value.value==eventName])
+            eventsForTask=[e.attribute_value.value for e in AppDefMap['TASK'][taskName]['EVENT']]
+            t0=filter(lambda x:x,[e for e in events.items() if e[0] in eventsForTask])
+            autoEvents,nonAutoEvents=partitionByPredicate(t0,lambda x: x[1]['MASK'].attribute_value.value=='AUTO')
+            if nonAutoEvents==[]:
+                events[eventName]['MASK'].attribute_value.value=min(masks)
+            else:
+                pass
+
+    autostartedTasks=filter(lambda x: x['AUTOSTART'].value==True,
+        (filter(lambda x: isinstance(x['AUTOSTART'],NestedParameter),AppDefMap['TASK'].values()))
+    )
+    Info['autostartedTasks']=autostartedTasks
+    autostartedAlarms=filter(lambda x: x['AUTOSTART'].value==True,
+        (filter(lambda x: isinstance(x['AUTOSTART'],NestedParameter),AppDefMap['ALARM'].values()))
+    )
+    Info['autostartedAlarms']=autostartedAlarms
+
+    if len(autostartedAlarms)>0:
+        for counter,alarm in map(lambda x:(AppDefMap['COUNTER'][x['COUNTER'].attribute_value.value],x),
+        autostartedAlarms):
+            alarmCycleTime=alarm['AUTOSTART']['CYCLETIME'].attribute_value.value
+            alarmAlarmTime=alarm['AUTOSTART']['ALARMTIME'].attribute_value.value
+            counterMinCycle=counter['MINCYCLE'].attribute_value.value
+            counterMaxAllowedValue=counter['MAXALLOWEDVALUE'].attribute_value.value
+            if alarmCycleTime<counterMinCycle:
+                errObj.error("CYCLETIME (%u) of ALARM '%s' smaller then MINCYCLE (%u) of associated COUNTER '%s'" %
+                    (alarmCycleTime,alarm.name,counterMinCycle,counter.name)
+                )
+
+    if len(autostartedTasks)+len(autostartedAlarms)==0:
+        errObj.warning("Neither TASKs nor ALARMs are AUTOSTARTed.")
+
     if not AppDefMap.get("OS"):
         errObj.error("Missing required Object 'OS'.")
     elif len(AppDefMap.get("OS"))>1:
@@ -922,6 +1105,8 @@ def setDefaults():
         implDefs=ImplDefMap[objType].defs
         implAttrs=implDefs.keys()
         for objName,appDef2 in appDef1.items():
+            if objType=='EVENT':
+                pass
             appAttrs=appDef2.keys()
             autoParameter=[]
             getAutoParameter(appDef2.values(),autoParameter)
@@ -929,28 +1114,10 @@ def setDefaults():
                 attr=p.attribute_name
                 implDef=implDefs[attr]
                 autoHandler(objType,attr,(appDef1,appDef2),implDef,autoList)
-            for attr in filter(lambda x: x not in appAttrs,implAttrs):
+#            for attr in filter(lambda x: x not in appAttrs,implAttrs):
+            for attr in implAttrs:
                 implDef=implDefs[attr]
-                if isinstance(implDef,ImplAttrDef):
-                    if implDef.default is None and implDef.multiple_specifier==False:
-                        errObj.error("Missing required attribute '%s:%s'." % (objName,attr))
-                    elif implDef.auto_specifier==False and implDef.default=='AUTO':
-                        errObj.error(
-                            "'%s%s' - Errornous Implementation Definition: Default value 'AUTO' used without 'WITH_AUTO." %
-                            (objType,attr)
-                        )
-                    elif implDef.default is not None:
-                        if implDef.default=='AUTO':
-                            appDef2[attr]=Parameter(attr,AttributeValue(implDef.attrType,None))
-                            autoHandler(objType,attr,(appDef2,),implDef,autoList)
-                        else:
-                            errObj.information("Setting '%s:%s' to  default value '%s'." % (objName,attr,implDef.default))
-                            appDef2[attr]=Parameter(attr,AttributeValue(implDef.attrType,implDef.default))
-                elif isinstance(implDef,ImplRefDef):
-                    if implDef.multiple_specifier==False:
-                        errObj.error("Missing required attribute '%s:%s'." % (objName,attr))
-                else:
-                    errObj.fatalError("Definition neither 'ImplAttrDef' nor 'ImplRefDef'.")
+                checkAttr(appDef2,objName,attr,implDef,autoList)
             if objType=='TASK':
                 priority=appDef2['PRIORITY'].attribute_value.value
                 Priorities.setdefault(priority,[]).append(appDef2)
@@ -975,19 +1142,23 @@ def setDefaults():
     Info['numberOfDistinctPriorities']=numberOfDistinctPriorities
     xCC2=False
 
-    ## todo: Queue-Layout belongs to 'Info'!!!
     priorityMap=dict()
     for num,levelObjs in enumerate(Priorities.values(),1):
         if len(levelObjs)>1:
             xCC2=True
         levelPriority=levelObjs[0]['RELATIVE_PRIORITY'].attribute_value.value
-        priorityMap[levelPriority]=num
+        hasResources=False
         for g in filter(lambda r: r.relativeCeilingPriority==levelPriority,
             AppDefMap['RESOURCE'].values()
         ):
             g.ceilingPriority=num
+            hasResources=True
+        activations=0
         for obj in levelObjs:
             obj['PRIORITY']=Parameter('PRIORITY',AttributeValue('number',num))
+            activations+=obj['ACTIVATION'].attribute_value.value
+        activations+=hasResources and 1 or 0
+        priorityMap[levelPriority]=(num,activations)
     Info['priorityMap']=priorityMap
     if osCC.attribute_value.value=='AUTO':
         xCC2=xCC2 or multipleActivations

@@ -24,6 +24,8 @@ __copyright__="""
   You should have received a copy of the GNU General Public License along
   with this program; if not, write to the Free Software Foundation, Inc.,
   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+
+   s. FLOSS-EXCEPTION.txt
 """
 
 '''
@@ -36,6 +38,7 @@ except ImportError:
 
 import os
 from optparse import OptionParser,OptionGroup
+import sys
 import Parser
 import Preproc
 import GenCfg
@@ -43,19 +46,15 @@ from  Error import OILError
 
 from collections import namedtuple
 
-
-Register=namedtuple('Register','name type offset')
-
-
 def SetIncludePaths(paths):
     inc_paths=os.getenv('KOS_INCLUDE')
     if inc_paths is not None:
         for p in inc_paths.split(';'):
             Preproc.AddToPathList(p)
-
     if paths is not None:
         for p in paths:
             Preproc.AddToPathList(p)
+
 
 def main():
     usage = "usage: %prog [options] oil_file"
@@ -103,7 +102,7 @@ def main():
 
     error=OILError(verbose=options.verbose,silent=options.silent)
 
-    print "\nStage I. Preprocessing..."
+    ##print "\nStage I. Preprocessing..."
     Preproc.Parser(args[0],errorObj=error)
 
     try:
@@ -114,22 +113,12 @@ def main():
     else:
         input=inFile.read()
         implDefMap,appDefMap,info=Parser.ParseOil(input,errorObj=error)
+        info['version']=__version__.replace('.','_')
         if options.test==False:
-            ## todo: Cfg.-File!!!
-            info['vendor']='K_OS'
-            info['version']=__version__.replace('.','_')
-            info['koilVersion']="2.2"
-            info['osekVersion']="2.2"
-            info['context']=(
-                Register('PC',  "unsigned short", 8),
-                Register('Y',   "unsigned short", 6),
-                Register('X',   "unsigned short", 4),
-                Register('D',   "unsigned short", 2),
-                Register('A',   "unsigned char",  2),
-                Register('B',   "unsigned char",  1),
-                Register('CCR', "unsigned char",  0),
-            )
-            GenCfg.Generate(os.path.splitext(args[0])[0],appDefMap,info,errorObj=error)
+            if error.errorCounter>0:
+                print >> sys.stderr, "\n%u Error(s) occured during parsing, generating nothing." % error.errorCounter
+            else:
+                GenCfg.Generate(os.path.splitext(args[0])[0],appDefMap,info,errorObj=error)
 
 if __name__=='__main__':
     main()

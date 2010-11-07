@@ -23,6 +23,8 @@ __copyright__="""
   You should have received a copy of the GNU General Public License along
   with this program; if not, write to the Free Software Foundation, Inc.,
   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+
+   s. FLOSS-EXCEPTION.txt
 """
 
 '''
@@ -71,7 +73,7 @@ def CreateOutFile(fname):
 
 def AddToPathList(path):
     if path not in PathList:
-        print "Adding Include Path '%s'.\n" % (path)
+##        print "Adding Include Path '%s'.\n" % (path)
         PathList.append(path)
 
 
@@ -114,10 +116,10 @@ def Parse(fname,errorObj):
     except IOError as e:
         print e
         sys.exit(2)
-    print
-    print '=' * 79
-    print " SCANNING: '%s' ..." % (fname)
-    print '=' * 79
+##    print
+##    print '=' * 79
+##    print " SCANNING: '%s' ..." % (fname)
+##    print '=' * 79
 
     lineDirective(fname,1)
 

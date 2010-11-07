@@ -23,6 +23,8 @@ __copyright__="""
   You should have received a copy of the GNU General Public License along
   with this program; if not, write to the Free Software Foundation, Inc.,
   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+
+   s. FLOSS-EXCEPTION.txt
 """
 
 '''
@@ -34,6 +36,7 @@ except ImportError:
 '''
 
 from collections import namedtuple
+import codecs
 import os
 import stat
 import string
@@ -71,7 +74,7 @@ def simplifiedApplicationDefinition(appDefs):
     if len(app.linkedResources)>0:
         errObj.error("FIXME: Add support for linked resources.",filename="GenCfg.py")
     for num,task in enumerate(app.tasks):
-        if task.has_key('EVENT') and len(task['EVENT']):
+        if 'EVENT' in task and len(task['EVENT']):
             task.taskType='BASIC'
         else:
             task.taskType='EXTENDED'
@@ -85,9 +88,10 @@ class ApplicationDefinition(object):
     def __init__(self,appDefs):
         for name,appDef in appDefs.items():
             attr=name.lower()
-            
             for a in appDef.values():
                 for key,value in a.items():
+                    if key=='ORTI_DEBUG':
+                        pass
                     self.setValues(value)
             if attr not in ('com','nm','os'):
                 attr+='s'
@@ -102,21 +106,32 @@ class ApplicationDefinition(object):
                 self.setValues(o)
         else:
             if isinstance(obj,NestedParameter):
-                for _,paramList in obj.params.items():
-                    for param in paramList:
-                        self.setValues(param)
+                for paramList in obj.items(): # _,paramList
+                    if isinstance(paramList,types.ListType):
+                        for param in paramList:
+                            self.setValues(param)
+                    else:
+                        self.setValues(paramList[1])
             else:
+                for key,value in obj.items():
+                    self.setValues(value)
                 setattr(obj,'value',obj.attribute_value.value)
 
 
-def writeTemplate(tmplFileName,outFileName,nameSpace):
-    os.chmod(outFileName,stat.S_IWRITE or stat.S_IREAD)
-    os.unlink(outFileName)
-    outFile=file(outFileName,'wt')
+def writeTemplate(tmplFileName,outFileName,nameSpace,encodeAsUTF8=True):
+    if os.access(outFileName,os.F_OK):
+        os.chmod(outFileName,stat.S_IWRITE or stat.S_IREAD)
+##        os.unlink(outFileName)
     tmpl=Template(file=tmplFileName, searchList=[nameSpace])
-    print >> outFile, tmpl
+    if encodeAsUTF8==True:
+        outFile=codecs.open(outFileName,mode='wt',encoding='utf-8',errors='xmlcharrefreplace')
+        outFile.write(unicode(codecs.BOM_UTF8,'utf-8'))
+    else:
+        outFile=open(outFileName,mode='wt')
+    
+    outFile.write(unicode(tmpl))
     outFile.close()
-    os.chmod(outFileName,os.O_RDONLY)
+##    os.chmod(outFileName,os.O_RDONLY)
 
 
 def enumerateServices():
@@ -144,9 +159,9 @@ def enumerateStatusCodes():
 def enumeratePriorities():
     ## todo: PRIO_RES_SCHEDULER and IDLE !!!
     global info
-    res=[]
+    res=['            "NONE" = 0,']
     for num,(key,value) in enumerate(info['priorityMap'].items()):
-        str='            "%s" = %s' % (key,value)
+        str='            "%s" = %s' % (key,value[0])
         if num<len(info['priorityMap'])-1:
             str=str+","
         res.append(str)
@@ -164,14 +179,28 @@ def enumerateTasks():
 
 
 def enumerateISR2s():
-    res=[]
-    for num,isr in enumerate(app.isrs,0):
+    res=['            "NONE" = 0,']
+    for num,isr in enumerate(app.isrs,1):
         if isr['CATEGORY'].value==2:
-            str='            "%s" = "%u"' % (isr.name,num)
+            str='            "%s" = %u' % (isr.name,num)
             if num<len(app.isrs)-1:
                 str=str+","
             res.append(str)
     return '\n'.join(res)
+
+def getAlarmsForCounters():
+    di=dict()
+    for alarm in app.alarms:
+        di.setdefault(alarm['COUNTER'].value,[]).append(alarm.name)
+    return di
+
+
+def getApplicationModes(obj):
+    if isinstance(obj['AUTOSTART']['APPMODE'],types.ListType):
+        return '|'.join(map(lambda x:x.value,obj['AUTOSTART']['APPMODE']))
+    else:
+        return obj['AUTOSTART']['APPMODE'].value
+
 
 osVars={
     "lastError" : "OsLastError",
@@ -191,7 +220,7 @@ osVars={
     - Alarm expired
 """
 
-
+Register=namedtuple('Register','name type offset')
 Stack=namedtuple("Stack","direction fillpattern")
 
 def Generate(fname,AppDef,Info,errorObj):
@@ -199,26 +228,44 @@ def Generate(fname,AppDef,Info,errorObj):
     global app
     global info
     print
-    print "Generating Configuration Files..."
+    print "Creating Configuration Files..."
     print
 
     errObj=errorObj
     app=simplifiedApplicationDefinition(AppDef)
-
     Info['stack']=Stack("DOWN",0x00)
     info=Info
+
+    alarmsForCounters=getAlarmsForCounters()
 
     namespace={'app' : app, 'cfg' : ORTICfg, 'osVars' : osVars, 'info' : Info,
         'enumerateServices' : enumerateServices,
         'enumerateStatusCodes': enumerateStatusCodes,
         "enumerateTasks" : enumerateTasks, "enumeratePriorities": enumeratePriorities,
-        "enumerateISR2s": enumerateISR2s,
+        "enumerateISR2s": enumerateISR2s,"alarmsForCounters": alarmsForCounters,
+        "getApplicationModes" : getApplicationModes,
         "sys" : sys, "time" : time
     }
 
-    writeTemplate('hfile.tmpl','Os_Cfg.h',namespace)
-    writeTemplate('cfile.tmpl','Os_Cfg.c',namespace)
-    writeTemplate('ortifile.tmpl','App.ort',namespace)
+    writeTemplate('hfile.tmpl','Os_Cfg.h',namespace,encodeAsUTF8=False)
+    writeTemplate('cfile.tmpl','Os_Cfg.c',namespace,encodeAsUTF8=False)
+    writeTemplate('isrcfgfile.tmpl','ISR_Cfg.h',namespace,encodeAsUTF8=False)
+    if app.os['ORTI_DEBUG'].value==True:
+        info['vendor']='K_OS'
+
+        info['koilVersion']=app.os['ORTI_DEBUG']['KOIL_VERSION'].value.strip('"')
+        info['osekVersion']=app.os['ORTI_DEBUG']['OSEK_VERSION'].value.strip('"')
+
+        info['context']=(
+            Register('PC',  "uint16", 7),
+            Register('Y',   "uint16", 5),
+            Register('X',   "uint16", 3),
+            Register('D',   "uint16", 1),
+            Register('A',   "uint8",  2),
+            Register('B',   "uint8",  1),
+            Register('CCR', "uint8",  0),
+        )
+        writeTemplate('ortifile.tmpl','App.ort',namespace,encodeAsUTF8=False)
 
 
 def main():

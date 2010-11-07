@@ -1,4 +1,27 @@
 /*
+   k_os (Konnex Operating-System based on the OSEK/VDX-Standard).
+
+ * (C) 2007-2010 by Christoph Schueler <github.com/Christoph2,
+ *                                      cpu12.gems@googlemail.com>
+
+   All Rights Reserved
+
+   This program is free software; you can redistribute it and/or modify
+   it under the terms of the GNU General Public License as published by
+   the Free Software Foundation; version 2 of the License.
+
+   This program is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+   GNU General Public License for more details.
+
+   You should have received a copy of the GNU General Public License
+   along with this program; if not, write to the Free Software
+   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+
+   s. FLOSS-EXCEPTION.txt
+*/
+/*
 **
 **  !!! AUTOMATICALLY GENERATED FILE - DO NOT EDIT !!!
 **
@@ -21,29 +44,34 @@ extern "C"
 ******************************************************************************/
 
 \#define OS_AUTOSAR
-\#define USE_ORTI
-\#undef OS_USE_DO_WHILE_BLOCKS
-\#define DEBUG
-\#define OS_EXTENDED_STATUS  /* #define OS_STANDARD_STATUS */
-
-\#if !defined(OS_EXTENDED_STATUS) && !defined(OS_STANDARD_STATUS) 
-    \#define OS_STANDARD_STATUS    /* OS_EXTENDED_STATUS */
-\#endif
+#if $app.os.ORTI_DEBUG.value==True
+\#define OS_FEATURE_ORTI_DEBUG
+#end if
+##\#define DEBU
+#if $app.os.STATUS.value=='EXTENDED'
+\#define OS_EXTENDED_STATUS
+#else
+\#define OS_STANDARD_STATUS
+#end if
 
 /*  OSEK-OS Conformance Class    */
 \#define OS_${app.os.CC.value}
 
 /*  OSEK-OS Scheduling Policy    */
-\#define OS_SCHED_POLICY_NON    /* OS_SCHED_POLICY_PRE OS_SCHED_POLICY_MIX  */
-\#define OS_USE_O1SCHEDULER
-#if 0
-#define OS_SCHEDULE_MIX         /* OS_SCHEDULE_PRE  OS_SCHEDULE_NON */
+#set schedPolicy=set([t['SCHEDULE'].value for t in $app.tasks])
+#if len($schedPolicy)==2
+\#define OS_SCHED_POLICY_MIX
+#elif 'NON' in $schedPolicy
+\#define OS_SCHED_POLICY_NON
+#elif 'FULL' in $schedPolicy
+\#define OS_SCHED_POLICY_PRE
 #end if
-
-\#define OS_SCHEDUDLER_PQ_SIZE   16
+\#define OS_USE_O1SCHEDULER
 
 \#define OS_DISTINCT_PRIORITIES         ((uint8)$info.numberOfDistinctPriorities)
 \#define OS_MLQ_NUMBER_OF_PRIORITIES    OS_DISTINCT_PRIORITIES
+#set $qs=reduce(lambda x,y: x+y[1],$info['priorityMap'].values(),0)
+\#define OS_MLQ_QUEUE_SIZE              ((uint8)$qs)
 
 #if $app.os.STARTUPHOOK.value==True
 \#define OS_USE_STARTUPHOOK
@@ -69,14 +97,12 @@ extern "C"
 #if $app.os.USEPARAMETERACCESS.value==True
 \#define OS_USE_PARAMETERACCESS
 #end if
-#if 0
+#*
 \#define OS_USE_IDLETIMEHOOK
 \#define OS_USE_STACKCHECKING
+*#
+#if $app.os.USECALLLEVELCHECK.value==True
 \#define OS_USE_CALLEVEL_CHECK
-
-\#if defined(OS_USE_CALLEVEL_CHECK) && !defined(OS_EXTENDED_STATUS)
-    \#undef OS_USE_CALLEVEL_CHECK
-\#endif
 #end if
 
 #if $len($app.alarms)>0
@@ -88,8 +114,9 @@ extern "C"
 \#define OS_USE_INTERNAL_RESOURCES
 \#define OS_USE_RESOURCES
 \#define OS_USE_SCHEDULE_TABLES
-\#define OS_SAVE_STARTUP_CTX 
-
+#if $app.os.SAVE_STARTUP_CONTEXT.value==True
+\#define OS_FEATURE_SAVE_STARTUP_CONTEXT
+#end if
 
 /*** OSEK-COM ***/
 \#define OS_USE_COM
@@ -107,15 +134,9 @@ extern "C"
 /******************************************************************************
 *                           APP-Configuration Part
 ******************************************************************************/
-
 #set $numTasks=$len($app.tasks)
 #set $numAlarms=$len($app.alarms)
 #set $numCounters=$len($app.counters)
-
-#if 0
-\#define OS_MLQ_QUEUE_SIZE ((uint8)???)
-#end if
-##\#define OS_MLQ_NUMBER_OF_PRIORITIES    ((uint8)$info.numberOfDistinctPriorities)
 
 \#define OS_NUMBER_OF_TASKS         ((uint8)$($numTasks+1))
 \#define OS_NUMBER_OF_ALARMS        ((uint8)$numAlarms)
@@ -123,16 +144,35 @@ extern "C"
 \#define OS_NUMBER_OF_EVENTS        ((uint8)$len($app.events))
 \#define OS_NUMBER_OF_RESOURCES     ((uint8)$len($app.standardResources))
 \#define OS_NUMBER_OF_INT_RESOURCES ((uint8)$len($app.internalResources))
+#if $len($info.autostartedTasks)>0
+\#define OS_FEATURE_AUTOSTART_TASKS
+#end if
+#if $len($info.autostartedAlarms)>0
+\#define OS_FEATURE_AUTOSTART_ALARMS
+#end if
 
 \#include "Os_Defs.h"
 \#include "Os_Port.h"
-
 /*
 **
 **  Scheduler.
 **
 */
 extern const OsMLQ_QueueConfigurationType MLQ_QueueDef[];
+
+
+/*
+**
+**  Application-Modes.
+**
+*/
+#for $appmode in $app.appmodes
+\#define $appmode.name  ((AppModeType)$appmode.value)
+#end for
+#if len($app.appmodes)==1
+\#define OS_FEATURE_REAL_DEFAULT_APPMODE    ((AppModeType)1)
+#end if
+
 
 /*
 **
@@ -182,23 +222,55 @@ extern const OsResourceConfigurationType OS_IntResourceConf[];
 #end if
 
 #if len($app.counters)>0
+
 /*
 **
 **  Counters.
 **
 */
 extern volatile TickType Os_CounterValues[OS_NUMBER_OF_COUNTERS];
-extern const CounterConfigurationType __OS_CounterDefs[OS_NUMBER_OF_COUNTERS];
+extern const CounterConfigurationType Os_CounterDefs[OS_NUMBER_OF_COUNTERS];
+#*
+The Generator shall create conversion macros to convert counter ticks
+(given as an argument) to real time. The Format of the Macro is
 
+    OS_TICKS2<Unit>_<Counter>(ticks)
+
+whereas <Unit> is of of NS (nanoseconds), US (microseconds),
+MS (milliseconds) or SEC (seconds) and <Counter> is the name
+of the Counter, e.g. OS_TICKS2MS_MyCounter()
+*#
+#set units=('NS','US','MS','SEC')
 #for $num,$counter in $enumerate($app.counters)
 
 /* ${counter.name} */
+\#define $counter.name                      ((CounterType)$num)
+## todo: only for Hardware-Counters!!!
+#set $conversionMacros='\n'.join(map(lambda x: "#define OS_TICKS2%s_%s(ticks)" % (x,counter.name),units))
+$conversionMacros
+
 \#define OSMAXALLOWEDVALUE_${counter.name}  ((TickType)${counter.MAXALLOWEDVALUE.value})
 \#define OSTICKSPERBASE_${counter.name}     ((TickType)${counter.TICKSPERBASE.value})
 \#define OSMINCYCLE_${counter.name}         ((TickType)${counter.MINCYCLE.value})
-
 #end for
 #end if
+
+/*
+**  Hardware-Counter-Drivers.
+*/
+#set $counterDrivers=set([c['TYPE']['DRIVER'].value for c in $app.counters if c['TYPE'].value=='HARDWARE'])
+#for $driver in $counterDrivers
+\#define OS_FEATURE_INSTALL_${driver}_TIMER_HANDLER
+#set $counters=["(void)IncrementCounter(%s);" % c.name for c in $app.counters if c['TYPE'].value=='HARDWARE' and c['TYPE']['DRIVER'].value==$driver]
+\#define OS_${driver}_TIMER_DRIVER_IMPL() \
+##\#define OS_COUNTER_DRIVER_IMPL() \
+    _BEGIN_BLOCK \
+#for $counter in $counters
+        $counter \
+#end for
+    _END_BLOCK
+#end for
+
 
 /*
 **
@@ -225,7 +297,7 @@ typedef uint8 Os_AlarmStateType;
 **  Callbacks.
 */
 #for $callback in $callbacks
-DeclareAlarmCallback($callback.ACTION.params.ALARMCALLBACKNAME[0].value);
+DeclareAlarmCallback($callback.ACTION.ALARMCALLBACKNAME.value);
 #end for
 #end if
 
@@ -233,9 +305,36 @@ extern volatile OSAlarm OS_AlarmValue[OS_NUMBER_OF_ALARMS];
 extern const AlarmConfigurationType OS_AlarmConf[OS_NUMBER_OF_ALARMS];
 #end if
 
-#if 0
-\#define COM_NUMBER_OF_MESSAGES    ((uint8)???)
+
+/*
+**
+**  Events.
+**
+*/
+#for $event in $app.events
+\#define $event.name ((EventMaskType)$event.MASK.value)
+#end for
+
+
+/*
+**
+**  ISRs.
+**
+*/
+#set $isrList=['    ISRID_NONE']
+#for $counter in $app.counters
+#if $counter.TYPE.value=='HARDWARE'
+$isrList.append('    ISRID_'+$counter.TYPE.DRIVER.value+'Timer')#slurp
 #end if
+#end for
+#for $isr in $filter(lambda x: x['CATEGORY'].value==2,$app.isrs)
+$isrList.append('    ISRID_'+$isr.name)#slurp
+#end for
+#set $isrList=',\n'.join($isrList)
+typedef enum tagISRType_Generated {
+$isrList
+} ISRType_Generated;
+
 
 \#ifdef __cplusplus
 }

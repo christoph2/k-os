@@ -23,6 +23,8 @@ __copyright__="""
   You should have received a copy of the GNU General Public License along
   with this program; if not, write to the Free Software Foundation, Inc.,
   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+
+   s. FLOSS-EXCEPTION.txt
 """
 
 '''
@@ -69,7 +71,7 @@ class Scanner(GenericScanner):
         r" [ \t\r]+ "
 
     def t_str_const(self, s):
-        r' ["].*["] '
+        r' ["].*?["] '
         self.rv.append(Token('string', s,lineno=self.lineno,filename=self.filename))
 
     def t_comment(self,s):
