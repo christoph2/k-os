@@ -1,8 +1,8 @@
 /*
    k_os (Konnex Operating-System based on the OSEK/VDX-Standard).
 
-   (C) 2007-2010 by Christoph Schueler <chris@konnex-tools.de,
-                                       cpu12.gems@googlemail.com>
+ * (C) 2007-2010 by Christoph Schueler <github.com/Christoph2,
+ *                                      cpu12.gems@googlemail.com>
 
    All Rights Reserved
 
@@ -17,7 +17,7 @@
 
    You should have received a copy of the GNU General Public License
    along with this program; if not, write to the Free Software
-   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA 
+   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
    s. FLOSS-EXCEPTION.txt
 */
@@ -31,11 +31,11 @@
 #define __OS_PORT_H
 
 #include "Osek.h"
-#include "InstallIsr/ISR.h"
+#include "InstallISR/ISR.h"
 #include "Hw_Cfg.h"
 
 #if defined(__IAR_SYSTEMS_ICC__)
-    #include <intrinsics.h>    
+    #include <intrinsics.h>
 #endif  /* __IAR_SYSTEMS_ICC__ */
 
 
@@ -101,9 +101,9 @@ extern const SizeType OS_TOS_ISR;
         __asm__("sts    0,y");                  \
     _END_BLOCK
 
-#endif    
+#endif
 
-#if defined(__IMAGECRAFT__)        
+#if defined(__IMAGECRAFT__)
 #define OS_RESTORE_CONTEXT()                    \
     _BEGIN_BLOCK                                \
         asm("ldy        _OsCurrentTCB");        \
@@ -136,7 +136,7 @@ extern const SizeType OS_TOS_ISR;
 #endif
 
 /*  Hinweis: 'OS_START_CURRENT_TASK' ähnelt irgendwie 'OS_RESTORE_CONTEXT()'... */
-#if defined(__IMAGECRAFT__)        
+#if defined(__IMAGECRAFT__)
 #define OS_START_CURRENT_TASK()                 \
     _BEGIN_BLOCK                                \
         asm("ldy        _OsCurrentTCB");        \
@@ -167,10 +167,10 @@ extern const SizeType OS_TOS_ISR;
         CPU_RETURN_FROM_INTERRUPT();            \
     _END_BLOCK
 
-#endif          
+#endif
 
 
-#if defined(__IMAGECRAFT__)             
+#if defined(__IMAGECRAFT__)
 #define OS_ISR_CONTEXT()    asm("lds    OS_TOS_ISR")
 #elif defined(__HIWARE__)
 #define OS_ISR_CONTEXT()    __asm   lds OS_TOS_ISR
@@ -178,7 +178,7 @@ extern const SizeType OS_TOS_ISR;
 #define OS_ISR_CONTEXT()    _asm("xref _OS_TOS_ISR\nlds   _OS_TOS_ISR")
 #elif defined(__GNUC__)
 #define OS_ISR_CONTEXT()    __asm__("lds    OS_TOS_ISR")
-#endif  
+#endif
 
 void OsPortInit(void);
 

@@ -1,8 +1,8 @@
 /*
    k_os (Konnex Operating-System based on the OSEK/VDX-Standard).
 
-   (C) 2007-2010 by Christoph Schueler <chris@konnex-tools.de,
-                                       cpu12.gems@googlemail.com>
+ * (C) 2007-2010 by Christoph Schueler <github.com/Christoph2,
+ *                                      cpu12.gems@googlemail.com>
 
    All Rights Reserved
 
@@ -17,7 +17,7 @@
 
    You should have received a copy of the GNU General Public License
    along with this program; if not, write to the Free Software
-   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA 
+   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
    s. FLOSS-EXCEPTION.txt
 */
@@ -37,7 +37,7 @@ void OsRes_InitResources(void)
 
 #if defined(OS_USE_RESOURCES)
     for (i=(uint8)0;i<OS_NUMBER_OF_RESOURCES;++i) {
-#if defined(USE_ORTI)
+#if defined(OS_FEATURE_ORTI_DEBUG)
         Os_Resources[i].Locker=INVALID_TASK;
 #endif
         Os_Resources[i].PriorPriorityOfTask=PRIO_NONE;
@@ -70,7 +70,7 @@ StatusType GetResource(ResourceType ResID)
         OS_LOCK_SCHEDULER();
     } else {
 #if defined(OS_USE_RESOURCES)
-#if defined(USE_ORTI)
+#if defined(OS_FEATURE_ORTI_DEBUG)
         Os_Resources[ResID].Locker=OsCurrentTID;      /* lock Resource. */
 #endif
         /* save current priority. */
@@ -119,7 +119,7 @@ StatusType ReleaseResource(ResourceType ResID)
         OS_UNLOCK_SCHEDULER();
     } else {
 #if defined(OS_USE_RESOURCES)
-#if defined(USE_ORTI)
+#if defined(OS_FEATURE_ORTI_DEBUG)
         Os_Resources[ResID].Locker=INVALID_TASK;       /* unlock Resource. */
 #endif
         OsCurrentTCB->ResourceCount--;

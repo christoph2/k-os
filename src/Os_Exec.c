@@ -1,8 +1,8 @@
 /*
    k_os (Konnex Operating-System based on the OSEK/VDX-Standard).
 
-   (C) 2007-2010 by Christoph Schueler <chris@konnex-tools.de,
-                                       cpu12.gems@googlemail.com>
+ * (C) 2007-2010 by Christoph Schueler <github.com/Christoph2,
+ *                                      cpu12.gems@googlemail.com>
 
    All Rights Reserved
 
@@ -17,7 +17,7 @@
 
    You should have received a copy of the GNU General Public License
    along with this program; if not, write to the Free Software
-   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA 
+   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
    s. FLOSS-EXCEPTION.txt
 */
@@ -26,12 +26,12 @@
 
 static void OsExec_Init(void);
 
-#if defined(OS_SAVE_STARTUP_CTX)
+#if defined(OS_FEATURE_SAVE_STARTUP_CONTEXT)
 static Utl_JumpBufType StartupContext;
-#endif  /* OS_SAVE_STARTUP_CTX */
+#endif  /* OS_FEATURE_SAVE_STARTUP_CONTEXT */
 
 
-static AppModeType Os_AppMode;
+OS_DEFINE_GLOBAL_IF_DEBUGGING(Os_AppMode,AppModeType);
 
 
 void StartOS(AppModeType Mode)
@@ -40,7 +40,9 @@ void StartOS(AppModeType Mode)
 
     ASSERT_OS_NOT_RUNNING();
 
-    if (Mode>(AppModeType)7) {
+    if (Mode==OSDEFAULTAPPMODE) {
+        Os_AppMode=OS_FEATURE_REAL_DEFAULT_APPMODE;
+    } else if (Mode>(AppModeType)7) {
         Os_AppMode=OSDEFAULTAPPMODE;
     } else {
         Os_AppMode=Mode;
@@ -53,7 +55,7 @@ void StartOS(AppModeType Mode)
     OsExec_Init();
 
 #if defined(OS_USE_STARTUPHOOK)
-    OS_SET_CALLEVEL(CL_STARTUP_HOOK);
+    OS_SET_CALLEVEL(OS_CL_STARTUP_HOOK);
     StartupHook();
 #endif  /* OS_USE_STARTUPHOOK */
     OS_SET_CALLEVEL(OS_CL_TASK);
@@ -65,15 +67,15 @@ void StartOS(AppModeType Mode)
     CLEAR_SERVICE_CONTEXT();
 /*    ENABLE_ALL_OS_INTERRUPTS(); */
 
-#if defined(OS_SAVE_STARTUP_CTX)
+#if defined(OS_FEATURE_SAVE_STARTUP_CONTEXT)
     if (Utl_SetJump(&StartupContext)==0) {
-#endif  /* OS_SAVE_STARTUP_CTX */
+#endif  /* OS_FEATURE_SAVE_STARTUP_CONTEXT */
 
         OS_START_CURRENT_TASK();
 
-#if defined(OS_SAVE_STARTUP_CTX)
+#if defined(OS_FEATURE_SAVE_STARTUP_CONTEXT)
     }
-#endif  /* OS_SAVE_STARTUP_CTX */
+#endif  /* OS_FEATURE_SAVE_STARTUP_CONTEXT */
 }
 
 void ShutdownOS(StatusType Error)
@@ -88,7 +90,7 @@ void ShutdownOS(StatusType Error)
     }
 
 #if defined(OS_USE_SHUTDOWNHOOK)
-    OS_SET_CALLEVEL(CL_SHUTDOWN_HOOK);
+    OS_SET_CALLEVEL(OS_CL_SHUTDOWN_HOOK);
     ShutdownHook(Error);
 #else   /* OS_USE_SHUTDOWNHOOK */
     UNREFERENCED_PARAMETER(Error);
@@ -96,9 +98,9 @@ void ShutdownOS(StatusType Error)
     OS_SET_CALLEVEL(OS_CL_INVALID);
     CLEAR_SERVICE_CONTEXT();    /* ??? */
 
-#if defined(OS_SAVE_STARTUP_CTX)
+#if defined(OS_FEATURE_SAVE_STARTUP_CONTEXT)
     Utl_LongJump(&StartupContext,-1);
-#endif  /* OS_SAVE_STARTUP_CTX */
+#endif  /* OS_FEATURE_SAVE_STARTUP_CONTEXT */
 /*
 **  !REQ!AS!OS425!
 **  If ShutdownOS() is called and ShutdownHook() returns then the operating
@@ -125,7 +127,7 @@ AppModeType GetActiveApplicationMode(void)
 
 static void OsExec_Init(void)
 {
-    OsCurrentTID=(INVALID_TASK);
+    OsCurrentTID=INVALID_TASK;
     OsCurrentTCB=(OsTCBType*)NULL;
     OsFlags=(uint8)0x00;
 
@@ -137,10 +139,9 @@ static void OsExec_Init(void)
 
     OsRes_InitResources();
 
-    OsAlm_InitAlarms();
-
     OsCtr_InitCounters();
 
+    OsAlm_InitAlarms();
 }
 
 
@@ -179,8 +180,8 @@ void OsExec_ScheduleFromISR(void)   /*  ISR-Level-Scheduling. */
         }
         OS_SET_HIGHEST_PRIO_RUNNING();
     }
-#endif
 }
+#endif
 
 
 boolean OsExec_HigherPriorityThenCurrentReady(void)
@@ -207,7 +208,6 @@ boolean OsExec_HigherPriorityThenCurrentReady(void)
 void OsExec_StartHighestReadyTask(void)
 {
     OS_SET_HIGHEST_PRIO_RUNNING();
-
     OS_START_CURRENT_TASK();
 }
 

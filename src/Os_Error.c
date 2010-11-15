@@ -1,8 +1,8 @@
 /*
    k_os (Konnex Operating-System based on the OSEK/VDX-Standard).
 
-   (C) 2007-2010 by Christoph Schueler <chris@konnex-tools.de,
-                                       cpu12.gems@googlemail.com>
+ * (C) 2007-2010 by Christoph Schueler <github.com/Christoph2,
+ *                                      cpu12.gems@googlemail.com>
 
    All Rights Reserved
 
@@ -17,18 +17,19 @@
 
    You should have received a copy of the GNU General Public License
    along with this program; if not, write to the Free Software
-   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA 
+   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
    s. FLOSS-EXCEPTION.txt
 */
 #include "Os_Error.h"
 
-#if defined(OS_USE_GETSERVICEID) || defined(OS_USE_PARAMETERACCESS)
+#if defined(OS_USE_GETSERVICEID) || defined(OS_USE_PARAMETERACCESS) || defined(OS_FEATURE_ORTI_DEBUG)
 Os_ServiceContextType Os_ServiceContext;
 #endif
 
-#if defined(USE_ORTI)
-StatusType OsLastError=E_OK;
+OS_DEFINE_GLOBAL_IF_DEBUGGING(OsLastError,StatusType);
+
+#if defined(OS_FEATURE_ORTI_DEBUG)
 #define OS_SAVE_LAST_ERROR(Error)   OsLastError=Error
 #else
 #define OS_SAVE_LAST_ERROR(Error)
@@ -47,7 +48,7 @@ void OsErrorCallErrorHook(StatusType Error)
         OS_RESTORE_CALLEVEL();
         OsFlags&=~OS_SYS_FLAG_IN_OS_ERROR_HOOK;
         ENABLE_ALL_OS_INTERRUPTS();
-    }    
+    }
 }
 
 
@@ -63,7 +64,7 @@ void COMErrorCallErrorHook(StatusType Error)
         OS_RESTORE_CALLEVEL();
         OsFlags&=~OS_SYS_FLAG_IN_COM_ERROR_HOOK;
         ENABLE_ALL_OS_INTERRUPTS();
-    }    
+    }
 }
 
 
@@ -73,7 +74,7 @@ void OSSaveServiceContext(Os_ServiceIdType id,void *param1,void *param2,void *pa
         Os_ServiceContext.id=id;
         Os_ServiceContext.param1=param1;
         Os_ServiceContext.param2=param2;
-        Os_ServiceContext.param3=param3;                       
+        Os_ServiceContext.param3=param3;
 }
 #endif
 
@@ -81,7 +82,7 @@ void OSSaveServiceContext(Os_ServiceIdType id,void *param1,void *param2,void *pa
 #if defined(OS_USE_GETSERVICEID) && !defined(OS_USE_PARAMETERACCESS)
 void OSSaveServiceContext(Os_ServiceIdType id)
 {
-        Os_ServiceContext.id=id;                       
+        Os_ServiceContext.id=id;
 }
 #endif
 
@@ -91,6 +92,6 @@ void OSSaveServiceContext(void *param1,void *param2,void *param3)
 {
         Os_ServiceContext.param1=param1;
         Os_ServiceContext.param2=param2;
-        Os_ServiceContext.param3=param3;                       
+        Os_ServiceContext.param3=param3;
 }
 #endif

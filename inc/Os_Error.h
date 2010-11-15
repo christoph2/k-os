@@ -1,8 +1,8 @@
 /*
    k_os (Konnex Operating-System based on the OSEK/VDX-Standard).
 
-   (C) 2007-2010 by Christoph Schueler <chris@konnex-tools.de,
-                                       cpu12.gems@googlemail.com>
+ * (C) 2007-2010 by Christoph Schueler <github.com/Christoph2,
+ *                                      cpu12.gems@googlemail.com>
 
    All Rights Reserved
 
@@ -17,7 +17,7 @@
 
    You should have received a copy of the GNU General Public License
    along with this program; if not, write to the Free Software
-   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA 
+   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
    s. FLOSS-EXCEPTION.txt
 */
@@ -25,13 +25,14 @@
 #define __OSERROR_H
 
 #include "Os_Cfg.h"
+#include "Os_Macros.h"
 
 #ifdef __cplusplus
 extern "C"
 {
 #endif  /* __cplusplus */
 
-typedef enum tagOSServiceIdType {
+typedef enum tagOS_ServiceIdType {
     OSServiceId_NoService,
     /*  OSEK-OS 2.2.3. */
     OSServiceId_ActivateTask=2,
@@ -102,7 +103,7 @@ typedef enum tagOSServiceIdType {
 
 #if defined(OS_USE_PARAMETERACCESS)
     #define OSError_ActivateTask_TaskID()                           ((TaskType)Os_ServiceContext.param1)
-    #define OSError_ChainTask_TaskID()                              ((TaskType)Os_ServiceContext.param1)       
+    #define OSError_ChainTask_TaskID()                              ((TaskType)Os_ServiceContext.param1)
     #define OSError_GetTaskID_TaskID()                              ((TaskRefType)Os_ServiceContext.param1)
     #define OSError_GetTaskState_TaskID()                           ((TaskType)Os_ServiceContext.param1)
     #define OSError_GetTaskState_State()                            ((TaskStateRefType)Os_ServiceContext.param2)
@@ -110,7 +111,7 @@ typedef enum tagOSServiceIdType {
     #define OSError_ReleaseResource_ResID()                         ((ResourceType)Os_ServiceContext.param1)
     #define OSError_SetEvent_TaskID()                               ((TaskType)Os_ServiceContext.param1)
     #define OSError_SetEvent_Mask()                                 ((EventMaskType)Os_ServiceContext.param2)
-    #define OSError_ClearEvent_Mask()                               ((EventMaskType)Os_ServiceContext.param1)          
+    #define OSError_ClearEvent_Mask()                               ((EventMaskType)Os_ServiceContext.param1)
     #define OSError_GetEvent_TaskID()                               ((TaskType)Os_ServiceContext.param1)
     #define OSError_GetEvent_Event()                                ((EventMaskRefType)Os_ServiceContext.param2)
     #define OSError_WaitEvent_Mask()                                ((EventMaskType)Os_ServiceContext.param1)
@@ -123,7 +124,7 @@ typedef enum tagOSServiceIdType {
     #define OSError_SetRelAlarm_cycle()                             ((TickType)Os_ServiceContext.param3)
     #define OSError_SetAbsAlarm_AlarmID()                           ((AlarmType)Os_ServiceContext.param1)
     #define OSError_SetAbsAlarm_start()                             ((TickType)Os_ServiceContext.param2)
-    #define OSError_SetAbsAlarm_cycle()                             ((TickType)Os_ServiceContext.param3)       
+    #define OSError_SetAbsAlarm_cycle()                             ((TickType)Os_ServiceContext.param3)
     #define OSError_CancelAlarm_AlarmID()                           ((AlarmType)Os_ServiceContext.param1)
     #define OSError_CallTrustedFunction_FunctionIndex()             ((TrustedFunctionIndexType)Os_ServiceContext.param1)
     #define OSError_CallTrustedFunction_FunctionParams()            ((TrustedFunctionParameterRefType)Os_ServiceContext.param2)
@@ -151,7 +152,7 @@ typedef enum tagOSServiceIdType {
     #define OSError_SetScheduleTableAsync_ScheduleID()              ((ScheduleTableType)Os_ServiceContext.param1)
     #define OSError_IncrementCounter_CounterID()                    ((CounterType)Os_ServiceContext.param1)
     #define OSError_TerminateApplication_RestartOption()            ((RestartType)Os_ServiceContext.param1)
-    #define OSError_DisableInterruptSource_DisableISR()             ((ISRType)Os_ServiceContext.param1)        
+    #define OSError_DisableInterruptSource_DisableISR()             ((ISRType)Os_ServiceContext.param1)
     #define OSError_EnableInterruptSource_EnableISR()               ((ISRType)Os_ServiceContext.param1)
 
     #define OSError_InitCounter_CounterID()                         ((CounterType)Os_ServiceContext.param1)
@@ -184,7 +185,7 @@ typedef enum tagOSServiceIdType {
     #define COM_Error_GetMessageStatus_Message()                    ((MessageIdentifier)Os_ServiceContext.param1)
 #else
     #define OSError_ActivateTask_TaskID()                           ((TaskType)0)
-    #define OSError_ChainTask_TaskID()                              ((TaskType)0)       
+    #define OSError_ChainTask_TaskID()                              ((TaskType)0)
     #define OSError_GetTaskID_TaskID()                              ((TaskRefType)0)
     #define OSError_GetTaskState_TaskID()                           ((TaskType)_0)
     #define OSError_GetTaskState_State()                            ((TaskStateRefType)0)
@@ -192,7 +193,7 @@ typedef enum tagOSServiceIdType {
     #define OSError_ReleaseResource_ResID()                         ((ResourceType)0)
     #define OSError_SetEvent_TaskID()                               ((TaskType)0)
     #define OSError_SetEvent_Mask()                                 ((EventMaskType)0)
-    #define OSError_ClearEvent_Mask()                               ((EventMaskType)0)          
+    #define OSError_ClearEvent_Mask()                               ((EventMaskType)0)
     #define OSError_GetEvent_TaskID()                               ((TaskType)0)
     #define OSError_GetEvent_Event()                                ((EventMaskRefType)0)
     #define OSError_WaitEvent_Mask()                                ((EventMaskType)0)
@@ -205,7 +206,7 @@ typedef enum tagOSServiceIdType {
     #define OSError_SetRelAlarm_cycle()                             ((TickType)0)
     #define OSError_SetAbsAlarm_AlarmID()                           ((AlarmType)0)
     #define OSError_SetAbsAlarm_start()                             ((TickType)0)
-    #define OSError_SetAbsAlarm_cycle()                             ((TickType)0)       
+    #define OSError_SetAbsAlarm_cycle()                             ((TickType)0)
     #define OSError_CancelAlarm_AlarmID()                           ((AlarmType)0)
     #define OSError_CallTrustedFunction_FunctionIndex()             ((TrustedFunctionIndexType)0)
     #define OSError_CallTrustedFunction_FunctionParams()            ((TrustedFunctionParameterRefType)0)
@@ -233,7 +234,7 @@ typedef enum tagOSServiceIdType {
     #define OSError_SetScheduleTableAsync_ScheduleID()              ((ScheduleTableType)0)
     #define OSError_IncrementCounter_CounterID()                    ((CounterType)0)
     #define OSError_TerminateApplication_RestartOption()            ((RestartType)0)
-    #define OSError_DisableInterruptSource_DisableISR()             ((ISRType)0)        
+    #define OSError_DisableInterruptSource_DisableISR()             ((ISRType)0)
     #define OSError_EnableInterruptSource_EnableISR()               ((ISRType)0)
 
     #define OSError_InitCounter_CounterID()                         ((CounterType)0)
@@ -265,20 +266,23 @@ typedef enum tagOSServiceIdType {
     #define COM_Error_GetMessageStatus_Message()                    ((MessageIdentifier)0)
 #endif
 
-#if defined(OS_USE_GETSERVICEID) || defined(OS_USE_PARAMETERACCESS)
+
+#if defined(OS_USE_GETSERVICEID) || defined(OS_USE_PARAMETERACCESS) || defined(OS_FEATURE_ORTI_DEBUG)
 typedef struct tagOs_ServiceContextType {
-    #if defined(OS_USE_GETSERVICEID)
+    #if defined(OS_USE_GETSERVICEID) || defined(OS_FEATURE_ORTI_DEBUG)
     Os_ServiceIdType id;
-    #endif      
+    #endif
     #if defined(OS_USE_PARAMETERACCESS)
     /*@null@*/void *param1;
     /*@null@*/void *param2;
     /*@null@*/void *param3;
-    #endif      
+    #endif
 } Os_ServiceContextType;
 #endif
 
-extern Os_ServiceContextType Os_ServiceContext;
+OS_DECLARE_GLOBAL_IF_DEBUGGING(Os_ServiceContext,Os_ServiceContextType);
+OS_DECLARE_GLOBAL_IF_DEBUGGING(OsLastError,StatusType);
+
 
 void ErrorHook(StatusType Error);
 void COMErrorHook(StatusType Error);
@@ -294,7 +298,7 @@ void COMErrorCallErrorHook(StatusType Error);
     #define OSErrorGetServiceId()   Os_ServiceContext.id
     #define CLEAR_SERVICE_CONTEXT() Os_ServiceContext.id=OSServiceId_NoService
 #else
-    #define OSErrorGetServiceId()   ((OSServiceIdType)0)
+    #define OSErrorGetServiceId()   ((OS_ServiceIdType)0)
     #define CLEAR_SERVICE_CONTEXT()
 #endif
 
@@ -304,13 +308,13 @@ void OSSaveServiceContext(Os_ServiceIdType id,/*@null@*//*@in@*/void *param1,
 #endif
 
 #if defined(OS_USE_GETSERVICEID) && !defined(OS_USE_PARAMETERACCESS)
-void OSSaveServiceContext(OSServiceIdType id);
+void OSSaveServiceContext(Os_ServiceIdType id);
 #endif
 
 #if !defined(OS_USE_GETSERVICEID) && defined(OS_USE_PARAMETERACCESS)
 void OSSaveServiceContext(/*@null@*//*@in@*/void *param1,/*@null@*//*@in@*/
     void *param2,/*@null@*//*@in@*/void *param3);
-#endif 
+#endif
 
 #if !defined(OS_USE_GETSERVICEID) && !defined(OS_USE_PARAMETERACCESS)
 #define SAVE_SERVICE_CONTEXT(id,param1,param2,param3)
@@ -318,15 +322,15 @@ void OSSaveServiceContext(/*@null@*//*@in@*/void *param1,/*@null@*//*@in@*/
     #if defined(OS_USE_GETSERVICEID) && defined(OS_USE_PARAMETERACCESS)
         #define SAVE_SERVICE_CONTEXT(id,param1,param2,param3) \
         OSSaveServiceContext(id,(void*)param1,(void*)param2,(void*)param3)
-    #endif      
+    #endif
     #if defined(OS_USE_GETSERVICEID) && !defined(OS_USE_PARAMETERACCESS)
         #define SAVE_SERVICE_CONTEXT(id,param1,param2,param3) \
         OSSaveServiceContext(id)
-    #endif      
+    #endif
     #if !defined(OS_USE_GETSERVICEID) && defined(OS_USE_PARAMETERACCESS)
         #define SAVE_SERVICE_CONTEXT(id,param1,param2,param3) \
         OSSaveServiceContext((void*)param1,(void*)param2,(void*)param3)
-    #endif              
+    #endif
 #endif
 
 #ifdef __cplusplus

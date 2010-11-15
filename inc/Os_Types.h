@@ -1,8 +1,8 @@
 /*
    k_os (Konnex Operating-System based on the OSEK/VDX-Standard).
 
-   (C) 2007-2010 by Christoph Schueler <chris@konnex-tools.de,
-                                       cpu12.gems@googlemail.com>
+ * (C) 2007-2010 by Christoph Schueler <github.com/Christoph2,
+ *                                      cpu12.gems@googlemail.com>
 
    All Rights Reserved
 
@@ -17,7 +17,7 @@
 
    You should have received a copy of the GNU General Public License
    along with this program; if not, write to the Free Software
-   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA 
+   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
    s. FLOSS-EXCEPTION.txt
 */
@@ -97,8 +97,9 @@ typedef uint8 AppModeType;
 
 typedef uint8 PriorityType;
 
-#define OS_AUTOSTART_NO        ((AppModeType)0x00)
+#define OS_AUTOSTART_NEVER     ((AppModeType)0x00)
 #define OS_AUTOSTART_ALWAYS    ((AppModeType)0xff)
+
 
 /*
 **      Datatypes / Task-Management.
@@ -157,6 +158,7 @@ typedef struct tagAlarmBaseType {   /*  Hinweis: meint die Definition eines Coun
 typedef uint8 AlarmType;            /*  This data type represents an alarm object.  */
 typedef void (*AlarmCallbackType)(void);
 
+
 typedef struct tagAlarmSetEventType {
     TaskType TaskID;
     EventMaskType Mask;
@@ -190,15 +192,20 @@ typedef struct tagAlarmConfigurationType {
     CounterType AttachedCounter;
     AlarmActionTypeType ActionType;
     AlarmActionType Action;
+#if defined(OS_FEATURE_AUTOSTART_ALARMS)
     AppModeType Autostart;
-    TickType AlarmTime,CycleTime;
+    TickType AlarmTime;
+    TickType CycleTime;
+#endif /* OS_FEATURE_AUTOSTART_ALARMS */
 } AlarmConfigurationType;
+
 
 typedef enum tagCounterDriverType {
     COUNTER_DRIVER_HARDWARE,
     COUNTER_DRIVER_SOFTWARE_BY_ISR,
     COUNTER_DRIVER_SOFTWARE_BY_USER
 } CounterDriverType;
+
 
 typedef struct tagCounterConfigurationType {
     /* CounterDriverType Driver;  */
@@ -208,11 +215,12 @@ typedef struct tagCounterConfigurationType {
     const AlarmType *AlarmsForCounter;
 } CounterConfigurationType;
 
+
 typedef struct tagOsTCBType {
     uint8 *Stackpointer; /* todo: 'StackPointerType! */
     TaskStateType State;
 #if defined(OS_BCC2) || defined(OS_ECC2)
-    uint8 Activations;
+    uint8 Activations;	/* or ORTI */
 #endif
 #if defined(OS_ECC1) || defined(OS_ECC2)
     EventMaskType EventsSet,EventsWaitingFor;
@@ -221,7 +229,7 @@ typedef struct tagOsTCBType {
 #if defined(OS_USE_RESOURCES)
     uint8 ResourceCount;
 #endif
-#if defined(OS_USE_RESOURCES) || defined(OS_USE_INTERNAL_RESOURCES)
+#if defined(OS_USE_RESOURCES) || defined(OS_USE_INTERNAL_RESOURCES) /* or ORTI */
     PriorityType CurrentPriority;
 #endif
 } OsTCBType;
@@ -234,9 +242,11 @@ typedef struct tagOsTaskConfigurationType {
     PriorityType Priority;
     uint8 Flags;
 #if defined(OS_BCC2) || defined(OS_ECC2)
-    uint8 MaxActivations;
+    uint8 MaxActivations;	    /* or ORTI */
 #endif
+#if defined(OS_FEATURE_AUTOSTART_TASKS)
     AppModeType Autostart;
+#endif
 #if defined(OS_USE_INTERNAL_RESOURCES)
     ResourceType InternalResource;
 #endif
@@ -247,29 +257,46 @@ typedef struct tagOsResourceConfigurationType {
     PriorityType CeilingPriority;
 } OsResourceConfigurationType;
 
+
 typedef struct tagOsResourceType {
-#if defined(USE_ORTI)
+//#if defined(OS_FEATURE_ORTI_DEBUG)
     TaskType Locker;
-#endif
+//#endif
     PriorityType PriorPriorityOfTask;
 } OsResourceType;
 
 
 typedef enum tagOsCallevelType {
-    OS_CL_INVALID=          ((uint16)0x0000),
-    OS_CL_TASK=             ((uint16)0x0001),
-    OS_CL_ISR2=             ((uint16)0x0002),
-    OS_CL_ERROR_HOOK=       ((uint16)0x0004),
-    OS_CL_PRE_TASK_HOOK=    ((uint16)0x0008),
-    OS_CL_POST_TASK_HOOK=   ((uint16)0x0010),
-    OS_CL_STARTUP_HOOK=     ((uint16)0x0020),
-    OS_CL_SHUTDOWN_HOOK=    ((uint16)0x0040),
-    OS_CL_ALARM_CALLBACK=   ((uint16)0x0080),
-    OS_CL_PROTECTION_HOOK=  ((uint16)0x0100),
+    OS_CL_INVALID=          ((uint16)0x0000u),
+    OS_CL_TASK=             ((uint16)0x0001u),
+    OS_CL_ISR2=             ((uint16)0x0002u),
+    OS_CL_ERROR_HOOK=       ((uint16)0x0004u),
+    OS_CL_PRE_TASK_HOOK=    ((uint16)0x0008u),
+    OS_CL_POST_TASK_HOOK=   ((uint16)0x0010u),
+    OS_CL_STARTUP_HOOK=     ((uint16)0x0020u),
+    OS_CL_SHUTDOWN_HOOK=    ((uint16)0x0040u),
+    OS_CL_ALARM_CALLBACK=   ((uint16)0x0080u),
+    OS_CL_PROTECTION_HOOK=  ((uint16)0x0100u),
     OS_CL_ANY=              OS_CL_TASK|OS_CL_ISR2|OS_CL_ERROR_HOOK|OS_CL_PRE_TASK_HOOK|     \
                             OS_CL_POST_TASK_HOOK|OS_CL_STARTUP_HOOK|OS_CL_SHUTDOWN_HOOK|    \
                             OS_CL_ALARM_CALLBACK|OS_CL_PROTECTION_HOOK
 } OsCallevelType;
+
+/*
+**
+**  Scheduler.
+**
+*/
+typedef struct tagOsMLQ_QueueConfigurationType {
+    uint8 size;
+    TaskType * const data;
+} OsMLQ_QueueConfigurationType;
+
+
+typedef struct tagOsMLQ_QueueType {
+    uint8 head,tail;
+    uint8 entries;
+} OsMLQ_QueueType;
 
 /*
 **      AUTOSAR-OS.

@@ -1,8 +1,8 @@
 /*
    k_os (Konnex Operating-System based on the OSEK/VDX-Standard).
 
-   (C) 2007-2010 by Christoph Schueler <chris@konnex-tools.de,
-                                       cpu12.gems@googlemail.com>
+ * (C) 2007-2010 by Christoph Schueler <github.com/Christoph2,
+ *                                      cpu12.gems@googlemail.com>
 
    All Rights Reserved
 
@@ -17,22 +17,11 @@
 
    You should have received a copy of the GNU General Public License
    along with this program; if not, write to the Free Software
-   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA 
+   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
    s. FLOSS-EXCEPTION.txt
 */
 #include "Os_Mlq.h"
-
-typedef struct tagQueueConfigurationType {
-    uint8 size;
-    TaskType * const data;
-} QueueConfigurationType;
-
-
-typedef struct tagQueueType {
-    uint8 head,tail;
-    uint8 entries;
-} QueueType;
 
 void OsMLQ_Init(void);
 
@@ -58,21 +47,8 @@ static TaskType OsMLQ_Front(uint8 num);
 #define PRIORITY_FOR_TASK(TaskID)   OS_TaskConf[(TaskID)].Priority
 #endif
 
-/*
-**  CONFIG.
-*/
-#define OS_MLQ_NUMBER_OF_PRIORITIES   ((uint8)3)
 
-static TaskType MLQ_QueueData[10];  /*  OS_NUMBER_OF_TASKS */
-
-const QueueConfigurationType MLQ_QueueDef[OS_MLQ_NUMBER_OF_PRIORITIES]={ /* MLQ_ReadyQueueDefs */
-    {(uint8)3,&MLQ_QueueData[0]},
-    {(uint8)3,&MLQ_QueueData[3]},
-    {(uint8)4,&MLQ_QueueData[6]}
-};
-
-
-static QueueType MLQ_ReadyQueue[OS_MLQ_NUMBER_OF_PRIORITIES];
+static OsMLQ_QueueType MLQ_ReadyQueue[OS_MLQ_NUMBER_OF_PRIORITIES];
 static uint16 BM_NotEmpty;  /* Bitmap for non-empty queues.  */
 
 
@@ -87,10 +63,10 @@ void OsMLQ_Init(void)
 {
     uint8 idx;
 
-    BM_NotEmpty=(uint16)0x0000;
+    BM_NotEmpty=(uint16)0x0000U;
 
     for (idx=(uint8)0;idx<OS_MLQ_NUMBER_OF_PRIORITIES;++idx) {
-        OsMLQ_InitQueue(idx);    /*  todo: Konfig.-Parameter definieren!!!   */
+        OsMLQ_InitQueue(idx);
     }
 
 }
@@ -101,7 +77,7 @@ TaskType OsMLQ_GetHighestPrio(void)
     uint8 queue_num;
     TaskType TaskID=INVALID_TASK;
 
-    if (BM_NotEmpty!=(uint16)0x0000) {
+    if (BM_NotEmpty!=(uint16)0x0000U) {
         queue_num=OsMLQ_GetLowestBitNumber((~BM_NotEmpty+(uint16)1) & BM_NotEmpty)-((uint8)1);
         TaskID=OsMLQ_Front(queue_num);
     }
@@ -112,7 +88,7 @@ TaskType OsMLQ_GetHighestPrio(void)
 
 boolean OsMLQ_TasksAreReady(void)
 {
-    return (BM_NotEmpty!=(uint16)0x0000);
+    return (BM_NotEmpty!=(uint16)0x0000U);
 }
 
 
@@ -170,15 +146,15 @@ void OsMLQ_ChangePrio(TaskType TaskID,PriorityType old_prio,PriorityType new_pri
 */
 static void OsMLQ_InitQueue(uint8 num)
 {
-    Utl_MemSet((void*)&MLQ_ReadyQueue[num],(uint8)'\0',(uint16)sizeof(QueueType));
+    Utl_MemSet((void*)&MLQ_ReadyQueue[num],(uint8)'\0',(uint16)sizeof(OsMLQ_QueueType));
     Utl_MemSet((void*)MLQ_QueueDef[num].data,(uint8)'\0',(uint16)MLQ_QueueDef[num].size);
 }
 
 
 static void OsMLQ_PushFront(uint8 num,uint8 TaskID)
 {
-    QueueType * const rq=&MLQ_ReadyQueue[num];
-    QueueConfigurationType const * const qc=&MLQ_QueueDef[num];
+    OsMLQ_QueueType * const rq=&MLQ_ReadyQueue[num];
+    OsMLQ_QueueConfigurationType const * const qc=&MLQ_QueueDef[num];
 
     (rq->head==(uint8)0x00) ? rq->head=qc->size-(uint8)1 : --rq->head;
 
@@ -189,8 +165,8 @@ static void OsMLQ_PushFront(uint8 num,uint8 TaskID)
 
 static void OsMLQ_PushBack(uint8 num,TaskType TaskID)
 {
-    QueueType * const rq=&MLQ_ReadyQueue[num];
-    QueueConfigurationType const * const qc=&MLQ_QueueDef[num];
+    OsMLQ_QueueType * const rq=&MLQ_ReadyQueue[num];
+    OsMLQ_QueueConfigurationType const * const qc=&MLQ_QueueDef[num];
 
     qc->data[rq->tail]=TaskID;
 

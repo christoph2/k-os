@@ -1,8 +1,8 @@
 /*
    k_os (Konnex Operating-System based on the OSEK/VDX-Standard).
 
-   (C) 2007-2010 by Christoph Schueler <chris@konnex-tools.de,
-                                       cpu12.gems@googlemail.com>
+   (C) 2007-2010 by Christoph Schueler <github.com/Christoph2,
+                                        cpu12.gems@googlemail.com>
 
    All Rights Reserved
 
@@ -17,7 +17,7 @@
 
    You should have received a copy of the GNU General Public License
    along with this program; if not, write to the Free Software
-   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA 
+   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
    s. FLOSS-EXCEPTION.txt
 */
@@ -77,7 +77,7 @@ StatusType IncrementCounter(CounterType CounterID)
 
     SuspendAllInterrupts();   /*    DISABLE_ALL_OS_INTERRUPTS();         */
 
-    Os_CounterValues[CounterID]=(Os_CounterValues[CounterID]+(TickType)1) % __OS_CounterDefs[CounterID].CounterParams.maxallowedvalue;
+    Os_CounterValues[CounterID]=(Os_CounterValues[CounterID]+(TickType)1) % Os_CounterDefs[CounterID].CounterParams.maxallowedvalue;
 
     ResumeAllInterrupts();    /* ENABLE_ALL_OS_INTERRUPTS(); */
 
@@ -107,7 +107,7 @@ StatusType GetCounterInfo(CounterType CounterID,CtrInfoRefType Info)
     ASSERT_VALID_COUNTERID(CounterID);
     ASSERT_VALID_CALLEVEL(OS_CL_TASK|OS_CL_ISR2);
 
-    *Info=__OS_CounterDefs[CounterID].CounterParams;
+    *Info=Os_CounterDefs[CounterID].CounterParams;
 
     CLEAR_SERVICE_CONTEXT();
     return E_OK;
@@ -144,7 +144,7 @@ StatusType GetElapsedCounterValue(CounterType CounterID,TickRefType Value,TickRe
 
     DISABLE_ALL_OS_INTERRUPTS();
     if (Os_CounterValues[CounterID]<(*Value)) {
-        *ElapsedValue=__OS_CounterDefs[CounterID].CounterParams.maxallowedvalue-
+        *ElapsedValue=Os_CounterDefs[CounterID].CounterParams.maxallowedvalue-
             (*Value)-Os_CounterValues[CounterID]+(TickType)1;
     } else {
         *ElapsedValue=Os_CounterValues[CounterID]-(*Value);
@@ -174,7 +174,7 @@ static void OsCtr_UpdateAttachedAlarms(CounterType CounterID)
 
     while (Alarms!=(uint8)0x00) {
         if ((Alarms & BIT0)==BIT0) {
-            AlarmID=__OS_CounterDefs[CounterID].AlarmsForCounter[idx];
+            AlarmID=Os_CounterDefs[CounterID].AlarmsForCounter[idx];
             if (--OS_AlarmValue[AlarmID].ExpireCounter==(uint16)0) {
                 OsAlm_NotifyAlarm(AlarmID);
             }

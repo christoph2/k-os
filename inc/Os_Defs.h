@@ -1,8 +1,8 @@
 /*
    k_os (Konnex Operating-System based on the OSEK/VDX-Standard).
 
-   (C) 2007-2010 by Christoph Schueler <chris@konnex-tools.de,
-                                       cpu12.gems@googlemail.com>
+ * (C) 2007-2010 by Christoph Schueler <github.com/Christoph2,
+ *                                      cpu12.gems@googlemail.com>
 
    All Rights Reserved
 
@@ -17,7 +17,7 @@
 
    You should have received a copy of the GNU General Public License
    along with this program; if not, write to the Free Software
-   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA 
+   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
    s. FLOSS-EXCEPTION.txt
 */
@@ -26,17 +26,17 @@
 
 /**********************************************************************************************************
 *
-*                                              BESCHREIBUNG
+*                                              DESCRIPTION
 *
 * Filename      : osdefs.h
 * Version       : V1.00
 * Programmer(s) : CS
 *********************************************************************************************************
-* Note(s)       : 
+* Note(s)       :
 *
 *********************************************************************************************************
-* Notice(s)     : 
-*                 
+* Notice(s)     :
+*
 **********************************************************************************************************/
 
 
@@ -80,7 +80,7 @@
 #define OS_SYS_FLAG_ISR_LEVEL           ((uint8)0x02)
 #define OS_SYS_FLAG_IN_OS_ERROR_HOOK    ((uint8)0x04)
 #define OS_SYS_FLAG_IN_COM_ERROR_HOOK   ((uint8)0x08)
-/* Task-Attributes  */  
+/* Task-Attributes  */
 #define OS_TASK_ATTR_FULLPREEMPT        ((uint8)0x01)
 #define OS_TASK_ATTR_EXTENDED           ((uint8)0x02)
 #define OS_TASK_ATTR_INT_RESOURCE       ((uint8)0x04)

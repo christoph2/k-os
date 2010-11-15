@@ -1,8 +1,8 @@
 /*
    k_os (Konnex Operating-System based on the OSEK/VDX-Standard).
 
-   (C) 2007-2010 by Christoph Schueler <chris@konnex-tools.de,
-                                       cpu12.gems@googlemail.com>
+ * (C) 2007-2010 by Christoph Schueler <github.com/Christoph2,
+ *                                      cpu12.gems@googlemail.com>
 
    All Rights Reserved
 
@@ -17,7 +17,7 @@
 
    You should have received a copy of the GNU General Public License
    along with this program; if not, write to the Free Software
-   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA 
+   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
    s. FLOSS-EXCEPTION.txt
 */
@@ -49,7 +49,19 @@
     _END_BLOCK
 
 
-	#if defined(OS_SCHED_POLICY_NON)
+/*
+** ORTI and other Debuggging-Strategies require global accessible Identifiers.
+*/
+#if defined(OS_FEATURE_ORTI_DEBUG)
+#define OS_DECLARE_GLOBAL_IF_DEBUGGING(var,type) extern type var
+#define OS_DEFINE_GLOBAL_IF_DEBUGGING(var,type) type var
+#else
+#define OS_DECLARE_GLOBAL_IF_DEBUGGING(var,type)
+#define OS_DEFINE_GLOBAL_IF_DEBUGGING(var,type) static type var
+#endif /* OS_FEATURE_ORTI_DEBUG */
+
+
+#if defined(OS_SCHED_POLICY_NON)
 #define OS_IS_TASK_PREEMPTABLE(tid) ((boolean)FALSE)
 #elif defined(OS_SCHED_POLICY_PRE)
 #define OS_IS_TASK_PREEMPTABLE(tid) ((boolean)TRUE)
@@ -230,13 +242,13 @@
 */
 
 
-#define OSLeaveISR()                    \
-    _BEGIN_BLOCK                        \
-        OS_SET_TASK_LEVEL();            \
+#define OSLeaveISR()                                \
+    _BEGIN_BLOCK                                    \
+        OS_SET_TASK_LEVEL();                        \
         OsExec_HigherPriorityThenCurrentReady();    \
-        OsExec_ScheduleFromISR();       \
-        OS_RESTORE_CALLEVEL();          \
-        OS_RESTORE_CONTEXT();           \
+        OsExec_ScheduleFromISR();                   \
+        OS_RESTORE_CALLEVEL();                      \
+        OS_RESTORE_CONTEXT();                       \
     _END_BLOCK
 
 #if defined(OS_USE_ERRORHOOK)
@@ -274,7 +286,7 @@
 #if defined(OS_USE_ERRORHOOK)
 #define ASSERT_INTERRUPTS_ENABLED_AT_TASK_LEVEL()                   \
     _BEGIN_BLOCK                                                    \
-        if ((CPU_INTERRUPTS_DISABLED()) && (!OS_IS_ISR_LEVEL())) {   \
+        if ((CPU_INTERRUPTS_DISABLED()) && (!OS_IS_ISR_LEVEL())) {  \
             OSCallErrorHookAndReturn(E_OS_DISABLEDINT);             \
         }                                                           \
     _END_BLOCK
@@ -284,11 +296,11 @@
 
 
 #if defined(OS_EXTENDED_STATUS)
-#define ASSERT_VALID_TASKID(tid)                                \
-    _BEGIN_BLOCK                                                \
-        if (((tid)==INVALID_TASK) || ((tid)>OS_NUMBER_OF_TASKS)) {    \
-            OSCallErrorHookAndReturn(E_OS_ID);                  \
-        }                                                       \
+#define ASSERT_VALID_TASKID(tid)                                    \
+    _BEGIN_BLOCK                                                    \
+        if (((tid)==INVALID_TASK) || ((tid)>OS_NUMBER_OF_TASKS)) {  \
+            OSCallErrorHookAndReturn(E_OS_ID);                      \
+        }                                                           \
     _END_BLOCK
 #else
 #define ASSERT_VALID_TASKID(tid)
@@ -311,7 +323,7 @@
 #if defined(OS_EXTENDED_STATUS)
 #define ASSERT_VALID_COUNTERID(cid)             \
     _BEGIN_BLOCK                                \
-        if ((cid)>=OS_NUMBER_OF_COUNTERS) {           \
+        if ((cid)>=OS_NUMBER_OF_COUNTERS) {     \
             OSCallErrorHookAndReturn(E_OS_ID);  \
         }                                       \
     _END_BLOCK
@@ -323,7 +335,7 @@
 #if defined(OS_EXTENDED_STATUS)
 #define ASSERT_VALID_COUNTER_VALUE(cid,value)       \
     _BEGIN_BLOCK                                    \
-        if ((value)>__OS_CounterDefs[(cid)].        \
+        if ((value)>Os_CounterDefs[(cid)].          \
            CounterParams.maxallowedvalue) {         \
             OSCallErrorHookAndReturn(E_OS_VALUE);   \
         }                                           \
@@ -336,7 +348,7 @@
 #if defined(OS_EXTENDED_STATUS)
 #define ASSERT_VALID_ALARMID(aid)               \
     _BEGIN_BLOCK                                \
-        if ((aid)>=OS_NUMBER_OF_ALARMS) {             \
+        if ((aid)>=OS_NUMBER_OF_ALARMS) {       \
             OSCallErrorHookAndReturn(E_OS_ID);  \
         }                                       \
     _END_BLOCK
@@ -347,7 +359,7 @@
 
 #define WARN_IF_ALARM_IS_NOT_RUNNING(aid)           \
     _BEGIN_BLOCK                                    \
-        if (!OsAlm_IsRunning((aid))) {                 \
+        if (!OsAlm_IsRunning((aid))) {              \
             OSCallErrorHookAndReturn(E_OS_NOFUNC);  \
         }                                           \
     _END_BLOCK
@@ -355,7 +367,7 @@
 
 #define WARN_IF_ALARM_IS_RUNNING(aid)               \
     _BEGIN_BLOCK                                    \
-        if (OsAlm_IsRunning((aid))) {                  \
+        if (OsAlm_IsRunning((aid))) {               \
             OSCallErrorHookAndReturn(E_OS_NOFUNC);  \
         }                                           \
     _END_BLOCK
@@ -364,12 +376,12 @@
 #if defined(OS_EXTENDED_STATUS)
 #define ASSERT_VALID_ALARM_VALUES(aid,value,cycle)                  \
     _BEGIN_BLOCK                                                    \
-        if (((value)>__OS_CounterDefs[OS_AlarmConf[(aid)].          \
+        if (((value)>Os_CounterDefs[OS_AlarmConf[(aid)].            \
               AttachedCounter].CounterParams.maxallowedvalue) ||    \
               ((cycle!=(TickType)0) && (                            \
-              (cycle>__OS_CounterDefs[OS_AlarmConf[(aid)].          \
+              (cycle>Os_CounterDefs[OS_AlarmConf[(aid)].            \
               AttachedCounter].CounterParams.maxallowedvalue) ||    \
-              (cycle<__OS_CounterDefs[OS_AlarmConf[(aid)].          \
+              (cycle<Os_CounterDefs[OS_AlarmConf[(aid)].            \
               AttachedCounter].CounterParams.mincycle)))) {         \
             OSCallErrorHookAndReturn(E_OS_VALUE);                   \
         }                                                           \
@@ -400,11 +412,11 @@
 
 
 #if defined(OS_EXTENDED_STATUS)
-#define ASSERT_VALID_RESOURCEID(rid)                                \
-    _BEGIN_BLOCK                                                    \
-        if (((rid)!=RES_SCHEDULER) && ((rid)>=OS_NUMBER_OF_RESOURCES)) {  \
-            OSCallErrorHookAndReturn(E_OS_ID);                      \
-        }                                                           \
+#define ASSERT_VALID_RESOURCEID(rid)                                        \
+    _BEGIN_BLOCK                                                            \
+        if (((rid)!=RES_SCHEDULER) && ((rid)>=OS_NUMBER_OF_RESOURCES)) {    \
+            OSCallErrorHookAndReturn(E_OS_ID);                              \
+        }                                                                   \
     _END_BLOCK
 #else
 #define ASSERT_VALID_RESOURCEID(rid)
@@ -555,7 +567,7 @@
 #if defined(COM_EXTENDED_STATUS)
 #define ASSERT_VALID_MESSAGE_ID(mid)                \
     _BEGIN_BLOCK                                    \
-        if ((mid)>=COM_NUMBER_OF_MESSAGES) {              \
+        if ((mid)>=COM_NUMBER_OF_MESSAGES) {        \
             COMCallErrorHookAndReturn(E_COM_ID);    \
         }                                           \
     _END_BLOCK

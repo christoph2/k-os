@@ -1,8 +1,8 @@
 /*
    k_os (Konnex Operating-System based on the OSEK/VDX-Standard).
 
-   (C) 2007-2010 by Christoph Schueler <chris@konnex-tools.de,
-                                       cpu12.gems@googlemail.com>
+ * (C) 2007-2010 by Christoph Schueler <github.com/Christoph2,
+ *                                      cpu12.gems@googlemail.com>
 
    All Rights Reserved
 
@@ -17,7 +17,7 @@
 
    You should have received a copy of the GNU General Public License
    along with this program; if not, write to the Free Software
-   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA 
+   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
    s. FLOSS-EXCEPTION.txt
 */
@@ -27,7 +27,7 @@
 static void OsTask_Init(TaskType TaskID,boolean Schedule);
 
 
-void OsTask_Ready(TaskType TaskID)       /* OsTask_ReadyTask  */
+void OsTask_Ready(TaskType TaskID)
 {
 #if defined(OS_USE_RESOURCES)
     OsMLQ_AddTaskLast(TaskID,OS_TCB[TaskID].CurrentPriority);
@@ -38,14 +38,14 @@ void OsTask_Ready(TaskType TaskID)       /* OsTask_ReadyTask  */
 }
 
 
-void OsTask_Suspend(TaskType TaskID) /* OsTask_SuspendTask */
+void OsTask_Suspend(TaskType TaskID)
 {
     OsMLQ_RemoveTask(TaskID);
     OS_TCB[TaskID].State=SUSPENDED;
 }
 
 
-void OsTask_Wait(TaskType TaskID)        /* OsTask_WaitTask  */
+void OsTask_Wait(TaskType TaskID)
 {
     OsMLQ_RemoveTask(TaskID);
     OS_TCB[TaskID].State=WAITING;
@@ -122,8 +122,8 @@ StatusType TerminateTask(void)
 #if defined(OS_BCC2) || defined(OS_ECC2)
     if (OsCurrentTCB->Activations>0) {  /* ???  */
         OS_TASK_CLEAR_ALL_EVENTS(OsCurrentTID);
-        OSReadyTask(OsCurrentTID);
-        OSInitTask(OsCurrentTID,TRUE);
+        OsTask_Ready(OsCurrentTID);
+        OsTask_Init(OsCurrentTID,TRUE);
     }
 #endif
 
@@ -265,15 +265,21 @@ StatusType Schedule(void)
 
 void OsTask_InitTasks(void)
 {
+#if defined(OS_FEATURE_AUTOSTART_TASKS)
     uint8_least i;
+#endif /* OS_FEATURE_AUTOSTART_TASKS */
 
+    OsTask_Init((TaskType)0,FALSE);
+
+#if defined(OS_FEATURE_AUTOSTART_TASKS)
     for (i=(uint8_least)1;i<OS_NUMBER_OF_TASKS;++i) {
-        if (Utl_BitGet((uint16)OS_TaskConf[i].Autostart,GetActiveApplicationMode())) {
-            OsTask_Init(i,FALSE);
+        OsTask_Init(i,FALSE);
+        if (OS_TaskConf[i].Autostart & GetActiveApplicationMode()) {
             OsTask_Ready(i);
             OS_TASK_INCR_ACTIVATIONS(i);
         }
     }
+#endif /* OS_FEATURE_AUTOSTART_TASKS */
 }
 
 
@@ -283,7 +289,7 @@ static void OsTask_Init(TaskType TaskID,boolean Schedule)
     OsTCBType *tcb;
 
     if (TaskID>OS_NUMBER_OF_TASKS-(uint8)1) {
-        return;
+        return; /* todo: Only in EXTENDED-Status!!! */
     }
 
     task_def=(OsTaskConfigurationType*)&OS_TaskConf[TaskID];

@@ -1,8 +1,8 @@
 /*
    k_os (Konnex Operating-System based on the OSEK/VDX-Standard).
 
-   (C) 2007-2010 by Christoph Schueler <chris@konnex-tools.de,
-                                       cpu12.gems@googlemail.com>
+ * (C) 2007-2010 by Christoph Schueler <github.com/Christoph2,
+ *                                      cpu12.gems@googlemail.com>
 
    All Rights Reserved
 
@@ -17,7 +17,7 @@
 
    You should have received a copy of the GNU General Public License
    along with this program; if not, write to the Free Software
-   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA 
+   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
    s. FLOSS-EXCEPTION.txt
 */
@@ -30,7 +30,7 @@
 */
 
 /*
-**  !REQ!AS!OS429! "A schedule table that is implicitly synchronized shall have a 
+**  !REQ!AS!OS429! "A schedule table that is implicitly synchronized shall have a
 **  Duration equal to OsCounterMaxAllowedValue+1 of is associated OSEK OS counter."
 */
 
@@ -46,7 +46,7 @@ typedef struct tagOsSchTType {
     uint8 InternalState;
     ScheduleTableStatusType ExternalState;
     TickType Delay;
-    
+
     ScheduleTableType CurrentTable;
     ScheduleTableType NextTable;
     uint8 CurrentPoint;  /* CurrentEntry */
@@ -62,18 +62,18 @@ typedef enum tagOsSchTSyncStrategyType {
 
 typedef struct tagOsScheduleTableConfigurationType {
 /* 1..* ExpiryPoints */
-    
+
     TickType TableDuration;
     boolean Repeating;
     CounterType CounterID;
-    OsSchTSyncStrategyType SyncStrategy; 
+    OsSchTSyncStrategyType SyncStrategy;
     TickType ExplicitPrecision;
     TickType MaxRetard;
     TickType MaxAdvance;
 } OsScheduleTableConfigurationType;
 
 
-typedef struct tagOsExpiryPointType {    
+typedef struct tagOsExpiryPointType {
     TickType Offset;
     TickType MaxRetard;  /* to be substracted */
     TickType MaxAdvance; /* to be added */
@@ -81,7 +81,7 @@ typedef struct tagOsExpiryPointType {
 	/*
 **  todo: TaskActivations + Events.
 **
-*/    
+*/
 } OsExpiryPointType;
 
 
@@ -91,11 +91,11 @@ StatusType StartScheduleTableRel(ScheduleTableType ScheduleTableID,TickType Offs
     ASSERT_VALID_CALLEVEL(OS_CL_TASK|OS_CL_ISR2);
 
     DISABLE_ALL_OS_INTERRUPTS();
-    
-    ENABLE_ALL_OS_INTERRUPTS();    
+
+    ENABLE_ALL_OS_INTERRUPTS();
     CLEAR_SERVICE_CONTEXT();
     return E_OK;
-    
+
 }
 
 
@@ -105,11 +105,11 @@ StatusType StartScheduleTableAbs(ScheduleTableType ScheduleTableID,TickType Tick
     ASSERT_VALID_CALLEVEL(OS_CL_TASK|OS_CL_ISR2);
 
     DISABLE_ALL_OS_INTERRUPTS();
-    
-    ENABLE_ALL_OS_INTERRUPTS();    
+
+    ENABLE_ALL_OS_INTERRUPTS();
     CLEAR_SERVICE_CONTEXT();
     return E_OK;
-    
+
 }
 
 
@@ -119,11 +119,11 @@ StatusType StopScheduleTable(ScheduleTableType ScheduleTableID)
     ASSERT_VALID_CALLEVEL(OS_CL_TASK|OS_CL_ISR2);
 
     DISABLE_ALL_OS_INTERRUPTS();
-    
-    ENABLE_ALL_OS_INTERRUPTS(); 
+
+    ENABLE_ALL_OS_INTERRUPTS();
     CLEAR_SERVICE_CONTEXT();
     return E_OK;
-    
+
 }
 
 
@@ -133,11 +133,11 @@ StatusType NextScheduleTable(ScheduleTableType ScheduleTableID_From,ScheduleTabl
     ASSERT_VALID_CALLEVEL(OS_CL_TASK|OS_CL_ISR2);
 
     DISABLE_ALL_OS_INTERRUPTS();
-    
-    ENABLE_ALL_OS_INTERRUPTS();    
+
+    ENABLE_ALL_OS_INTERRUPTS();
     CLEAR_SERVICE_CONTEXT();
     return E_OK;
-    
+
 }
 
 
@@ -147,10 +147,10 @@ StatusType StartScheduleTableSynchron(ScheduleTableType ScheduleTableID)
     ASSERT_VALID_CALLEVEL(OS_CL_TASK|OS_CL_ISR2);
 
     DISABLE_ALL_OS_INTERRUPTS();
-    
-    ENABLE_ALL_OS_INTERRUPTS();    
+
+    ENABLE_ALL_OS_INTERRUPTS();
     CLEAR_SERVICE_CONTEXT();
-    return E_OK;    
+    return E_OK;
 }
 
 
@@ -160,11 +160,11 @@ StatusType SyncScheduleTable(ScheduleTableType ScheduleTableID,TickType Value)
     ASSERT_VALID_CALLEVEL(OS_CL_TASK|OS_CL_ISR2);
 
     DISABLE_ALL_OS_INTERRUPTS();
-    
-    ENABLE_ALL_OS_INTERRUPTS();    
+
+    ENABLE_ALL_OS_INTERRUPTS();
     CLEAR_SERVICE_CONTEXT();
     return E_OK;
-    
+
 }
 
 
@@ -174,11 +174,11 @@ StatusType SetScheduleTableAsync(ScheduleTableType ScheduleID)
     ASSERT_VALID_CALLEVEL(OS_CL_TASK|OS_CL_ISR2);
 
     DISABLE_ALL_OS_INTERRUPTS();
-    
-    ENABLE_ALL_OS_INTERRUPTS();    
+
+    ENABLE_ALL_OS_INTERRUPTS();
     CLEAR_SERVICE_CONTEXT();
     return E_OK;
-    
+
 }
 
 
@@ -188,15 +188,15 @@ StatusType GetScheduleTableStatus(ScheduleTableType ScheduleID,ScheduleTableStat
     ASSERT_VALID_CALLEVEL(OS_CL_TASK|OS_CL_ISR2);
 
     DISABLE_ALL_OS_INTERRUPTS();
-    
-    ENABLE_ALL_OS_INTERRUPTS();   
+
+    ENABLE_ALL_OS_INTERRUPTS();
     CLEAR_SERVICE_CONTEXT();
     return E_OK;
-    
+
 }
 
 
 void OsSchTInitScheduleTables(void)
 {
-    
+
 }
