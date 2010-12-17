@@ -44,8 +44,8 @@ import sys
 import time
 import inspect,types
 from Cheetah.Template import Template
-import ORTICfg
-from Parser import NestedParameter
+import k_os.OIL.ORTICfg
+from k_os.OIL.Parser import NestedParameter
 
 errObj=None
 app=None
@@ -136,10 +136,10 @@ def writeTemplate(tmplFileName,outFileName,nameSpace,encodeAsUTF8=True):
 
 def enumerateServices():
     res=[]
-    for num,line in enumerate(ORTICfg.SERVICE_IDS):
+    for num,line in enumerate(k_os.OIL.ORTICfg.SERVICE_IDS):
         key,value=line
         str='            "%s" = %s' % (key,value)
-        if num<len(ORTICfg.SERVICE_IDS)-1:
+        if num<len(k_os.OIL.ORTICfg.SERVICE_IDS)-1:
             str=str+","
         res.append(str)
     return '\n'.join(res)
@@ -147,10 +147,10 @@ def enumerateServices():
 
 def enumerateStatusCodes():
     res=[]
-    for num,line in enumerate(ORTICfg.STATUS_TYPES):
+    for num,line in enumerate(k_os.OIL.ORTICfg.STATUS_TYPES):
         key,value=line
         str='            "%s" = %s' % (key,value)
-        if num<len(ORTICfg.STATUS_TYPES)-1:
+        if num<len(k_os.OIL.ORTICfg.STATUS_TYPES)-1:
             str=str+","
         res.append(str)
     return '\n'.join(res)
@@ -238,7 +238,7 @@ def Generate(fname,AppDef,Info,errorObj):
 
     alarmsForCounters=getAlarmsForCounters()
 
-    namespace={'app' : app, 'cfg' : ORTICfg, 'osVars' : osVars, 'info' : Info,
+    namespace={'app' : app, 'cfg' : k_os.OIL.ORTICfg, 'osVars' : osVars, 'info' : Info,
         'enumerateServices' : enumerateServices,
         'enumerateStatusCodes': enumerateStatusCodes,
         "enumerateTasks" : enumerateTasks, "enumeratePriorities": enumeratePriorities,
@@ -247,7 +247,7 @@ def Generate(fname,AppDef,Info,errorObj):
         "sys" : sys, "time" : time
     }
 
-    writeTemplate('hfile.tmpl','Os_Cfg.h',namespace,encodeAsUTF8=False)
+    writeTemplate(r'hfile.tmpl','Os_Cfg.h',namespace,encodeAsUTF8=False)
     writeTemplate('cfile.tmpl','Os_Cfg.c',namespace,encodeAsUTF8=False)
     writeTemplate('isrcfgfile.tmpl','ISR_Cfg.h',namespace,encodeAsUTF8=False)
     if app.os['ORTI_DEBUG'].value==True:
