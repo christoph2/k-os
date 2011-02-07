@@ -1,8 +1,8 @@
 /*
    k_os (Konnex Operating-System based on the OSEK/VDX-Standard).
 
- * (C) 2007-2010 by Christoph Schueler <github.com/Christoph2,
- *                                      cpu12.gems@googlemail.com>
+   (C) 2007-2011 by Christoph Schueler <github.com/Christoph2,
+                                        cpu12.gems@googlemail.com>
 
    All Rights Reserved
 
@@ -55,7 +55,7 @@ VERSION {
 #errorCatcher Echo
 IMPLEMENTATION ${info.vendor}_${info.version}_ORTI {
     OS {
-        TOTRACE ENUM "uint8" [
+        TOTRACE ENUM "Os_ServiceIdType" [
 $enumerateServices()
         ] SERVICETRACE, "OS Service Watches";
 
@@ -70,11 +70,26 @@ $enumerateISR2s()
         ENUM "uint8" [
 $enumerateStatusCodes()
         ] LASTERROR, "Last OSEK error";
-        
+
         ENUM [
 $enumerateTasks()
         ] RUNNINGTASK, "Running Task Identification";
 
+#if $app.os.STATUS.value=='EXTENDED' and $app.os.USECALLLEVELCHECK.value==True
+        ENUM [
+            "INVALID"         = 0,
+            "TASK"            = 1,
+            "ISR2"            = 2,
+            "ERROR HOOK"      = 4,
+            "PRE TASK HOOK"   = 8,
+            "POST TASK HOOK"  = 16,
+            "STARTUP HOOK"    = 32,
+            "SHUTDOWN HOOK"   = 64,
+            "ALARM CALLBACK"  = 128,
+            "PROTECTION HOOK" = 256
+        ] vs_CALLEVEL, "Current Call-Level";
+
+#end if
         ENUM "uint8" [
             "DEFAULT APPMODE" = 0,
 #for $num,$appmode in $enumerate($app.appmodes,0)
@@ -121,8 +136,10 @@ $enumeratePriorities()
         STRING vs_Base_Priority, "Configured Base Priority";
         STRING vs_Schedule, "Schedule";
         STRING vs_Task_Type, "Task Type";
+#if $app.os.CC.value in ('ECC1','ECC2')
         CTYPE "uint8" vs_Events_Set, "Events Set";
         CTYPE "uint8" vs_Events_WaitingFor, "Events Waiting for";
+#end if
     }, "Tasks";
 
     vs_COUNTER {
@@ -143,7 +160,7 @@ $enumeratePriorities()
         STRING ACTION, "associated Action";
         STRING COUNTER, "associated Counter";
     }, "Alarms";
-
+#if $info.useResources
     RESOURCE {
         ENUM "uint8" [
             "UNLOCKED"=0,
@@ -162,7 +179,7 @@ $enumeratePriorities()
         ] LOCKER, "Resource Locker";
         STRING PRIORITY, "Ceiling priority";
     }, "Resources";
-
+#end if
     CONTEXT {
 #for $name,$type_,_ in $info.context
         CTYPE "$type_" _CPU_$name, "CPU Register $name";
@@ -171,7 +188,7 @@ $enumeratePriorities()
     }, "Task Context";
     STACK {
         CTYPE "uint16" SIZE, "Stacksize in Bytes";
-        CTYPE "uint16*" BASEADDRESS, "Base Address";    /* AddressType oder so!!! */
+        CTYPE "uint16*" BASEADDRESS, "Base Address";
         STRING STACKDIRECTION, "Stack Direction";
         CTYPE "uint8" FILLPATTERN, "Stack Fill Pattern";
     }, "Stacks";
@@ -190,11 +207,18 @@ OS ${info.vendor}_${info.version}_arch {
     SERVICETRACE        = "$osVars.serviceID";
     LASTERROR           = "$osVars.lastError";
     CURRENTAPPMODE      = "$osVars.appMode";
+#if $app.os.STATUS.value=='EXTENDED' and $app.os.USECALLLEVELCHECK.value==True
+    vs_CALLEVEL         = "$osVars.callevel";
+#end if
 };
 
 #for $num,$task in $enumerate($app.tasks,1)
 TASK $task.name {
+#if $info.useResources
     PRIORITY            = "(OS_TCB[$num].CurrentPriority)";
+#else
+    PRIORITY            = "(OS_TaskConf[$num].Priority)";
+#end if
     STATE               = "(OS_TCB[$num].State)";
     STACK               = "&(${task.name}_Stack[0])";
     CURRENTACTIVATIONS  = "(OS_TCB[$num].Activations)";
@@ -202,8 +226,10 @@ TASK $task.name {
     vs_Base_Priority    = "$task.RELATIVE_PRIORITY.value";
     vs_Schedule         = "$task.SCHEDULE.value";
     vs_Task_Type        = "$task.taskType";
+#if $app.os.CC.value in ('ECC1','ECC2')
     vs_Events_WaitingFor= "(OS_TCB[$num].EventsSet)";
     vs_Events_Set       = "(OS_TCB[$num].EventsWaitingFor)";
+#end if
 };
 
 STACK ${task.name}_Stack {

@@ -1,14 +1,15 @@
- # -*- coding: latin-1 -*-
- 
+ # -*- coding: utf-8 -*-
+
 __version__="0.9.0"
 
 __copyright__="""
    k_os (Konnex Operating-System based on the OSEK/VDX-Standard).
- 
-  (C) 2007-2010 by Christoph Schueler <chris@konnex-tools.de>
-  
+
+   (C) 2007-2011 by Christoph Schueler <github.com/Christoph2,
+                                        cpu12.gems@googlemail.com>
+
    All Rights Reserved
- 
+
   This program is free software; you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
   the Free Software Foundation; either version 2 of the License, or
@@ -26,18 +27,25 @@ __copyright__="""
    s. FLOSS-EXCEPTION.txt
 """
 
+import logging
 import sys
 
-
 class OILError(object):
-    def __init__(self,outFile=sys.stderr,verbose=False,silent=False):
-        self.fatalErrorCounter=0
-        self.errorCounter=0
-        self.warningCounter=0
-        self.informationCounter=0
-        self.outFile=outFile
-        self.verbose=verbose
-        self.silent=silent
+    inst=None
+
+    def __new__(self,outFile=sys.stderr,verbose=False,silent=False):
+        if self.inst is None:
+            # Make it a Singleton.
+            self.fatalErrorCounter=0
+            self.errorCounter=0
+            self.warningCounter=0
+            self.informationCounter=0
+            self.outFile=outFile
+            self.verbose=verbose
+            self.silent=silent
+            self.logger=logging.getLogger("kos.oil.logger")
+            self.inst=super(OILError,self).__new__(self)
+        return self.inst
 
     def printMessage(self,_type,message,lineno=None,filename=None,code=None):
         if self.silent==False:
@@ -60,7 +68,7 @@ class OILError(object):
     def warning(self,message,lineno=None,filename=None,code=''):
         self.printMessage("WARNING",message,lineno,filename,"W-"+code)
         self.warningCounter+=1
-        
+
     def information(self,message,lineno=None,filename=None,code=''):
         if self.verbose:
             self.printMessage("INFORMATION",message,lineno,filename,"I-"+code)

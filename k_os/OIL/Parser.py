@@ -1,15 +1,15 @@
- # -*- coding: latin-1 -*-
- 
+ # -*- coding: utf-8 -*-
+
 __version__="0.9.0"
 
 __copyright__="""
    k_os (Konnex Operating-System based on the OSEK/VDX-Standard).
- 
-   (C) 2007-2010 by Christoph Schueler <github.com/Christoph2,
+
+   (C) 2007-2011 by Christoph Schueler <github.com/Christoph2,
                                         cpu12.gems@googlemail.com>
-  
+
    All Rights Reserved
- 
+
   This program is free software; you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
   the Free Software Foundation; either version 2 of the License, or
@@ -27,18 +27,11 @@ __copyright__="""
    s. FLOSS-EXCEPTION.txt
 """
 
-'''
-try:
-    import psyco
-    psyco.full()
-except ImportError:
-    pass
-'''
-
-from spark import *
 import types
-from Scanner import Scanner
-from AST import AST
+from k_os.OIL.spark import *
+from k_os.OIL.Scanner import Scanner
+from k_os.OIL.Error import OILError
+from k_os.OIL.AST import AST
 
 EMPTY_APP_DEF="CPU cpu {};"
 
@@ -483,7 +476,7 @@ class Parser(GenericASTBuilder):
             implementation_list ::= implementation_def
             implementation_list ::= implementation_list implementation_def
 
-            implementation_def ::= impl_attr_def 
+            implementation_def ::= impl_attr_def
             implementation_def ::= impl_ref_def
 
             impl_attr_def ::= UINT32 auto_specifier number_range attribute_name multiple_specifier default_number description ;
@@ -570,13 +563,13 @@ class Parser(GenericASTBuilder):
 
             object_definition ::= object_name description ;
             object_definition ::= object_name { parameter_list } description ;
-            
+
             object_name ::= object name
 
             parameter_list ::=
             parameter_list ::= parameter
             parameter_list ::= parameter_list parameter
-            
+
             parameter ::= attribute_name = attribute_value description ;
 
             description ::=
@@ -773,7 +766,7 @@ class TypeCheck(GenericASTTraversal):
 
     def n_object(self,node):
         node.exprValue=node[0].attr
-        
+
     def n_object_ref_type(self,node):
         node.exprValue=node[0].attr
 
@@ -1031,9 +1024,10 @@ def setDefaults():
     eventsToTasksMapping=dict()
 
     usedResources={}
-    for key,values in dict([(t[0],t[1]['RESOURCE']) for t in AppDefMap['TASK'].items()]).items():
-        for value in values:
-            usedResources.setdefault(value.attribute_value.value,[]).append(key)
+    for key,values in dict([(t[0],t[1].get('RESOURCE')) for t in AppDefMap['TASK'].items()]).items():
+        if values:
+            for value in values:
+                usedResources.setdefault(value.attribute_value.value,[]).append(key)
     for key,value in usedResources.items():
         ## Calculate Ceiling Priority.
         try:
@@ -1142,6 +1136,15 @@ def setDefaults():
     Info['numberOfDistinctPriorities']=numberOfDistinctPriorities
     xCC2=False
 
+    for key,value in [v for v in AppDefMap['RESOURCE'].items() if not hasattr(v,'relativeCeilingPriority')]:
+        errObj.warning("Unreferenced Resource '%s'." % value.name)
+        AppDefMap['RESOURCE'].pop(key)
+
+    if AppDefMap['RESOURCE']=={}:
+        Info['useResources']=False
+    else:
+        Info['useResources']=True
+
     priorityMap=dict()
     for num,levelObjs in enumerate(Priorities.values(),1):
         if len(levelObjs)>1:
@@ -1149,10 +1152,9 @@ def setDefaults():
         levelPriority=levelObjs[0]['RELATIVE_PRIORITY'].attribute_value.value
         hasResources=False
         for g in filter(lambda r: r.relativeCeilingPriority==levelPriority,
-            AppDefMap['RESOURCE'].values()
-        ):
+            [v for v in AppDefMap['RESOURCE'].values()]):
             g.ceilingPriority=num
-            hasResources=True
+            hasResources=True   # todo: xCC2 = True
         activations=0
         for obj in levelObjs:
             obj['PRIORITY']=Parameter('PRIORITY',AttributeValue('number',num))
@@ -1175,11 +1177,11 @@ def setDefaults():
         "ERROR: Incompatible CC, required: %s"
 
 
-def ParseOil(input,errorObj):
+def ParseOil(input):
     global data
     global errObj
-    
-    errObj=errorObj
+
+    errObj=OILError()
 
     data=BuildAndCheck(parse(scan(input),'file'))
     setDefaults()

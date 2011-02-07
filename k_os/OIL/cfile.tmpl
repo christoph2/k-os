@@ -1,8 +1,8 @@
 /*
    k_os (Konnex Operating-System based on the OSEK/VDX-Standard).
 
- * (C) 2007-2010 by Christoph Schueler <github.com/Christoph2,
- *                                      cpu12.gems@googlemail.com>
+   (C) 2007-2011 by Christoph Schueler <github.com/Christoph2,
+                                        cpu12.gems@googlemail.com>
 
    All Rights Reserved
 
@@ -49,7 +49,7 @@
 #end def
 #def alarmAction($alarm)
 #if $alarm.ACTION.value=='ACTIVATETASK'
-#set $action='ALM_ACTIVATETASK,\n        (void*)GetTaskName('+$alarm.ACTION.TASK.value+')'
+#set $action='ALM_ACTIVATETASK,\n        (void*)'+$alarm.ACTION.TASK.value   ## (TaskType)
 #elif $alarm.ACTION.value=='SETEVENT'
 #set $action='ALM_SETEVENT,\n        (void*)&alarmsEvents['+str($alarm.pos)+']'
 #elif $alarm.ACTION.value=='ALARMCALLBACK'
@@ -109,14 +109,14 @@ $getTaskFlags($task)
     OS_AUTOSTART_NEVER,
 #end if
 \#if defined(OS_USE_INTERNAL_RESOURCES)
-    INTERNAL_RES_NONE /*INTERNAL_RES_SCHEDULER - besser: INTERNAL_NONPREEMPT_SCHEDULER*/, 
+    INTERNAL_RES_NONE /*INTERNAL_RES_SCHEDULER - besser: INTERNAL_NONPREEMPT_SCHEDULER*/,
 \#endif
 },
 #end for
 };
 
 OsTCBType OS_TCB[OS_NUMBER_OF_TASKS];
-
+#if $info.useResources
 
 /*
 **
@@ -152,7 +152,7 @@ const OsResourceConfigurationType OS_IntResourceConf[OS_NUMBER_OF_INT_RESOURCES+
 #end for
 };
 #end if
-
+#end if  /* $info.useResources */
 
 /*
 **

@@ -1,8 +1,8 @@
 /*
    k_os (Konnex Operating-System based on the OSEK/VDX-Standard).
 
- * (C) 2007-2010 by Christoph Schueler <github.com/Christoph2,
- *                                      cpu12.gems@googlemail.com>
+   (C) 2007-2011 by Christoph Schueler <github.com/Christoph2,
+                                        cpu12.gems@googlemail.com>
 
    All Rights Reserved
 
@@ -47,13 +47,14 @@ extern "C"
 #if $app.os.ORTI_DEBUG.value==True
 \#define OS_FEATURE_ORTI_DEBUG
 #end if
-##\#define DEBU
 #if $app.os.STATUS.value=='EXTENDED'
 \#define OS_EXTENDED_STATUS
 #else
 \#define OS_STANDARD_STATUS
 #end if
-
+#if $app.os.USECALLLEVELCHECK.value==True
+\#define OS_FEATURE_CALLEVEL_CHECK
+#end if
 /*  OSEK-OS Conformance Class    */
 \#define OS_${app.os.CC.value}
 
@@ -67,7 +68,9 @@ extern "C"
 \#define OS_SCHED_POLICY_PRE
 #end if
 \#define OS_USE_O1SCHEDULER
-
+#if $app.os.CC.value in ('ECC1','BCC1')
+\#define OS_SCHED_BM_ONLY
+#end if
 \#define OS_DISTINCT_PRIORITIES         ((uint8)$info.numberOfDistinctPriorities)
 \#define OS_MLQ_NUMBER_OF_PRIORITIES    OS_DISTINCT_PRIORITIES
 #set $qs=reduce(lambda x,y: x+y[1],$info['priorityMap'].values(),0)
@@ -101,9 +104,6 @@ extern "C"
 \#define OS_USE_IDLETIMEHOOK
 \#define OS_USE_STACKCHECKING
 *#
-#if $app.os.USECALLLEVELCHECK.value==True
-\#define OS_USE_CALLEVEL_CHECK
-#end if
 
 #if $len($app.alarms)>0
 \#define OS_USE_ALARMS
@@ -111,8 +111,10 @@ extern "C"
 #if $len($app.events)>0
 \#define OS_USE_EVENTS
 #end if
+#if $info.useResources
 \#define OS_USE_INTERNAL_RESOURCES
 \#define OS_USE_RESOURCES
+#end if /* $info.useResources */
 \#define OS_USE_SCHEDULE_TABLES
 #if $app.os.SAVE_STARTUP_CONTEXT.value==True
 \#define OS_FEATURE_SAVE_STARTUP_CONTEXT
@@ -142,8 +144,10 @@ extern "C"
 \#define OS_NUMBER_OF_ALARMS        ((uint8)$numAlarms)
 \#define OS_NUMBER_OF_COUNTERS      ((uint8)$len($app.counters))
 \#define OS_NUMBER_OF_EVENTS        ((uint8)$len($app.events))
+#if $info.useResources
 \#define OS_NUMBER_OF_RESOURCES     ((uint8)$len($app.standardResources))
 \#define OS_NUMBER_OF_INT_RESOURCES ((uint8)$len($app.internalResources))
+#end if
 #if $len($info.autostartedTasks)>0
 \#define OS_FEATURE_AUTOSTART_TASKS
 #end if
@@ -198,7 +202,7 @@ DeclareTask(${task.name});
 \#define ${task.name}   ((TaskType)${num})
 
 #end for
-
+#if $info.useResources
 /*
 **
 **  Resources.
@@ -220,7 +224,7 @@ extern const OsResourceConfigurationType OS_IntResourceConf[];
 \#define ${res.name}    ((uint8)$num)
 #end for
 #end if
-
+#end if /* $info.useResources */
 #if len($app.counters)>0
 
 /*

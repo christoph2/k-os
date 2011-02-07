@@ -1,15 +1,15 @@
-# -*- coding: latin-1 -*-
+# -*- coding: utf-8 -*-
 
 __version__="0.9.0"
 
 __copyright__="""
    k_os (Konnex Operating-System based on the OSEK/VDX-Standard).
- 
-   (C) 2007-2010 by Christoph Schueler <chris@konnex-tools.de,
+
+   (C) 2007-2011 by Christoph Schueler <github.com/Christoph2,
                                         cpu12.gems@googlemail.com>
-  
+
    All Rights Reserved
- 
+
   This program is free software; you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
   the Free Software Foundation; either version 2 of the License, or
@@ -27,28 +27,20 @@ __copyright__="""
    s. FLOSS-EXCEPTION.txt
 """
 
-'''
-try:
-    import psyco
-    psyco.full()
-except ImportError:
-    pass
-'''
+__all__=['Preproc']
 
+import logging
 import os
 import re
 import sys
+from k_os.OIL.Error import OILError
 
 SCANNING=0
 MULTI_LINE_COMMENT=1
+E_UNBALANCED_DELIMS=1
 
 FileList=[]
 PathList=[]
-
-of=None
-
-E_UNBALANCED_DELIMS=1
-
 
 INCLUDE_DIRECTIVE=re.compile(r'[ \t]*?#[ \t]*?include[ \t]*?(?P<sdelim>[<"])(?P<incfile>.*?)(?P<edelim>[>"])(?P<rest>.*)')
 STRING=re.compile(r'(?P<before>.*?)["](?P<string>.*?)["](?P<after>.*)')
@@ -57,13 +49,11 @@ END_COMMENT=re.compile(r'\*\/')
 USE_FILE=re.compile(r'\s*?USE\s*?=\s*?"(?P<includeFile>.*?)"\s*?;.*')
 
 
-def StripStrings(line):
-    match=STRING.match(line)
-    while match is not None:
-        line=match.group('before')+match.group('after')
-        match=STRING.match(line)
-    return line
-
+def TryOpen(fname):
+    if not os.path.exists(fname):
+         return False
+    else:
+        return True
 
 def CreateOutFile(fname):
     dir,fn=os.path.split(fname)
@@ -73,7 +63,6 @@ def CreateOutFile(fname):
 
 def AddToPathList(path):
     if path not in PathList:
-##        print "Adding Include Path '%s'.\n" % (path)
         PathList.append(path)
 
 
@@ -81,12 +70,12 @@ def AddToFileList(fname):
     if fname not in FileList:
         FileList.append(fname)
 
-
-def TryOpen(fname):
-    if not os.path.exists(fname):
-         return False
-    else:
-        return True
+def StripStrings(line):
+    match=STRING.match(line)
+    while match is not None:
+        line=match.group('before')+match.group('after')
+        match=STRING.match(line)
+    return line
 
 
 def locateIncludeFile(quoted,fname):
@@ -105,95 +94,82 @@ def locateIncludeFile(quoted,fname):
     return (found,path)
 
 
-def lineDirective(file_name,lineNo):
-    global of
-    print >> of,'#line %u "%s"' % (lineNo,file_name)
+class Preproc(object):
+    def __init__(self,inFile,outFile):
+        self.inFile=inFile
+        self.outFile=outFile
+        inc_paths=os.getenv('KOS_INCLUDE')
+        if inc_paths is not None:
+            for p in inc_paths.split(';'):
+                AddToPathList(p)
+        self.Parse(self.inFile,OILError())
+        self.outFile.seek(0)
 
+    def Parse(self,inFile,errorObj):
+        if not hasattr(inFile,'name'):
+            fileName='MEMORY'
+        else:
+            fileName=inFile.name
 
-def Parse(fname,errorObj):
-    try:    
-        inf=open(fname)
-    except IOError as e:
-        print e
-        sys.exit(2)
-##    print
-##    print '=' * 79
-##    print " SCANNING: '%s' ..." % (fname)
-##    print '=' * 79
+        self.lineDirective(fileName,1)
 
-    lineDirective(fname,1)
+        state=SCANNING
+        cmtStartLline=0
 
-    state=SCANNING
-    cmtStartLline=0
+        useFiles=[]
+        AddToFileList(fileName)
 
-    useFiles=[]
-    AddToFileList(fname)
-    
-    for lineNo,line in enumerate(inf,1):
-        if state==SCANNING:
-            tmpLine=StripStrings(line)
-            startCommentTmp=START_COMMENT.search(tmpLine)
-            if startCommentTmp is not None:
-                startComment=START_COMMENT.search(line)
-                start=startComment.start()
-                if startComment.group('char')=='/':
-                    line=line[:start]+'\n'   ## Strip Single-Line-Comment.
-                else:
-                    endComment=END_COMMENT.search(line)
-                    if endComment is None:
-                        state=MULTI_LINE_COMMENT   ## Start Multi-Line-Comment.
-                        cmtStartLine=lineNo
-                        line=line[:start]+'\n'
-                        #print "Multi-Line-Comment startet  @ line: ",cmtStartLline
+        for lineNo,line in enumerate(inFile,1):
+            if state==SCANNING:
+                tmpLine=StripStrings(line)
+                startCommentTmp=START_COMMENT.search(tmpLine)
+                if startCommentTmp is not None:
+                    startComment=START_COMMENT.search(line)
+                    start=startComment.start()
+                    if startComment.group('char')=='/':
+                        line=line[:start]+'\n'   ## Strip Single-Line-Comment.
                     else:
-                        end=endComment.end()
-                        line=line[:start]+line[end:-1]+'\n'
-            else:
-                pass
-            includeStmt=INCLUDE_DIRECTIVE.match(line)
-            if includeStmt is not None:
-                sdelim,incfile,edelim,_=includeStmt.groups(('sdelim','incfile','edelim','rest'))
-                if (sdelim=='"' and edelim!='"') or (sdelim=='<' and edelim!='>'):
-                    errorObj.fatalError('Unbalanced deliminiters '+sdelim+','+edelim+' in #include-statement',
-                        filename=fname,lineno=lineNo)
+                        endComment=END_COMMENT.search(line)
+                        if endComment is None:
+                            state=MULTI_LINE_COMMENT   ## Start Multi-Line-Comment.
+                            cmtStartLine=lineNo
+                            line=line[:start]+'\n'
+                        else:
+                            end=endComment.end()
+                            line=line[:start]+line[end:-1]+'\n'
                 else:
-                    ## Warn, if no comment.
-                    print >> of,'\n',
-                    found,incPath=locateIncludeFile(sdelim=='"',incfile)
-                    if found:
-                        Parse(incPath,errorObj)
-                        lineDirective(fname,lineNo+1)
+                    pass
+                includeStmt=INCLUDE_DIRECTIVE.match(line)
+                if includeStmt is not None:
+                    sdelim,incfile,edelim,_=includeStmt.groups(('sdelim','incfile','edelim','rest'))
+                    if (sdelim=='"' and edelim!='"') or (sdelim=='<' and edelim!='>'):
+                        errorObj.fatalError('Unbalanced deliminiters '+sdelim+','+edelim+' in #include-statement',
+                            filename=fileName,lineno=lineNo)
                     else:
-                        errorObj.fatalError("Could not open include file '%s'.\n" % (incfile,),
-                            filename=fname,lineno=lineNo)
-            else:
-                uf=USE_FILE.match(line)
-                if uf is not None:
-                    useFiles.append(uf.groupdict('includeFile'))
-                print >> of,line,
-        elif state==MULTI_LINE_COMMENT:
-            endComment=END_COMMENT.search(line)
-            if endComment is not None:
-                endCommentLine=lineNo
-                state=SCANNING
-                #print "Multi-Line-Comment finished @ line: ",endCommentLine
-                print >> of
-            else:
-                print >> of
-    for f in useFiles:
-        found,incPath=locateIncludeFile(sdelim=='"',incfile)
-    inf.close()
+                        ## Warn, if no comment.
+                        print >> self.outFile,'\n',
+                        found,incPath=locateIncludeFile(sdelim=='"',incfile)
+                        if found:
+                            self.Parse(open(incPath),errorObj)
+                            self.lineDirective(fileName,lineNo+1)
+                        else:
+                            errorObj.fatalError("Could not open include file '%s'.\n" % (incfile,),
+                                filename=fileName,lineno=lineNo)
+                else:
+                    uf=USE_FILE.match(line)
+                    if uf is not None:
+                        useFiles.append(uf.groupdict('includeFile'))
+                    print >> self.outFile,line,
+            elif state==MULTI_LINE_COMMENT:
+                endComment=END_COMMENT.search(line)
+                if endComment is not None:
+                    endCommentLine=lineNo
+                    state=SCANNING
+                    print >> self.outFile
+                else:
+                    print >> self.outFile
+        for f in useFiles:
+            found,incPath=locateIncludeFile(sdelim=='"',incfile)
 
-
-def Parser(fname,errorObj):
-    inc_paths=os.getenv('KOS_INCLUDE')
-    if inc_paths is not None:
-        for p in inc_paths.split(';'):
-            AddToPathList(p)
-    global of
-    of=CreateOutFile(fname)
-    Parse(fname,errorObj)
-    of.close()
-
-if __name__=='__main__':
-    Parser(r'test.oil')
+    def lineDirective(self,fileName,lineNo):
+        print >> self.outFile,'#line %u "%s"' % (lineNo,fileName)

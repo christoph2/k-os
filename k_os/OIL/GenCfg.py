@@ -1,15 +1,15 @@
-# -*- coding: latin-1 -*-
+# -*- coding: utf-8 -*-
 
 __version__="0.9.0"
 
 __copyright__="""
    k_os (Konnex Operating-System based on the OSEK/VDX-Standard).
 
-   (C) 2007-2010 by Christoph Schueler <github.com/Christoph2,
+   (C) 2007-2011 by Christoph Schueler <github.com/Christoph2,
                                         cpu12.gems@googlemail.com>
-  
+
    All Rights Reserved
- 
+
   This program is free software; you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
   the Free Software Foundation; either version 2 of the License, or
@@ -27,13 +27,6 @@ __copyright__="""
    s. FLOSS-EXCEPTION.txt
 """
 
-'''
-try:
-    import psyco
-    psyco.full()
-except ImportError:
-    pass
-'''
 
 from collections import namedtuple
 import codecs
@@ -46,6 +39,7 @@ import inspect,types
 from Cheetah.Template import Template
 import k_os.OIL.ORTICfg
 from k_os.OIL.Parser import NestedParameter
+from k_os.OIL.Error import OILError
 
 errObj=None
 app=None
@@ -98,7 +92,7 @@ class ApplicationDefinition(object):
                 setattr(self,attr,[x for x in appDef.values()])
             elif len(appDef)>0:
                 setattr(self,attr,appDef.values()[0])
-                
+
     def setValues(self,obj):
         "Create shortcuts to values."
         if isinstance(obj,types.ListType):
@@ -128,7 +122,7 @@ def writeTemplate(tmplFileName,outFileName,nameSpace,encodeAsUTF8=True):
         outFile.write(unicode(codecs.BOM_UTF8,'utf-8'))
     else:
         outFile=open(outFileName,mode='wt')
-    
+
     outFile.write(unicode(tmpl))
     outFile.close()
 ##    os.chmod(outFileName,os.O_RDONLY)
@@ -161,7 +155,7 @@ def enumeratePriorities():
     global info
     res=['            "NONE" = 0,']
     for num,(key,value) in enumerate(info['priorityMap'].items()):
-        str='            "%s" = %s' % (key,value[0])
+        str='            "%s" = %s' % (key,(~value[0]+1) & 0x0f)
         if num<len(info['priorityMap'])-1:
             str=str+","
         res.append(str)
@@ -169,9 +163,9 @@ def enumeratePriorities():
 
 
 def enumerateTasks():
-    res=['            "IdleTask" = "&(OS_TCB[0])",']
+    res=['            "IdleTask" = "0",']
     for num,task in enumerate(app.tasks,1):
-        str='            "%s" = "&(OS_TCB[%u])"' % (task.name,num)
+        str='            "%s" = "%u"' % (task.name,num)
         if num<len(app.tasks):
             str=str+","
         res.append(str)
@@ -206,8 +200,9 @@ osVars={
     "lastError" : "OsLastError",
     "serviceID" : "Os_ServiceContext.id",
     "appMode" : "Os_AppMode",
-    "isrID"     : "OsCurrentISRID",
-    "runningTask" : "OsCurrentTID",
+    "isrID"     : "(uint8)OsCurrentISRID",
+    "runningTask" : "(uint8)OsCurrentTID",
+    "callevel" : "OsCallevel",
     "runningTaskPriority" : "OsCurrentTCB->CurrentPriority"
 }
 
@@ -223,7 +218,7 @@ osVars={
 Register=namedtuple('Register','name type offset')
 Stack=namedtuple("Stack","direction fillpattern")
 
-def Generate(fname,AppDef,Info,errorObj):
+def Generate(fname,AppDef,Info):
     global errObj
     global app
     global info
@@ -231,7 +226,7 @@ def Generate(fname,AppDef,Info,errorObj):
     print "Creating Configuration Files..."
     print
 
-    errObj=errorObj
+    errObj=OILError()
     app=simplifiedApplicationDefinition(AppDef)
     Info['stack']=Stack("DOWN",0x00)
     info=Info
@@ -246,6 +241,11 @@ def Generate(fname,AppDef,Info,errorObj):
         "getApplicationModes" : getApplicationModes,
         "sys" : sys, "time" : time
     }
+
+    app.tasks.sort(key=lambda x: x['PRIORITY'].value)
+
+    if info['useResources']==False:
+        osVars['runningTaskPriority']='(OS_TaskConf[OsCurrentTID].Priority)'
 
     writeTemplate(r'hfile.tmpl','Os_Cfg.h',namespace,encodeAsUTF8=False)
     writeTemplate('cfile.tmpl','Os_Cfg.c',namespace,encodeAsUTF8=False)
