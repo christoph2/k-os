@@ -1002,6 +1002,8 @@ def checkAttr(appDef,objName,attr,implDef,autoList):
             elif attrValue is None:
                 errObj.information("Setting '%s:%s' to  default value '%s'." % (objName,attr,implDef.default))
                 appDef[attr]=Parameter(attr,AttributeValue(implDef.attrType,implDef.default))
+        elif implDef.multiple_specifier==True:
+            pass
         if implDef.attrType=='BOOLEAN':
             checkBoolean(appDef,objName,attr,implDef,autoList)
         elif implDef.attrType=='ENUM':
@@ -1177,12 +1179,13 @@ def setDefaults():
         "ERROR: Incompatible CC, required: %s"
 
 
-def ParseOil(input):
+def ParseOil(input,implDefOnly=False):
     global data
     global errObj
 
     errObj=OILError()
 
     data=BuildAndCheck(parse(scan(input),'file'))
-    setDefaults()
+    if not implDefOnly:
+        setDefaults()
     return (ImplDefMap,AppDefMap,Info)

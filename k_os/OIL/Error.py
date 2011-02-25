@@ -30,46 +30,61 @@ __copyright__="""
 import logging
 import sys
 
+def createLogger(level,name,fmt):
+    logger=logging.getLogger(name)
+    logger.setLevel(level)
+    ch=logging.StreamHandler()
+    ch.setLevel(level)
+    formatter=logging.Formatter(fmt)
+    ch.setFormatter(formatter)
+    logger.addHandler(ch)
+    return logger
+
 class OILError(object):
     inst=None
 
-    def __new__(self,outFile=sys.stderr,verbose=False,silent=False):
+    def __new__(self):
         if self.inst is None:
             # Make it a Singleton.
             self.fatalErrorCounter=0
             self.errorCounter=0
             self.warningCounter=0
             self.informationCounter=0
-            self.outFile=outFile
-            self.verbose=verbose
-            self.silent=silent
-            self.logger=logging.getLogger("kos.oil.logger")
+
+            self.loggerMessageonly=createLogger(logging.NOTSET,"kos.oil.logger.messageonly",
+                "[%(levelname)s] - %(message)s"
+            )
+            self.loggerFilename=createLogger(logging.NOTSET,"kos.oil.logger.filename",
+                "[%(levelname)s]:%(filename)s - %(message)s"
+            )
+            self.loggerFull=createLogger(logging.NOTSET,"kos.oil.logger.full",
+                 "[%(levelname)s]:%(filename)s:%(lineno)s - %(message)s"
+            )
             self.inst=super(OILError,self).__new__(self)
         return self.inst
 
-    def printMessage(self,_type,message,lineno=None,filename=None,code=None):
-        if self.silent==False:
-            if lineno and filename:
-                self.outFile.write("%s[%s]:%s:%s - %s\n" % (_type,code,filename,lineno,message))
-            elif filename:
-                self.outFile.write("%s[%s]:%s - %s\n" % (_type,code,filename,message))
-            else:
-                self.outFile.write("%s[%s] - %s\n" % (_type,code,message))
+    def logMessage(self,level,message,lineno=None,filename=None,code=None):
+        if lineno and filename:
+            self.loggerFull.log(level,message,extra={'lineno': lineno,'filename': filename})
+        elif filename:
+            self.loggerFilename.log(level,message,extra={'filename': filename})
+        else:
+            self.loggerMessageonly.log(level,message)
+
 
     def fatalError(self,message,lineno=None,filename=None,code=''):
-        self.printMessage("FATAL ERROR",message,lineno,filename,"F-"+code)
+        self.logMessage(logging.CRITICAL,message,lineno,filename,"F-"+code)
         self.fatalErrorCounter+=1
         sys.exit(1)
 
     def error(self,message,lineno=None,filename=None,code=''):
-        self.printMessage("ERROR",message,lineno,filename,"E-"+code)
+        self.logMessage(logging.ERROR,message,lineno,filename,"E-"+code)
         self.errorCounter+=1
 
     def warning(self,message,lineno=None,filename=None,code=''):
-        self.printMessage("WARNING",message,lineno,filename,"W-"+code)
+        self.logMessage(logging.WARNING,message,lineno,filename,"W-"+code)
         self.warningCounter+=1
 
     def information(self,message,lineno=None,filename=None,code=''):
-        if self.verbose:
-            self.printMessage("INFORMATION",message,lineno,filename,"I-"+code)
+        self.logMessage(logging.INFO,message,lineno,filename,"I-"+code)
         self.informationCounter+=1

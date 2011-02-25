@@ -218,6 +218,8 @@ osVars={
 Register=namedtuple('Register','name type offset')
 Stack=namedtuple("Stack","direction fillpattern")
 
+# all((isinstance(x,types.StringTypes) for x in l))
+
 def Generate(fname,AppDef,Info):
     global errObj
     global app
@@ -242,6 +244,7 @@ def Generate(fname,AppDef,Info):
         "sys" : sys, "time" : time
     }
 
+    #app.tasks.sort(key=lambda x: x['RELATIVE_PRIORITY'].value)
     app.tasks.sort(key=lambda x: x['PRIORITY'].value)
 
     if info['useResources']==False:

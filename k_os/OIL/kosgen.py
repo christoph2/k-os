@@ -28,6 +28,7 @@ __copyright__="""
    s. FLOSS-EXCEPTION.txt
 """
 
+import logging
 import os
 from optparse import OptionParser,OptionGroup
 import sys
@@ -93,18 +94,23 @@ def main():
     if len(args)!=1:
         op.error("incorrect number of arguments")
 
-    error=OILError(verbose=options.verbose,silent=options.silent)
-
-    ##print "\nStage I. Preprocessing..."
+    error=OILError()
+    logger=logging.getLogger("kos.oil.logger")
+    if options.verbose:
+        logger.setLevel(logging.DEBUG)
+    elif options.silent:
+        logger.setLevel(logging.CRITICAL)
+    else:
+        logger.setLevel(logging.WARNING)
 
     inFile=open(args[0])
-    outFile=open(os.path.splitext(os.path.abspath(args[0]))[0]+'.i',"w")
+    outFilename=os.path.splitext(os.path.abspath(args[0]))[0]+'.i'
+    outFile=open(outFilename,"w")
     k_os.OIL.Preproc.Preproc(inFile,outFile)
     outFile.close()
 
     try:
-        fileName=os.path.splitext(os.path.abspath(args[0]))[0]+'.i'
-        inFile=open(fileName)
+        inFile=open(outFilename)
     except IOError:
         errObj.fatalError("Could not open file '%s'.\n" % (fname))
     else:
@@ -119,5 +125,3 @@ def main():
 
 if __name__=='__main__':
     main()
-
-"Systemgenerator: generalized file-handling."
