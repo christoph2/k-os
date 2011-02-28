@@ -1,15 +1,17 @@
-# -*- coding: latin-1 -*-
+#!/usr/bin/python
+# -*- coding: utf-8 -*-
 
-__version__="0.9.0"
+__version__ = '0.9.0'
 
-__copyright__="""
+__copyright__ = \
+    """
    k_os (Konnex Operating-System based on the OSEK/VDX-Standard).
- 
+
    (C) 2007-2010 by Christoph Schueler <chris@konnex-tools.de,
                                         cpu12.gems@googlemail.com>
-  
+
    All Rights Reserved
- 
+
   This program is free software; you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
   the Free Software Foundation; either version 2 of the License, or
@@ -27,110 +29,150 @@ __copyright__="""
    s. FLOSS-EXCEPTION.txt
 """
 
-'''
-try:
-    import psyco
-    psyco.full()
-except ImportError:
-    pass
-'''
-
 from spark import GenericScanner
-from  Token import Token
+from Token import Token
 
-KW_LIST=("AUTO","BOOLEAN","CPU","ENUM","FALSE","FLOAT",
-         "IMPLEMENTATION","INT32","INT64","NO_DEFAULT",
-         "OIL_VERSION","STRING","TRUE","UINT32","UINT64",
-         "WITH_AUTO")
+KW_LIST = (
+    'AUTO',
+    'BOOLEAN',
+    'CPU',
+    'ENUM',
+    'FALSE',
+    'FLOAT',
+    'IMPLEMENTATION',
+    'INT32',
+    'INT64',
+    'NO_DEFAULT',
+    'OIL_VERSION',
+    'STRING',
+    'TRUE',
+    'UINT32',
+    'UINT64',
+    'WITH_AUTO',
+    )
 
-OBJ_LIST=("ALARM","APPMODE","COM","COUNTER","EVENT","IPDU",
-          "ISR","MESSAGE","NETWORKMESSAGE","NM","OS",
-          "RESOURCE","TASK")
+OBJ_LIST = (
+    'ALARM',
+    'APPMODE',
+    'COM',
+    'COUNTER',
+    'EVENT',
+    'IPDU',
+    'ISR',
+    'MESSAGE',
+    'NETWORKMESSAGE',
+    'NM',
+    'OS',
+    'RESOURCE',
+    'TASK',
+    )
 
-OBJ_TYPE_LIST=("ALARM_TYPE","APPMODE_TYPE","COM_TYPE",
-               "COUNTER_TYPE","EVENT_TYPE","IPDU_TYPE",
-               "ISR_TYPE","MESSAGE_TYPE","NETWORKMESSAGE_TYPE",
-               "NM_TYPE","OS_TYPE","RESOURCE_TYPE","TASK_TYPE")
+OBJ_TYPE_LIST = (
+    'ALARM_TYPE',
+    'APPMODE_TYPE',
+    'COM_TYPE',
+    'COUNTER_TYPE',
+    'EVENT_TYPE',
+    'IPDU_TYPE',
+    'ISR_TYPE',
+    'MESSAGE_TYPE',
+    'NETWORKMESSAGE_TYPE',
+    'NM_TYPE',
+    'OS_TYPE',
+    'RESOURCE_TYPE',
+    'TASK_TYPE',
+    )
 
-
-BOOL_VALUES=("TRUE","FALSE")
+BOOL_VALUES = ('TRUE', 'FALSE')
 
 
 class Scanner(GenericScanner):
+
     def __init__(self, flags=0):
-        GenericScanner.__init__(self,flags)
-        self.lineno=1
-        self.filename=""
-        
+        GenericScanner.__init__(self, flags)
+        self.lineno = 1
+        self.filename = ''
+
     def tokenize(self, input):
         self.rv = []
         GenericScanner.tokenize(self, input)
         return self.rv
 
     def t_whitespace(self, s):
-        r" [ \t\r]+ "
+        r""" [ \t\r]+ """
 
     def t_str_const(self, s):
-        r' ["].*?["] '
-        self.rv.append(Token('string', s,lineno=self.lineno,filename=self.filename))
+        r''' ["].*?["] '''
 
-    def t_comment(self,s):
-        r" ((?:\/\*(?:[^*]|(?:\*+[^*\/]))*\*+\/)|(?:\/\/.*)) "
+        self.rv.append(Token('string', s, lineno=self.lineno,
+                       filename=self.filename))
 
-    def t_oneline_comment(self,s):
-        r"//.*"
-        
+    def t_comment(self, s):
+        r""" ((?:\/\*(?:[^*]|(?:\*+[^*\/]))*\*+\/)|(?:\/\/.*)) """
+
+    def t_oneline_comment(self, s):
+        r"""//.*"""
+
     def t_name(self, s):
-        r" [a-zA-Z_][a-zA-Z0-9_]* "
+        r""" [a-zA-Z_][a-zA-Z0-9_]* """
+
         if s in KW_LIST:
-            self.rv.append(Token(type=s,lineno=self.lineno,filename=self.filename))
+            self.rv.append(Token(type_=s, lineno=self.lineno,
+                           filename=self.filename))
         elif s in OBJ_LIST:
-            self.rv.append(Token('object_lexeme',s,lineno=self.lineno,filename=self.filename))
+            self.rv.append(Token('object_lexeme', s,
+                           lineno=self.lineno, filename=self.filename))
         elif s in OBJ_TYPE_LIST:
-            self.rv.append(Token('object_ref_lexeme',s,lineno=self.lineno,filename=self.filename))
+            self.rv.append(Token('object_ref_lexeme', s,
+                           lineno=self.lineno, filename=self.filename))
         else:
-            self.rv.append(Token('name', s,lineno=self.lineno,filename=self.filename))
+            self.rv.append(Token('name', s, lineno=self.lineno,
+                           filename=self.filename))
 
-    def t_hex_const(self,s):
-        r" 0[xX][0-9a-fA-F]+ "
-        self.rv.append(Token('number', long(s,16),lineno=self.lineno,filename=self.filename))
+    def t_hex_const(self, s):
+        r""" 0[xX][0-9a-fA-F]+ """
 
-    def t_dec_const(self,s):
-        r" [+-]?[0-9]+ "
-        self.rv.append(Token('number', long(s,10),lineno=self.lineno,filename=self.filename))
+        self.rv.append(Token('number', long(s, 16), lineno=self.lineno,
+                       filename=self.filename))
 
-    def t_float_const(self,s):
-        r" [+-]?[0-9]+\.[0-9]+([eE][+-]?[0-9]+)? "
-        self.rv.append(Token('float', float(s),lineno=self.lineno,filename=self.filename))
+    def t_dec_const(self, s):
+        r""" [+-]?[0-9]+ """
 
-    def t_range(self,s):
-        r' \.\. '
-        self.rv.append(Token(type='range_op',lineno=self.lineno,filename=self.filename))
+        self.rv.append(Token('number', long(s, 10), lineno=self.lineno,
+                       filename=self.filename))
 
-    def t_ops(self,s):
-        r" [(){}\[\]=;:,] "
-        self.rv.append(Token(type=s,lineno=self.lineno,filename=self.filename))
+    def t_float_const(self, s):
+        r""" [+-]?[0-9]+\.[0-9]+([eE][+-]?[0-9]+)? """
 
-    def t_newline(self,s):
-        r" [\n] "
-        self.lineno+=1
+        self.rv.append(Token('float', float(s), lineno=self.lineno,
+                       filename=self.filename))
+
+    def t_range(self, s):
+        r''' \.\. '''
+
+        self.rv.append(Token(type_='range_op', lineno=self.lineno,
+                       filename=self.filename))
+
+    def t_ops(self, s):
+        r""" [(){}\[\]=;:,] """
+
+        self.rv.append(Token(type_=s, lineno=self.lineno,
+                       filename=self.filename))
+
+    def t_newline(self, s):
+        r""" [\n] """
+
+        self.lineno += 1
+
+    def t_line_directive(self, s):
+        r'''  \#[ \t]*line[ \t]*([0-9]+?)[ \t]*?".*"'''
+
+        elems = s.split()
+
+        # # print elems
+
+        self.lineno = int(elems[1]) - 1
+        self.filename = elems[2]
 
 
-    def t_line_directive(self,s):
-        r'  \#[ \t]*line[ \t]*([0-9]+?)[ \t]*?".*"'
-        elems=s.split()
-        ## print elems
-        self.lineno=int(elems[1])-1
-        self.filename=elems[2]
-##        self.rv.append(Token(type='line',lineno=self.lineno,attr=self.filename))
-
-"""
-    def t_default(self, s):
-        r'( . | \n )+'
-        lineno=self.lineno
-        #line=self.string.splitlines()
-        #line=line[lineno]
-        line=self.string[self.pos-1]
-        print "Specification error: unmatched input at line %u: '%s'" % (lineno,s.splitlines()[0])
-        raise SystemExit
-"""
+##        self.rv.append(Token(type_='line',lineno=self.lineno,attr=self.filename))
