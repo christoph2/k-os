@@ -1,8 +1,8 @@
 /*
    k_os (Konnex Operating-System based on the OSEK/VDX-Standard).
 
- * (C) 2007-2010 by Christoph Schueler <github.com/Christoph2,
- *                                      cpu12.gems@googlemail.com>
+  (C) 2007-2011 by Christoph Schueler <github.com/Christoph2,
+                                       cpu12.gems@googlemail.com>
 
    All Rights Reserved
 
@@ -176,7 +176,7 @@ typedef enum tagAlarmActionTypeType {
 typedef union tagAlarmActionType {
     void *Dummy;
     AlarmSetEventType *Event;
-    TaskType TaskID;
+    uint16 TaskID;
     AlarmCallbackType AlarmCallback;
     CounterType CounterID;
 } AlarmActionType;
@@ -217,10 +217,11 @@ typedef struct tagCounterConfigurationType {
 
 
 typedef struct tagOsTCBType {
-    uint8 *Stackpointer; /* todo: 'StackPointerType! */
+    //OsPort_StackPointerType Stackpointer;
+    uint8 * Stackpointer; /* todo: 'StackPointerType! */
     TaskStateType State;
-#if defined(OS_BCC2) || defined(OS_ECC2)
-    uint8 Activations;	/* or ORTI */
+#if defined(OS_BCC2) || defined(OS_ECC2) || defined(OS_FEATURE_ORTI_DEBUG)
+    uint8 Activations;
 #endif
 #if defined(OS_ECC1) || defined(OS_ECC2)
     EventMaskType EventsSet,EventsWaitingFor;
@@ -229,7 +230,7 @@ typedef struct tagOsTCBType {
 #if defined(OS_USE_RESOURCES)
     uint8 ResourceCount;
 #endif
-#if defined(OS_USE_RESOURCES) || defined(OS_USE_INTERNAL_RESOURCES) /* or ORTI */
+#if defined(OS_USE_RESOURCES) || defined(OS_USE_INTERNAL_RESOURCES) // || defined(OS_FEATURE_ORTI_DEBUG)
     PriorityType CurrentPriority;
 #endif
 } OsTCBType;

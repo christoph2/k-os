@@ -1,7 +1,7 @@
 /*
    k_os (Konnex Operating-System based on the OSEK/VDX-Standard).
 
- * (C) 2007-2010 by Christoph Schueler <github.com/Christoph2,
+ * (C) 2007-2011 by Christoph Schueler <github.com/Christoph2,
  *                                      cpu12.gems@googlemail.com>
 
    All Rights Reserved
@@ -66,7 +66,13 @@
 #elif defined(OS_SCHED_POLICY_PRE)
 #define OS_IS_TASK_PREEMPTABLE(tid) ((boolean)TRUE)
 #elif defined(OS_SCHED_POLICY_MIX)
+#if defined(OS_USE_RESOURCES) || defined(OS_USE_INTERNAL_RESOURCES)
 #define OS_IS_TASK_PREEMPTABLE(tid) (OsCurrentTCB->CurrentPriority!=PRIO_SCHEDULER)
+#else
+// todo: CHECK!!!
+//#define OS_IS_TASK_PREEMPTABLE(tid) (OS_TaskConf[(tid)].Priority=!=PRIO_SCHEDULER)
+#define OS_IS_TASK_PREEMPTABLE(tid) ((boolean)TRUE)
+#endif /* (OS_USE_RESOURCES) || (OS_USE_INTERNAL_RESOURCES) */
 #else
 #error "unknwon Scheduling-Policy!"
 #endif
@@ -144,7 +150,7 @@
 #if     defined(OS_BCC1) || defined(OS_ECC1)
 #define OS_TASK_INCR_ACTIVATIONS(tid)
 #define OS_TASK_DECR_ACTIVATIONS(tid)
-#elif   defined(OS_BCC2) || defined(OS_ECC2)
+#elif   defined(OS_BCC2) || defined(OS_ECC2) || defined(OS_FEATURE_ORTI_DEBUG)
 #define OS_TASK_INCR_ACTIVATIONS(tid)   OS_TCB[(tid)].Activations++
 #define OS_TASK_DECR_ACTIVATIONS(tid)   OS_TCB[(tid)].Activations--
 #endif
@@ -166,34 +172,34 @@
 #define OS_IDLE_TIME_ACTION()       CPU_POWERDOWN_MODE()    /*  'osconfig.h'  */
 /*  #define     OS_IDLE_TIME_ACTION()   IdleTimeHook()  */
 
-#if defined(OS_EXTENDED_STATUS) && defined(OS_USE_CALLEVEL_CHECK)
+#if defined(OS_EXTENDED_STATUS) && defined(OS_FEATURE_CALLEVEL_CHECK)
 #define OS_SET_CALLEVEL(cl)     (OsCallevel=(cl))
 #else
 #define OS_SET_CALLEVEL(cl)
 #endif
 
-#if defined(OS_EXTENDED_STATUS) && defined(OS_USE_CALLEVEL_CHECK)
+#if defined(OS_EXTENDED_STATUS) && defined(OS_FEATURE_CALLEVEL_CHECK)
 #define OS_GET_CALLEVEL()       (OsCallevel)
 #else
 #define OS_GET_CALLEVEL()
 #endif
 
 
-#if defined(OS_EXTENDED_STATUS) && defined(OS_USE_CALLEVEL_CHECK)
+#if defined(OS_EXTENDED_STATUS) && defined(OS_FEATURE_CALLEVEL_CHECK)
 #define OS_SAVE_CALLEVEL()      (OsCallevelSaved=OsCallevel)
 #else
 #define OS_SAVE_CALLEVEL()
 #endif
 
 
-#if defined(OS_EXTENDED_STATUS) && defined(OS_USE_CALLEVEL_CHECK)
+#if defined(OS_EXTENDED_STATUS) && defined(OS_FEATURE_CALLEVEL_CHECK)
 #define OS_RESTORE_CALLEVEL()   (OsCallevel=OsCallevelSaved)
 #else
 #define OS_RESTORE_CALLEVEL()
 #endif
 
 
-#if defined(OS_EXTENDED_STATUS) && defined(OS_USE_CALLEVEL_CHECK)
+#if defined(OS_EXTENDED_STATUS) && defined(OS_FEATURE_CALLEVEL_CHECK)
 #define ASSERT_VALID_CALLEVEL(cl)                       \
     _BEGIN_BLOCK                                        \
         if ((OsCallevel & (cl)) == OS_CL_INVALID) {     \
@@ -207,7 +213,7 @@
 /*
 ** !REQ!AS!OS367! "Operating System services wich do not return a StatusType shall not raise the error hook(s)."
 */
-#if defined(OS_EXTENDED_STATUS) && defined(OS_USE_CALLEVEL_CHECK)
+#if defined(OS_EXTENDED_STATUS) && defined(OS_FEATURE_CALLEVEL_CHECK)
 #define ASSERT_OS_NOT_RUNNING()                         \
     _BEGIN_BLOCK                                        \
         if (OsCallevel!=OS_CL_INVALID) {                \

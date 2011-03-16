@@ -1,7 +1,7 @@
 /*
    k_os (Konnex Operating-System based on the OSEK/VDX-Standard).
 
- * (C) 2007-2010 by Christoph Schueler <github.com/Christoph2,
+ * (C) 2007-2011 by Christoph Schueler <github.com/Christoph2,
  *                                      cpu12.gems@googlemail.com>
 
    All Rights Reserved
@@ -50,7 +50,7 @@ void StartOS(AppModeType Mode)
 
 /*    DISABLE_ALL_OS_INTERRUPTS(); */
 
-    OsPortInit();
+    OsPort_Init();
 
     OsExec_Init();
 
@@ -175,9 +175,12 @@ void OsExec_ScheduleFromISR(void)   /*  ISR-Level-Scheduling. */
 #endif  /* OS_SCHED_POLICY_NON */
         OS_CALL_POST_TASK_HOOK();
 
+#if defined(OS_ECC1) || defined(OS_ECC2)
+        /* Poor workaround!!! */
         if (!OS_IS_TASK_WAITING(OsCurrentTID)) {
             OsCurrentTCB->State=READY;
         }
+#endif
         OS_SET_HIGHEST_PRIO_RUNNING();
     }
 }
@@ -186,19 +189,16 @@ void OsExec_ScheduleFromISR(void)   /*  ISR-Level-Scheduling. */
 
 boolean OsExec_HigherPriorityThenCurrentReady(void)
 {
-    uint16 tm,t_res;
+    uint16 currentPriority;
     boolean res;
-    static const uint16 inv_exp_tab[16]={
-        (uint16)0x0001,(uint16)0x0002,(uint16)0x0004,(uint16)0x0008,
-        (uint16)0x0010,(uint16)0x0020,(uint16)0x0040,(uint16)0x0080,
-        (uint16)0x0100,(uint16)0x0200,(uint16)0x0400,(uint16)0x0800,
-        (uint16)0x1000,(uint16)0x2000,(uint16)0x4000,(uint16)0x8000
-    };
 
-    tm=inv_exp_tab[OsCurrentTCB->CurrentPriority];
+#if defined(OS_USE_RESOURCES) || defined(OS_USE_INTERNAL_RESOURCES)
+    currentPriority=Utl_SetBitTab16[OsCurrentTCB->CurrentPriority];
+#else
+    currentPriority=Utl_SetBitTab16[OS_TaskConf[OsCurrentTID].Priority];
+#endif
 
-    t_res=OsMLQ_GetBitmap() & (~tm);   /* OK? */
-    res=t_res>tm;
+    res=(OsMLQ_GetBitmap() & (~currentPriority))>currentPriority;
 
     return res;
 

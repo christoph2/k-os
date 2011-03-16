@@ -44,9 +44,17 @@ extern "C"
 {
 #endif  /* __cplusplus */
 
+/*
+**  Global Types.
+*/
+typedef uint16 * OsPort_StackPointerType;
 
-uint8* OsPortTaskStackInit(TaskType TaskID,TaskFunctionType *TaskFunc,uint8 *sp,boolean Reschedule);
-uint32 OsPortGetTimestamp(void);
+/*
+**  Global Functions.
+*/
+void OsPort_Init(void);
+uint8 * OsPort_TaskStackInit(TaskType TaskID,TaskFunctionType *TaskFunc,uint8 *sp,boolean Reschedule);
+uint32 OsPort_GetTimestamp(void);
 
 #if 0
 #define DISABLE_ALL_OS_INTERRUPTS() CPU_DISABLE_ALL_INTERRUPTS()

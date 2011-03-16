@@ -78,7 +78,7 @@ void SuspendCPUInterrrupts(void)
 
     CPU_DISABLE_ALL_INTERRUPTS();
 
-    if (InterruptDisableCounter++==(uint8)0) {
+    if ((InterruptDisableCounter++)==(uint8)0) {
         IStateSave=istate;
     }
 }
@@ -101,4 +101,3 @@ ISRType GetISRID(void)
 {
     return OsCurrentISRID;
 }
-

@@ -1,8 +1,8 @@
 /*
    k_os (Konnex Operating-System based on the OSEK/VDX-Standard).
 
- * (C) 2007-2010 by Christoph Schueler <github.com/Christoph2,
- *                                      cpu12.gems@googlemail.com>
+   (C) 2007-2011 by Christoph Schueler <github.com/Christoph2,
+                                        cpu12.gems@googlemail.com>
 
    All Rights Reserved
 
@@ -23,21 +23,24 @@
 */
 #include "Osek.h"
 
-static Os_AlarmStateType OsAlm_ActiveAlarms;    /* todo: Name!!! */
+static Os_AlarmStateType OsAlm_ActiveAlarms;
 
 void OsAlm_StartAlarm(uint8 num)
 {
-    OsAlm_ActiveAlarms=Utl_BitSet((uint16)OsAlm_ActiveAlarms,num);
+//    OsAlm_ActiveAlarms=Utl_BitSet((uint16)OsAlm_ActiveAlarms,num);
+    UTL_BIT_SET16(OsAlm_ActiveAlarms,num);
 }
 
 void OsAlm_StopAlarm(uint8 num)
 {
-    OsAlm_ActiveAlarms=Utl_BitReset((uint16)OsAlm_ActiveAlarms,num);
+//    OsAlm_ActiveAlarms=Utl_BitReset((uint16)OsAlm_ActiveAlarms,num);
+    UTL_BIT_RESET16(OsAlm_ActiveAlarms,num);
 }
 
 boolean OsAlm_IsRunning(uint8 num)
 {
-    return Utl_BitGet((uint16)OsAlm_ActiveAlarms,num);
+//    return Utl_BitGet((uint16)OsAlm_ActiveAlarms,num);
+    return UTL_BIT_GET16((uint16)OsAlm_ActiveAlarms,num);
 }
 
 /*Os_AlarmStateType*/uint16  OsAlm_GetActiveAlarms(void)
@@ -237,7 +240,7 @@ void OsAlm_InitAlarms(void)
 void OsAlm_NotifyAlarm(AlarmType AlarmID)
 {
     AlarmConfigurationType *Alarm;
-#if defined(OS_EXTENDED_STATUS) && defined(OS_USE_CALLEVEL_CHECK)
+#if defined(OS_EXTENDED_STATUS) && defined(OS_FEATURE_CALLEVEL_CHECK)
     OsCallevelType CallevelSaved;
 #endif
 
@@ -258,16 +261,16 @@ void OsAlm_NotifyAlarm(AlarmType AlarmID)
             (void)OsEvtSetEvent(Alarm->Action.Event->TaskID,Alarm->Action.Event->Mask);
             break;
         case ALM_ACTIVATETASK:
-            (void)OsTask_Activate(Alarm->Action.TaskID);
+            (void)OsTask_Activate((TaskType)Alarm->Action.TaskID);
             break;
         case ALM_CALLBACK:
             DISABLE_ALL_OS_INTERRUPTS();
-            #if defined(OS_EXTENDED_STATUS) && defined(OS_USE_CALLEVEL_CHECK)
+            #if defined(OS_EXTENDED_STATUS) && defined(OS_FEATURE_CALLEVEL_CHECK)
             CallevelSaved=OS_GET_CALLEVEL();
             #endif
             OS_SET_CALLEVEL(OS_CL_ALARM_CALLBACK);
             (Alarm->Action.AlarmCallback)();
-            #if defined(OS_EXTENDED_STATUS) && defined(OS_USE_CALLEVEL_CHECK)
+            #if defined(OS_EXTENDED_STATUS) && defined(OS_FEATURE_CALLEVEL_CHECK)
             OS_SET_CALLEVEL(CallevelSaved);
             #endif
             ENABLE_ALL_OS_INTERRUPTS();

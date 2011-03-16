@@ -24,10 +24,10 @@
 #include "Os_Error.h"
 
 #if defined(OS_USE_GETSERVICEID) || defined(OS_USE_PARAMETERACCESS) || defined(OS_FEATURE_ORTI_DEBUG)
-Os_ServiceContextType Os_ServiceContext;
-#endif
+OS_DEFINE_GLOBAL_IF_DEBUGGING(Os_ServiceContext,Os_ServiceContextType);
 
 OS_DEFINE_GLOBAL_IF_DEBUGGING(OsLastError,StatusType);
+#endif
 
 #if defined(OS_FEATURE_ORTI_DEBUG)
 #define OS_SAVE_LAST_ERROR(Error)   OsLastError=Error

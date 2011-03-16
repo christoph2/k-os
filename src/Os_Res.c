@@ -29,6 +29,7 @@ static uint16 BM_InternalResources;
 
 void OsRes_InitResources(void)
 {
+#if defined(OS_USE_RESOURCES)
     uint8 i;
 
 #if defined(OS_USE_INTERNAL_RESOURCES)
@@ -43,7 +44,7 @@ void OsRes_InitResources(void)
         Os_Resources[i].PriorPriorityOfTask=PRIO_NONE;
     }
 #endif
-
+#endif /* OS_USE_RESOURCES */
 }
 
 StatusType GetResource(ResourceType ResID)
@@ -59,7 +60,7 @@ StatusType GetResource(ResourceType ResID)
 **                than the calculated ceiling priority.
 */
     SAVE_SERVICE_CONTEXT(OSServiceId_GetResource,ResID,NULL,NULL);
-
+#if defined(OS_USE_RESOURCES)
     ASSERT_VALID_RESOURCEID(ResID);
     ASSERT_VALID_GET_RESOURCE_ACCESS(ResID);
     ASSERT_VALID_CALLEVEL(OS_CL_TASK);    /* ISR-Level Resources not implemented yet.  */
@@ -81,12 +82,13 @@ StatusType GetResource(ResourceType ResID)
             /* Elevate Priority of running Task. */
            OsCurrentTCB->CurrentPriority=OS_ResourceConf[ResID].CeilingPriority;
            OsMLQ_ChangePrio(OsCurrentTID,OsCurrentTCB->CurrentPriority,OS_ResourceConf[ResID].CeilingPriority);
-
         }
 #endif
     }
     ENABLE_ALL_OS_INTERRUPTS();
-
+#else
+    UNREFERENCED_PARAMETER(ResID);
+#endif /* OS_USE_RESOURCES */
     CLEAR_SERVICE_CONTEXT();
     return E_OK;
 }
@@ -107,7 +109,7 @@ StatusType ReleaseResource(ResourceType ResID)
 **                returned only if E_OS_NOFUNC was not returned.
 */
     SAVE_SERVICE_CONTEXT(OSServiceId_ReleaseResource,ResID,NULL,NULL);
-
+#if defined(OS_USE_RESOURCES)
     ASSERT_VALID_RESOURCEID(ResID);
     ASSERT_RESOURCE_IS_OCCUPIED(ResID);
     ASSERT_VALID_RELEASE_RESOURCE_ACCESS(ResID);
@@ -133,7 +135,9 @@ StatusType ReleaseResource(ResourceType ResID)
     }
     ENABLE_ALL_OS_INTERRUPTS();
     OS_COND_SCHEDULE_FROM_TASK_LEVEL();
-
+#else
+    UNREFERENCED_PARAMETER(ResID);
+#endif /* OS_USE_RESOURCES */
     CLEAR_SERVICE_CONTEXT();
     return E_OK;
 }

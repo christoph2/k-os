@@ -23,6 +23,7 @@
 */
 #include "Osek.h"
 
+// Fixed incorrect task activation on ISR level.
 
 static void OsTask_Init(TaskType TaskID,boolean Schedule);
 
@@ -68,8 +69,12 @@ StatusType OsTask_Activate(TaskType TaskID)
     if (OS_IS_TASK_SUSPENDED(TaskID)) {
 #endif
         OS_TASK_CLEAR_ALL_EVENTS(TaskID);
+/*
         OsTask_Ready(TaskID);
         OsTask_Init(TaskID,FALSE);
+*/
+        OsTask_Init(TaskID,FALSE);
+        OsTask_Ready(TaskID);
 #if     defined(OS_BCC2) || defined(OS_ECC2)
     }
 #endif
@@ -122,8 +127,8 @@ StatusType TerminateTask(void)
 #if defined(OS_BCC2) || defined(OS_ECC2)
     if (OsCurrentTCB->Activations>0) {  /* ???  */
         OS_TASK_CLEAR_ALL_EVENTS(OsCurrentTID);
-        OsTask_Ready(OsCurrentTID);
         OsTask_Init(OsCurrentTID,TRUE);
+        OsTask_Ready(OsCurrentTID);
     }
 #endif
 
@@ -168,8 +173,10 @@ StatusType ChainTask(TaskType TaskID)
 
     OS_TASK_INCR_ACTIVATIONS(TaskID);
     OS_TASK_CLEAR_ALL_EVENTS(TaskID);
-    OsTask_Ready(TaskID);
     OsTask_Init(TaskID,(TaskID==OsCurrentTID ? TRUE : FALSE));
+    OsTask_Ready(TaskID);
+
+    ASSERT(OS_TCB[OsCurrentTID].State==SUSPENDED);
 
     ENABLE_ALL_OS_INTERRUPTS();
 
@@ -189,7 +196,7 @@ StatusType GetTaskID(TaskRefType TaskID)
     die IdleTask läuft und dann aus einer ISR 'GetTaskID' aufrufen!
 
 */
-    /* TaskID ist not known @ this point!!! */
+    /* TaskID ist not known at this point!!! */
     SAVE_SERVICE_CONTEXT(OSServiceId_GetTaskID,/*TaskID*/NULL,NULL,NULL);
     ASSERT_VALID_CALLEVEL(OS_CL_TASK|OS_CL_ISR2|OS_CL_ERROR_HOOK|
         OS_CL_PRE_TASK_HOOK|OS_CL_POST_TASK_HOOK|OS_CL_PROTECTION_HOOK);
@@ -250,14 +257,14 @@ StatusType Schedule(void)
 **              – E_OS_CALLEVEL – a call at the interrupt level.
 **              – E_OS_RESOURCE - calling task occupies resources.
 */
-
+#if defined(OS_USE_INTERNAL_RESOURCES)
     if (OS_TaskConf[OsCurrentTID].InternalResource!=INTERNAL_RES_NONE) {
 #if defined(OS_SCHED_POLICY_NON) ||  defined(OS_SCHED_POLICY_MIX)
         OS_UNLOCK_INTERNAL_RESOURCE();
 #endif
         OS_FORCE_SCHEDULE_FROM_TASK_LEVEL();
     }
-
+#endif
     CLEAR_SERVICE_CONTEXT();
     return E_OK;
 }
@@ -299,8 +306,8 @@ static void OsTask_Init(TaskType TaskID,boolean Schedule)
     OsUtilMemSet((void*)task_def->stack_addr,(uint8)OSSTACKFILLCHAR,(uint16)task_def->stack_size);
 #endif
 
-    tcb->Stackpointer=OsPortTaskStackInit(TaskID,&task_def->TaskFunction,
-        task_def->StackStart+task_def->StackSize-(uint8)1,Schedule);
+    tcb->Stackpointer=OsPort_TaskStackInit(TaskID,&task_def->TaskFunction,
+        ((uint8*)task_def->StackStart+task_def->StackSize-(uint8)1),Schedule);
     tcb->State=SUSPENDED;
 #if defined(OS_BCC2) || defined(OS_ECC2)
     tcb->Activations=(uint8)0x00;

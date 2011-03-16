@@ -1,7 +1,7 @@
 /*
    k_os (Konnex Operating-System based on the OSEK/VDX-Standard).
 
- * (C) 2007-2010 by Christoph Schueler <github.com/Christoph2,
+ * (C) 2007-2011 by Christoph Schueler <github.com/Christoph2,
  *                                      cpu12.gems@googlemail.com>
 
    All Rights Reserved
@@ -30,6 +30,7 @@ void OsMLQ_AddTaskFirst(TaskType TaskID,PriorityType prio);
 void OsMLQ_AddTaskLast(TaskType TaskID,PriorityType prio);
 void OsMLQ_RemoveTask(PriorityType prio);
 
+#if !defined(OS_SCHED_BM_ONLY)
 static void OsMLQ_InitQueue(uint8 num);
 static void OsMLQ_PushFront(uint8 num,TaskType TaskID);
 static void OsMLQ_PushBack(uint8 num,TaskType TaskID);
@@ -39,6 +40,7 @@ static boolean OsMLQ_IsEmpty(uint8 num);
 /* static boolean OsMLQ_IsFull(uint8 num); */
 static TaskType OsMLQ_Front(uint8 num);
 /* static TaskType OsMLQ_Back(uint8 num); */
+#endif /* !OS_SCHED_BM_ONLY*/
 
 
 #if defined(OS_USE_RESOURCES)
@@ -47,6 +49,10 @@ static TaskType OsMLQ_Front(uint8 num);
 #define PRIORITY_FOR_TASK(TaskID)   OS_TaskConf[(TaskID)].Priority
 #endif
 
+
+#if defined(OS_SCHED_BM_ONLY)
+
+#endif
 
 static OsMLQ_QueueType MLQ_ReadyQueue[OS_MLQ_NUMBER_OF_PRIORITIES];
 static uint16 BM_NotEmpty;  /* Bitmap for non-empty queues.  */
@@ -61,25 +67,31 @@ static uint16 BM_NotEmpty;  /* Bitmap for non-empty queues.  */
 
 void OsMLQ_Init(void)
 {
-    uint8 idx;
-
     BM_NotEmpty=(uint16)0x0000U;
+#if !defined(OS_SCHED_BM_ONLY)
+    uint8 idx;
 
     for (idx=(uint8)0;idx<OS_MLQ_NUMBER_OF_PRIORITIES;++idx) {
         OsMLQ_InitQueue(idx);
     }
-
+#endif
 }
 
 
 TaskType OsMLQ_GetHighestPrio(void)
 {
+#if !defined(OS_SCHED_BM_ONLY)
     uint8 queue_num;
+#endif
     TaskType TaskID=INVALID_TASK;
 
     if (BM_NotEmpty!=(uint16)0x0000U) {
+#if defined(OS_SCHED_BM_ONLY)
+        TaskID=OsMLQ_GetLowestBitNumber((~BM_NotEmpty+(uint16)1) & BM_NotEmpty);
+#else
         queue_num=OsMLQ_GetLowestBitNumber((~BM_NotEmpty+(uint16)1) & BM_NotEmpty)-((uint8)1);
         TaskID=OsMLQ_Front(queue_num);
+#endif
     }
 
     return TaskID;
@@ -102,8 +114,12 @@ void OsMLQ_AddTaskFirst(TaskType TaskID,PriorityType prio)    /* stack. */
 {
     ASSERT((prio!=PRIO_NONE) && (INVERT_NIBBLE(prio)<=OS_MLQ_NUMBER_OF_PRIORITIES));
 
-    BM_NotEmpty=Utl_BitSet(BM_NotEmpty,(uint8)prio);
+    //BM_NotEmpty=Utl_BitSet(BM_NotEmpty,(uint8)prio);
+    UTL_BIT_SET16(BM_NotEmpty,(uint8)prio);
+
+#if !defined(OS_SCHED_BM_ONLY)
     OsMLQ_PushFront(INVERT_NIBBLE(prio),TaskID);
+#endif
 }
 
 
@@ -111,8 +127,11 @@ void OsMLQ_AddTaskLast(TaskType TaskID,PriorityType prio)     /* queue. */
 {
     ASSERT((prio!=PRIO_NONE) && (INVERT_NIBBLE(prio)<=OS_MLQ_NUMBER_OF_PRIORITIES));
 
-    BM_NotEmpty=Utl_BitSet(BM_NotEmpty,(uint8)prio);
+    //BM_NotEmpty=Utl_BitSet(BM_NotEmpty,(uint8)prio);
+    UTL_BIT_SET16(BM_NotEmpty,(uint8)prio);
+#if !defined(OS_SCHED_BM_ONLY)
     OsMLQ_PushBack(INVERT_NIBBLE(prio),TaskID);
+#endif
 }
 
 
@@ -124,26 +143,34 @@ void OsMLQ_RemoveTask(TaskType TaskID)
 
     prio=PRIORITY_FOR_TASK(TaskID);
     ASSERT((prio!=PRIO_NONE) && (INVERT_NIBBLE(prio)<=OS_MLQ_NUMBER_OF_PRIORITIES));
-
+#if !defined(OS_SCHED_BM_ONLY)
     OsMLQ_PopFront(INVERT_NIBBLE(prio));
     if (OsMLQ_IsEmpty(INVERT_NIBBLE(prio))) {
-        BM_NotEmpty=Utl_BitReset(BM_NotEmpty,prio);
+        //BM_NotEmpty=Utl_BitReset(BM_NotEmpty,prio);
+        UTL_BIT_RESET16(BM_NotEmpty,(uint8)prio);
     }
+#else
+    //BM_NotEmpty=Utl_BitReset(BM_NotEmpty,prio);
+    UTL_BIT_RESET16(BM_NotEmpty,(uint8)prio);
+#endif
 }
 
 
+#if defined(OS_USE_RESOURCES) || defined(OS_USE_INTERNAL_RESOURCES)
 void OsMLQ_ChangePrio(TaskType TaskID,PriorityType old_prio,PriorityType new_prio)
 {
     ASSERT((new_prio!=PRIO_NONE) && (INVERT_NIBBLE(new_prio)<=OS_MLQ_NUMBER_OF_PRIORITIES));
 
     OS_TCB[TaskID].CurrentPriority=new_prio;
 }
+#endif
 
 /*
 **
 **  Local Functions.
 **
 */
+#if !defined(OS_SCHED_BM_ONLY)
 static void OsMLQ_InitQueue(uint8 num)
 {
     Utl_MemSet((void*)&MLQ_ReadyQueue[num],(uint8)'\0',(uint16)sizeof(OsMLQ_QueueType));
@@ -195,14 +222,6 @@ static boolean OsMLQ_IsEmpty(uint8 num)
 }
 
 
-#if 0
-static boolean OsMLQ_IsFull(uint8 num)
-{
-    return MLQ_ReadyQueue[num].entries==MLQ_QueueDef[num].size;
-}
-#endif
-
-
 static TaskType OsMLQ_Front(uint8 num)
 {
     return MLQ_QueueDef[num].data[MLQ_ReadyQueue[num].head];
@@ -210,8 +229,14 @@ static TaskType OsMLQ_Front(uint8 num)
 
 
 #if 0
+static boolean OsMLQ_IsFull(uint8 num)
+{
+    return MLQ_ReadyQueue[num].entries==MLQ_QueueDef[num].size;
+}
+
 static TaskType OsMLQ_Back(uint8 num)
 {
     return MLQ_QueueDef[num].data[MLQ_ReadyQueue[num].tail];
 }
 #endif
+#endif /* !OS_SCHED_BM_ONLY*/

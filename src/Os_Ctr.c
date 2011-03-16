@@ -168,8 +168,8 @@ void OsCtr_InitCounters(void)
 
 static void OsCtr_UpdateAttachedAlarms(CounterType CounterID)
 {
-    uint8_least idx=(uint8_least)0x00;
-    /*Os_AlarmStateType*/uint16 Alarms=OsAlm_GetActiveAlarms();
+    uint8 idx=(uint8)0x00;
+    uint16 Alarms=OsAlm_GetActiveAlarms();
     AlarmType AlarmID;
 
     while (Alarms!=(uint8)0x00) {

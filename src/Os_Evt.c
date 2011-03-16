@@ -1,7 +1,7 @@
 /*
    k_os (Konnex Operating-System based on the OSEK/VDX-Standard).
 
- * (C) 2007-2010 by Christoph Schueler <github.com/Christoph2,
+ * (C) 2007-2011 by Christoph Schueler <github.com/Christoph2,
  *                                      cpu12.gems@googlemail.com>
 
    All Rights Reserved
@@ -26,6 +26,12 @@
 
 StatusType OsEvtSetEvent(TaskType TaskID,EventMaskType Mask)
 {
+#if defined(OS_BCC1) || defined(OS_BCC2)
+    UNREFERENCED_PARAMETER(TaskID);
+    UNREFERENCED_PARAMETER(Mask);
+
+    OSCallErrorHookAndReturn(E_OS_ACCESS);    /* no extended tasks, always fail.  */
+#elif defined(OS_ECC1) || defined(OS_ECC2)
     SAVE_SERVICE_CONTEXT(OSServiceId_SetEvent,TaskID,Mask,NULL);
 
     ASSERT_VALID_TASKID(TaskID);
@@ -43,9 +49,9 @@ StatusType OsEvtSetEvent(TaskType TaskID,EventMaskType Mask)
     }
 
     ENABLE_ALL_OS_INTERRUPTS();
-
     CLEAR_SERVICE_CONTEXT();
     return E_OK;
+#endif
 }
 
 
@@ -60,22 +66,25 @@ StatusType SetEvent(TaskType TaskID,EventMaskType Mask)
 **              – E_OS_ACCESS – the referenced task is not an Extended Task.
 **              – E_OS_STATE – the referenced task is in the suspended state.
 */
+
 #if defined(OS_BCC1) || defined(OS_BCC2)
     UNREFERENCED_PARAMETER(TaskID);
     UNREFERENCED_PARAMETER(Mask);
 
     OSCallErrorHookAndReturn(E_OS_ACCESS);  /* no extended tasks, always fail.  */
 #elif defined(OS_ECC1) || defined(OS_ECC2)
-
     StatusType Status=OsEvtSetEvent(TaskID,Mask);
 
+    SAVE_SERVICE_CONTEXT(OSServiceId_SetEvent,TaskID,Mask,NULL);
+
+    CLEAR_SERVICE_CONTEXT();
     if (Status!=E_OK) {
         return Status;
     } else {
         OS_COND_SCHEDULE_FROM_TASK_LEVEL();
     }
-#endif
     return E_OK;
+#endif
 }
 
 
@@ -89,13 +98,13 @@ StatusType ClearEvent(EventMaskType Mask)
 **              – E_OS_ACCESS – the calling task is not an Extended Task.
 **              – E_OS_CALLEVEL – a call at the interrupt level is not allowed.
 */
-    SAVE_SERVICE_CONTEXT(OSServiceId_ClearEvent,Mask,NULL,NULL);
 
 #if defined(OS_BCC1) || defined(OS_BCC2)
     UNREFERENCED_PARAMETER(Mask);
 
     OSCallErrorHookAndReturn(E_OS_ACCESS);    /* no extended tasks, always fail.  */
 #elif defined(OS_ECC1) || defined(OS_ECC2)
+    SAVE_SERVICE_CONTEXT(OSServiceId_ClearEvent,Mask,NULL,NULL);
     ASSERT_TASK_IS_EXTENDED(OsCurrentTID);
     ASSERT_VALID_CALLEVEL(OS_CL_TASK);
     ASSERT_INTERRUPTS_ENABLED_AT_TASK_LEVEL();
@@ -103,9 +112,9 @@ StatusType ClearEvent(EventMaskType Mask)
     DISABLE_ALL_OS_INTERRUPTS();
     OS_TASK_CLR_EVENT(OsCurrentTID,Mask);
     ENABLE_ALL_OS_INTERRUPTS();
-#endif
     CLEAR_SERVICE_CONTEXT();
     return E_OK;
+#endif
 }
 
 
@@ -119,14 +128,13 @@ StatusType GetEvent(TaskType TaskID,EventMaskRefType Event)
 **              – E_OS_ACCESS – the referenced task is not an Extended Task.
 **              – E_OS_STATE – the referenced task is in the suspended state.
 */
-    SAVE_SERVICE_CONTEXT(OSServiceId_GetEvent,TaskID,/*Event*/NULL,NULL);
-
 #if defined(OS_BCC1) || defined(OS_BCC2)
     UNREFERENCED_PARAMETER(TaskID);
     UNREFERENCED_PARAMETER(Event);
 
     OSCallErrorHookAndReturn(E_OS_ACCESS);      /* no extended tasks, always fail.  */
 #elif defined(OS_ECC1) || defined(OS_ECC2)
+    SAVE_SERVICE_CONTEXT(OSServiceId_GetEvent,TaskID,/*Event*/NULL,NULL);
     ASSERT_VALID_TASKID(TaskID);
     ASSERT_TASK_IS_EXTENDED(TaskID);
     ASSERT_TASK_IS_NOT_SUSPENDED(TaskID);
@@ -136,9 +144,9 @@ StatusType GetEvent(TaskType TaskID,EventMaskRefType Event)
     DISABLE_ALL_OS_INTERRUPTS();
     *Event=OS_TASK_GET_EVENTS_SET(TaskID);
     ENABLE_ALL_OS_INTERRUPTS();
-#endif
     CLEAR_SERVICE_CONTEXT();
     return E_OK;
+#endif
 }
 
 
@@ -155,10 +163,8 @@ StatusType WaitEvent(EventMaskType Mask)
 **              – E_OS_RESOURCE – the calling task occupies resources.
 **              – E_OS_CALLEVEL – a call at the interrupt level is not allowed.
 */
-
 #if defined(OS_BCC1) || defined(OS_BCC2)
     UNREFERENCED_PARAMETER(Mask);
-    SAVE_SERVICE_CONTEXT(OSServiceId_WaitEvent,Mask,NULL,NULL);
 
     OSCallErrorHookAndReturn(E_OS_ACCESS);      /* no extended tasks, always fail.  */
 #elif defined(OS_ECC1) || defined(OS_ECC2)
@@ -179,12 +185,13 @@ StatusType WaitEvent(EventMaskType Mask)
     if ((EventsSet & Mask)==(EventMaskType)0) {
         /*  no events set, we have to wait...  */
         OsTask_Wait(OsCurrentTID);
+        CLEAR_SERVICE_CONTEXT();
         ENABLE_ALL_OS_INTERRUPTS();
         OS_FORCE_SCHEDULE_FROM_TASK_LEVEL();
     } else {
         ENABLE_ALL_OS_INTERRUPTS();
     }
-#endif
     CLEAR_SERVICE_CONTEXT();
     return E_OK;
+#endif
 }
