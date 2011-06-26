@@ -20,10 +20,10 @@
    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
    s. FLOSS-EXCEPTION.txt
-*/
+ */
 #include "Os_Orti.h"
 
 /*#if defined(OS_USE_ORTI) */
-StatusType OsORTILastError;
-uint8 OsORTIServiceID;
+StatusType  OsORTILastError;
+uint8       OsORTIServiceID;
 /*#endif */

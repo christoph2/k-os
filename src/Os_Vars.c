@@ -1,7 +1,7 @@
 /*
    k_os (Konnex Operating-System based on the OSEK/VDX-Standard).
 
-  (C) 2007-2011 by Christoph Schueler <github.com/Christoph2,
+   (C) 2007-2011 by Christoph Schueler <github.com/Christoph2,
                                        cpu12.gems@googlemail.com>
 
    All Rights Reserved
@@ -20,16 +20,16 @@
    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
    s. FLOSS-EXCEPTION.txt
-*/
+ */
 #include "Osek.h"
 
-TaskType OsCurrentTID;
-OsTCBType *OsCurrentTCB;
-uint8 OsFlags;
+TaskType    OsCurrentTID;
+OsTCBType * OsCurrentTCB;
+uint8       OsFlags;
 
 #if defined(OS_EXTENDED_STATUS) && defined(OS_FEATURE_CALLEVEL_CHECK)
-OsCallevelType OsCallevel=OS_CL_INVALID;
-OsCallevelType OsCallevelSaved=OS_CL_INVALID;
+OsCallevelType  OsCallevel         = OS_CL_INVALID;
+OsCallevelType  OsCallevelSaved    = OS_CL_INVALID;
 #endif
 
-OS_DEFINE_GLOBAL_IF_DEBUGGING(OsCurrentISRID,uint8);
+OS_DEFINE_GLOBAL_IF_DEBUGGING(OsCurrentISRID, uint8);

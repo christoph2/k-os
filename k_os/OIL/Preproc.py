@@ -93,7 +93,6 @@ def locateIncludeFile(quoted,fname):
                 break
     return (found,path)
 
-
 class Preproc(object):
     def __init__(self,inFile,outFile):
         self.inFile=inFile

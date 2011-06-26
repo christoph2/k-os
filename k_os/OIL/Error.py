@@ -43,31 +43,31 @@ def createLogger(level,name,fmt):
 class OILError(object):
     inst=None
 
-    def __new__(self):
-        if self.inst is None:
+    def __new__(cls):
+        if cls.inst is None:
             # Make it a Singleton.
-            self.fatalErrorCounter=0
-            self.errorCounter=0
-            self.warningCounter=0
-            self.informationCounter=0
+            cls.inst=super(OILError,cls).__new__(cls)
+            cls.fatalErrorCounter=0
+            cls.errorCounter=0
+            cls.warningCounter=0
+            cls.informationCounter=0
 
-            self.loggerMessageonly=createLogger(logging.NOTSET,"kos.oil.logger.messageonly",
+            cls.loggerMessageonly=createLogger(logging.NOTSET,"kos.oil.logger.messageonly",
                 "[%(levelname)s] - %(message)s"
             )
-            self.loggerFilename=createLogger(logging.NOTSET,"kos.oil.logger.filename",
-                "[%(levelname)s]:%(filename)s - %(message)s"
+            cls.loggerFilename=createLogger(logging.NOTSET,"kos.oil.logger.filename",
+                "[%(levelname)s]:%(fname)s - %(message)s"
             )
-            self.loggerFull=createLogger(logging.NOTSET,"kos.oil.logger.full",
-                 "[%(levelname)s]:%(filename)s:%(lineno)s - %(message)s"
+            cls.loggerFull=createLogger(logging.NOTSET,"kos.oil.logger.full",
+                 "[%(levelname)s]:%(fname)s:%(lno)s - %(message)s"
             )
-            self.inst=super(OILError,self).__new__(self)
-        return self.inst
+        return cls.inst
 
     def logMessage(self,level,message,lineno=None,filename=None,code=None):
         if lineno and filename:
-            self.loggerFull.log(level,message,extra={'lineno': lineno,'filename': filename})
+            self.loggerFull.log(level,message,extra={'lno': lineno,'fname': filename})
         elif filename:
-            self.loggerFilename.log(level,message,extra={'filename': filename})
+            self.loggerFilename.log(level,message,extra={'fname': filename})
         else:
             self.loggerMessageonly.log(level,message)
 

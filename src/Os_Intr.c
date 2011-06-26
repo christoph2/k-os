@@ -20,7 +20,7 @@
    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
    s. FLOSS-EXCEPTION.txt
-*/
+ */
 
 /*
 **
@@ -30,74 +30,68 @@
 
 #include "Osek.h"
 
-
-static void SuspendCPUInterrrupts(void),ResumeCPUInterrrupts(void);
-
+static void SuspendCPUInterrrupts(void), ResumeCPUInterrrupts(void);
 
 /*
 **  !REQ!AS!OS299!
 **  ... (it is assumed the static variables of this functions are initialized).
 */
-static volatile uint8 InterruptDisableCounter=(uint8)0;
-static boolean IStateSave;
-
+static volatile uint8   InterruptDisableCounter = (uint8)0;
+static boolean          IStateSave;
 
 void OsIntr_InitInterrupts(void)
 {
-    InterruptDisableCounter=(uint8)0;
+    InterruptDisableCounter = (uint8)0;
 }
-
 
 void ResumeAllInterrupts(void)
 {
     ResumeCPUInterrrupts();
 }
 
-
 void SuspendAllInterrupts(void)
 {
     SuspendCPUInterrrupts();
 }
-
 
 void ResumeOSInterrupts(void)
 {
     ResumeCPUInterrrupts();
 }
 
-
 void SuspendOSInterrupts(void)
 {
     SuspendCPUInterrrupts();
 }
 
-
 void SuspendCPUInterrrupts(void)
 {
-    uint8 istate=CPU_INTERRUPTS_DISABLED();
+    uint8 istate = CPU_INTERRUPTS_DISABLED();
 
     CPU_DISABLE_ALL_INTERRUPTS();
 
-    if ((InterruptDisableCounter++)==(uint8)0) {
-        IStateSave=istate;
+    if ((InterruptDisableCounter++) == (uint8)0) {
+        IStateSave = istate;
     }
 }
-
 
 void ResumeCPUInterrrupts(void) /* s. Autosar O92 !!!*/
 {
-    uint8 istate=CPU_INTERRUPTS_DISABLED();
-    ASSERT((istate==TRUE) && (InterruptDisableCounter!=(uint8)0));
+    uint8 istate = CPU_INTERRUPTS_DISABLED();
+
+    ASSERT((istate == TRUE) && (InterruptDisableCounter != (uint8)0));
 
     CPU_DISABLE_ALL_INTERRUPTS();
 
-    if ((--InterruptDisableCounter==(uint8)0) && (IStateSave==FALSE)) {
-            CPU_ENABLE_ALL_INTERRUPTS();
+    if ((--InterruptDisableCounter == (uint8)0) && (IStateSave == FALSE)) {
+        CPU_ENABLE_ALL_INTERRUPTS();
     }
 }
 
-
+#if defined(OS_FEATURE_ORTI_DEBUG)
 ISRType GetISRID(void)
 {
     return OsCurrentISRID;
 }
+
+#endif

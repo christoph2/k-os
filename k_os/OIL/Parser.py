@@ -1198,18 +1198,16 @@ def checkAttr(
                         implDef.default))
         elif implDef.multiple_specifier == True:
             pass
-        if implDef.attrType == 'BOOLEAN':
+        if implDef.attrType == 'BOOLEAN' and attrValue is not None:
             checkBoolean(appDef, objName, attr, implDef, autoList)
-        elif implDef.attrType == 'ENUM':
+        elif implDef.attrType == 'ENUM' and attrValue is not None:
             checkEnum(appDef, objName, attr, implDef, autoList)
     elif isinstance(implDef, ImplRefDef):
         if implDef.multiple_specifier == False and attrValue is None:
             errObj.error("Missing required attribute '%s:%s'."
                          % (objName, attr))
     else:
-        errObj.fatalError("Definition neither 'ImplAttrDef' nor 'ImplRefDef'."
-                          )
-
+        errObj.fatalError("Definition neither 'ImplAttrDef' nor 'ImplRefDef'.")
 
 def setDefaults():
     Priorities = {}
@@ -1277,6 +1275,7 @@ def setDefaults():
             else:
                 pass
 
+    '''
     autostartedTasks = filter(lambda x: x['AUTOSTART'].value == True,
                               filter(lambda x: isinstance(x['AUTOSTART'
                               ], NestedParameter), AppDefMap['TASK'
@@ -1307,6 +1306,7 @@ def setDefaults():
 
     if len(autostartedTasks) + len(autostartedAlarms) == 0:
         errObj.warning('Neither TASKs nor ALARMs are AUTOSTARTed.')
+    '''
 
     if not AppDefMap.get('OS'):
         errObj.error("Missing required Object 'OS'.")
@@ -1343,7 +1343,7 @@ def setDefaults():
                 appDef2['RELATIVE_PRIORITY'].attribute_name = \
                     'RELATIVE_PRIORITY'
                 del appDef2['PRIORITY']
-                if appDef2['SCHEDULE'].attribute_value.value == 'FULL':
+                if appDef2.has_key('SCHEDULE') and appDef2['SCHEDULE'].attribute_value.value == 'FULL':
                     numPreTasks += 1
                 else:
                     numNonTasks += 1
@@ -1358,6 +1358,38 @@ def setDefaults():
                       % (MAX_PRIORITIES, numberOfDistinctPriorities))
     Info['numberOfDistinctPriorities'] = numberOfDistinctPriorities
     xCC2 = False
+
+    autostartedTasks = filter(lambda x: x['AUTOSTART'].value == True,
+                              filter(lambda x: isinstance(x['AUTOSTART' # hasattr(x,'AUTOSTART') and
+                              ], NestedParameter), AppDefMap['TASK'
+                              ].values()))
+    Info['autostartedTasks'] = autostartedTasks
+    autostartedAlarms = filter(lambda x: x['AUTOSTART'].value == True,
+                               filter(lambda x: isinstance(x['AUTOSTART'
+                               ], NestedParameter), AppDefMap['ALARM'
+                               ].values()))
+    Info['autostartedAlarms'] = autostartedAlarms
+
+    if len(autostartedAlarms) > 0:
+        for (counter, alarm) in map(lambda x: (AppDefMap['COUNTER'
+                                    ][x['COUNTER'
+                                    ].attribute_value.value], x),
+                                    autostartedAlarms):
+            alarmCycleTime = alarm['AUTOSTART']['CYCLETIME'
+                    ].attribute_value.value
+            alarmAlarmTime = alarm['AUTOSTART']['ALARMTIME'
+                    ].attribute_value.value
+            counterMinCycle = counter['MINCYCLE'].attribute_value.value
+            counterMaxAllowedValue = counter['MAXALLOWEDVALUE'
+                    ].attribute_value.value
+            if alarmCycleTime < counterMinCycle:
+                errObj.error("CYCLETIME (%u) of ALARM '%s' smaller then MINCYCLE (%u) of associated COUNTER '%s'"
+                              % (alarmCycleTime, alarm.name,
+                             counterMinCycle, counter.name))
+
+    if len(autostartedTasks) + len(autostartedAlarms) == 0:
+        errObj.warning('Neither TASKs nor ALARMs are AUTOSTARTed.')
+
 
     for (key, value) in [v for v in AppDefMap['RESOURCE'].items()
                          if not hasattr(v, 'relativeCeilingPriority')]:
