@@ -70,8 +70,7 @@ def simplifiedApplicationDefinition(appDefs):
     setattr(app, 'internalResources', internalResources)
     setattr(app, 'linkedResources', linkedResources)
     if len(app.linkedResources) > 0x00:
-        errObj.error('FIXME: Add support for linked resources.',
-                     filename='GenCfg.py')
+        errObj.error('FIXME: Add support for linked resources.', filename='GenCfg.py')
     for (num, task) in enumerate(app.tasks):
         if 'EVENT' in task and len(task['EVENT']):
             task.taskType = 'BASIC'
@@ -81,11 +80,9 @@ def simplifiedApplicationDefinition(appDefs):
 
 
 class ApplicationDefinition(object):
-
     """
     This class makes the OSEK-Application-Definition more accessible.
     """
-
     def __init__(self, appDefs):
         for (name, appDef) in appDefs.items():
             attr = name.lower()
@@ -93,57 +90,27 @@ class ApplicationDefinition(object):
                 for (key, value) in a.items():
                     if key == 'ORTI_DEBUG':
                         pass
-                    self.setValues(value)
             if attr not in ('com', 'nm', 'os'):
                 attr += 's'
                 setattr(self, attr, [x for x in appDef.values()])
             elif len(appDef) > 0x00:
                 setattr(self, attr, appDef.values()[0x00])
 
-    def setValues(self, obj):
-        '''Create shortcuts to values.'''
 
-        if isinstance(obj, types.ListType):
-            for o in obj:
-                self.setValues(o)
-        else:
-            if isinstance(obj, NestedParameter):
-                for paramList in obj.items():  # _,paramList
-                    if isinstance(paramList, types.ListType):
-                        for param in paramList:
-                            self.setValues(param)
-                    else:
-                        self.setValues(paramList[1])
-            else:
-                for (key, value) in obj.items():
-                    self.setValues(value)
-                setattr(obj, 'value', obj.attribute_value.value)
-
-
-def writeTemplate(
-    tmplFileName,
-    outFileName,
-    nameSpace,
-    encodeAsUTF8=True,
-    ):
+def writeTemplate(tmplFileName, outFileName, nameSpace, encodeAsUTF8 = True):
     if os.access(outFileName, os.F_OK):
         os.chmod(outFileName, stat.S_IWRITE or stat.S_IREAD)
-
-##        os.unlink(outFileName)
-
+##      os.unlink(outFileName)
     tmpl = Template(file=tmplFileName, searchList=[nameSpace])
     if encodeAsUTF8 == True:
-        outFile = codecs.open(outFileName, mode='wt', encoding='utf-8',
-                              errors='xmlcharrefreplace')
+        outFile = codecs.open(outFileName, mode='wt', encoding='utf-8', errors='xmlcharrefreplace')
         outFile.write(unicode(codecs.BOM_UTF8, 'utf-8'))
     else:
         outFile = open(outFileName, mode='wt')
 
     outFile.write(unicode(tmpl))
     outFile.close()
-
-
-##    os.chmod(outFileName,os.O_RDONLY)
+##  os.chmod(outFileName,os.O_RDONLY)
 
 
 def enumerateServices():
@@ -212,8 +179,7 @@ def getAlarmsForCounters():
 
 def getApplicationModes(obj):
     if isinstance(obj['AUTOSTART']['APPMODE'], types.ListType):
-        return '|'.join(map(lambda x: x.value, obj['AUTOSTART'
-                        ]['APPMODE']))
+        return '|'.join(map(lambda x: x.value, obj['AUTOSTART']['APPMODE']))
     else:
         return obj['AUTOSTART']['APPMODE'].value
 
@@ -227,6 +193,7 @@ osVars = {
     'callevel': 'OsCallevel',
     'runningTaskPriority': 'OsCurrentTCB->CurrentPriority',
     }
+
 
 Register = namedtuple('Register', 'name type offset')
 Stack = namedtuple('Stack', 'direction fillpattern')
@@ -299,13 +266,4 @@ def Generate(fname, AppDef, Info):
             Register('B', 'uint8', 1),
             Register('CCR', 'uint8', 0x00),
             )
-        writeTemplate('ortifile.tmpl', 'App.ort', namespace,
-                      encodeAsUTF8=False)
-
-
-def main():
-    print enumerateServices()
-
-
-if __name__ == '__main__':
-    main()
+        writeTemplate('ortifile.tmpl', 'App.ort', namespace, encodeAsUTF8=False)

@@ -77,12 +77,12 @@ AppDefMap = {
     'TASK': Tasks,
     }
 
+
 UINT32_RANGE = ('UINT32', 0, 2 ** 32 - 1)
 INT32_RANGE = ('INT32', -2 ** 31, 2 ** 31 - 1)
 UINT64_RANGE = ('UINT64', 0, 2 ** 64 - 1)
 INT64_RANGE = ('INT64', -2 ** 63, 2 ** 63 - 1)
-FLOAT_RANGE = ('FLOAT', -(1 - 2 ** -24) * 2 ** 127, (1 - 2 ** -24) * 2
-               ** 128)
+FLOAT_RANGE = ('FLOAT', -(1 - 2 ** -24) * 2 ** 127, (1 - 2 ** -24) * 2 ** 128)
 
 NUMERIC_RANGES = {
     'UINT32': UINT32_RANGE,
@@ -99,7 +99,6 @@ NUMERIC_RANGES = {
 
 def strToBool(value):
     '''Convert Python boolean to OIL format.'''
-
     if value.upper() == 'TRUE':
         return True
     elif value.upper() == 'FALSE':
@@ -111,18 +110,8 @@ def strToBool(value):
 ##
 ##  Implementation-Definition.
 ##
-
-
 class ImplRefDef(object):
-
-    def __init__(
-        self,
-        object_ref_type,
-        name,
-        multiple_specifier,
-        description,
-        ):
-
+    def __init__(self, object_ref_type, name, multiple_specifier, description):
         self.object_ref_type = object_ref_type
         self.name = name
         self.multiple_specifier = multiple_specifier
@@ -130,18 +119,7 @@ class ImplRefDef(object):
 
 
 class ImplAttrDef(object):
-
-    def __init__(
-        self,
-        name,
-        attrType,
-        auto_specifier,
-        ValueRange,
-        multiple_specifier,
-        default,
-        description,
-        ):
-
+    def __init__(self, name, attrType, auto_specifier, ValueRange, multiple_specifier, default, description):
         self.name = name
         self.attrType = attrType
         self.auto_specifier = auto_specifier  # todo: withAuto
@@ -160,8 +138,7 @@ class ImplAttrDef(object):
                                  % (self.name, self.default))
             elif attrType in ('UINT32', 'UINT64', 'FLOAT'):
                 if ValueRange is not None:
-                    if default < ValueRange.lhs or default \
-                        > ValueRange.rhs:
+                    if default < ValueRange.lhs or default > ValueRange.rhs:
                         errObj.error("Errornous Implementation Attribute '%s': DEFAULT-Value (%s) out of range."
                                  % (self.name, self.default))
             elif attrType == 'BOOLEAN':
@@ -170,17 +147,14 @@ class ImplAttrDef(object):
                 pass
         self.description = description
 
+    def getValue(self):
+        return self.attribute_value.value
+
+    value = property(getValue)
+
 
 class BoolValues(object):
-
-    def __init__(
-        self,
-        true_parameter_list,
-        true_description,
-        false_parameter_list,
-        false_description,
-        ):
-
+    def __init__(self, true_parameter_list, true_description, false_parameter_list, false_description):
         self.true_parameter_list = true_parameter_list
         self.true_description = true_description
         self.false_parameter_list = false_parameter_list
@@ -188,7 +162,6 @@ class BoolValues(object):
 
 
 class ImplSpec(object):
-
     def __init__(self, name):
         self.defs = dict()
 
@@ -225,7 +198,6 @@ ImplDefMap = {
 
 
 class Range(object):
-
     def __init__(self, lhs, rhs):
         self.lhs = lhs
         self.rhs = rhs
@@ -241,19 +213,16 @@ class Range(object):
 
 
 class NumberRange(Range):
-
     def __init__(self, lhs, rhs):
         Range.__init__(self, lhs, rhs)
 
 
 class NumberRangeRange(NumberRange):
-
     def __init__(self, lhs, rhs):
         NumberRange.__init__(self, lhs, rhs)
 
 
 class NumberRangeList(NumberRange):
-
     def __init__(self, lhs):
         NumberRange.__init__(self, lhs, None)
 
@@ -268,13 +237,11 @@ class NumberRangeList(NumberRange):
 
 
 class FloatRange(Range):
-
     def __init__(self, lhs, rhs):
         Range.__init__(self, lhs, rhs)
 
 
 class EnumRange(Range):
-
     def __init__(self, lhs):
         Range.__init__(self, lhs, None)
 
@@ -302,7 +269,6 @@ def GetParameterPathToRootObject(obj, param):
 
 
 class ParameterContainer(dict):
-
     def __init__(self, name):
         self.name = name
 
@@ -311,21 +277,20 @@ class ParameterContainer(dict):
 
 
 def NumericRangeCheck(attr, impldef, type_range):
-    value = attr.attribute_value.value
+    value = attr.value
     if value == 'AUTO':
         return True
     if impldef.ValueRange is not None:
         if not impldef.ValueRange.Check(value):
             ValueRange = impldef.ValueRange.GetRange()
             errObj.error("%s-Value for attribute '%s' out of defined range, valid: %s."
-                          % (impldef.attrType, attr.attribute_name,
+                          % (impldef.attrType, attr.name,
                          str(impldef.ValueRange)))
             return False
     (typename, rangeMin, rangeMax) = type_range
     if not rangeMin <= value <= rangeMax:
         errObj.error("%s-Value for attribute '%s' out of datatype-range: valid: [%s .. %s]."
-                      % (typename, attr.attribute_name, rangeMin,
-                     rangeMax))
+                      % (typename, attr.name, rangeMin, rangeMax))
         return False
     return True
 
@@ -333,35 +298,23 @@ def NumericRangeCheck(attr, impldef, type_range):
 ##
 ##  Parser-Objects.
 ##
-
-
 class ObjectDefinition(dict):
-
-    def __init__(
-        self,
-        name,
-        type_,
-        description=None,
-        ):
-
+    def __init__(self, name, type_, description=None):
         self.name = name
         self.type_ = type_
         self.description = description
         self.path = []
-
         self.parent = None
 
     def AddParameter(self, name, value):
         pd = GetParameterDefinition(self, name)
         if pd is None:
-            errObj.error("Unknown attribute '%s' for object '%s'."
-                         % (name, self.type_))
+            errObj.error("Unknown attribute '%s' for object '%s'." % (name, self.type_))
         else:
             multipleAttrs = pd.multiple_specifier
             if self.get(name) is not None:
                 if multipleAttrs == False:
-                    errObj.error("Only a single value allowed for attribute '%s'."
-                                  % name)
+                    errObj.error("Only a single value allowed for attribute '%s'." % name)
                     return
             else:
                 if multipleAttrs == True:
@@ -377,15 +330,12 @@ class ObjectDefinition(dict):
         if attr.implDef.attrType == 'BOOLEAN':
             if not isinstance(attr.value, types.BooleanType):
                 errObj.error("Parameter '%s::%s' must be of type BOOLEAN."
-                              % (self.name, '::'.join([p[0] for p in
-                             attr.path])))
+                              % (self.name, '::'.join([p[0] for p in attr.path])))
                 return False
             if attr.value == True:
-                validParams = \
-                    attr.implDef.ValueRange.true_parameter_list
+                validParams =  attr.implDef.ValueRange.true_parameter_list
             else:
-                validParams = \
-                    attr.implDef.ValueRange.false_parameter_list
+                validParams =  attr.implDef.ValueRange.false_parameter_list
             validParamValues = [v[1].name for v in validParams]
             for (paramType, paramList) in attr.items():
                 implDef = attr[paramType]
@@ -394,53 +344,38 @@ class ObjectDefinition(dict):
                         if isinstance(param, NestedParameter):
                             return self.checkNestedParam(param)
                         else:
-                            if param.attribute_name \
-                                not in validParamValues:
+                            if param.name not in validParamValues:
                                 errObj.error("Invalid Parameter '%s::%s::%s'."
-                                         % (self.name, '::'.join([p[0]
-                                        for p in attr.path]),
-                                        param.attribute_name))
+                                         % (self.name, '::'.join([p[0] for p in attr.path]), param.name))
                                 return False
                             else:
-                                implDef = [v[1] for v in validParams
-                                        if v[1].name
-                                        == param.attribute_name][0]
-                                return self.SemanticCheck(param,
-                                        implDef)
+                                implDef = [v[1] for v in validParams if v[1].name == param.name][0]
+                                return self.SemanticCheck(param, implDef)
                 else:
                     param = paramList
                     if isinstance(param, NestedParameter):
                         return self.checkNestedParam(param)
                     else:
-                        if param.attribute_name not in validParamValues:
+                        if param.name not in validParamValues:
                             errObj.error("Invalid Parameter '%s::%s::%s'."
-                                     % (self.name, '::'.join([p[0]
-                                    for p in attr.path]),
-                                    param.attribute_name))
+                                     % (self.name, '::'.join([p[0] for p in attr.path]), param.name))
                             return False
                         else:
-                            implDef = [v[1] for v in validParams
-                                    if v[1].name
-                                    == param.attribute_name][0]
+                            implDef = [v[1] for v in validParams if v[1].name == param.name][0]
                             return self.SemanticCheck(param, implDef)
         elif attr.implDef.attrType == 'ENUM':
-
             validParams = attr.implDef.ValueRange.lhs
             validParamValues = [v[0] for v in validParams]
             if attr.value not in validParamValues:
                 errObj.error("Invalid Value '%s' for Parameter '%s::%s'."
-                              % (attr.value, self.name, '::'.join([p[0]
-                             for p in attr.path])))
+                              % (attr.value, self.name, '::'.join([p[0] for p in attr.path])))
                 return False
             else:
-                implDef = [x[1][0][1] for x in validParams if x[0]
-                           == attr.value]
+                implDef = [x[1][0][1] for x in validParams if x[0] == attr.value]
                 (paramType, param) = attr.items()[0]
                 if paramType != implDef[0].name:
                     errObj.error("%s? Expected '%s::%s::%s'."
-                                 % (paramType, self.name,
-                                 '::'.join([p[0] for p in attr.path]),
-                                 implDef[0].name))
+                                 % (paramType, self.name, '::'.join([p[0] for p in attr.path]), implDef[0].name))
                     return False
                 else:
                     return self.SemanticCheck(param, implDef[0])
@@ -451,8 +386,7 @@ class ObjectDefinition(dict):
             return self.checkNestedParam(attr)
         if attr.attribute_value.value == 'AUTO':
             if impldef.auto_specifier == False:
-                errObj.error("AUTO-Specifier for attribute '%s' not permitted."
-                              % attr.attribute_name)
+                errObj.error("AUTO-Specifier for attribute '%s' not permitted." % attr.name)
                 return False
         if isinstance(impldef, ImplRefDef):
             References.setdefault(self.name, []).append(attr)
@@ -475,13 +409,11 @@ class ObjectDefinition(dict):
             if not impldef.ValueRange.Check(value):
                 if value == 'AUTO':
                     if impldef.auto_specifier == False:
-                        errObj.error("AUTO-Specifier for attribute '%s' not permitted."
-                                 % attr.attribute_name)
+                        errObj.error("AUTO-Specifier for attribute '%s' not permitted." % attr.name)
                         return False
                 else:
                     enum = impldef.ValueRange.GetRange()
-                    errObj.error("Undefined emumerator '%s' for attribute '%s', expected %s."
-                                  % (value, attr.attribute_name, enum))
+                    errObj.error("Undefined emumerator '%s' for attribute '%s', expected %s." % (value, attr.name, enum))
                     return False
         return True
 
@@ -498,37 +430,26 @@ class ObjectDefinition(dict):
             }
 
         actual_type = attr.attribute_value.type_
-        if actual_type == 'name' and attr.attribute_value.value \
-            == 'AUTO':
+        if actual_type == 'name' and attr.attribute_value.value == 'AUTO':
             return True
         expected_type = TypeMap[impldef.attrType]
         if actual_type == 'name' and expected_type == 'string':
             return True
         if expected_type != actual_type:
-            errObj.error("<%s>-token for attribute '%s' expected."
-                         % (expected_type, attr.attribute_name))
+            errObj.error("<%s>-token for attribute '%s' expected." % (expected_type, attr.name))
             return False
         else:
             return True
 
 
 class NestedParameter(dict):
-
-    def __init__(
-        self,
-        name,
-        value,
-        parent,
-        ):
-
+    def __init__(self, name, value, parent):
         self.name = name
         self.value = value
         self.parent = parent
         self.type_ = name
-        (self.root, self.path) = GetParameterPathToRootObject(self,
-                name)
-        self.implDef = GetParameterDefinition(self.root, name,
-                self.path)
+        (self.root, self.path) = GetParameterPathToRootObject(self, name)
+        self.implDef = GetParameterDefinition(self.root, name, self.path)
 
     def AddParameter(self, name, value):
         if self.implDef.multiple_specifier == True:
@@ -538,15 +459,7 @@ class NestedParameter(dict):
 
 
 class AttributeValue(object):
-
-    def __init__(
-        self,
-        type_,
-        value,
-        parameterised=False,
-        parameter_list=None,
-        ):
-
+    def __init__(self, type_, value, parameterised=False, parameter_list=None):
         self.type_ = type_
         self.value = value
         self.parameterised = parameterised
@@ -556,28 +469,48 @@ class AttributeValue(object):
         return self.value
 
 
-class Parameter(dict):  # # object
+class PropertyMixin(object):
+    def getValue(self):
+        return self.attribute_value.value
 
-    def __init__(
-        self,
-        attribute_name,
-        attribute_value,
-        description=None,
-        ):
+    def setValue(self, value):
+        self.attribute_value.value = value
 
+    def getName(self):
+        return self.attribute_name
+
+    def setName(self, name):
+        self.attribute_name = name
+
+    def getType(self):
+        return self.attribute_value.type_
+
+    def getParameterised(self):
+        return self.attribute_value.parameterised
+
+    def getParameterList(self):
+        return self.attribute_value.parameter_list
+
+    name = property(getName, setName)
+    value = property(getValue, setValue)
+    type = property(getType)
+    parameterised = property(getParameterised)
+    parameterList = property(getParameterList)
+
+
+class Parameter(PropertyMixin, dict):
+    def __init__(self, attribute_name, attribute_value, description=None):
         self.attribute_name = attribute_name
         self.attribute_value = attribute_value
         self.description = description
 
 
 class Parser(GenericASTBuilder):
-
     def __init__(self, AST, start):
         GenericASTBuilder.__init__(self, AST, start)
 
     def error(self, token):
-        errObj.error("Syntax error at '%s'" % (token, ),
-                     lineno=token.lineno, filename=token.filename)
+        errObj.error("Syntax error at '%s'" % (token, ), lineno=token.lineno, filename=token.filename)
         raise SystemExit
 
     def p_expr(self, args):
@@ -750,14 +683,11 @@ def AddImplDefList(dl, Accum):
 
 
 def AddParamter(obj, param):
-    if param.exprValue.attribute_value.parameterised == True:
-        n = AddNestedParameter(obj, param.exprValue.attribute_name,
-                               param.exprValue.attribute_value.value,
-                               param.exprValue.attribute_value.parameter_list)
-        obj.AddParameter(param.exprValue.attribute_name, n)
+    if param.exprValue.parameterised == True:
+        n = AddNestedParameter(obj, param.exprValue.name, param.exprValue.value, param.exprValue.parameterList)
+        obj.AddParameter(param.exprValue.name, n)
     else:
-        obj.AddParameter(param.exprValue.attribute_name,
-                         param.exprValue)
+        obj.AddParameter(param.exprValue.name, param.exprValue)
 
 
 def AddParameterList(obj, params):
@@ -768,13 +698,7 @@ def AddParameterList(obj, params):
             AddParamter(obj, p)
 
 
-def AddNestedParameter(
-    parent,
-    name,
-    value,
-    params,
-    ):
-
+def AddNestedParameter(parent, name, value, params):
     n = NestedParameter(name, value, parent)
     for p in params:
         if p.type_ == 'parameter_list':
@@ -845,10 +769,7 @@ class TypeCheck(GenericASTTraversal):
             )
 
     def n_impl_ref_def(self, node):
-        node.exprValue = ImplRefDef(node[0].exprValue,
-                                    node[1].exprValue,
-                                    node[2].exprValue,
-                                    node[3].exprValue)
+        node.exprValue = ImplRefDef(node[0].exprValue, node[1].exprValue, node[2].exprValue, node[3].exprValue)
 
     def n_enumeration(self, node):
         Accum = []
@@ -856,8 +777,7 @@ class TypeCheck(GenericASTTraversal):
         node.exprValue = EnumRange(Accum)
 
     def n_enumerator(self, node):
-        node.exprValue = (node[0].exprValue, node[1].exprValue,
-                          node[2].exprValue)
+        node.exprValue = (node[0].exprValue, node[1].exprValue, node[2].exprValue)
 
     def n_default_bool(self, node):
         if node._kids != []:
@@ -915,11 +835,9 @@ class TypeCheck(GenericASTTraversal):
 
     def n_number_range(self, node):
         if len(node._kids) == 5:
-            (rangeMin, rangeMax) = (node[1].exprValue,
-                                    node[3].exprValue)
+            (rangeMin, rangeMax) = (node[1].exprValue, node[3].exprValue)
             if rangeMin > rangeMax:
-                errObj.error('Minimum of NUMBER-Range is greater than maximum.'
-                             )
+                errObj.error('Minimum of NUMBER-Range is greater than maximum.')
                 return
             node.exprValue = NumberRangeRange(rangeMin, rangeMax)
         elif len(node._kids) == 3:
@@ -932,11 +850,9 @@ class TypeCheck(GenericASTTraversal):
 
     def n_float_range(self, node):
         if len(node._kids) == 5:
-            (rangeMin, rangeMax) = (node[1].exprValue,
-                                    node[3].exprValue)
+            (rangeMin, rangeMax) = (node[1].exprValue, node[3].exprValue)
             if rangeMin > rangeMax:
-                errObj.error('Minimum of FLOAT-Range is greater than maximum.'
-                             )
+                errObj.error('Minimum of FLOAT-Range is greater than maximum.')
                 return
             node.exprValue = FloatRange(rangeMin, rangeMax)
         else:
@@ -944,9 +860,7 @@ class TypeCheck(GenericASTTraversal):
 
     def n_bool_values(self, node):
         if node._kids != []:
-            node.exprValue = BoolValues(node[2].exprValue,
-                    node[3].exprValue, node[6].exprValue,
-                    node[7].exprValue)
+            node.exprValue = BoolValues(node[2].exprValue, node[3].exprValue, node[6].exprValue, node[7].exprValue)
         else:
             node.exprValue = None
 
@@ -964,10 +878,10 @@ class TypeCheck(GenericASTTraversal):
         else:
             node.exprValue = None
 
+
 ##
 ##  Application-Definition
 ##
-
     def n_name(self, node):
         node.exprValue = node.attr
 
@@ -991,15 +905,13 @@ class TypeCheck(GenericASTTraversal):
             ev = AttributeValue('name', 'AUTO')
         elif node[0].type_ == 'name':
             if len(node._kids) == 4:
-                ev = AttributeValue('name', node[0].exprValue, True,
-                                    node[2])
+                ev = AttributeValue('name', node[0].exprValue, True, node[2])
             else:
                 ev = AttributeValue('name', node[0].exprValue)
         elif node[0].type_ == 'boolean':
             if len(node._kids) == 4:
                 ev = AttributeValue('boolean',
-                                    strToBool(node[0].exprValue), True,
-                                    node[2])
+                                    strToBool(node[0].exprValue), True, node[2])
             else:
                 ev = AttributeValue('boolean',
                                     strToBool(node[0].exprValue))
@@ -1009,8 +921,7 @@ class TypeCheck(GenericASTTraversal):
 
     def n_parameter(self, node):
         ntype = node[2][0].type_
-        node.exprValue = Parameter(node[0].exprValue,
-                                   node[2].exprValue, node[3].exprValue)
+        node.exprValue = Parameter(node[0].exprValue, node[2].exprValue, node[3].exprValue)
 
     def n_object_definition(self, node):
         obj = node[0][0].exprValue
@@ -1066,14 +977,7 @@ def partitionByPredicate(list_, pred):
     return (part1, part2)
 
 
-def autoHandler(
-    obj,
-    attr,
-    appDef,
-    implDef,
-    autoList,
-    ):
-
+def autoHandler(obj, attr, appDef, implDef, autoList):
     autoList.append((obj, attr, appDef, implDef))
     if obj == 'OS' and attr == 'CC':
         pass  # appDef[1][attr].attribute_value='AUTO'
@@ -1089,31 +993,20 @@ def getAutoParameter(parameter, autoParameter):
         if isinstance(param, types.ListType):
             getAutoParameter(param, autoParameter)
         else:
-            if not isinstance(param, NestedParameter) \
-                and param.attribute_value.value == 'AUTO':
+            if not isinstance(param, NestedParameter) and param.value == 'AUTO':
                 autoParameter.append(param)
 
 
 def mapTasksToEvents():
     mapping = dict()
-    for (task, events) in [(t.name, t['EVENT']) for t in (task
-                           for task in AppDefMap['TASK'].values()
-                           if 'EVENT' in task)]:
+    for (task, events) in [(t.name, t['EVENT']) for t in \
+        (task for task in AppDefMap['TASK'].values() if 'EVENT' in task)]:
         for event in events:
-
-            mapping.setdefault(event.attribute_value.value,
-                               []).append(task)
+            mapping.setdefault(event.value, []).append(task)
     return mapping
 
 
-def checkBoolean(
-    appDef,
-    objName,
-    attr,
-    implDef,
-    autoList,
-    ):
-
+def checkBoolean(appDef, objName, attr, implDef, autoList):
     if attr == 'ORTI_DEBUG':
         pass
     if isinstance(appDef[attr], NestedParameter):
@@ -1121,7 +1014,7 @@ def checkBoolean(
     else:
         paramList = None
         if implDef.ValueRange is not None:
-            if appDef[attr].attribute_value.value == True:
+            if appDef[attr].value == True:
                 paramList = implDef.ValueRange.true_parameter_list
             else:
                 paramList = implDef.ValueRange.false_parameter_list
@@ -1130,34 +1023,19 @@ def checkBoolean(
         if paramList is not None:
             print "PARAM-LIST: '%s'." % paramList
             for param in paramList:
-                checkAttr(appDef[attr], objName, param[1].name,
-                          param[1], autoList)
+                checkAttr(appDef[attr], objName, param[1].name, param[1], autoList)
         else:
             pass
 
 
-def checkEnum(
-    appDef,
-    objName,
-    attr,
-    implDef,
-    autoList,
-    ):
-
+def checkEnum(appDef, objName, attr, implDef, autoList):
     if isinstance(appDef[attr], NestedParameter):
         print 'NESTED'
-    elif appDef[attr].attribute_value.parameterised:
+    elif appDef[attr].parameterised:
         pass
 
 
-def checkAttr(
-    appDef,
-    objName,
-    attr,
-    implDef,
-    autoList,
-    ):
-
+def checkAttr(appDef, objName, attr, implDef, autoList):
     attrValue = None
     if attr in appDef:
         if isinstance(appDef[attr], NestedParameter):
@@ -1165,7 +1043,7 @@ def checkAttr(
         else:
             if not isinstance(appDef[attr], types.ListType):
                 if hasattr(appDef[attr], 'attribute_value'):
-                    attrValue = appDef[attr].attribute_value.value
+                    attrValue = appDef[attr].value
                 else:
                     pass
             else:
@@ -1173,29 +1051,23 @@ def checkAttr(
     else:
         attrValue = None
     if isinstance(implDef, ImplAttrDef):
-        if implDef.default is None and implDef.multiple_specifier \
-            == False and attrValue is None:
+        if implDef.default is None and implDef.multiple_specifier  == False and attrValue is None:
             errObj.error("Missing required attribute '%s:%s'."
                          % (objName, attr))
-        elif implDef.auto_specifier == False and implDef.default \
-            == 'AUTO':
+        elif implDef.auto_specifier == False and implDef.default == 'AUTO':
             errObj.error("'%s%s' - Errornous Implementation Definition: Default value 'AUTO' used without 'WITH_AUTO."
                           % (objType, attr))
         elif implDef.default is not None:
             if implDef.default == 'AUTO':
                 if appDef.type_ != 'OS' and attr != 'CC':
-                    appDef[attr] = Parameter(attr,
-                            AttributeValue(implDef.attrType, None))
+                    appDef[attr] = Parameter(attr, AttributeValue(implDef.attrType, None))
                 objType = appDef.type_
             elif attrValue is None:
 
 #                autoHandler(objType,attr,(appDef,),implDef,autoList)
 
-                errObj.information("Setting '%s:%s' to  default value '%s'."
-                                    % (objName, attr, implDef.default))
-                appDef[attr] = Parameter(attr,
-                        AttributeValue(implDef.attrType,
-                        implDef.default))
+                errObj.information("Setting '%s:%s' to  default value '%s'." % (objName, attr, implDef.default))
+                appDef[attr] = Parameter(attr, AttributeValue(implDef.attrType, implDef.default))
         elif implDef.multiple_specifier == True:
             pass
         if implDef.attrType == 'BOOLEAN' and attrValue is not None:
@@ -1204,10 +1076,10 @@ def checkAttr(
             checkEnum(appDef, objName, attr, implDef, autoList)
     elif isinstance(implDef, ImplRefDef):
         if implDef.multiple_specifier == False and attrValue is None:
-            errObj.error("Missing required attribute '%s:%s'."
-                         % (objName, attr))
+            errObj.error("Missing required attribute '%s:%s'." % (objName, attr))
     else:
         errObj.fatalError("Definition neither 'ImplAttrDef' nor 'ImplRefDef'.")
+
 
 def setDefaults():
     Priorities = {}
@@ -1220,21 +1092,17 @@ def setDefaults():
     eventsToTasksMapping = dict()
 
     usedResources = {}
-    for (key, values) in dict([(t[0], t[1].get('RESOURCE')) for t in
-                              AppDefMap['TASK'].items()]).items():
+    for (key, values) in dict([(t[0], t[1].get('RESOURCE')) for t in AppDefMap['TASK'].items()]).items():
         if values:
             for value in values:
-
-                usedResources.setdefault(value.attribute_value.value,
-                        []).append(key)
+                usedResources.setdefault(value.value, []).append(key)
     for (key, value) in usedResources.items():
 
         # # Calculate Ceiling Priority.
 
         try:
             AppDefMap['RESOURCE'][key].relativeCeilingPriority = \
-                max([AppDefMap['TASK'][v]['PRIORITY'
-                    ].attribute_value.value for v in value])
+                max([AppDefMap['TASK'][v]['PRIORITY'].value for v in value])
         except KeyError:
             pass  # Ignore non-existent Resources for now.
 
@@ -1243,16 +1111,12 @@ def setDefaults():
 
     for (objName, references) in References.items():
         for reference in references:
-            if reference.attribute_value.value \
-                not in AppDefMap[reference.attribute_name]:
-                errObj.error("Undefined Reference '%s:%s' (%s)."
-                             % (objName,
-                             reference.attribute_value.value,
-                             reference.attribute_name))
+            if reference.value not in AppDefMap[reference.name]:
+                errObj.error("Undefined Reference '%s:%s' (%s)." % (objName, reference.value, reference.name))
     events = AppDefMap['EVENT']
     masks = frozenset([2 ** i for i in range(16)])
 
-#    eventMasks=[e['MASK'].attribute_value.value for e in events]
+#    eventMasks=[e['MASK'].value for e in events]
 #    m0=mapTasksToEvents()
 
     for (eventName, taskNames) in mapTasksToEvents().items():
@@ -1260,18 +1124,13 @@ def setDefaults():
         for taskName in taskNames:
 
 #            eventsToTasksMapping.setdefault(eventName,[]).append(taskName)
-#            t0=filter(lambda x: x,[t for t in AppDefMap['TASK'][taskName]['EVENT'] if t.attribute_value.value==eventName])
+#            t0=filter(lambda x: x,[t for t in AppDefMap['TASK'][taskName]['EVENT'] if t.value==eventName])
 
-            eventsForTask = [e.attribute_value.value for e in
-                             AppDefMap['TASK'][taskName]['EVENT']]
-            t0 = filter(lambda x: x, [e for e in events.items() if e[0]
-                        in eventsForTask])
-            (autoEvents, nonAutoEvents) = partitionByPredicate(t0,
-                    lambda x: x[1]['MASK'].attribute_value.value \
-                    == 'AUTO')
+            eventsForTask = [e.value for e in AppDefMap['TASK'][taskName]['EVENT']]
+            t0 = filter(lambda x: x, [e for e in events.items() if e[0] in eventsForTask])
+            (autoEvents, nonAutoEvents) = partitionByPredicate(t0, lambda x: x[1]['MASK'].value == 'AUTO')
             if nonAutoEvents == []:
-                events[eventName]['MASK'].attribute_value.value = \
-                    min(masks)
+                events[eventName]['MASK'].value = min(masks)
             else:
                 pass
 
@@ -1290,15 +1149,15 @@ def setDefaults():
     if len(autostartedAlarms) > 0:
         for (counter, alarm) in map(lambda x: (AppDefMap['COUNTER'
                                     ][x['COUNTER'
-                                    ].attribute_value.value], x),
+                                    ].value], x),
                                     autostartedAlarms):
             alarmCycleTime = alarm['AUTOSTART']['CYCLETIME'
-                    ].attribute_value.value
+                    ].value
             alarmAlarmTime = alarm['AUTOSTART']['ALARMTIME'
-                    ].attribute_value.value
-            counterMinCycle = counter['MINCYCLE'].attribute_value.value
+                    ].value
+            counterMinCycle = counter['MINCYCLE'].value
             counterMaxAllowedValue = counter['MAXALLOWEDVALUE'
-                    ].attribute_value.value
+                    ].value
             if alarmCycleTime < counterMinCycle:
                 errObj.error("CYCLETIME (%u) of ALARM '%s' smaller then MINCYCLE (%u) of associated COUNTER '%s'"
                               % (alarmCycleTime, alarm.name,
@@ -1326,10 +1185,9 @@ def setDefaults():
             autoParameter = []
             getAutoParameter(appDef2.values(), autoParameter)
             for p in autoParameter:
-                attr = p.attribute_name
+                attr = p.name
                 implDef = implDefs[attr]
-                autoHandler(objType, attr, (appDef1, appDef2), implDef,
-                            autoList)
+                autoHandler(objType, attr, (appDef1, appDef2), implDef, autoList)
 
 #            for attr in filter(lambda x: x not in appAttrs,implAttrs):
 
@@ -1337,17 +1195,16 @@ def setDefaults():
                 implDef = implDefs[attr]
                 checkAttr(appDef2, objName, attr, implDef, autoList)
             if objType == 'TASK':
-                priority = appDef2['PRIORITY'].attribute_value.value
+                priority = appDef2['PRIORITY'].value
                 Priorities.setdefault(priority, []).append(appDef2)
                 appDef2['RELATIVE_PRIORITY'] = appDef2['PRIORITY']  # # rename.
-                appDef2['RELATIVE_PRIORITY'].attribute_name = \
-                    'RELATIVE_PRIORITY'
+                appDef2['RELATIVE_PRIORITY'].name = 'RELATIVE_PRIORITY'
                 del appDef2['PRIORITY']
-                if appDef2.has_key('SCHEDULE') and appDef2['SCHEDULE'].attribute_value.value == 'FULL':
+                if appDef2.has_key('SCHEDULE') and appDef2['SCHEDULE'].value == 'FULL':
                     numPreTasks += 1
                 else:
                     numNonTasks += 1
-                if appDef2['ACTIVATION'].attribute_value.value > 1:
+                if appDef2['ACTIVATION'].value > 1:
                     multipleActivations = True
                     ECCx = True  # # todo: check NoOfEvent!!!
             elif objType == 'OS':
@@ -1360,32 +1217,21 @@ def setDefaults():
     xCC2 = False
 
     autostartedTasks = filter(lambda x: x['AUTOSTART'].value == True,
-                              filter(lambda x: isinstance(x['AUTOSTART' # hasattr(x,'AUTOSTART') and
-                              ], NestedParameter), AppDefMap['TASK'
-                              ].values()))
+        filter(lambda x: isinstance(x['AUTOSTART'], NestedParameter), AppDefMap['TASK'].values()))
     Info['autostartedTasks'] = autostartedTasks
     autostartedAlarms = filter(lambda x: x['AUTOSTART'].value == True,
-                               filter(lambda x: isinstance(x['AUTOSTART'
-                               ], NestedParameter), AppDefMap['ALARM'
-                               ].values()))
+        filter(lambda x: isinstance(x['AUTOSTART'], NestedParameter), AppDefMap['ALARM'].values()))
     Info['autostartedAlarms'] = autostartedAlarms
 
     if len(autostartedAlarms) > 0:
-        for (counter, alarm) in map(lambda x: (AppDefMap['COUNTER'
-                                    ][x['COUNTER'
-                                    ].attribute_value.value], x),
-                                    autostartedAlarms):
-            alarmCycleTime = alarm['AUTOSTART']['CYCLETIME'
-                    ].attribute_value.value
-            alarmAlarmTime = alarm['AUTOSTART']['ALARMTIME'
-                    ].attribute_value.value
-            counterMinCycle = counter['MINCYCLE'].attribute_value.value
-            counterMaxAllowedValue = counter['MAXALLOWEDVALUE'
-                    ].attribute_value.value
+        for (counter, alarm) in map(lambda x: (AppDefMap['COUNTER' ][x['COUNTER'].value], x), autostartedAlarms):
+            alarmCycleTime = alarm['AUTOSTART']['CYCLETIME'].value
+            alarmAlarmTime = alarm['AUTOSTART']['ALARMTIME'].value
+            counterMinCycle = counter['MINCYCLE'].value
+            counterMaxAllowedValue = counter['MAXALLOWEDVALUE'].value
             if alarmCycleTime < counterMinCycle:
                 errObj.error("CYCLETIME (%u) of ALARM '%s' smaller then MINCYCLE (%u) of associated COUNTER '%s'"
-                              % (alarmCycleTime, alarm.name,
-                             counterMinCycle, counter.name))
+                              % (alarmCycleTime, alarm.name, counterMinCycle, counter.name))
 
     if len(autostartedTasks) + len(autostartedAlarms) == 0:
         errObj.warning('Neither TASKs nor ALARMs are AUTOSTARTed.')
@@ -1405,23 +1251,20 @@ def setDefaults():
     for (num, levelObjs) in enumerate(Priorities.values(), 1):
         if len(levelObjs) > 1:
             xCC2 = True
-        levelPriority = levelObjs[0]['RELATIVE_PRIORITY'
-                ].attribute_value.value
+        levelPriority = levelObjs[0]['RELATIVE_PRIORITY'].value
         hasResources = False
-        for g in filter(lambda r: r.relativeCeilingPriority \
-                        == levelPriority, [v for v in
-                        AppDefMap['RESOURCE'].values()]):
+        for g in filter(lambda r: r.relativeCeilingPriority  == \
+                        levelPriority, [v for v in AppDefMap['RESOURCE'].values()]):
             g.ceilingPriority = num
             hasResources = True  # todo: xCC2 = True
         activations = 0
         for obj in levelObjs:
-            obj['PRIORITY'] = Parameter('PRIORITY',
-                    AttributeValue('number', num))
-            activations += obj['ACTIVATION'].attribute_value.value
+            obj['PRIORITY'] = Parameter('PRIORITY',AttributeValue('number', num))
+            activations += obj['ACTIVATION'].value
         activations += hasResources and 1 or 0
         priorityMap[levelPriority] = (num, activations)
     Info['priorityMap'] = priorityMap
-    if osCC.attribute_value.value == 'AUTO':
+    if osCC.value == 'AUTO':
         xCC2 = xCC2 or multipleActivations
         if ECCx == False:
             if xCC2 == False:
@@ -1433,7 +1276,7 @@ def setDefaults():
                 cc = 'ECC1'
             else:
                 cc = 'ECC2'
-        osCC.attribute_value.value = cc
+        osCC.value = cc
     else:
         pass
 
