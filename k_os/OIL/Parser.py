@@ -261,10 +261,9 @@ def GetParameterPathToRootObject(obj, param):
     path = []
     path.append((obj.name, type(obj)))
     tobj = obj
-    while tobj.parent:
+    while tobj.parent != None:
         tobj = tobj.parent
-        if not isinstance(tobj, ObjectDefinition):
-            path.insert(0, (tobj.name, tobj.type_))
+        path.insert(0, (tobj.name, tobj.type_))
     return (tobj, path)
 
 
@@ -448,7 +447,16 @@ class NestedParameter(dict):
         self.value = value
         self.parent = parent
         self.type_ = name
+
+        keys = ImplDefMap.keys()
+
+        if name == 'ACTION' and value == 'ACTIVATETASK':
+            pass
+
         (self.root, self.path) = GetParameterPathToRootObject(self, name)
+
+        if self.root.type_ not in keys:
+            pass
         self.implDef = GetParameterDefinition(self.root, name, self.path)
 
     def AddParameter(self, name, value):
