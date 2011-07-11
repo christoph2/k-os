@@ -41,19 +41,6 @@ MAX_PRIORITIES = 16  # # todo: Cfg. !!!
 
 data = []
 
-Alarms = {}
-Appmodes = {}
-Com = {}
-Counters = {}
-Events = {}
-Ipdus = {}
-Isrs = {}
-Messages = {}
-NetworkMessages = {}
-Nm = {}
-Os = {}
-Resources = {}
-Tasks = {}
 
 Info = {}  # # unsorted Items.
 
@@ -61,21 +48,49 @@ errObj = None
 
 References = {}
 
-AppDefMap = {
-    'ALARM': Alarms,
-    'APPMODE': Appmodes,
-    'COM': Com,
-    'COUNTER': Counters,
-    'EVENT': Events,
-    'IPDU': Ipdus,
-    'ISR': Isrs,
-    'MESSAGE': Messages,
-    'NETWORKMESSAGE': NetworkMessages,
-    'NM': Nm,
-    'OS': Os,
-    'RESOURCE': Resources,
-    'TASK': Tasks,
+
+class ApplicationDefinition(object):
+    _Alarms = {}
+    _Appmodes = {}
+    _Com = {}
+    _Counters = {}
+    _Events = {}
+    _Ipdus = {}
+    _Isrs = {}
+    _Messages = {}
+    _NetworkMessages = {}
+    _Nm = {}
+    _Os = {}
+    _Resources = {}
+    _Tasks = {}
+
+    _Mapping = {
+        'ALARM'         : _Alarms,
+        'APPMODE'       : _Appmodes,
+        'COM'           : _Com,
+        'COUNTER'       : _Counters,
+        'EVENT'         : _Events,
+        'IPDU'          : _Ipdus,
+        'ISR'           : _Isrs,
+        'MESSAGE'       : _Messages,
+        'NETWORKMESSAGE': _NetworkMessages,
+        'NM'            : _Nm,
+        'OS'            : _Os,
+        'RESOURCE'      : _Resources,
+        'TASK'          : _Tasks,
     }
+
+    def __getitem__(self, item):
+        return self._Mapping[item]
+
+    def get(self, item):
+        return self.__getitem__(item)
+
+    def items(self):
+        return self._Mapping.items()
+
+
+applicationDefinition = ApplicationDefinition()
 
 
 UINT32_RANGE = ('UINT32', 0, 2 ** 32 - 1)
@@ -934,7 +949,7 @@ class TypeCheck(GenericASTTraversal):
     def n_object_definition(self, node):
         obj = node[0][0].exprValue
         name = node[0][1].exprValue
-        obj_map = AppDefMap[obj]
+        obj_map = applicationDefinition[obj]
         if name not in obj_map:
             descr = None
             if len(node) == 3 and node[1].exprValue:
@@ -1008,7 +1023,7 @@ def getAutoParameter(parameter, autoParameter):
 def mapTasksToEvents():
     mapping = dict()
     for (task, events) in [(t.name, t['EVENT']) for t in \
-        (task for task in AppDefMap['TASK'].values() if 'EVENT' in task)]:
+        (task for task in applicationDefinition['TASK'].values() if 'EVENT' in task)]:
         for event in events:
             mapping.setdefault(event.value, []).append(task)
     return mapping
@@ -1100,7 +1115,7 @@ def setDefaults():
     eventsToTasksMapping = dict()
 
     usedResources = {}
-    for (key, values) in dict([(t[0], t[1].get('RESOURCE')) for t in AppDefMap['TASK'].items()]).items():
+    for (key, values) in dict([(t[0], t[1].get('RESOURCE')) for t in applicationDefinition['TASK'].items()]).items():
         if values:
             for value in values:
                 usedResources.setdefault(value.value, []).append(key)
@@ -1109,19 +1124,19 @@ def setDefaults():
         # # Calculate Ceiling Priority.
 
         try:
-            AppDefMap['RESOURCE'][key].relativeCeilingPriority = \
-                max([AppDefMap['TASK'][v]['PRIORITY'].value for v in value])
+            applicationDefinition['RESOURCE'][key].relativeCeilingPriority = \
+                max([applicationDefinition['TASK'][v]['PRIORITY'].value for v in value])
         except KeyError:
             pass  # Ignore non-existent Resources for now.
 
-    for (num, appmode) in enumerate(AppDefMap['APPMODE'].values()):
+    for (num, appmode) in enumerate(applicationDefinition['APPMODE'].values()):
         appmode.value = 1 << num
 
     for (objName, references) in References.items():
         for reference in references:
-            if reference.value not in AppDefMap[reference.name]:
+            if reference.value not in applicationDefinition[reference.name]:
                 errObj.error("Undefined Reference '%s:%s' (%s)." % (objName, reference.value, reference.name))
-    events = AppDefMap['EVENT']
+    events = applicationDefinition['EVENT']
     masks = frozenset([2 ** i for i in range(16)])
 
 #    eventMasks=[e['MASK'].value for e in events]
@@ -1132,9 +1147,9 @@ def setDefaults():
         for taskName in taskNames:
 
 #            eventsToTasksMapping.setdefault(eventName,[]).append(taskName)
-#            t0=filter(lambda x: x,[t for t in AppDefMap['TASK'][taskName]['EVENT'] if t.value==eventName])
+#            t0=filter(lambda x: x,[t for t in applicationDefinition['TASK'][taskName]['EVENT'] if t.value==eventName])
 
-            eventsForTask = [e.value for e in AppDefMap['TASK'][taskName]['EVENT']]
+            eventsForTask = [e.value for e in applicationDefinition['TASK'][taskName]['EVENT']]
             t0 = filter(lambda x: x, [e for e in events.items() if e[0] in eventsForTask])
             (autoEvents, nonAutoEvents) = partitionByPredicate(t0, lambda x: x[1]['MASK'].value == 'AUTO')
             if nonAutoEvents == []:
@@ -1145,17 +1160,17 @@ def setDefaults():
     '''
     autostartedTasks = filter(lambda x: x['AUTOSTART'].value == True,
                               filter(lambda x: isinstance(x['AUTOSTART'
-                              ], NestedParameter), AppDefMap['TASK'
+                              ], NestedParameter), applicationDefinition['TASK'
                               ].values()))
     Info['autostartedTasks'] = autostartedTasks
     autostartedAlarms = filter(lambda x: x['AUTOSTART'].value == True,
                                filter(lambda x: isinstance(x['AUTOSTART'
-                               ], NestedParameter), AppDefMap['ALARM'
+                               ], NestedParameter), applicationDefinition['ALARM'
                                ].values()))
     Info['autostartedAlarms'] = autostartedAlarms
 
     if len(autostartedAlarms) > 0:
-        for (counter, alarm) in map(lambda x: (AppDefMap['COUNTER'
+        for (counter, alarm) in map(lambda x: (applicationDefinition['COUNTER'
                                     ][x['COUNTER'
                                     ].value], x),
                                     autostartedAlarms):
@@ -1175,15 +1190,15 @@ def setDefaults():
         errObj.warning('Neither TASKs nor ALARMs are AUTOSTARTed.')
     '''
 
-    if not AppDefMap.get('OS'):
+    if not applicationDefinition.get('OS'):
         errObj.error("Missing required Object 'OS'.")
-    elif len(AppDefMap.get('OS')) > 1:
+    elif len(applicationDefinition.get('OS')) > 1:
         errObj.error("There must be exactly one 'OS'-Object.")
-    if AppDefMap.get('COM') and len(AppDefMap.get('COM')) > 1:
+    if applicationDefinition.get('COM') and len(applicationDefinition.get('COM')) > 1:
         errObj.error("There can be at most one 'COM'-Object.")
-    if AppDefMap.get('NM') and len(AppDefMap.get('NM')) > 1:
+    if applicationDefinition.get('NM') and len(applicationDefinition.get('NM')) > 1:
         errObj.error("There can be at most one 'NM'-Object.")
-    for (objType, appDef1) in AppDefMap.items():
+    for (objType, appDef1) in applicationDefinition.items():
         implDefs = ImplDefMap[objType].defs
         implAttrs = implDefs.keys()
         for (objName, appDef2) in appDef1.items():
@@ -1225,14 +1240,14 @@ def setDefaults():
     xCC2 = False
 
     autostartedTasks = filter(lambda x: x['AUTOSTART'].value == True,
-        filter(lambda x: isinstance(x['AUTOSTART'], NestedParameter), AppDefMap['TASK'].values()))
+        filter(lambda x: isinstance(x['AUTOSTART'], NestedParameter), applicationDefinition['TASK'].values()))
     Info['autostartedTasks'] = autostartedTasks
     autostartedAlarms = filter(lambda x: x['AUTOSTART'].value == True,
-        filter(lambda x: isinstance(x['AUTOSTART'], NestedParameter), AppDefMap['ALARM'].values()))
+        filter(lambda x: isinstance(x['AUTOSTART'], NestedParameter), applicationDefinition['ALARM'].values()))
     Info['autostartedAlarms'] = autostartedAlarms
 
     if len(autostartedAlarms) > 0:
-        for (counter, alarm) in map(lambda x: (AppDefMap['COUNTER' ][x['COUNTER'].value], x), autostartedAlarms):
+        for (counter, alarm) in map(lambda x: (applicationDefinition['COUNTER' ][x['COUNTER'].value], x), autostartedAlarms):
             alarmCycleTime = alarm['AUTOSTART']['CYCLETIME'].value
             alarmAlarmTime = alarm['AUTOSTART']['ALARMTIME'].value
             counterMinCycle = counter['MINCYCLE'].value
@@ -1245,12 +1260,12 @@ def setDefaults():
         errObj.warning('Neither TASKs nor ALARMs are AUTOSTARTed.')
 
 
-    for (key, value) in [v for v in AppDefMap['RESOURCE'].items()
+    for (key, value) in [v for v in applicationDefinition['RESOURCE'].items()
                          if not hasattr(v, 'relativeCeilingPriority')]:
         errObj.warning("Unreferenced Resource '%s'." % value.name)
-        AppDefMap['RESOURCE'].pop(key)
+        applicationDefinition['RESOURCE'].pop(key)
 
-    if AppDefMap['RESOURCE'] == {}:
+    if applicationDefinition['RESOURCE'] == {}:
         Info['useResources'] = False
     else:
         Info['useResources'] = True
@@ -1262,7 +1277,7 @@ def setDefaults():
         levelPriority = levelObjs[0]['RELATIVE_PRIORITY'].value
         hasResources = False
         for g in filter(lambda r: r.relativeCeilingPriority  == \
-                        levelPriority, [v for v in AppDefMap['RESOURCE'].values()]):
+                        levelPriority, [v for v in applicationDefinition['RESOURCE'].values()]):
             g.ceilingPriority = num
             hasResources = True  # todo: xCC2 = True
         activations = 0
@@ -1298,4 +1313,4 @@ def ParseOil(inputData, implDefOnly=False):
     data = BuildAndCheck(parse(scan(inputData), 'file'))
     if not implDefOnly:
         setDefaults()
-    return (ImplDefMap, AppDefMap, Info)
+    return (ImplDefMap, applicationDefinition, Info)
