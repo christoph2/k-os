@@ -114,60 +114,31 @@ def writeTemplate(tmplFileName, outFileName, nameSpace, encodeAsUTF8 = True):
 
 
 def enumerateServices():
-    res = []
-    for (num, line) in enumerate(k_os.OIL.ORTICfg.SERVICE_IDS):
-        (key, value) = line
-        str = '            "%s" = %s' % (key, value)
-        if num < len(k_os.OIL.ORTICfg.SERVICE_IDS) - 1:
-            str = str + ','
-        res.append(str)
-    return '\n'.join(res)
+    return ',\n'.join(map(lambda t: '            "%s" = %s' % (t[0], t[1]), k_os.OIL.ORTICfg.SERVICE_IDS))
 
 
 def enumerateStatusCodes():
-    res = []
-    for (num, line) in enumerate(k_os.OIL.ORTICfg.STATUS_TYPES):
-        (key, value) = line
-        str = '            "%s" = %s' % (key, value)
-        if num < len(k_os.OIL.ORTICfg.STATUS_TYPES) - 1:
-            str = str + ','
-        res.append(str)
-    return '\n'.join(res)
+    return ',\n'.join(map(lambda t: '            "%s" = %u' % (t[0], t[1]), k_os.OIL.ORTICfg.STATUS_TYPES))
 
 
 def enumeratePriorities():
+    ## todo: PRIO_RES_SCHEDULER and IDLE !!!
 
-    # # todo: PRIO_RES_SCHEDULER and IDLE !!!
-
-    global info
-    res = ['            "NONE" = 0,']
-    for (num, (key, value)) in enumerate(info['priorityMap'].items()):
-        str = '            "%s" = %s' % (key, ~value[0x00] + 1 & 0x0f)
-        if num < len(info['priorityMap']) - 1:
-            str = str + ','
-        res.append(str)
-    return '\n'.join(res)
+    return ',\n'.join(map(lambda n, t: '            "%s" = %u' % (t, (~n + 1) & 0x0f),
+        range(len(info['priorityMap']) + 1), ['NONE'] + map(lambda x: x, info['priorityMap']))
+    )
 
 
 def enumerateTasks():
-    res = ['            "IdleTask" = "0",']
-    for (num, task) in enumerate(app.tasks, 1):
-        str = '            "%s" = "%u"' % (task.name, num)
-        if num < len(app.tasks):
-            str = str + ','
-        res.append(str)
-    return '\n'.join(res)
+    return ',\n'.join(map(lambda n, t: '            "%s" = "%u"' % (t, n),
+        range(len(app.tasks) + 1), ['IdleTask'] + map(lambda x: x.name, app.tasks))
+    )
 
 
 def enumerateISR2s():
-    res = ['            "NONE" = 0,']
-    for (num, isr) in enumerate(app.isrs, 1):
-        if isr['CATEGORY'].value == 2:
-            str = '            "%s" = %u' % (isr.name, num)
-            if num < len(app.isrs) - 1:
-                str = str + ','
-            res.append(str)
-    return '\n'.join(res)
+    return ',\n'.join(map(lambda n, t: '            "%s" = %u' % (t, n),
+        range(len(app.isrs) + 1), ['NONE'] + map(lambda x: x.name, app.isrs))
+    )
 
 
 def getAlarmsForCounters():
