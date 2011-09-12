@@ -260,6 +260,13 @@ ImplDefMap = {
     }
 
 
+class NameMappedDict(dict):
+    def __getattr__(self, attr):
+        try:
+            return self.__dict__[attr]
+        except KeyError:
+            return self.__getitem__(attr)
+
 class Range(object):
     def __init__(self, lhs, rhs):
         self.lhs = lhs
@@ -360,7 +367,7 @@ def GetParameterPathToRootObject(obj, param):
     return (tobj, path)
 
 
-class ParameterContainer(dict):
+class ParameterContainer(NameMappedDict):
     def __init__(self, name):
         self.name = name
 
@@ -390,7 +397,7 @@ def NumericRangeCheck(attr, impldef, type_range):
 ##
 ##  Parser-Objects.
 ##
-class ObjectDefinition(dict):
+class ObjectDefinition(NameMappedDict):
     def __init__(self, name, type_, description=None):
         self.name = name
         self.type_ = type_
@@ -551,7 +558,7 @@ class ObjectDefinition(dict):
             return True
 
 
-class NestedParameter(dict):
+class NestedParameter(NameMappedDict):
     def __init__(self, name, value, parent):
         self.name = name
         self.value = value
