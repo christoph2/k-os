@@ -1290,6 +1290,8 @@ def setDefaults():
 
     for (objName, references) in References.items():
         for reference in references:
+            if reference.attribute_name == 'SENDINGMESSAGE':
+                reference.attribute_name = 'MESSAGE'
             if reference.value not in applicationDefinition[reference.name]:
                 errObj.error("Undefined Reference '%s:%s' (%s)." % (objName, reference.value, reference.name))
     events = applicationDefinition['EVENT']
