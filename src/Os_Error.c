@@ -1,7 +1,7 @@
 /*
    k_os (Konnex Operating-System based on the OSEK/VDX-Standard).
 
- * (C) 2007-2010 by Christoph Schueler <github.com/Christoph2,
+ * (C) 2007-2012 by Christoph Schueler <github.com/Christoph2,
  *                                      cpu12.gems@googlemail.com>
 
    All Rights Reserved
@@ -35,6 +35,15 @@ OS_DEFINE_GLOBAL_IF_DEBUGGING(OsLastError, StatusType);
 #define OS_SAVE_LAST_ERROR(Error)
 #endif
 
+
+#if KOS_MEMORY_MAPPING == STD_ON
+    #define OSEK_OS_START_SEC_CODE
+    #include "MemMap.h"
+#endif /* KOS_MEMORY_MAPPING */
+
+/*
+**  Global functions.
+*/
 void OsErrorCallErrorHook(StatusType Error)
 {
     if (((OsFlags & OS_SYS_FLAG_IN_OS_ERROR_HOOK) != OS_SYS_FLAG_IN_OS_ERROR_HOOK)) {
@@ -49,6 +58,7 @@ void OsErrorCallErrorHook(StatusType Error)
         ENABLE_ALL_OS_INTERRUPTS();
     }
 }
+
 
 void COMErrorCallErrorHook(StatusType Error)
 {
@@ -65,6 +75,7 @@ void COMErrorCallErrorHook(StatusType Error)
     }
 }
 
+
 #if defined(OS_USE_GETSERVICEID) && defined(OS_USE_PARAMETERACCESS)
 void OSSaveServiceContext(Os_ServiceIdType id, void * param1, void * param2, void * param3)
 {
@@ -74,6 +85,7 @@ void OSSaveServiceContext(Os_ServiceIdType id, void * param1, void * param2, voi
     Os_ServiceContext.param3   = param3;
 }
 
+
 #endif
 
 #if defined(OS_USE_GETSERVICEID) && !defined(OS_USE_PARAMETERACCESS)
@@ -81,6 +93,7 @@ void OSSaveServiceContext(Os_ServiceIdType id)
 {
     Os_ServiceContext.id = id;
 }
+
 
 #endif
 
@@ -91,5 +104,9 @@ void OSSaveServiceContext(void * param1, void * param2, void * param3)
     Os_ServiceContext.param2   = param2;
     Os_ServiceContext.param3   = param3;
 }
-
 #endif
+
+#if KOS_MEMORY_MAPPING == STD_ON
+    #define OSEK_OS_STOP_SEC_CODE
+    #include "MemMap.h"
+#endif /* KOS_MEMORY_MAPPING */

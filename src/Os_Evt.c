@@ -1,7 +1,7 @@
 /*
    k_os (Konnex Operating-System based on the OSEK/VDX-Standard).
 
- * (C) 2007-2011 by Christoph Schueler <github.com/Christoph2,
+ * (C) 2007-2012 by Christoph Schueler <github.com/Christoph2,
  *                                      cpu12.gems@googlemail.com>
 
    All Rights Reserved
@@ -23,6 +23,15 @@
  */
 #include "Osek.h"
 
+
+#if KOS_MEMORY_MAPPING == STD_ON
+    #define OSEK_OS_START_SEC_CODE
+    #include "MemMap.h"
+#endif /* KOS_MEMORY_MAPPING */
+
+/*
+**  Global functions.
+*/
 StatusType OsEvtSetEvent(TaskType TaskID, EventMaskType Mask)
 {
 #if defined(OS_BCC1) || defined(OS_BCC2)
@@ -53,6 +62,7 @@ StatusType OsEvtSetEvent(TaskType TaskID, EventMaskType Mask)
     return E_OK;
 #endif
 }
+
 
 StatusType SetEvent(TaskType TaskID, EventMaskType Mask)
 {
@@ -88,6 +98,7 @@ StatusType SetEvent(TaskType TaskID, EventMaskType Mask)
 #endif
 }
 
+
 StatusType ClearEvent(EventMaskType Mask)
 {
 
@@ -116,6 +127,7 @@ StatusType ClearEvent(EventMaskType Mask)
     return E_OK;
 #endif
 }
+
 
 StatusType GetEvent(TaskType TaskID, EventMaskRefType Event)
 {
@@ -147,6 +159,7 @@ StatusType GetEvent(TaskType TaskID, EventMaskRefType Event)
     return E_OK;
 #endif
 }
+
 
 StatusType WaitEvent(EventMaskType Mask)
 {
@@ -195,3 +208,7 @@ StatusType WaitEvent(EventMaskType Mask)
 #endif
 }
 
+#if KOS_MEMORY_MAPPING == STD_ON
+    #define OSEK_OS_STOP_SEC_CODE
+    #include "MemMap.h"
+#endif /* KOS_MEMORY_MAPPING */

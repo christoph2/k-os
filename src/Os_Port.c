@@ -1,7 +1,7 @@
 /*
    k_os (Konnex Operating-System based on the OSEK/VDX-Standard).
 
-   (C) 2007-2011 by Christoph Schueler <github.com/Christoph2,
+   (C) 2007-2012 by Christoph Schueler <github.com/Christoph2,
                                         cpu12.gems@googlemail.com>
 
    All Rights Reserved
@@ -22,6 +22,7 @@
    s. FLOSS-EXCEPTION.txt
  */
 #include "Os_Port.h"
+#include "Os_Cfg.h"
 
 #if defined(CPU12_S12)
 #define PORT_ACKNOWLEDGE_MDCU_INTR()    S12ECT_ACKNOWLEDGE_MDCU_INTR()
@@ -54,6 +55,11 @@ const SizeType OS_TOS_ISR = (SizeType)((const uint8 *)&ISR_Stack + ISR_STACK_SIZ
 static const S12Ect_ConfigType Cfg = {BASE_ADDR_ECT};
 
 InterruptStateType OsPort_InterruptState;
+
+#if KOS_MEMORY_MAPPING == STD_ON
+    #define OSEK_OS_START_SEC_CODE
+    #include "MemMap.h"
+#endif /* KOS_MEMORY_MAPPING */
 
 #if 0
 static const OsPort_InitialStackData[] = {
@@ -104,12 +110,34 @@ uint8 * OsPort_TaskStackInit(TaskType TaskID, TaskFunctionType * TaskFunc, uint8
     return sp;
 }
 
+
 #endif
 
 #define TICKS_PER_MS ((uint16)1000u)
 
+static const S12Ect_ConfigType ECT_CFG = {
+    (uint16)TICKS_PER_MS,           /* cycle - (od. Period/TimeBase???) in Nano-Secs. */
+    ((uint8)IOS0),                  /* TIos     */
+    TEN | TSWAI | TSFRZ,            /* TScr1    */
+    /*TOI|*/ PR0 | PR1,             /* TScr2    */
+    ((uint8)0x00),                  /* TCtl1    */
+    ((uint8)0x00),                  /* TCtl2    */
+    ((uint8)0x00),                  /* TCtl3    */
+    ((uint8)0x00),                  /* TCtl4    */
+    ((uint8)0x00),                  /* TIe Interrupt-Freigabe je nach Cfg. */
+    PAEN | PAOVI | PEDGE,           /* PActl    */
+    PBEN | PBOVI,                   /* PBctl    */
+    ((uint8)0x00),                  /* ICpar    */
+    MCZI | MODMC | MCEN | MCPR1,    /* MCctl    */
+    TICKS_PER_MS,                   /* MCcnt    */
+    ((uint8)0x00),                  /* DLyct    */
+    ((uint8)0x00),                  /* ICovw    */
+    ((uint8)0x00),                  /* ICsys    */
+};
+
 void OsPort_Init(void)
 {
+#if 0
     BYTE_REG(Cfg.BaseAddr, TSCR1)  = (uint8)0x00;
     BYTE_REG(Cfg.BaseAddr, TIOS)   = IOS0;
     BYTE_REG(Cfg.BaseAddr, TCTL1)  = (uint8)0x00;
@@ -120,8 +148,12 @@ void OsPort_Init(void)
     BYTE_REG(Cfg.BaseAddr, MCCTL)  = MCZI | MODMC | MCEN | MCPR1;
     WORD_REG(Cfg.BaseAddr, MCCNT)  = TICKS_PER_MS;
     BYTE_REG(Cfg.BaseAddr, MCCTL) |= FLMC;
+#endif
+    S12Ect_Init(&ECT_CFG);
 }
 
+
+/* todo: nach Os_Port_Irq !? */
 #if defined(OS_FEATURE_INSTALL_MDCU_HANDLER)
 ISR(MDCUTimer)
 {
@@ -201,3 +233,9 @@ ISR(TC7Timer)
     OS_TC7_DRIVER_IMPL();
 }
 #endif /* OS_FEATURE_INSTALL_TC7_HANDLER */
+
+
+#if KOS_MEMORY_MAPPING == STD_ON
+    #define OSEK_OS_STOP_SEC_CODE
+    #include "MemMap.h"
+#endif /* KOS_MEMORY_MAPPING */

@@ -1,7 +1,7 @@
 /*
    k_os (Konnex Operating-System based on the OSEK/VDX-Standard).
 
- * (C) 2007-2011 by Christoph Schueler <github.com/Christoph2,
+ * (C) 2007-2012 by Christoph Schueler <github.com/Christoph2,
  *                                      cpu12.gems@googlemail.com>
 
    All Rights Reserved
@@ -30,17 +30,21 @@ void        OsMLQ_AddTaskFirst(TaskType TaskID, PriorityType prio);
 void        OsMLQ_AddTaskLast(TaskType TaskID, PriorityType prio);
 void        OsMLQ_RemoveTask(PriorityType prio);
 
+
 #if !defined(OS_SCHED_BM_ONLY)
 static void OsMLQ_InitQueue(uint8 num);
 static void OsMLQ_PushFront(uint8 num, TaskType TaskID);
 static void OsMLQ_PushBack(uint8 num, TaskType TaskID);
 static void OsMLQ_PopFront(uint8 num);
 
+
 /*  static void OsMLQ_PopBack(uint8 num);  */
 static boolean OsMLQ_IsEmpty(uint8 num);
 
+
 /* static boolean OsMLQ_IsFull(uint8 num); */
 static TaskType OsMLQ_Front(uint8 num);
+
 
 /* static TaskType OsMLQ_Back(uint8 num); */
 #endif /* !OS_SCHED_BM_ONLY*/
@@ -58,12 +62,17 @@ static TaskType OsMLQ_Front(uint8 num);
 static OsMLQ_QueueType  MLQ_ReadyQueue[OS_MLQ_NUMBER_OF_PRIORITIES];
 static uint16           BM_NotEmpty; /* Bitmap for non-empty queues.  */
 
+
+#if KOS_MEMORY_MAPPING == STD_ON
+    #define OSEK_OS_START_SEC_CODE
+    #include "MemMap.h"
+#endif /* KOS_MEMORY_MAPPING */
+
 /*
 **
 **  Global Functions.
 **
 */
-
 void OsMLQ_Init(void)
 {
     BM_NotEmpty = (uint16)0x0000U;
@@ -76,6 +85,7 @@ void OsMLQ_Init(void)
 
 #endif
 }
+
 
 TaskType OsMLQ_GetHighestPrio(void)
 {
@@ -96,15 +106,18 @@ TaskType OsMLQ_GetHighestPrio(void)
     return TaskID;
 }
 
+
 boolean OsMLQ_TasksAreReady(void)
 {
     return BM_NotEmpty != (uint16)0x0000U;
 }
 
+
 uint16 OsMLQ_GetBitmap(void)
 {
     return BM_NotEmpty;
 }
+
 
 void OsMLQ_AddTaskFirst(TaskType TaskID, PriorityType prio)    /* stack. */
 {
@@ -118,6 +131,7 @@ void OsMLQ_AddTaskFirst(TaskType TaskID, PriorityType prio)    /* stack. */
 #endif
 }
 
+
 void OsMLQ_AddTaskLast(TaskType TaskID, PriorityType prio)     /* queue. */
 {
     ASSERT((prio != PRIO_NONE) && (INVERT_NIBBLE(prio) <= OS_MLQ_NUMBER_OF_PRIORITIES));
@@ -128,6 +142,7 @@ void OsMLQ_AddTaskLast(TaskType TaskID, PriorityType prio)     /* queue. */
     OsMLQ_PushBack(INVERT_NIBBLE(prio), TaskID);
 #endif
 }
+
 
 void OsMLQ_RemoveTask(TaskType TaskID)
 {
@@ -151,6 +166,7 @@ void OsMLQ_RemoveTask(TaskType TaskID)
 #endif
 }
 
+
 #if defined(OS_USE_RESOURCES) || defined(OS_USE_INTERNAL_RESOURCES)
 void OsMLQ_ChangePrio(TaskType TaskID, PriorityType old_prio, PriorityType new_prio)
 {
@@ -158,6 +174,7 @@ void OsMLQ_ChangePrio(TaskType TaskID, PriorityType old_prio, PriorityType new_p
 
     OS_TCB[TaskID].CurrentPriority = new_prio;
 }
+
 
 #endif
 
@@ -173,6 +190,7 @@ static void OsMLQ_InitQueue(uint8 num)
     Utl_MemSet((void *)MLQ_QueueDef[num].data, (uint8)'\0', (uint16)MLQ_QueueDef[num].size);
 }
 
+
 static void OsMLQ_PushFront(uint8 num, uint8 TaskID)
 {
     OsMLQ_QueueType * const                     rq = &MLQ_ReadyQueue[num];
@@ -184,6 +202,7 @@ static void OsMLQ_PushFront(uint8 num, uint8 TaskID)
     rq->entries++;
 }
 
+
 static void OsMLQ_PushBack(uint8 num, TaskType TaskID)
 {
     OsMLQ_QueueType * const                     rq = &MLQ_ReadyQueue[num];
@@ -194,6 +213,7 @@ static void OsMLQ_PushBack(uint8 num, TaskType TaskID)
     rq->tail = (rq->tail + (uint8)1) % qc->size;
     rq->entries++;
 }
+
 
 static void OsMLQ_PopFront(uint8 num)
 {
@@ -209,15 +229,18 @@ static void OsMLQ_PopFront(uint8 num)
     }
 }
 
+
 static boolean OsMLQ_IsEmpty(uint8 num)
 {
     return MLQ_ReadyQueue[num].entries == (uint8)0x00;
 }
 
+
 static TaskType OsMLQ_Front(uint8 num)
 {
     return MLQ_QueueDef[num].data[MLQ_ReadyQueue[num].head];
 }
+
 
 #if 0
 static boolean OsMLQ_IsFull(uint8 num)
@@ -225,10 +248,15 @@ static boolean OsMLQ_IsFull(uint8 num)
     return MLQ_ReadyQueue[num].entries == MLQ_QueueDef[num].size;
 }
 
+
 static TaskType OsMLQ_Back(uint8 num)
 {
     return MLQ_QueueDef[num].data[MLQ_ReadyQueue[num].tail];
 }
-
 #endif
 #endif /* !OS_SCHED_BM_ONLY*/
+
+#if KOS_MEMORY_MAPPING == STD_ON
+    #define OSEK_OS_STOP_SEC_CODE
+    #include "MemMap.h"
+#endif /* KOS_MEMORY_MAPPING */

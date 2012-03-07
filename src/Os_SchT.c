@@ -1,7 +1,7 @@
 /*
    k_os (Konnex Operating-System based on the OSEK/VDX-Standard).
 
- * (C) 2007-2010 by Christoph Schueler <github.com/Christoph2,
+ * (C) 2007-2012 by Christoph Schueler <github.com/Christoph2,
  *                                      cpu12.gems@googlemail.com>
 
    All Rights Reserved
@@ -80,6 +80,11 @@ typedef struct tagOsExpiryPointType {
     */
 } OsExpiryPointType;
 
+#if KOS_MEMORY_MAPPING == STD_ON
+    #define OSEK_OS_START_SEC_CODE
+    #include "MemMap.h"
+#endif /* KOS_MEMORY_MAPPING */
+
 StatusType StartScheduleTableRel(ScheduleTableType ScheduleTableID, TickType Offset)
 {
     SAVE_SERVICE_CONTEXT(OSServiceId_StartScheduleTableRel, ScheduleTableID, Offset, NULL);
@@ -92,6 +97,7 @@ StatusType StartScheduleTableRel(ScheduleTableType ScheduleTableID, TickType Off
     return E_OK;
 
 }
+
 
 StatusType StartScheduleTableAbs(ScheduleTableType ScheduleTableID, TickType Tickvalue)
 {
@@ -106,6 +112,7 @@ StatusType StartScheduleTableAbs(ScheduleTableType ScheduleTableID, TickType Tic
 
 }
 
+
 StatusType StopScheduleTable(ScheduleTableType ScheduleTableID)
 {
     SAVE_SERVICE_CONTEXT(OSServiceId_StopScheduleTable, ScheduleTableID, NULL, NULL);
@@ -118,6 +125,7 @@ StatusType StopScheduleTable(ScheduleTableType ScheduleTableID)
     return E_OK;
 
 }
+
 
 StatusType NextScheduleTable(ScheduleTableType ScheduleTableID_From, ScheduleTableType ScheduleTableID_To)
 {
@@ -132,6 +140,7 @@ StatusType NextScheduleTable(ScheduleTableType ScheduleTableID_From, ScheduleTab
 
 }
 
+
 StatusType StartScheduleTableSynchron(ScheduleTableType ScheduleTableID)
 {
     SAVE_SERVICE_CONTEXT(OSServiceId_StartScheduleTableSynchron, ScheduleTableID, NULL, NULL);
@@ -143,6 +152,7 @@ StatusType StartScheduleTableSynchron(ScheduleTableType ScheduleTableID)
     CLEAR_SERVICE_CONTEXT();
     return E_OK;
 }
+
 
 StatusType SyncScheduleTable(ScheduleTableType ScheduleTableID, TickType Value)
 {
@@ -157,6 +167,7 @@ StatusType SyncScheduleTable(ScheduleTableType ScheduleTableID, TickType Value)
 
 }
 
+
 StatusType SetScheduleTableAsync(ScheduleTableType ScheduleID)
 {
     SAVE_SERVICE_CONTEXT(OSServiceId_SetScheduleTableAsync, ScheduleID, NULL, NULL);
@@ -169,6 +180,7 @@ StatusType SetScheduleTableAsync(ScheduleTableType ScheduleID)
     return E_OK;
 
 }
+
 
 StatusType GetScheduleTableStatus(ScheduleTableType ScheduleID, ScheduleTableStatusRefType /*@out@*/ ScheduleStatus)
 {
@@ -183,8 +195,14 @@ StatusType GetScheduleTableStatus(ScheduleTableType ScheduleID, ScheduleTableSta
 
 }
 
+
 void OsSchTInitScheduleTables(void)
 {
 
 }
 
+
+#if KOS_MEMORY_MAPPING == STD_ON
+    #define OSEK_OS_STOP_SEC_CODE
+    #include "MemMap.h"
+#endif /* KOS_MEMORY_MAPPING */

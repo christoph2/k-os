@@ -1,7 +1,7 @@
 /*
    k_os (Konnex Operating-System based on the OSEK/VDX-Standard).
 
- * (C) 2007-2010 by Christoph Schueler <github.com/Christoph2,
+ * (C) 2007-2012 by Christoph Schueler <github.com/Christoph2,
  *                                      cpu12.gems@googlemail.com>
 
    All Rights Reserved
@@ -30,8 +30,17 @@
 
 #include "Osek.h"
 
+
+/*
+**  Local function prototypes.
+*/
 static void SuspendCPUInterrrupts(void), ResumeCPUInterrrupts(void);
 
+
+
+/*
+**  Local variables.
+*/
 /*
 **  !REQ!AS!OS299!
 **  ... (it is assumed the static variables of this functions are initialized).
@@ -39,30 +48,44 @@ static void SuspendCPUInterrrupts(void), ResumeCPUInterrrupts(void);
 static volatile uint8   InterruptDisableCounter = (uint8)0;
 static boolean          IStateSave;
 
+
+#if KOS_MEMORY_MAPPING == STD_ON
+    #define OSEK_OS_START_SEC_CODE
+    #include "MemMap.h"
+#endif /* KOS_MEMORY_MAPPING */
+
+/*
+**  Global functions.
+*/
 void OsIntr_InitInterrupts(void)
 {
     InterruptDisableCounter = (uint8)0;
 }
+
 
 void ResumeAllInterrupts(void)
 {
     ResumeCPUInterrrupts();
 }
 
+
 void SuspendAllInterrupts(void)
 {
     SuspendCPUInterrrupts();
 }
+
 
 void ResumeOSInterrupts(void)
 {
     ResumeCPUInterrrupts();
 }
 
+
 void SuspendOSInterrupts(void)
 {
     SuspendCPUInterrrupts();
 }
+
 
 void SuspendCPUInterrrupts(void)
 {
@@ -74,6 +97,7 @@ void SuspendCPUInterrrupts(void)
         IStateSave = istate;
     }
 }
+
 
 void ResumeCPUInterrrupts(void) /* s. Autosar O92 !!!*/
 {
@@ -88,10 +112,15 @@ void ResumeCPUInterrrupts(void) /* s. Autosar O92 !!!*/
     }
 }
 
+
 #if defined(OS_FEATURE_ORTI_DEBUG)
 ISRType GetISRID(void)
 {
     return OsCurrentISRID;
 }
-
 #endif
+
+#if KOS_MEMORY_MAPPING == STD_ON
+    #define OSEK_OS_STOP_SEC_CODE
+    #include "MemMap.h"
+#endif /* KOS_MEMORY_MAPPING */

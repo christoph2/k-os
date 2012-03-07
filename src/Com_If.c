@@ -1,8 +1,8 @@
 /*
    k_os (Konnex Operating-System based on the OSEK/VDX-Standard).
 
-   (C) 2007-2010 by Christoph Schueler <chris@konnex-tools.de,
-                                       cpu12.gems@googlemail.com>
+   (C) 2007-2012 by Christoph Schueler <github.com/Christoph2,
+                                        cpu12.gems@googlemail.com>
 
    All Rights Reserved
 
@@ -17,10 +17,10 @@
 
    You should have received a copy of the GNU General Public License
    along with this program; if not, write to the Free Software
-   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA 
+   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
    s. FLOSS-EXCEPTION.txt
-*/
+ */
 
 /*
 **
@@ -28,30 +28,51 @@
 **
 */
 
-#include "com_int.h"
+#include "Com_Int.h"
+#include "Os_Cfg.h"
 
-#if defined(OS_USE_COM)
+#if OS_FEATURE_COM == STD_ON
+
+extern const Com_MessageObjectType Com_MessageObjects[];
+
+#if 0
 
 #define Message_Send    ((uint8)0)
 #define Message_Receive ((uint8)1)
 
 static uint32 MsgDataReceive;
 
-const ComReceiverType Message_Receive_Receiver[1]={{1}};
+const ComReceiverType Message_Receive_Receiver[1] = {{1}};
 
-const MessageSetEventType Evt_Message_Receive={Task1,(EventMaskType)0x08};
+const MessageSetEventType Evt_Message_Receive = {Task1, (EventMaskType)0x08};
 
-const ComMessageObjectType Com_MessageObjects[COM_NUMBER_OF_MESSAGES]=
-{
-    {SEND_STATIC_INTERNAL,COM_NOTIFY_NONE,(void*)NULL,4,(const ApplicationDataRef *)
-        NULL,(uint8)1,(ComReceiverType*)&Message_Receive_Receiver},
-    {RECEIVE_UNQUEUED_INTERNAL,COM_SETEVENT,(void*)&Evt_Message_Receive,4,(const ApplicationDataRef *)
-        &MsgDataReceive,(uint8)0,(ComReceiverType*)NULL},
+const Com_MessageObjectType Com_MessageObjects[COM_NUMBER_OF_MESSAGES] = {
+    {SEND_STATIC_INTERNAL,      COM_NOTIFY_NONE,      (void *)NULL,
+     4,
+     (const ApplicationDataRef *)
+     NULL, (uint8)1, (ComReceiverType *)&Message_Receive_Receiver},
+    {RECEIVE_UNQUEUED_INTERNAL, COM_SETEVENT,         (void *)&Evt_Message_Receive,
+     4,
+     (const ApplicationDataRef *)
+     &MsgDataReceive, (uint8)0, (ComReceiverType *)NULL},
 };
+#endif
 
-static Com_StatusType Com_Status=COM_UNINIT;
-static COMApplicationModeType Com_AppMode;
+/*
+**  Local variables.
+*/
+static Com_StatusType           Com_Status = COM_UNINIT;
+static COMApplicationModeType   Com_AppMode;
 
+
+#if KOS_MEMORY_MAPPING == STD_ON
+    #define OSEK_COM_START_SEC_CODE
+    #include "MemMap.h"
+#endif /* KOS_MEMORY_MAPPING */
+
+/*
+**  Global functions.
+*/
 StatusType StartCOM(COMApplicationModeType Mode)
 {
 /*
@@ -63,37 +84,38 @@ StatusType StartCOM(COMApplicationModeType Mode)
         In addition to the standard status codes defined above, the following
         status code is supported:
         · This service returns E_COM_ID if the parameter <Mode> is out of range.
-*/
+ */
 #if defined(COM_START_COM_EXTENSION)
     StatusType Status;
 #endif
-    uint8_least idx;
-    ComMessageObjectType *MessageObject;
+    uint8_least             idx;
+    Com_MessageObjectType * MessageObject;
 
-    SAVE_SERVICE_CONTEXT(COMServiceId_StartCOM,Mode,NULL,NULL);
+    SAVE_SERVICE_CONTEXT(COMServiceId_StartCOM, Mode, NULL, NULL);
 
-    Com_AppMode=Mode;
+    Com_AppMode = Mode;
 
-    for (idx=(uint8_least)0;idx<COM_NUMBER_OF_MESSAGES;++idx) {
-        MessageObject=(ComMessageObjectType *)&GET_MESSAGE_OBJECT(idx);
+    for (idx = (uint8_least)0; idx < COM_NUMBER_OF_MESSAGES; ++idx) {
+        MessageObject = (Com_MessageObjectType *)&GET_MESSAGE_OBJECT(idx);
 
-        if (MessageObject->Property!=SEND_STATIC_INTERNAL &&
-                MessageObject->Property!=SEND_ZERO_INTERNAL &&
-                MessageObject->Property!=SEND_ZERO_EXTERNAL &&
-                MessageObject->Property!=RECEIVE_ZERO_EXTERNAL) {
+        if (MessageObject->Property != SEND_STATIC_INTERNAL &&
+            MessageObject->Property != SEND_ZERO_INTERNAL &&
+            MessageObject->Property != SEND_ZERO_EXTERNAL &&
+            MessageObject->Property != RECEIVE_ZERO_EXTERNAL)
+        {
 /* todo: use Initialisation-Value. */
 #if 0
             DISABLE_ALL_OS_INTERRUPTS();
-            OsUtilMemCpy((void*)MessageObject->Data,(void*)DataRef,MessageObject->Size);
+            OsUtilMemCpy((void *)MessageObject->Data, (void *)DataRef, MessageObject->Size);
             ENABLE_ALL_OS_INTERRUPTS();
 #endif
         }
     }
 
 #if defined(COM_START_COM_EXTENSION)
-    Status=StartCOMExtension();
+    Status = StartCOMExtension();
 #endif
-    Com_Status=COM_INIT;
+    Com_Status = COM_INIT;
 
     CLEAR_SERVICE_CONTEXT();
     return E_OK;
@@ -105,7 +127,7 @@ StatusType StopCOM(COMShutdownModeType Mode)
 /*
     Parameter (in): Mode COM_SHUTDOWN_IMMEDIATE
         The shutdown occurs immediately without waiting for pending operations to complete.
-*/
+ */
 /*
     Standard:
         · This service returns E_OK if OSEK COM was shut down successfully.
@@ -115,10 +137,10 @@ StatusType StopCOM(COMShutdownModeType Mode)
         In addition to the standard status codes defined above, the following
         status code is supported:
         · This service returns E_COM_ID if the parameter <Mode> is out of range.
-*/
-    SAVE_SERVICE_CONTEXT(COMServiceId_StopCOM,Mode,NULL,NULL);
+ */
+    SAVE_SERVICE_CONTEXT(COMServiceId_StopCOM, Mode, NULL, NULL);
 
-    Com_Status=COM_UNINIT;
+    Com_Status = COM_UNINIT;
 
     CLEAR_SERVICE_CONTEXT();
     return E_OK;
@@ -132,7 +154,7 @@ COMApplicationModeType GetCOMApplicationMode(void)
 }
 
 
-StatusType InitMessage(MessageIdentifier Message,ApplicationDataRef DataRef)
+StatusType InitMessage(MessageIdentifier Message, ApplicationDataRef DataRef)
 {
 /*
     Standard:
@@ -145,13 +167,13 @@ StatusType InitMessage(MessageIdentifier Message,ApplicationDataRef DataRef)
         status code is supported:
         · This service returns E_COM_ID if the parameter <Message> is
           out of range or refers to a zero-length message or to an internal transmit message.
-*/
-    SAVE_SERVICE_CONTEXT(COMServiceId_InitMessage,Message,DataRef,NULL);
+ */
+    SAVE_SERVICE_CONTEXT(COMServiceId_InitMessage, Message, DataRef, NULL);
     ASSERT_VALID_MESSAGE_ID(Message);
     ASSERT_CAN_INITIALIZE_MESSAGE(Message);
 
     DISABLE_ALL_OS_INTERRUPTS();
-    Utl_MemCopy((void*)GET_MESSAGE_OBJECT(Message).Data,(void*)DataRef,(uint16)GET_MESSAGE_OBJECT(Message).Size);
+    Utl_MemCopy((void *)GET_MESSAGE_OBJECT(Message).Data, (void *)DataRef, (uint16)GET_MESSAGE_OBJECT(Message).Size);
     ENABLE_ALL_OS_INTERRUPTS();
 
     CLEAR_SERVICE_CONTEXT();
@@ -162,12 +184,12 @@ StatusType InitMessage(MessageIdentifier Message,ApplicationDataRef DataRef)
 StatusType StartPeriodic(void)
 {
 /*
-Standard and Extended:
+   Standard and Extended:
     · This service returns E_OK if periodic transmission was started successfully.
     · This service returns an implementation-specific status code if starting of
       periodic transmission was not completed successfully.
-*/
-    SAVE_SERVICE_CONTEXT(COMServiceId_StartPeriodic,NULL,NULL,NULL);
+ */
+    SAVE_SERVICE_CONTEXT(COMServiceId_StartPeriodic, NULL, NULL, NULL);
     ASSERT_COM_IS_INITIALIZED();
 
     CLEAR_SERVICE_CONTEXT();
@@ -182,8 +204,8 @@ StatusType StopPeriodic(void)
         · This service returns E_OK if periodic transmission was stopped successfully.
         · This service returns an implementation-specific status code if
           stopping periodic transmission was not completed successfully.
-*/
-    SAVE_SERVICE_CONTEXT(COMServiceId_StopPeriodic,NULL,NULL,NULL);
+ */
+    SAVE_SERVICE_CONTEXT(COMServiceId_StopPeriodic, NULL, NULL, NULL);
     ASSERT_COM_IS_INITIALIZED();
 
     CLEAR_SERVICE_CONTEXT();
@@ -191,7 +213,7 @@ StatusType StopPeriodic(void)
 }
 
 
-StatusType SendMessage(MessageIdentifier Message,ApplicationDataRef DataRef)
+StatusType SendMessage(MessageIdentifier Message, ApplicationDataRef DataRef)
 {
 /*
     Standard:
@@ -202,17 +224,17 @@ StatusType SendMessage(MessageIdentifier Message,ApplicationDataRef DataRef)
         · This service returns E_COM_ID if the parameter <Message> is
           out of range or if it refers to a message that is received or to a
           dynamic-length or zero-length message.
-*/
-    StatusType Status=E_OK;
+ */
+    StatusType Status = E_OK;
 
-    SAVE_SERVICE_CONTEXT(COMServiceId_SendMessage,Message,DataRef,NULL);
+    SAVE_SERVICE_CONTEXT(COMServiceId_SendMessage, Message, DataRef, NULL);
     ASSERT_COM_IS_INITIALIZED();
     ASSERT_VALID_MESSAGE_ID(Message);
     ASSERT_IS_STATIC_SENDING_MESSAGE(Message);
 
     switch (GET_MESSAGE_OBJECT(Message).Property) {
         case SEND_STATIC_INTERNAL:
-            Status=ComIntSendMessage(Message,DataRef);
+            Status = ComIntSendMessage(Message, DataRef);
             break;
 #if 0
 /* not supported yet. */
@@ -231,7 +253,7 @@ StatusType SendMessage(MessageIdentifier Message,ApplicationDataRef DataRef)
 }
 
 
-StatusType ReceiveMessage(MessageIdentifier Message,ApplicationDataRef DataRef)
+StatusType ReceiveMessage(MessageIdentifier Message, ApplicationDataRef DataRef)
 {
 /*
     Standard:
@@ -253,17 +275,17 @@ StatusType ReceiveMessage(MessageIdentifier Message,ApplicationDataRef DataRef)
         · This service returns E_COM_ID if the parameter <Message> is
           out of range or if it refers to message that is sent or to a dynamiclength
           or zero-length message.
-*/
-    StatusType Status=E_OK;
+ */
+    StatusType Status = E_OK;
 
-    SAVE_SERVICE_CONTEXT(COMServiceId_ReceiveMessage,Message,DataRef,NULL);
+    SAVE_SERVICE_CONTEXT(COMServiceId_ReceiveMessage, Message, DataRef, NULL);
     ASSERT_COM_IS_INITIALIZED();
     ASSERT_VALID_MESSAGE_ID(Message);
     ASSERT_IS_STATIC_RECEIVING_MESSAGE(Message);
 
     switch (GET_MESSAGE_OBJECT(Message).Property) {
         case RECEIVE_UNQUEUED_INTERNAL:
-            Status=ComIntReceiveMessage(Message,DataRef);
+            Status = ComIntReceiveMessage(Message, DataRef);
             break;
         case RECEIVE_QUEUED_INTERNAL:
             break;
@@ -277,7 +299,7 @@ StatusType ReceiveMessage(MessageIdentifier Message,ApplicationDataRef DataRef)
             break;
 #endif
         default:
-            ASSERT(FALSE);;
+            ASSERT(FALSE);
     }
 
     CLEAR_SERVICE_CONTEXT();
@@ -285,7 +307,7 @@ StatusType ReceiveMessage(MessageIdentifier Message,ApplicationDataRef DataRef)
 }
 
 
-StatusType SendDynamicMessage(MessageIdentifier Message,ApplicationDataRef DataRef,LengthRef LengthRef)
+StatusType SendDynamicMessage(MessageIdentifier Message, ApplicationDataRef DataRef, LengthRef LengthRef)
 {
 /*
     Standard:
@@ -299,8 +321,8 @@ StatusType SendDynamicMessage(MessageIdentifier Message,ApplicationDataRef DataR
         · This service returns E_COM_LENGTH if the value to which
           <LengthRef> points is not within the range 0 to the maximum
           length defined for <Message>.
-*/
-    SAVE_SERVICE_CONTEXT(COMServiceId_SendDynamicMessage,Message,DataRef,LengthRef);
+ */
+    SAVE_SERVICE_CONTEXT(COMServiceId_SendDynamicMessage, Message, DataRef, LengthRef);
     ASSERT_COM_IS_INITIALIZED();
     ASSERT_VALID_MESSAGE_ID(Message);
 
@@ -308,7 +330,8 @@ StatusType SendDynamicMessage(MessageIdentifier Message,ApplicationDataRef DataR
     return E_OK;
 }
 
-StatusType ReceiveDynamicMessage(MessageIdentifier Message,ApplicationDataRef DataRef,LengthRef LengthRef)
+
+StatusType ReceiveDynamicMessage(MessageIdentifier Message, ApplicationDataRef DataRef, LengthRef LengthRef)
 {
 /*
     Standard:
@@ -320,8 +343,8 @@ StatusType ReceiveDynamicMessage(MessageIdentifier Message,ApplicationDataRef Da
         · This service returns E_COM_ID if the parameter <Message> is
           out of range or if it refers to a message that is sent, a queued message,
           a static-length message or a zero-length message.
-*/
-    SAVE_SERVICE_CONTEXT(COMServiceId_ReceiveDynamicMessage,Message,DataRef,LengthRef);
+ */
+    SAVE_SERVICE_CONTEXT(COMServiceId_ReceiveDynamicMessage, Message, DataRef, LengthRef);
     ASSERT_COM_IS_INITIALIZED();
     ASSERT_VALID_MESSAGE_ID(Message);
 
@@ -340,14 +363,15 @@ StatusType SendZeroMessage(MessageIdentifier Message)
         status code is supported:
         · This service returns E_COM_ID if the parameter <Message> is
           out of range or if it refers to a non-zero-length message.
-*/
-    SAVE_SERVICE_CONTEXT(COMServiceId_SendZeroMessage,Message,NULL,NULL);
+ */
+    SAVE_SERVICE_CONTEXT(COMServiceId_SendZeroMessage, Message, NULL, NULL);
     ASSERT_COM_IS_INITIALIZED();
     ASSERT_VALID_MESSAGE_ID(Message);
 
     CLEAR_SERVICE_CONTEXT();
     return E_OK;
 }
+
 
 StatusType GetMessageStatus(MessageIdentifier Message)
 {
@@ -365,8 +389,8 @@ StatusType GetMessageStatus(MessageIdentifier Message)
         status code is supported:
         · This service returns E_COM_ID if the parameter <Message> is
           out of range or if it does not refer to a queued message.
-*/
-    SAVE_SERVICE_CONTEXT(COMServiceId_GetMessageStatus,Message,NULL,NULL);
+ */
+    SAVE_SERVICE_CONTEXT(COMServiceId_GetMessageStatus, Message, NULL, NULL);
     ASSERT_COM_IS_INITIALIZED();
     ASSERT_VALID_MESSAGE_ID(Message);
 
@@ -379,29 +403,31 @@ COMServiceIdType COMErrorGetServiceId(void)
 {
 /*
     Return value: Service Identifier.
-*/
+ */
 /*    return (COMServiceIdType)0;   */
 }
 
 
-void ComIfUpdateAndNotifyReceivers(ComMessageObjectType *MessageSendObject,ApplicationDataRef DataRef)
+void ComIfUpdateAndNotifyReceivers(Com_MessageObjectType * MessageSendObject, ApplicationDataRef DataRef)
 {
-    uint8_least idx,count;
-    ComMessageObjectType *MessageObject;
+    uint8_least             idx, count;
+    Com_MessageObjectType * MessageObject;
+
 #if defined(OS_EXTENDED_STATUS) && defined(OS_USE_CALLEVEL_CHECK)
     OsCallevelType CallevelSaved;
 #endif
 
-    ASSERT(MessageSendObject->Receiver!=(ComReceiverType *)NULL);
+    ASSERT(MessageSendObject->Receiver != (Com_ReceiverType *)NULL);
 
-    count=MessageSendObject->NumReceivers;
-    for (idx=(uint8_least)0;idx<count;++idx) {
+    count = MessageSendObject->NumReceivers;
+
+    for (idx = (uint8_least)0; idx < count; ++idx) {
         DISABLE_ALL_OS_INTERRUPTS();
-        MessageObject=(ComMessageObjectType *)&GET_MESSAGE_OBJECT(MessageSendObject->Receiver[idx].Message);
-        ASSERT(MessageSendObject->Size==MessageObject->Size);
-        ASSERT(MessageObject->Property==RECEIVE_UNQUEUED_INTERNAL);    /* todo: CCCB */
-        ASSERT(MessageObject->Action.Dummy!=(void*)NULL);
-        Utl_MemCopy((void*)MessageObject->Data,(void*)DataRef,(uint16)MessageObject->Size);
+        MessageObject = (Com_MessageObjectType *)&GET_MESSAGE_OBJECT(MessageSendObject->Receiver[idx].Message);
+        ASSERT(MessageSendObject->Size == MessageObject->Size);
+        ASSERT(MessageObject->Property == RECEIVE_UNQUEUED_INTERNAL);    /* todo: CCCB */
+        ASSERT(MessageObject->Action.Dummy != (void *)NULL);
+        Utl_MemCopy((void *)MessageObject->Data, (void *)DataRef, (uint16)MessageObject->Size);
         ENABLE_ALL_OS_INTERRUPTS();
 
         switch (MessageObject->Notification) {  /* NotificationType??? */
@@ -409,12 +435,12 @@ void ComIfUpdateAndNotifyReceivers(ComMessageObjectType *MessageSendObject,Appli
                 (void)OsTask_Activate(MessageObject->Action.TaskID);
                 break;
             case COM_SETEVENT:
-                (void)OsEvtSetEvent(MessageObject->Action.Event->TaskID,MessageObject->Action.Event->Mask);
+                (void)OsEvtSetEvent(MessageObject->Action.Event->TaskID, MessageObject->Action.Event->Mask);
                 break;
             case COM_COMCALLBACK:
                 DISABLE_ALL_OS_INTERRUPTS();
                 #if defined(OS_EXTENDED_STATUS) && defined(OS_USE_CALLEVEL_CHECK)
-                CallevelSaved=OS_GET_CALLEVEL();
+                CallevelSaved = OS_GET_CALLEVEL();
                 #endif
                 OS_SET_CALLEVEL(OS_CL_ALARM_CALLBACK);
                 (MessageObject->Action.Callback)();
@@ -424,7 +450,7 @@ void ComIfUpdateAndNotifyReceivers(ComMessageObjectType *MessageSendObject,Appli
                 ENABLE_ALL_OS_INTERRUPTS();
                 break;
             case COM_FLAG:
-              /* todo: Implementieren (nicht CCCA) !!! */
+                /* todo: Implementieren (nicht CCCA) !!! */
 /*                MessageObject->Action.Flag; */
                 break;
             case COM_NOTIFY_NONE:
@@ -435,13 +461,18 @@ void ComIfUpdateAndNotifyReceivers(ComMessageObjectType *MessageSendObject,Appli
     }
 }
 
+#if KOS_MEMORY_MAPPING == STD_ON
+    #define OSEK_COM_STOP_SEC_CODE
+    #include "MemMap.h"
+#endif /* KOS_MEMORY_MAPPING */
+
 /*
 **
 **  Routines provided by the application.
 **
 */
 
-
 /*  COMCallout(CalloutRoutineName) */
 
-#endif /* OS_USE_COM */
+#endif /* OS_FEATURE_COM */
+

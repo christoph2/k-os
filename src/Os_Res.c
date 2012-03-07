@@ -1,7 +1,7 @@
 /*
    k_os (Konnex Operating-System based on the OSEK/VDX-Standard).
 
- * (C) 2007-2010 by Christoph Schueler <github.com/Christoph2,
+ * (C) 2007-2012 by Christoph Schueler <github.com/Christoph2,
  *                                      cpu12.gems@googlemail.com>
 
    All Rights Reserved
@@ -23,10 +23,23 @@
  */
 #include "Osek.h"
 
+
+/*
+**  Local variables.
+*/
 #if defined(OS_USE_INTERNAL_RESOURCES)
 static uint16 BM_InternalResources;
 #endif
 
+
+#if KOS_MEMORY_MAPPING == STD_ON
+    #define OSEK_OS_START_SEC_CODE
+    #include "MemMap.h"
+#endif /* KOS_MEMORY_MAPPING
+
+/*
+**  Global functions.
+*/
 void OsRes_InitResources(void)
 {
 #if defined(OS_USE_RESOURCES)
@@ -48,6 +61,7 @@ void OsRes_InitResources(void)
 #endif
 #endif /* OS_USE_RESOURCES */
 }
+
 
 StatusType GetResource(ResourceType ResID)
 {
@@ -97,6 +111,7 @@ StatusType GetResource(ResourceType ResID)
     CLEAR_SERVICE_CONTEXT();
     return E_OK;
 }
+
 
 StatusType ReleaseResource(ResourceType ResID)
 {
@@ -150,6 +165,7 @@ StatusType ReleaseResource(ResourceType ResID)
     return E_OK;
 }
 
+
 /*
 **
 **  Functions for Internal Resources.
@@ -175,6 +191,7 @@ void OsRes_GetInternalResource(void)
     }
 }
 
+
 void OsRes_ReleaseInternalResource(void)
 {
     if (OsCurrentTCB->CurrentPriority != OS_TaskConf[OsCurrentTID].Priority) {
@@ -186,5 +203,9 @@ void OsRes_ReleaseInternalResource(void)
         OsMLQ_ChangePrio(OsCurrentTID, OsCurrentTCB->CurrentPriority, OS_TaskConf[OsCurrentTID].Priority);
     }
 }
-
 #endif /* OS_USE_INTERNAL_RESOURCES */
+
+#if KOS_MEMORY_MAPPING == STD_ON
+    #define OSEK_OS_STOP_SEC_CODE
+    #include "MemMap.h"
+#endif /* KOS_MEMORY_MAPPING */

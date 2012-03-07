@@ -1,8 +1,8 @@
 /*
    k_os (Konnex Operating-System based on the OSEK/VDX-Standard).
 
- * (C) 2007-2010 by Christoph Schueler <github.com/Christoph2,
- *                                      cpu12.gems@googlemail.com>
+   (C) 2007-2012 by Christoph Schueler <github.com/Christoph2,
+                                        cpu12.gems@googlemail.com>
 
    All Rights Reserved
 
@@ -25,8 +25,20 @@
 
 /* Fixed incorrect task activation on ISR level. */
 
+/*
+**  Local functions prototypes.
+*/
 static void OsTask_Init(TaskType TaskID, boolean Schedule);
 
+
+#if KOS_MEMORY_MAPPING == STD_ON
+    #define OSEK_OS_START_SEC_CODE
+    #include "MemMap.h"
+#endif /* KOS_MEMORY_MAPPING */
+
+/*
+**  Global Functions.
+*/
 void OsTask_Ready(TaskType TaskID)
 {
 #if defined(OS_USE_RESOURCES)
@@ -37,17 +49,20 @@ void OsTask_Ready(TaskType TaskID)
     OS_TCB[TaskID].State = READY;
 }
 
+
 void OsTask_Suspend(TaskType TaskID)
 {
     OsMLQ_RemoveTask(TaskID);
     OS_TCB[TaskID].State = SUSPENDED;
 }
 
+
 void OsTask_Wait(TaskType TaskID)
 {
     OsMLQ_RemoveTask(TaskID);
     OS_TCB[TaskID].State = WAITING;
 }
+
 
 StatusType OsTask_Activate(TaskType TaskID)
 {
@@ -70,6 +85,7 @@ StatusType OsTask_Activate(TaskType TaskID)
     OsTask_Ready(TaskID);
 #if     defined(OS_BCC2) || defined(OS_ECC2)
 }
+
 
 #endif
     ENABLE_ALL_OS_INTERRUPTS();
@@ -97,6 +113,7 @@ StatusType ActivateTask(TaskType TaskID)
         return E_OK;
     }
 }
+
 
 StatusType TerminateTask(void)
 {
@@ -134,6 +151,7 @@ StatusType TerminateTask(void)
     CLEAR_SERVICE_CONTEXT();
     return E_OK; /* never reached */
 }
+
 
 StatusType ChainTask(TaskType TaskID)
 {
@@ -179,6 +197,7 @@ StatusType ChainTask(TaskType TaskID)
     return E_OK;
 }
 
+
 StatusType GetTaskID(TaskRefType TaskID)
 {
 /*
@@ -202,6 +221,7 @@ StatusType GetTaskID(TaskRefType TaskID)
     CLEAR_SERVICE_CONTEXT();
     return E_OK;
 }
+
 
 StatusType GetTaskState(TaskType TaskID, TaskStateRefType State)
 {
@@ -232,6 +252,7 @@ StatusType GetTaskState(TaskType TaskID, TaskStateRefType State)
     return E_OK;
 }
 
+
 StatusType Schedule(void)
 {
     SAVE_SERVICE_CONTEXT(OSServiceId_Schedule, NULL, NULL, NULL);
@@ -261,6 +282,7 @@ StatusType Schedule(void)
     return E_OK;
 }
 
+
 void OsTask_InitTasks(void)
 {
 #if defined(OS_FEATURE_AUTOSTART_TASKS)
@@ -283,6 +305,9 @@ void OsTask_InitTasks(void)
 #endif /* OS_FEATURE_AUTOSTART_TASKS */
 }
 
+/*
+**  Local functions.
+*/
 static void OsTask_Init(TaskType TaskID, boolean Schedule)
 {
     OsTaskConfigurationType *   task_def;
@@ -321,3 +346,7 @@ static void OsTask_Init(TaskType TaskID, boolean Schedule)
     }
 }
 
+#if KOS_MEMORY_MAPPING == STD_ON
+    #define OSEK_OS_STOP_SEC_CODE
+    #include "MemMap.h"
+#endif /* KOS_MEMORY_MAPPING */

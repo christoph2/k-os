@@ -1,7 +1,7 @@
 /*
    k_os (Konnex Operating-System based on the OSEK/VDX-Standard).
 
- * (C) 2007-2011 by Christoph Schueler <github.com/Christoph2,
+ * (C) 2007-2012 by Christoph Schueler <github.com/Christoph2,
  *                                      cpu12.gems@googlemail.com>
 
    All Rights Reserved
@@ -26,12 +26,22 @@
 
 static void OsExec_Init(void);
 
+
 #if defined(OS_FEATURE_SAVE_STARTUP_CONTEXT)
 static Utl_JumpBufType StartupContext;
 #endif  /* OS_FEATURE_SAVE_STARTUP_CONTEXT */
 
 OS_DEFINE_GLOBAL_IF_DEBUGGING(Os_AppMode, AppModeType);
 
+
+#if KOS_MEMORY_MAPPING == STD_ON
+    #define OSEK_OS_START_SEC_CODE
+    #include "MemMap.h"
+#endif /* KOS_MEMORY_MAPPING */
+
+/*
+**  Global functions.
+*/
 void StartOS(AppModeType Mode)
 {
     SAVE_SERVICE_CONTEXT(OSServiceId_StartOS, Mode, NULL, NULL);
@@ -75,6 +85,7 @@ void StartOS(AppModeType Mode)
 #if defined(OS_FEATURE_SAVE_STARTUP_CONTEXT)
 }
 
+
 #endif  /* OS_FEATURE_SAVE_STARTUP_CONTEXT */
 }
 
@@ -111,6 +122,7 @@ void ShutdownOS(StatusType Error)
     }
 }
 
+
 AppModeType GetActiveApplicationMode(void)
 {
     SAVE_SERVICE_CONTEXT(OSServiceId_GetActiveApplicationMode, NULL, NULL, NULL);
@@ -122,6 +134,7 @@ AppModeType GetActiveApplicationMode(void)
     CLEAR_SERVICE_CONTEXT();
     return Os_AppMode;
 }
+
 
 static void OsExec_Init(void)
 {
@@ -142,6 +155,7 @@ static void OsExec_Init(void)
     OsAlm_InitAlarms();
 }
 
+
 TASK(OsExec_IdleTask)
 {
     FOREVER {
@@ -157,10 +171,12 @@ void OsExec_TaskReturnGuard(void)
 
 }
 
+
 #if defined(OS_SCHED_POLICY_NON)
 void OsExec_ScheduleFromISR(void)
 {
 }
+
 
 #elif defined(OS_SCHED_POLICY_PRE) || defined(OS_SCHED_POLICY_MIX)
 void OsExec_ScheduleFromISR(void)   /*  ISR-Level-Scheduling. */
@@ -186,6 +202,7 @@ void OsExec_ScheduleFromISR(void)   /*  ISR-Level-Scheduling. */
     }
 }
 
+
 #endif
 
 boolean OsExec_HigherPriorityThenCurrentReady(void)
@@ -206,14 +223,21 @@ boolean OsExec_HigherPriorityThenCurrentReady(void)
 
 }
 
+
 void OsExec_StartHighestReadyTask(void)
 {
     OS_SET_HIGHEST_PRIO_RUNNING();
     OS_START_CURRENT_TASK();
 }
 
+
 ISR1(SWI_Vector)
 {
     OSEnterISR();
     OSLeaveISR();
 }
+
+#if KOS_MEMORY_MAPPING == STD_ON
+    #define OSEK_OS_STOP_SEC_CODE
+    #include "MemMap.h"
+#endif /* KOS_MEMORY_MAPPING */

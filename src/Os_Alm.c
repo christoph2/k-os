@@ -1,7 +1,7 @@
 /*
    k_os (Konnex Operating-System based on the OSEK/VDX-Standard).
 
-   (C) 2007-2011 by Christoph Schueler <github.com/Christoph2,
+   (C) 2007-2012 by Christoph Schueler <github.com/Christoph2,
                                         cpu12.gems@googlemail.com>
 
    All Rights Reserved
@@ -23,13 +23,26 @@
  */
 #include "Osek.h"
 
+/*
+**  Local variables.
+*/
 static Os_AlarmStateType OsAlm_ActiveAlarms;
 
+#if KOS_MEMORY_MAPPING == STD_ON
+    #define OSEK_OS_START_SEC_CODE
+    #include "MemMap.h"
+#endif /* KOS_MEMORY_MAPPING */
+
+
+/*
+**  Global functions.
+*/
 void OsAlm_StartAlarm(uint8 num)
 {
 /*    OsAlm_ActiveAlarms=Utl_BitSet((uint16)OsAlm_ActiveAlarms,num); */
     UTL_BIT_SET16(OsAlm_ActiveAlarms, num);
 }
+
 
 void OsAlm_StopAlarm(uint8 num)
 {
@@ -37,16 +50,19 @@ void OsAlm_StopAlarm(uint8 num)
     UTL_BIT_RESET16(OsAlm_ActiveAlarms, num);
 }
 
+
 boolean OsAlm_IsRunning(uint8 num)
 {
 /*    return Utl_BitGet((uint16)OsAlm_ActiveAlarms,num); */
     return UTL_BIT_GET16((uint16)OsAlm_ActiveAlarms, num);
 }
 
+
 /*Os_AlarmStateType*/ uint16  OsAlm_GetActiveAlarms(void)
 {
     return OsAlm_ActiveAlarms;
 }
+
 
 /*
 **
@@ -72,6 +88,7 @@ StatusType GetAlarmBase(AlarmType AlarmID, AlarmBaseRefType Info)
     return GetCounterInfo(OS_AlarmConf[AlarmID].AttachedCounter, Info);
 }
 
+
 StatusType GetAlarm(AlarmType AlarmID, TickRefType Tick)
 {
 /*
@@ -93,6 +110,7 @@ StatusType GetAlarm(AlarmType AlarmID, TickRefType Tick)
     CLEAR_SERVICE_CONTEXT();
     return E_OK;
 }
+
 
 StatusType SetRelAlarm(AlarmType AlarmID, TickType increment, TickType cycle)
 {
@@ -130,6 +148,7 @@ StatusType SetRelAlarm(AlarmType AlarmID, TickType increment, TickType cycle)
     CLEAR_SERVICE_CONTEXT();
     return E_OK;
 }
+
 
 StatusType SetAbsAlarm(AlarmType AlarmID, TickType start, TickType cycle)
 {
@@ -185,6 +204,7 @@ StatusType SetAbsAlarm(AlarmType AlarmID, TickType start, TickType cycle)
     return E_OK;
 }
 
+
 StatusType CancelAlarm(AlarmType AlarmID)
 {
 /*
@@ -207,6 +227,7 @@ StatusType CancelAlarm(AlarmType AlarmID)
     CLEAR_SERVICE_CONTEXT();
     return E_OK;
 }
+
 
 void OsAlm_InitAlarms(void)
 {
@@ -235,6 +256,7 @@ void OsAlm_InitAlarms(void)
 #endif  /* OS_FEATURE_AUTOSTART_ALARMS */
     }
 }
+
 
 void OsAlm_NotifyAlarm(AlarmType AlarmID)
 {
@@ -287,3 +309,7 @@ void OsAlm_NotifyAlarm(AlarmType AlarmID)
     }
 }
 
+#if KOS_MEMORY_MAPPING == STD_ON
+    #define OSEK_OS_STOP_SEC_CODE
+    #include "MemMap.h"
+#endif /* KOS_MEMORY_MAPPING */

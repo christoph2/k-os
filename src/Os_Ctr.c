@@ -1,7 +1,7 @@
 /*
    k_os (Konnex Operating-System based on the OSEK/VDX-Standard).
 
-   (C) 2007-2011 by Christoph Schueler <github.com/Christoph2,
+   (C) 2007-2012 by Christoph Schueler <github.com/Christoph2,
                                         cpu12.gems@googlemail.com>
 
    All Rights Reserved
@@ -23,9 +23,20 @@
  */
 #include "Osek.h"
 
+/*
+**  Local function prototypes.
+*/
 static void OsCtr_UpdateAttachedAlarms(CounterType CounterID);
 static void OsCtr_UpdateAttachedScheduleTables(CounterType CounterID);
 
+#if KOS_MEMORY_MAPPING == STD_ON
+    #define OSEK_OS_START_SEC_CODE
+    #include "MemMap.h"
+#endif /* KOS_MEMORY_MAPPING */
+
+/*
+**  Global functions.
+*/
 StatusType InitCounter(CounterType CounterID, TickType InitialValue)
 {
 /*
@@ -53,6 +64,7 @@ StatusType InitCounter(CounterType CounterID, TickType InitialValue)
     CLEAR_SERVICE_CONTEXT();
     return E_OK;
 }
+
 
 StatusType IncrementCounter(CounterType CounterID)
 {
@@ -90,6 +102,7 @@ StatusType IncrementCounter(CounterType CounterID)
     return E_OK;
 }
 
+
 StatusType GetCounterInfo(CounterType CounterID, CtrInfoRefType Info)
 {
 /*	Standard-Status:
@@ -106,6 +119,7 @@ StatusType GetCounterInfo(CounterType CounterID, CtrInfoRefType Info)
     CLEAR_SERVICE_CONTEXT();
     return E_OK;
 }
+
 
 StatusType GetCounterValue(CounterType CounterID, TickRefType Value)
 {
@@ -126,6 +140,7 @@ StatusType GetCounterValue(CounterType CounterID, TickRefType Value)
     CLEAR_SERVICE_CONTEXT();
     return E_OK;
 }
+
 
 StatusType GetElapsedCounterValue(CounterType CounterID, TickRefType Value, TickRefType ElapsedValue)
 {
@@ -149,6 +164,7 @@ StatusType GetElapsedCounterValue(CounterType CounterID, TickRefType Value, Tick
     return E_OK;
 }
 
+
 void OsCtr_InitCounters(void)
 {
     CounterType i;
@@ -158,6 +174,10 @@ void OsCtr_InitCounters(void)
     }
 }
 
+
+/*
+**  Local functions.
+*/
 static void OsCtr_UpdateAttachedAlarms(CounterType CounterID)
 {
     uint8       idx    = (uint8)0x00;
@@ -178,7 +198,12 @@ static void OsCtr_UpdateAttachedAlarms(CounterType CounterID)
     }
 }
 
+
 static void OsCtr_UpdateAttachedScheduleTables(CounterType CounterID)
 {
 }
 
+#if KOS_MEMORY_MAPPING == STD_ON
+    #define OSEK_OS_STOP_SEC_CODE
+    #include "MemMap.h"
+#endif /* KOS_MEMORY_MAPPING */
