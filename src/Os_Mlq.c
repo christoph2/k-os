@@ -23,28 +23,42 @@
  */
 #include "Os_Mlq.h"
 
-void OsMLQ_Init(void);
 
+#if KOS_MEMORY_MAPPING == STD_ON
+FUNC(void, OSEK_OS_CODE)        OsMLQ_Init(void);
+FUNC(TaskType, OSEK_OS_CODE)    TaskType    OsMLQ_GetHighestPrio(void);
+FUNC(void, OSEK_OS_CODE)        OsMLQ_AddTaskFirst(TaskType TaskID, PriorityType prio);
+FUNC(void, OSEK_OS_CODE)        OsMLQ_AddTaskLast(TaskType TaskID, PriorityType prio);
+FUNC(void, OSEK_OS_CODE)        OsMLQ_RemoveTask(PriorityType prio);
+#else
+void        OsMLQ_Init(void);
 TaskType    OsMLQ_GetHighestPrio(void);
 void        OsMLQ_AddTaskFirst(TaskType TaskID, PriorityType prio);
 void        OsMLQ_AddTaskLast(TaskType TaskID, PriorityType prio);
 void        OsMLQ_RemoveTask(PriorityType prio);
+#endif /* KOS_MEMORY_MAPPING */
 
 
 #if !defined(OS_SCHED_BM_ONLY)
+#if KOS_MEMORY_MAPPING == STD_ON
+STATIC FUNC(void, OSEK_OS_CODE)     OsMLQ_InitQueue(uint8 num);
+STATIC FUNC(void, OSEK_OS_CODE)     OsMLQ_PushFront(uint8 num, TaskType TaskID);
+STATIC FUNC(void, OSEK_OS_CODE)     OsMLQ_PushBack(uint8 num, TaskType TaskID);
+STATIC FUNC(void, OSEK_OS_CODE)     OsMLQ_PopFront(uint8 num);
+/*  STATIC FUNC(void, OSEK_OS_CODE) OsMLQ_PopBack(uint8 num);  */
+static FUNC(boolean, OSEK_OS_CODE)  OsMLQ_IsEmpty(uint8 num);
+/* STATIC  FUNC(boolean, OSEK_OS_CODE) OsMLQ_IsFull(uint8 num); */
+STATIC FUNC(TaskType, OSEK_OS_CODE) OsMLQ_Front(uint8 num);
+#else
 static void OsMLQ_InitQueue(uint8 num);
 static void OsMLQ_PushFront(uint8 num, TaskType TaskID);
 static void OsMLQ_PushBack(uint8 num, TaskType TaskID);
 static void OsMLQ_PopFront(uint8 num);
-
-
 /*  static void OsMLQ_PopBack(uint8 num);  */
 static boolean OsMLQ_IsEmpty(uint8 num);
-
-
 /* static boolean OsMLQ_IsFull(uint8 num); */
 static TaskType OsMLQ_Front(uint8 num);
-
+#endif /* KOS_MEMORY_MAPPING */
 
 /* static TaskType OsMLQ_Back(uint8 num); */
 #endif /* !OS_SCHED_BM_ONLY*/
@@ -73,7 +87,11 @@ static uint16           BM_NotEmpty; /* Bitmap for non-empty queues.  */
 **  Global Functions.
 **
 */
+#if KOS_MEMORY_MAPPING == STD_ON
+FUNC(void, OSEK_OS_CODE) OsMLQ_Init(void)
+#else
 void OsMLQ_Init(void)
+#endif /* KOS_MEMORY_MAPPING */
 {
     BM_NotEmpty = (uint16)0x0000U;
 #if !defined(OS_SCHED_BM_ONLY)
@@ -87,7 +105,11 @@ void OsMLQ_Init(void)
 }
 
 
+#if KOS_MEMORY_MAPPING == STD_ON
+FUNC(TaskType, OSEK_OS_CODE) OsMLQ_GetHighestPrio(void)
+#else
 TaskType OsMLQ_GetHighestPrio(void)
+#endif /* KOS_MEMORY_MAPPING */
 {
 #if !defined(OS_SCHED_BM_ONLY)
     uint8 queue_num;
@@ -107,19 +129,31 @@ TaskType OsMLQ_GetHighestPrio(void)
 }
 
 
+#if KOS_MEMORY_MAPPING == STD_ON
+FUNC(boolean, OSEK_OS_CODE) OsMLQ_TasksAreReady(void)
+#else
 boolean OsMLQ_TasksAreReady(void)
+#endif /* KOS_MEMORY_MAPPING */
 {
     return BM_NotEmpty != (uint16)0x0000U;
 }
 
 
+#if KOS_MEMORY_MAPPING == STD_ON
+FUNC(uint16, OSEK_OS_CODE) OsMLQ_GetBitmap(void)
+#else
 uint16 OsMLQ_GetBitmap(void)
+#endif /* KOS_MEMORY_MAPPING */
 {
     return BM_NotEmpty;
 }
 
 
+#if KOS_MEMORY_MAPPING == STD_ON
+FUNC(void, OSEK_OS_CODE) OsMLQ_AddTaskFirst(TaskType TaskID, PriorityType prio)
+#else
 void OsMLQ_AddTaskFirst(TaskType TaskID, PriorityType prio)    /* stack. */
+#endif /* KOS_MEMORY_MAPPING */
 {
     ASSERT((prio != PRIO_NONE) && (INVERT_NIBBLE(prio) <= OS_MLQ_NUMBER_OF_PRIORITIES));
 
@@ -132,7 +166,11 @@ void OsMLQ_AddTaskFirst(TaskType TaskID, PriorityType prio)    /* stack. */
 }
 
 
+#if KOS_MEMORY_MAPPING == STD_ON
+FUNC(void, OSEK_OS_CODE) OsMLQ_AddTaskLast(TaskType TaskID, PriorityType prio)
+#else
 void OsMLQ_AddTaskLast(TaskType TaskID, PriorityType prio)     /* queue. */
+#endif /* KOS_MEMORY_MAPPING */
 {
     ASSERT((prio != PRIO_NONE) && (INVERT_NIBBLE(prio) <= OS_MLQ_NUMBER_OF_PRIORITIES));
 
@@ -144,7 +182,11 @@ void OsMLQ_AddTaskLast(TaskType TaskID, PriorityType prio)     /* queue. */
 }
 
 
+#if KOS_MEMORY_MAPPING == STD_ON
+FUNC(void, OSEK_OS_CODE) OsMLQ_RemoveTask(TaskType TaskID)
+#else
 void OsMLQ_RemoveTask(TaskType TaskID)
+#endif /* KOS_MEMORY_MAPPING */
 {
     uint8 prio;
 
@@ -168,7 +210,11 @@ void OsMLQ_RemoveTask(TaskType TaskID)
 
 
 #if defined(OS_USE_RESOURCES) || defined(OS_USE_INTERNAL_RESOURCES)
+#if KOS_MEMORY_MAPPING == STD_ON
+FUNC(void, OSEK_OS_CODE) OsMLQ_ChangePrio(TaskType TaskID, PriorityType old_prio, PriorityType new_prio)
+#else
 void OsMLQ_ChangePrio(TaskType TaskID, PriorityType old_prio, PriorityType new_prio)
+#endif /* KOS_MEMORY_MAPPING */
 {
     ASSERT((new_prio != PRIO_NONE) && (INVERT_NIBBLE(new_prio) <= OS_MLQ_NUMBER_OF_PRIORITIES));
 
@@ -184,14 +230,22 @@ void OsMLQ_ChangePrio(TaskType TaskID, PriorityType old_prio, PriorityType new_p
 **
 */
 #if !defined(OS_SCHED_BM_ONLY)
+#if KOS_MEMORY_MAPPING == STD_ON
+STATIC FUNC(void, OSEK_OS_CODE) OsMLQ_InitQueue(uint8 num)
+#else
 static void OsMLQ_InitQueue(uint8 num)
+#endif /* KOS_MEMORY_MAPPING */
 {
     Utl_MemSet((void *)&MLQ_ReadyQueue[num], (uint8)'\0', (uint16)sizeof(OsMLQ_QueueType));
     Utl_MemSet((void *)MLQ_QueueDef[num].data, (uint8)'\0', (uint16)MLQ_QueueDef[num].size);
 }
 
 
+#if KOS_MEMORY_MAPPING == STD_ON
+STATIC FUNC(void, OSEK_OS_CODE) OsMLQ_PushFront(uint8 num, uint8 TaskID)
+#else
 static void OsMLQ_PushFront(uint8 num, uint8 TaskID)
+#endif /* KOS_MEMORY_MAPPING */
 {
     OsMLQ_QueueType * const                     rq = &MLQ_ReadyQueue[num];
     OsMLQ_QueueConfigurationType const * const  qc = &MLQ_QueueDef[num];
@@ -203,7 +257,11 @@ static void OsMLQ_PushFront(uint8 num, uint8 TaskID)
 }
 
 
+#if KOS_MEMORY_MAPPING == STD_ON
+STATIC FUNC(void, OSEK_OS_CODE) OsMLQ_PushBack(uint8 num, TaskType TaskID)
+#else
 static void OsMLQ_PushBack(uint8 num, TaskType TaskID)
+#endif /* KOS_MEMORY_MAPPING */
 {
     OsMLQ_QueueType * const                     rq = &MLQ_ReadyQueue[num];
     OsMLQ_QueueConfigurationType const * const  qc = &MLQ_QueueDef[num];
@@ -215,7 +273,11 @@ static void OsMLQ_PushBack(uint8 num, TaskType TaskID)
 }
 
 
+#if KOS_MEMORY_MAPPING == STD_ON
+STATIC FUNC(void, OSEK_OS_CODE) OsMLQ_PopFront(uint8 num)
+#else
 static void OsMLQ_PopFront(uint8 num)
+#endif /* KOS_MEMORY_MAPPING */
 {
 #if 0
     MLQ_ReadyQueue[num].head = (MLQ_ReadyQueue[num].head + (uint8)1) % MLQ_QueueDef[num].size;
@@ -230,26 +292,42 @@ static void OsMLQ_PopFront(uint8 num)
 }
 
 
+#if KOS_MEMORY_MAPPING == STD_ON
+STATIC FUNC(boolean, OSEK_OS_CODE) OsMLQ_IsEmpty(uint8 num)
+#else
 static boolean OsMLQ_IsEmpty(uint8 num)
+#endif /* KOS_MEMORY_MAPPING */
 {
     return MLQ_ReadyQueue[num].entries == (uint8)0x00;
 }
 
 
+#if KOS_MEMORY_MAPPING == STD_ON
+STATIC FUNC(TaskType, OSEK_OS_CODE) OsMLQ_Front(uint8 num)
+#else
 static TaskType OsMLQ_Front(uint8 num)
+#endif /* KOS_MEMORY_MAPPING */
 {
     return MLQ_QueueDef[num].data[MLQ_ReadyQueue[num].head];
 }
 
 
 #if 0
+#if KOS_MEMORY_MAPPING == STD_ON
+STATIC FUNC(boolean, OSEK_OS_CODE) OsMLQ_IsFull(uint8 num)
+#else
 static boolean OsMLQ_IsFull(uint8 num)
+#endif /* KOS_MEMORY_MAPPING */
 {
     return MLQ_ReadyQueue[num].entries == MLQ_QueueDef[num].size;
 }
 
 
+#if KOS_MEMORY_MAPPING == STD_ON
+FUNC(TaskType, OSEK_OS_CODE) OsMLQ_Back(uint8 num)
+#else
 static TaskType OsMLQ_Back(uint8 num)
+#endif /* KOS_MEMORY_MAPPING */
 {
     return MLQ_QueueDef[num].data[MLQ_ReadyQueue[num].tail];
 }

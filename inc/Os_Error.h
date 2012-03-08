@@ -1,7 +1,7 @@
 /*
    k_os (Konnex Operating-System based on the OSEK/VDX-Standard).
 
- * (C) 2007-2010 by Christoph Schueler <github.com/Christoph2,
+ * (C) 2007-2012 by Christoph Schueler <github.com/Christoph2,
  *                                      cpu12.gems@googlemail.com>
 
    All Rights Reserved
@@ -20,7 +20,7 @@
    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
    s. FLOSS-EXCEPTION.txt
-*/
+ */
 #if !defined(__OSERROR_H)
 #define __OSERROR_H
 
@@ -35,71 +35,70 @@ extern "C"
 typedef enum tagOS_ServiceIdType {
     OSServiceId_NoService,
     /*  OSEK-OS 2.2.3. */
-    OSServiceId_ActivateTask=2,
-    OSServiceId_TerminateTask=4,
-    OSServiceId_ChainTask=6,
-    OSServiceId_Schedule=8,
-    OSServiceId_GetTaskID=10,
-    OSServiceId_GetTaskState=12,
-    OSServiceId_DisableAllInterrupts=14,
-    OSServiceId_EnableAllInterrupts=16,
-    OSServiceId_SuspendAllInterrupts=18,
-    OSServiceId_ResumeAllInterrupts=20,
-    OSServiceId_SuspendOSInterrupts=22,
-    OSServiceId_ResumeOSInterrupts=24,
-    OSServiceId_GetResource=26,
-    OSServiceId_ReleaseResource=28,
-    OSServiceId_SetEvent=30,
-    OSServiceId_ClearEvent=32,
-    OSServiceId_GetEvent=34,
-    OSServiceId_WaitEvent=36,
-    OSServiceId_GetAlarmBase=38,
-    OSServiceId_GetAlarm=40,
-    OSServiceId_SetRelAlarm=42,
-    OSServiceId_SetAbsAlarm=44,
-    OSServiceId_CancelAlarm=46,
-    OSServiceId_GetActiveApplicationMode=48,
-    OSServiceId_StartOS=50,
-    OSServiceId_ShutdownOS=52,
+    OSServiceId_ActivateTask               = 2,
+    OSServiceId_TerminateTask              = 4,
+    OSServiceId_ChainTask                  = 6,
+    OSServiceId_Schedule                   = 8,
+    OSServiceId_GetTaskID                  = 10,
+    OSServiceId_GetTaskState               = 12,
+    OSServiceId_DisableAllInterrupts       = 14,
+    OSServiceId_EnableAllInterrupts        = 16,
+    OSServiceId_SuspendAllInterrupts       = 18,
+    OSServiceId_ResumeAllInterrupts        = 20,
+    OSServiceId_SuspendOSInterrupts        = 22,
+    OSServiceId_ResumeOSInterrupts         = 24,
+    OSServiceId_GetResource                = 26,
+    OSServiceId_ReleaseResource            = 28,
+    OSServiceId_SetEvent                   = 30,
+    OSServiceId_ClearEvent                 = 32,
+    OSServiceId_GetEvent                   = 34,
+    OSServiceId_WaitEvent                  = 36,
+    OSServiceId_GetAlarmBase               = 38,
+    OSServiceId_GetAlarm                   = 40,
+    OSServiceId_SetRelAlarm                = 42,
+    OSServiceId_SetAbsAlarm                = 44,
+    OSServiceId_CancelAlarm                = 46,
+    OSServiceId_GetActiveApplicationMode   = 48,
+    OSServiceId_StartOS                    = 50,
+    OSServiceId_ShutdownOS                 = 52,
     /*  Autosar. */
-    OSServiceId_GetApplicationID=54,
-    OSServiceId_GetISRID=56,
-    OSServiceId_CallTrustedFunction=58,
-    OSServiceId_CheckISRMemoryAccess=60,
-    OSServiceId_CheckTaskMemoryAccess=62,
-    OSServiceId_CheckObjectAccess=64,
-    OSServiceId_CheckObjectOwnership=66,
-    OSServiceId_StartScheduleTableRel=68,
-    OSServiceId_StartScheduleTableAbs=70,
-    OSServiceId_StopScheduleTable=72,
-    OSServiceId_NextScheduleTable=74,
-    OSServiceId_StartScheduleTableSynchron=76,
-    OSServiceId_SyncScheduleTable=78,
-    OSServiceId_GetScheduleTableStatus=80,
-    OSServiceId_SetScheduleTableAsync=82,
-    OSServiceId_TerminateApplication=84,
-    OSServiceId_DisableInterruptSource=86,
-    OSServiceId_EnableInterruptSource=88,
+    OSServiceId_GetApplicationID           = 54,
+    OSServiceId_GetISRID                   = 56,
+    OSServiceId_CallTrustedFunction        = 58,
+    OSServiceId_CheckISRMemoryAccess       = 60,
+    OSServiceId_CheckTaskMemoryAccess      = 62,
+    OSServiceId_CheckObjectAccess          = 64,
+    OSServiceId_CheckObjectOwnership       = 66,
+    OSServiceId_StartScheduleTableRel      = 68,
+    OSServiceId_StartScheduleTableAbs      = 70,
+    OSServiceId_StopScheduleTable          = 72,
+    OSServiceId_NextScheduleTable          = 74,
+    OSServiceId_StartScheduleTableSynchron = 76,
+    OSServiceId_SyncScheduleTable          = 78,
+    OSServiceId_GetScheduleTableStatus     = 80,
+    OSServiceId_SetScheduleTableAsync      = 82,
+    OSServiceId_TerminateApplication       = 84,
+    OSServiceId_DisableInterruptSource     = 86,
+    OSServiceId_EnableInterruptSource      = 88,
     /* Counter-Interface. */
-    OSServiceId_InitCounter=90,
-    OSServiceId_IncrementCounter=92,
-    OSServiceId_GetCounterInfo=94,
-    OSServiceId_GetCounterValue=96,
-    OSServiceId_GetElapsedCounterValue=98,
+    OSServiceId_InitCounter            = 90,
+    OSServiceId_IncrementCounter       = 92,
+    OSServiceId_GetCounterInfo         = 94,
+    OSServiceId_GetCounterValue        = 96,
+    OSServiceId_GetElapsedCounterValue = 98,
     /* OSEK-COM 3.0.3 */
-    COMServiceId_StartCOM=100,
-    COMServiceId_StopCOM=102,
-    COMServiceId_InitMessage=104,
-    COMServiceId_StartPeriodic=106,
-    COMServiceId_StopPeriodic=108,
-    COMServiceId_SendMessage=110,
-    COMServiceId_ReceiveMessage=112,
-    COMServiceId_SendDynamicMessage=114,
-    COMServiceId_ReceiveDynamicMessage=116,
-    COMServiceId_SendZeroMessage=118,
-    COMServiceId_GetMessageStatus=120
+    COMServiceId_StartCOM              = 100,
+    COMServiceId_StopCOM               = 102,
+    COMServiceId_InitMessage           = 104,
+    COMServiceId_StartPeriodic         = 106,
+    COMServiceId_StopPeriodic          = 108,
+    COMServiceId_SendMessage           = 110,
+    COMServiceId_ReceiveMessage        = 112,
+    COMServiceId_SendDynamicMessage    = 114,
+    COMServiceId_ReceiveDynamicMessage = 116,
+    COMServiceId_SendZeroMessage       = 118,
+    COMServiceId_GetMessageStatus      = 120
 } Os_ServiceIdType;
-
 
 #if defined(OS_USE_PARAMETERACCESS)
     #define OSError_ActivateTask_TaskID()                           ((TaskType)Os_ServiceContext.param1)
@@ -165,7 +164,6 @@ typedef enum tagOS_ServiceIdType {
     #define OSError_GetElapsedCounterValue_CounterID()              ((CounterType)Os_ServiceContext.param1)
     #define OSError_GetElapsedCounterValue_Value()                  ((TickRefType)Os_ServiceContext.param2)
     #define OSError_GetElapsedCounterValue_ElapsedValue()           ((TickRefType)Os_ServiceContext.param2)
-
 
     #define COM_Error_StartCOM_Mode()                               ((COMApplicationModeType)Os_ServiceContext.param1)
     #define COM_Error_StopCOM_Mode()                                ((COMShutdownModeType)Os_ServiceContext.param1)
@@ -266,70 +264,110 @@ typedef enum tagOS_ServiceIdType {
     #define COM_Error_GetMessageStatus_Message()                    ((MessageIdentifier)0)
 #endif
 
-
 #if defined(OS_USE_GETSERVICEID) || defined(OS_USE_PARAMETERACCESS) || defined(OS_FEATURE_ORTI_DEBUG)
 typedef struct tagOs_ServiceContextType {
     #if defined(OS_USE_GETSERVICEID) || defined(OS_FEATURE_ORTI_DEBUG)
     Os_ServiceIdType id;
     #endif
     #if defined(OS_USE_PARAMETERACCESS)
-    /*@null@*/void *param1;
-    /*@null@*/void *param2;
-    /*@null@*/void *param3;
+    /*@null@*/ void *   param1;
+    /*@null@*/ void *   param2;
+    /*@null@*/ void *   param3;
     #endif
 } Os_ServiceContextType;
 #endif
 
-OS_DECLARE_GLOBAL_IF_DEBUGGING(Os_ServiceContext,Os_ServiceContextType);
-OS_DECLARE_GLOBAL_IF_DEBUGGING(OsLastError,StatusType);
+OS_DECLARE_GLOBAL_IF_DEBUGGING(Os_ServiceContext, Os_ServiceContextType);
+OS_DECLARE_GLOBAL_IF_DEBUGGING(OsLastError, StatusType);
 
+void    ErrorHook(StatusType Error);
+void    COMErrorHook(StatusType Error);
 
-void ErrorHook(StatusType Error);
-void COMErrorHook(StatusType Error);
+void    OsErrorCallErrorHook(StatusType Error);
+void    COMErrorCallErrorHook(StatusType Error);
 
-void OsErrorCallErrorHook(StatusType Error);
-void COMErrorCallErrorHook(StatusType Error);
 
 /*********************************************************************************
     Service-Context-Functions.
-**********************************************************************************/
+ **********************************************************************************/
 
 #if defined(OS_USE_GETSERVICEID)
     #define OSErrorGetServiceId()   Os_ServiceContext.id
-    #define CLEAR_SERVICE_CONTEXT() Os_ServiceContext.id=OSServiceId_NoService
+    #define CLEAR_SERVICE_CONTEXT() Os_ServiceContext.id = OSServiceId_NoService
 #else
     #define OSErrorGetServiceId()   ((OS_ServiceIdType)0)
     #define CLEAR_SERVICE_CONTEXT()
 #endif
 
+
+#if KOS_MEMORY_MAPPING == STD_ON
 #if defined(OS_USE_GETSERVICEID) && defined(OS_USE_PARAMETERACCESS)
-void OSSaveServiceContext(Os_ServiceIdType id,/*@null@*//*@in@*/void *param1,
-    /*@null@*//*@in@*/void *param2,/*@null@*//*@in@*/void *param3);
+FUNC(void, OSEK_OS_CODE) OSSaveServiceContext(Os_ServiceIdType id,
+    /*@null@*//*@in@*/ P2VAR(void, AUTOMATIC, OSEK_OS_APPL_DATA) param1,
+    /*@null@*//*@in@*/ P2VAR(void, AUTOMATIC, OSEK_OS_APPL_DATA) param2,
+    /*@null@*//*@in@*/ P2VAR(void, AUTOMATIC, OSEK_OS_APPL_DATA) param3
+);
+
+
+#endif
+
+#if defined(OS_USE_GETSERVICEID) && !defined(OS_USE_PARAMETERACCESS)
+FUNC(void, OSEK_OS_CODE) OSSaveServiceContext(Os_ServiceIdType id);
+
+
+#endif
+
+#if !defined(OS_USE_GETSERVICEID) && defined(OS_USE_PARAMETERACCESS)
+FUNC(void, OSEK_OS_CODE) OSSaveServiceContext(
+    /*@null@*//*@in@*/ P2VAR(void, AUTOMATIC, OSEK_OS_APPL_DATA) param1,
+    /*@null@*//*@in@*/ P2VAR(void, AUTOMATIC, OSEK_OS_APPL_DATA) param2,
+    /*@null@*//*@in@*/ P2VAR(void, AUTOMATIC, OSEK_OS_APPL_DATA) param3
+);
+
+
+#endif
+#else
+#if defined(OS_USE_GETSERVICEID) && defined(OS_USE_PARAMETERACCESS)
+void OSSaveServiceContext(Os_ServiceIdType id,
+    /*@null@*//*@in@*/ void * param1,
+    /*@null@*//*@in@*/ void * param2,
+    /*@null@*//*@in@*/ void * param3
+);
+
+
 #endif
 
 #if defined(OS_USE_GETSERVICEID) && !defined(OS_USE_PARAMETERACCESS)
 void OSSaveServiceContext(Os_ServiceIdType id);
+
+
 #endif
 
 #if !defined(OS_USE_GETSERVICEID) && defined(OS_USE_PARAMETERACCESS)
-void OSSaveServiceContext(/*@null@*//*@in@*/void *param1,/*@null@*//*@in@*/
-    void *param2,/*@null@*//*@in@*/void *param3);
+void OSSaveServiceContext(
+    /*@null@*//*@in@*/ void * param1,
+    /*@null@*//*@in@*/ void * param2,
+    /*@null@*//*@in@*/ void * param3
+);
+
+
 #endif
+#endif /* KOS_MEMORY_MAPPING */
 
 #if !defined(OS_USE_GETSERVICEID) && !defined(OS_USE_PARAMETERACCESS)
-#define SAVE_SERVICE_CONTEXT(id,param1,param2,param3)
+#define SAVE_SERVICE_CONTEXT(id, param1, param2, param3)
 #else
     #if defined(OS_USE_GETSERVICEID) && defined(OS_USE_PARAMETERACCESS)
-        #define SAVE_SERVICE_CONTEXT(id,param1,param2,param3) \
-        OSSaveServiceContext(id,(void*)param1,(void*)param2,(void*)param3)
+        #define SAVE_SERVICE_CONTEXT(id, param1, param2, param3) \
+    OSSaveServiceContext(id, (void *)param1, (void *)param2, (void *)param3)
     #endif
     #if defined(OS_USE_GETSERVICEID) && !defined(OS_USE_PARAMETERACCESS)
-        #define SAVE_SERVICE_CONTEXT(id,param1,param2,param3) \
-        OSSaveServiceContext(id)
+        #define SAVE_SERVICE_CONTEXT(id, param1, param2, param3) \
+    OSSaveServiceContext(id)
     #endif
     #if !defined(OS_USE_GETSERVICEID) && defined(OS_USE_PARAMETERACCESS)
-        #define SAVE_SERVICE_CONTEXT(id,param1,param2,param3) \
-        OSSaveServiceContext((void*)param1,(void*)param2,(void*)param3)
+        #define SAVE_SERVICE_CONTEXT(id, param1, param2, param3) \
+    OSSaveServiceContext((void *)param1, (void *)param2, (void *)param3)
     #endif
 #endif
 

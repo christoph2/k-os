@@ -1,7 +1,7 @@
 /*
    k_os (Konnex Operating-System based on the OSEK/VDX-Standard).
 
- * (C) 2007-2010 by Christoph Schueler <github.com/Christoph2,
+ * (C) 2007-2012 by Christoph Schueler <github.com/Christoph2,
  *                                      cpu12.gems@googlemail.com>
 
    All Rights Reserved
@@ -20,16 +20,23 @@
    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
    s. FLOSS-EXCEPTION.txt
-*/
+ */
 #if !defined(__OS_EXEC_H)
 #define __OS_EXEC_H
 
-OS_DECLARE_GLOBAL_IF_DEBUGGING(Os_AppMode,AppModeType);
+OS_DECLARE_GLOBAL_IF_DEBUGGING(Os_AppMode, AppModeType);
 
-void OsExec_StartHighestReadyTask(void);
+#if KOS_MEMORY_MAPPING == STD_ON
+FUNC(void, OSEK_OS_CODE) OsExec_StartHighestReadyTask(void);
+FUNC(boolean, OSEK_OS_CODE) OsExec_HigherPriorityThenCurrentReady(void);
+FUNC(void, OSEK_OS_CODE) OsExec_TaskReturnGuard(void);
+FUNC(void, OSEK_OS_CODE) OsExec_ScheduleFromISR(void);
+#else
+void    OsExec_StartHighestReadyTask(void);
 boolean OsExec_HigherPriorityThenCurrentReady(void);
+void    OsExec_TaskReturnGuard(void);
+void    OsExec_ScheduleFromISR(void);
+#endif /* KOS_MEMORY_MAPPING */
 
-void OsExec_TaskReturnGuard(void);
-void OsExec_ScheduleFromISR(void);
 
 #endif /* __OS_EXEC_H */

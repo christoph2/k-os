@@ -34,8 +34,11 @@
 /*
 **  Local function prototypes.
 */
+#if KOS_MEMORY_MAPPING == STD_ON
+STATIC FUNC(void, OSEK_OS_CODE) SuspendCPUInterrrupts(void), ResumeCPUInterrrupts(void);
+#else
 static void SuspendCPUInterrrupts(void), ResumeCPUInterrrupts(void);
-
+#endif /* KOS_MEMORY_MAPPING */
 
 
 /*
@@ -57,37 +60,61 @@ static boolean          IStateSave;
 /*
 **  Global functions.
 */
+#if KOS_MEMORY_MAPPING == STD_ON
+STATIC FUNC(void, OSEK_OS_CODE) OsIntr_InitInterrupts(void)
+#else
 void OsIntr_InitInterrupts(void)
+#endif /* KOS_MEMORY_MAPPING */
 {
     InterruptDisableCounter = (uint8)0;
 }
 
 
+#if KOS_MEMORY_MAPPING == STD_ON
+STATIC FUNC(void, OSEK_OS_CODE) ResumeAllInterrupts(void)
+#else
 void ResumeAllInterrupts(void)
+#endif /* KOS_MEMORY_MAPPING */
 {
     ResumeCPUInterrrupts();
 }
 
 
+#if KOS_MEMORY_MAPPING == STD_ON
+STATIC FUNC(void, OSEK_OS_CODE) SuspendAllInterrupts(void)
+#else
 void SuspendAllInterrupts(void)
+#endif /* KOS_MEMORY_MAPPING */
 {
     SuspendCPUInterrrupts();
 }
 
 
+#if KOS_MEMORY_MAPPING == STD_ON
+STATIC FUNC(void, OSEK_OS_CODE) ResumeOSInterrupts(void)
+#else
 void ResumeOSInterrupts(void)
+#endif /* KOS_MEMORY_MAPPING */
 {
     ResumeCPUInterrrupts();
 }
 
 
+#if KOS_MEMORY_MAPPING == STD_ON
+STATIC FUNC(void, OSEK_OS_CODE) SuspendOSInterrupts(void)
+#else
 void SuspendOSInterrupts(void)
+#endif /* KOS_MEMORY_MAPPING */
 {
     SuspendCPUInterrrupts();
 }
 
 
+#if KOS_MEMORY_MAPPING == STD_ON
+STATIC FUNC(void, OSEK_OS_CODE) SuspendCPUInterrrupts(void)
+#else
 void SuspendCPUInterrrupts(void)
+#endif /* KOS_MEMORY_MAPPING */
 {
     uint8 istate = CPU_INTERRUPTS_DISABLED();
 
@@ -99,7 +126,11 @@ void SuspendCPUInterrrupts(void)
 }
 
 
+#if KOS_MEMORY_MAPPING == STD_ON
+STATIC FUNC(void, OSEK_OS_CODE) ResumeCPUInterrrupts(void)
+#else
 void ResumeCPUInterrrupts(void) /* s. Autosar O92 !!!*/
+#endif /* KOS_MEMORY_MAPPING */
 {
     uint8 istate = CPU_INTERRUPTS_DISABLED();
 
@@ -114,7 +145,11 @@ void ResumeCPUInterrrupts(void) /* s. Autosar O92 !!!*/
 
 
 #if defined(OS_FEATURE_ORTI_DEBUG)
+#if KOS_MEMORY_MAPPING == STD_ON
+STATIC FUNC(ISRType, OSEK_OS_CODE) GetISRID(void)
+#else
 ISRType GetISRID(void)
+#endif /* KOS_MEMORY_MAPPING */
 {
     return OsCurrentISRID;
 }

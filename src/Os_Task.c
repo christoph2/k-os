@@ -28,7 +28,11 @@
 /*
 **  Local functions prototypes.
 */
+#if KOS_MEMORY_MAPPING == STD_ON
+STATIC FUNC(void, OSEK_OS_CODE) OsTask_Init(TaskType TaskID, boolean Schedule);
+#else
 static void OsTask_Init(TaskType TaskID, boolean Schedule);
+#endif /* KOS_MEMORY_MAPPING */
 
 
 #if KOS_MEMORY_MAPPING == STD_ON
@@ -39,7 +43,11 @@ static void OsTask_Init(TaskType TaskID, boolean Schedule);
 /*
 **  Global Functions.
 */
+#if KOS_MEMORY_MAPPING == STD_ON
+STATIC FUNC(void, OSEK_OS_CODE) OsTask_Ready(TaskType TaskID)
+#else
 void OsTask_Ready(TaskType TaskID)
+#endif /* KOS_MEMORY_MAPPING */
 {
 #if defined(OS_USE_RESOURCES)
     OsMLQ_AddTaskLast(TaskID, OS_TCB[TaskID].CurrentPriority);
@@ -50,21 +58,33 @@ void OsTask_Ready(TaskType TaskID)
 }
 
 
+#if KOS_MEMORY_MAPPING == STD_ON
+STATIC FUNC(void, OSEK_OS_CODE) OsTask_Suspend(TaskType TaskID)
+#else
 void OsTask_Suspend(TaskType TaskID)
+#endif /* KOS_MEMORY_MAPPING */
 {
     OsMLQ_RemoveTask(TaskID);
     OS_TCB[TaskID].State = SUSPENDED;
 }
 
 
+#if KOS_MEMORY_MAPPING == STD_ON
+STATIC FUNC(void, OSEK_OS_CODE) OsTask_Wait(TaskType TaskID)
+#else
 void OsTask_Wait(TaskType TaskID)
+#endif /* KOS_MEMORY_MAPPING */
 {
     OsMLQ_RemoveTask(TaskID);
     OS_TCB[TaskID].State = WAITING;
 }
 
 
+#if KOS_MEMORY_MAPPING == STD_ON
+STATIC FUNC(StatusType, OSEK_OS_CODE) OsTask_Activate(TaskType TaskID)
+#else
 StatusType OsTask_Activate(TaskType TaskID)
+#endif /* KOS_MEMORY_MAPPING */
 {
     SAVE_SERVICE_CONTEXT(OSServiceId_ActivateTask, TaskID, NULL, NULL);
 
@@ -94,7 +114,12 @@ StatusType OsTask_Activate(TaskType TaskID)
     return E_OK;
 }
 
+
+#if KOS_MEMORY_MAPPING == STD_ON
+STATIC FUNC(StatusType, OSEK_OS_CODE) ActivateTask(TaskType TaskID)
+#else
 StatusType ActivateTask(TaskType TaskID)
+#endif /* KOS_MEMORY_MAPPING */
 {
 /*
 **
@@ -115,7 +140,11 @@ StatusType ActivateTask(TaskType TaskID)
 }
 
 
+#if KOS_MEMORY_MAPPING == STD_ON
+STATIC FUNC(StatusType, OSEK_OS_CODE) TerminateTask(void)
+#else
 StatusType TerminateTask(void)
+#endif /* KOS_MEMORY_MAPPING */
 {
 /*
 **      Standard-Status: no return to Calllevel.
@@ -153,7 +182,11 @@ StatusType TerminateTask(void)
 }
 
 
+#if KOS_MEMORY_MAPPING == STD_ON
+STATIC FUNC(StatusType, OSEK_OS_CODE) ChainTask(TaskType TaskID)
+#else
 StatusType ChainTask(TaskType TaskID)
+#endif /* KOS_MEMORY_MAPPING */
 {
 /*
 **      Terminates running Task and activates another, enforces Rescheduling.
@@ -198,7 +231,11 @@ StatusType ChainTask(TaskType TaskID)
 }
 
 
+#if KOS_MEMORY_MAPPING == STD_ON
+STATIC FUNC(StatusType, OSEK_OS_CODE) GetTaskID(TaskRefType TaskID)
+#else
 StatusType GetTaskID(TaskRefType TaskID)
+#endif /* KOS_MEMORY_MAPPING */
 {
 /*
     "If no task currently running, the service returns INVALID_TASK
@@ -223,7 +260,11 @@ StatusType GetTaskID(TaskRefType TaskID)
 }
 
 
+#if KOS_MEMORY_MAPPING == STD_ON
+STATIC FUNC(StatusType, OSEK_OS_CODE) GetTaskState(TaskType TaskID, TaskStateRefType State)
+#else
 StatusType GetTaskState(TaskType TaskID, TaskStateRefType State)
+#endif /* KOS_MEMORY_MAPPING */
 {
 /*
 **      "Within a full-preemptive system, calling this operating system
@@ -253,7 +294,11 @@ StatusType GetTaskState(TaskType TaskID, TaskStateRefType State)
 }
 
 
+#if KOS_MEMORY_MAPPING == STD_ON
+STATIC FUNC(StatusType, OSEK_OS_CODE) Schedule(void)
+#else
 StatusType Schedule(void)
+#endif /* KOS_MEMORY_MAPPING */
 {
     SAVE_SERVICE_CONTEXT(OSServiceId_Schedule, NULL, NULL, NULL);
     ASSERT_VALID_CALLEVEL(OS_CL_TASK);
@@ -283,7 +328,11 @@ StatusType Schedule(void)
 }
 
 
+#if KOS_MEMORY_MAPPING == STD_ON
+STATIC FUNC(void, OSEK_OS_CODE) OsTask_InitTasks(void)
+#else
 void OsTask_InitTasks(void)
+#endif /* KOS_MEMORY_MAPPING */
 {
 #if defined(OS_FEATURE_AUTOSTART_TASKS)
     uint8_least i;
@@ -308,7 +357,11 @@ void OsTask_InitTasks(void)
 /*
 **  Local functions.
 */
+#if KOS_MEMORY_MAPPING == STD_ON
+STATIC FUNC(void, OSEK_OS_CODE) OsTask_Init(TaskType TaskID, boolean Schedule)
+#else
 static void OsTask_Init(TaskType TaskID, boolean Schedule)
+#endif /* KOS_MEMORY_MAPPING */
 {
     OsTaskConfigurationType *   task_def;
     OsTCBType *                 tcb;

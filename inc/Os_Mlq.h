@@ -1,7 +1,7 @@
 /*
    k_os (Konnex Operating-System based on the OSEK/VDX-Standard).
 
- * (C) 2007-2010 by Christoph Schueler <github.com/Christoph2,
+ * (C) 2007-2012 by Christoph Schueler <github.com/Christoph2,
  *                                      cpu12.gems@googlemail.com>
 
    All Rights Reserved
@@ -20,7 +20,7 @@
    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
    s. FLOSS-EXCEPTION.txt
-*/
+ */
 #if !defined(__OS_MLQ_H)
 #define __OS_MLQ_H
 
@@ -31,17 +31,29 @@ extern "C"
 {
 #endif  /* __cplusplus */
 
-void OsMLQ_Init(void);
-TaskType OsMLQ_GetHighestPrio(void);
-boolean OsMLQ_TasksAreReady(void);
-uint16 OsMLQ_GetBitmap(void);
-void OsMLQ_AddTaskFirst(TaskType TaskID,PriorityType prio);
-void OsMLQ_AddTaskLast(TaskType TaskID,PriorityType prio);
-void OsMLQ_RemoveTask(TaskType TaskID);
 
-void OsMLQ_ChangePrio(TaskType TaskID,PriorityType old_prio,PriorityType new_prio);
+#if KOS_MEMORY_MAPPING == STD_ON
+FUNC(void, OSEK_OS_CODE) OsMLQ_Init(void);
+FUNC(TaskType, OSEK_OS_CODE) OsMLQ_GetHighestPrio(void);
+FUNC(boolean, OSEK_OS_CODE) OsMLQ_TasksAreReady(void);
+FUNC(uint16, OSEK_OS_CODE) OsMLQ_GetBitmap(void);
+FUNC(void, OSEK_OS_CODE) OsMLQ_AddTaskFirst(TaskType TaskID, PriorityType prio);
+FUNC(void, OSEK_OS_CODE) OsMLQ_AddTaskLast(TaskType TaskID, PriorityType prio);
+FUNC(void, OSEK_OS_CODE) OsMLQ_RemoveTask(TaskType TaskID);
+FUNC(void, OSEK_OS_CODE) OsMLQ_ChangePrio(TaskType TaskID, PriorityType old_prio, PriorityType new_prio);
+FUNC(uint8, OSEK_OS_CODE) OsMLQ_GetLowestBitNumber(uint16 Bitmap);
+#else	
+void        OsMLQ_Init(void);
+TaskType    OsMLQ_GetHighestPrio(void);
+boolean     OsMLQ_TasksAreReady(void);
+uint16      OsMLQ_GetBitmap(void);
+void        OsMLQ_AddTaskFirst(TaskType TaskID, PriorityType prio);
+void        OsMLQ_AddTaskLast(TaskType TaskID, PriorityType prio);
+void        OsMLQ_RemoveTask(TaskType TaskID);
+void        OsMLQ_ChangePrio(TaskType TaskID, PriorityType old_prio, PriorityType new_prio);
+uint8       OsMLQ_GetLowestBitNumber(uint16 Bitmap);
+#endif /* KOS_MEMORY_MAPPING */
 
-uint8 OsMLQ_GetLowestBitNumber(uint16 Bitmap);
 
 #ifdef __cplusplus
 }

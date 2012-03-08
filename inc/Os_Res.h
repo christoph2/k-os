@@ -1,7 +1,7 @@
 /*
    k_os (Konnex Operating-System based on the OSEK/VDX-Standard).
 
- * (C) 2007-2010 by Christoph Schueler <github.com/Christoph2,
+ * (C) 2007-2012 by Christoph Schueler <github.com/Christoph2,
  *                                      cpu12.gems@googlemail.com>
 
    All Rights Reserved
@@ -20,12 +20,19 @@
    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
    s. FLOSS-EXCEPTION.txt
-*/
+ */
 #if !defined(__OS_RES_H)
 #define __OS_RES_H
 
-void OsRes_InitResources(void);
-void OsRes_GetInternalResource(void);
-void OsRes_ReleaseInternalResource(void);
+#if KOS_MEMORY_MAPPING == STD_ON
+FUNC(void, OSEK_OS_CODE) OsRes_InitResources(void);
+FUNC(void, OSEK_OS_CODE) OsRes_GetInternalResource(void);
+FUNC(void, OSEK_OS_CODE) OsRes_ReleaseInternalResource(void);
+#else
+void    OsRes_InitResources(void);
+void    OsRes_GetInternalResource(void);
+void    OsRes_ReleaseInternalResource(void);
+#endif /* KOS_MEMORY_MAPPING */
 
 #endif /* __OS_RES_H */
+

@@ -78,11 +78,21 @@
 
 static const uint8 ComExt_NodeAddr = (uint8)0x55;
 
+
+/*
+**  Local function prototypes.
+*/
+#if KOS_MEMORY_MAPPING == STD_ON
+STATIC FUNC(void, OSEK_COM_CODE) ComExt_Schedule(void);
+STATIC FUNC(void, OSEK_COM_CODE) ComExt_N_Task(void);
+STATIC FUNC(void, OSEK_COM_CODE) ComExt_DL_Task(void);
+STATIC FUNC(void, OSEK_COM_CODE) ComExt_I_Task(void);
+#else
 static void ComExt_Schedule(void);
 static void ComExt_N_Task(void);
 static void ComExt_DL_Task(void);
 static void ComExt_I_Task(void);
-
+#endif /* KOS_MEMORY_MAPPING */
 
 /*
 **
@@ -129,13 +139,20 @@ StatusType N_ChangeParameter_con(< N_Handle >, < N_Result_ChangeParameter >)
     #include "MemMap.h"
 #endif /* KOS_MEMORY_MAPPING */
 
+#if KOS_MEMORY_MAPPING == STD_ON
+FUNC(void, OSEK_COM_CODE) ComExt_Init(void)
+#else
 void ComExt_Init(void)
+#endif /* KOS_MEMORY_MAPPING */
 {
 /*    Can_Init(); */
 }
 
-
+#if KOS_MEMORY_MAPPING == STD_ON
+FUNC(void, OSEK_COM_CODE) ComExt_Schedule(void)
+#else
 void ComExt_Schedule(void)
+#endif /* KOS_MEMORY_MAPPING */
 {
     FOREVER {
         ComExt_I_Task();
@@ -144,38 +161,59 @@ void ComExt_Schedule(void)
     }
 }
 
-
+#if KOS_MEMORY_MAPPING == STD_ON
+FUNC(void, OSEK_COM_CODE) ComExt_I_Task(void)
+#else
 void ComExt_I_Task(void)
+#endif /* KOS_MEMORY_MAPPING */
 {
 
 }
 
-
+#if KOS_MEMORY_MAPPING == STD_ON
+FUNC(void, OSEK_COM_CODE) ComExt_N_Task(void)
+#else
 void ComExt_N_Task(void)
+#endif /* KOS_MEMORY_MAPPING */
 {
 
 }
 
-
+#if KOS_MEMORY_MAPPING == STD_ON
+FUNC(void, OSEK_COM_CODE) ComExt_DL_Task(void)
+#else
 void ComExt_DL_Task(void)
+#endif /* KOS_MEMORY_MAPPING */
 {
 
 }
 
 
+#if KOS_MEMORY_MAPPING == STD_ON
+FUNC(void, OSEK_COM_CODE) ComExt_RxHandler(void)
+#else
 void ComExt_RxHandler(void)
+#endif /* KOS_MEMORY_MAPPING */
 {
 
 }
 
 
+#if KOS_MEMORY_MAPPING == STD_ON
+FUNC(void, OSEK_COM_CODE) ComExt_TxHandler(void)
+#else
 void ComExt_TxHandler(void)
+#endif /* KOS_MEMORY_MAPPING */
 {
 
 }
 
 
+#if KOS_MEMORY_MAPPING == STD_ON
+FUNC(void, OSEK_COM_CODE) ComExt_TimeoutHandler(void)
+#else
 void ComExt_TimeoutHandler(void)
+#endif /* KOS_MEMORY_MAPPING */
 {
 
 }

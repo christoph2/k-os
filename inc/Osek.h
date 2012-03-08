@@ -1,7 +1,7 @@
 /*
    k_os (Konnex Operating-System based on the OSEK/VDX-Standard).
 
- * (C) 2007-2010 by Christoph Schueler <github.com/Christoph2,
+ * (C) 2007-2012 by Christoph Schueler <github.com/Christoph2,
  *                                      cpu12.gems@googlemail.com>
 
    All Rights Reserved
@@ -20,7 +20,7 @@
    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
    s. FLOSS-EXCEPTION.txt
-*/
+ */
 #if !defined(__OSEK_H)
 #define __OSEK_H
 
@@ -28,8 +28,9 @@
 extern "C" {
 #endif
 
-#include "Std_Macros.h"
-#include "Os_Cfg.h"
+#define __RTOS_K_OS__
+
+/* #include "Os_Cfg.h" */
 #include "Os_Error.h"
 #include "Os_Vars.h"
 #include "Os_Macros.h"

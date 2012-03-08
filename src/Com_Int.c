@@ -1,8 +1,8 @@
 /*
    k_os (Konnex Operating-System based on the OSEK/VDX-Standard).
 
-   (C) 2007-2010 by Christoph Schueler <chris@konnex-tools.de,
-                                       cpu12.gems@googlemail.com>
+   (C) 2007-2012 by Christoph Schueler <github.com/Christoph2,
+                                        cpu12.gems@googlemail.com>
 
    All Rights Reserved
 
@@ -32,7 +32,12 @@
 
 extern const ComMessageObjectType Com_MessageObjects[];
 
+
+#if KOS_MEMORY_MAPPING == STD_ON
+FUNC(StatusType, OSEK_COM_CODE) ComIntSendMessage(MessageIdentifier Message, ApplicationDataRef DataRef)
+#else
 StatusType ComIntSendMessage(MessageIdentifier Message, ApplicationDataRef DataRef)
+#endif /* KOS_MEMORY_MAPPING */
 {
     ComMessageObjectType * MessageSendObject;
 
@@ -47,7 +52,11 @@ StatusType ComIntSendMessage(MessageIdentifier Message, ApplicationDataRef DataR
 }
 
 
+#if KOS_MEMORY_MAPPING == STD_ON
+FUNC(StatusType, OSEK_COM_CODE) ComIntReceiveMessage(MessageIdentifier Message, ApplicationDataRef DataRef)
+#else
 StatusType ComIntReceiveMessage(MessageIdentifier Message, ApplicationDataRef DataRef)
+#endif /* KOS_MEMORY_MAPPING */
 {
     ComMessageObjectType * MessageObject;
 
@@ -59,5 +68,3 @@ StatusType ComIntReceiveMessage(MessageIdentifier Message, ApplicationDataRef Da
 
     return E_OK;
 }
-
-

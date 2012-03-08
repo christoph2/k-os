@@ -24,8 +24,11 @@
 
 #include "Osek.h"
 
+#if KOS_MEMORY_MAPPING == STD_ON
+STATIC FUNC(void, OSEK_OS_CODE) OsExec_Init(void);
+#else
 static void OsExec_Init(void);
-
+#endif /* KOS_MEMORY_MAPPING */
 
 #if defined(OS_FEATURE_SAVE_STARTUP_CONTEXT)
 static Utl_JumpBufType StartupContext;
@@ -42,7 +45,11 @@ OS_DEFINE_GLOBAL_IF_DEBUGGING(Os_AppMode, AppModeType);
 /*
 **  Global functions.
 */
+#if KOS_MEMORY_MAPPING == STD_ON
+FUNC(void, OSEK_OS_CODE) StartOS(AppModeType Mode)
+#else
 void StartOS(AppModeType Mode)
+#endif /* KOS_MEMORY_MAPPING */
 {
     SAVE_SERVICE_CONTEXT(OSServiceId_StartOS, Mode, NULL, NULL);
 
@@ -89,7 +96,11 @@ void StartOS(AppModeType Mode)
 #endif  /* OS_FEATURE_SAVE_STARTUP_CONTEXT */
 }
 
+#if KOS_MEMORY_MAPPING == STD_ON
+FUNC(void, OSEK_OS_CODE) ShutdownOS(StatusType Error)
+#else
 void ShutdownOS(StatusType Error)
+#endif /* KOS_MEMORY_MAPPING */
 {
     uint8_least i;
 
@@ -123,7 +134,11 @@ void ShutdownOS(StatusType Error)
 }
 
 
+#if KOS_MEMORY_MAPPING == STD_ON
+FUNC(AppModeType, OSEK_OS_CODE) GetActiveApplicationMode(void)
+#else
 AppModeType GetActiveApplicationMode(void)
+#endif /* KOS_MEMORY_MAPPING */
 {
     SAVE_SERVICE_CONTEXT(OSServiceId_GetActiveApplicationMode, NULL, NULL, NULL);
 
@@ -136,7 +151,11 @@ AppModeType GetActiveApplicationMode(void)
 }
 
 
+#if KOS_MEMORY_MAPPING == STD_ON
+STATIC FUNC(void, OSEK_OS_CODE) OsExec_Init(void)
+#else
 static void OsExec_Init(void)
+#endif /* KOS_MEMORY_MAPPING */
 {
     OsCurrentTID   = INVALID_TASK;
     OsCurrentTCB   = (OsTCBType *)NULL;
@@ -166,20 +185,31 @@ TASK(OsExec_IdleTask)
     }
 }
 
+#if KOS_MEMORY_MAPPING == STD_ON
+FUNC(void, OSEK_OS_CODE) OsExec_TaskReturnGuard(void)
+#else
 void OsExec_TaskReturnGuard(void)
+#endif /* KOS_MEMORY_MAPPING */
 {
 
 }
 
 
 #if defined(OS_SCHED_POLICY_NON)
+#if KOS_MEMORY_MAPPING == STD_ON
+FUNC(void, OSEK_OS_CODE) OsExec_ScheduleFromISR(void)
+#else
 void OsExec_ScheduleFromISR(void)
+#endif /* KOS_MEMORY_MAPPING */
 {
 }
 
-
 #elif defined(OS_SCHED_POLICY_PRE) || defined(OS_SCHED_POLICY_MIX)
+#if KOS_MEMORY_MAPPING == STD_ON
+FUNC(void, OSEK_OS_CODE) OsExec_ScheduleFromISR(void)   /*  ISR-Level-Scheduling. */
+#else
 void OsExec_ScheduleFromISR(void)   /*  ISR-Level-Scheduling. */
+#endif /* KOS_MEMORY_MAPPING */
 {
 #if defined(OS_SCHED_POLICY_MIX)
 
@@ -205,7 +235,11 @@ void OsExec_ScheduleFromISR(void)   /*  ISR-Level-Scheduling. */
 
 #endif
 
+#if KOS_MEMORY_MAPPING == STD_ON
+FUNC(boolean, OSEK_OS_CODE) OsExec_HigherPriorityThenCurrentReady(void)
+#else
 boolean OsExec_HigherPriorityThenCurrentReady(void)
+#endif /* KOS_MEMORY_MAPPING */
 {
     uint16  currentPriority;
     boolean res;
@@ -224,7 +258,11 @@ boolean OsExec_HigherPriorityThenCurrentReady(void)
 }
 
 
+#if KOS_MEMORY_MAPPING == STD_ON
+FUNC(void, OSEK_OS_CODE) OsExec_StartHighestReadyTask(void)
+#else
 void OsExec_StartHighestReadyTask(void)
+#endif /* KOS_MEMORY_MAPPING */
 {
     OS_SET_HIGHEST_PRIO_RUNNING();
     OS_START_CURRENT_TASK();

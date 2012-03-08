@@ -46,6 +46,68 @@ typedef boolean (*ComFlt_FilterFunction)(const Msg_Vars * vars, const Msg_Consts
 /*
 **  Local Function Prototypes.
 */
+#if KOS_MEMORY_MAPPING == STD_ON
+STATIC FUNC(boolean, OSEK_COM_CODE) ComFlt_Always(
+    P2CONST(Msg_Vars, AUTOMATIC, OSEK_COM_APPL_DATA) vars,
+    P2CONST(Msg_Consts, AUTOMATIC, OSEK_COM_APPL_DATA) consts
+);
+STATIC FUNC(boolean, OSEK_COM_CODE) ComFlt_Never(
+    P2CONST(Msg_Vars, AUTOMATIC, OSEK_COM_APPL_DATA) vars,
+    P2CONST(Msg_Consts, AUTOMATIC, OSEK_COM_APPL_DATA) consts
+);
+STATIC FUNC(boolean, OSEK_COM_CODE) ComFlt_MaskedNewEqualsX(
+    P2CONST(Msg_Vars, AUTOMATIC, OSEK_COM_APPL_DATA) vars,
+    P2CONST(Msg_Consts, AUTOMATIC, OSEK_COM_APPL_DATA) consts
+);
+STATIC FUNC(boolean, OSEK_COM_CODE) ComFlt_MaskedNewDiffersX(
+    P2CONST(Msg_Vars, AUTOMATIC, OSEK_COM_APPL_DATA) vars,
+    P2CONST(Msg_Consts, AUTOMATIC, OSEK_COM_APPL_DATA) consts
+);
+STATIC FUNC(boolean, OSEK_COM_CODE) ComFlt_NewIsEqual(
+    P2CONST(Msg_Vars, AUTOMATIC, OSEK_COM_APPL_DATA) vars,
+    P2CONST(Msg_Consts, AUTOMATIC, OSEK_COM_APPL_DATA) consts
+);
+STATIC FUNC(boolean, OSEK_COM_CODE) ComFlt_NewIsDifferent(
+    P2CONST(Msg_Vars, AUTOMATIC, OSEK_COM_APPL_DATA) vars,
+    P2CONST(Msg_Consts, AUTOMATIC, OSEK_COM_APPL_DATA) consts
+);
+STATIC FUNC(boolean, OSEK_COM_CODE) ComFlt_MaskedNewEqualsMaskedOld(
+    P2CONST(Msg_Vars, AUTOMATIC, OSEK_COM_APPL_DATA) vars,
+    P2CONST(Msg_Consts, AUTOMATIC, OSEK_COM_APPL_DATA) consts
+);
+STATIC FUNC(boolean, OSEK_COM_CODE) ComFlt_MaskedNewDiffersMaskedOld(
+    P2CONST(Msg_Vars, AUTOMATIC, OSEK_COM_APPL_DATA) vars,
+    P2CONST(Msg_Consts, AUTOMATIC, OSEK_COM_APPL_DATA) consts
+);
+STATIC FUNC(boolean, OSEK_COM_CODE) ComFlt_NewIsWithin(
+    P2CONST(Msg_Vars, AUTOMATIC, OSEK_COM_APPL_DATA) vars,
+    P2CONST(Msg_Consts, AUTOMATIC, OSEK_COM_APPL_DATA) consts
+);
+STATIC FUNC(boolean, OSEK_COM_CODE) ComFlt_NewIsOutside(
+    P2CONST(Msg_Vars, AUTOMATIC, OSEK_COM_APPL_DATA) vars,
+    P2CONST(Msg_Consts, AUTOMATIC, OSEK_COM_APPL_DATA) consts
+);
+STATIC FUNC(boolean, OSEK_COM_CODE) ComFlt_NewIsGreater(
+    P2CONST(Msg_Vars, AUTOMATIC, OSEK_COM_APPL_DATA) vars,
+    P2CONST(Msg_Consts, AUTOMATIC, OSEK_COM_APPL_DATA) consts
+);
+STATIC FUNC(boolean, OSEK_COM_CODE) ComFlt_NewIsLessOrEqual(
+    P2CONST(Msg_Vars, AUTOMATIC, OSEK_COM_APPL_DATA) vars,
+    P2CONST(Msg_Consts, AUTOMATIC, OSEK_COM_APPL_DATA) consts
+);
+STATIC FUNC(boolean, OSEK_COM_CODE) ComFlt_NewIsLess(
+    P2CONST(Msg_Vars, AUTOMATIC, OSEK_COM_APPL_DATA) vars,
+    P2CONST(Msg_Consts, AUTOMATIC, OSEK_COM_APPL_DATA) consts
+);
+STATIC FUNC(boolean, OSEK_COM_CODE) ComFlt_NewIsGreaterOrEqual(
+    P2CONST(Msg_Vars, AUTOMATIC, OSEK_COM_APPL_DATA) vars,
+    P2CONST(Msg_Consts, AUTOMATIC, OSEK_COM_APPL_DATA) consts
+);
+STATIC FUNC(boolean, OSEK_COM_CODE) ComFlt_OneEveryN(
+    P2CONST(Msg_Vars, AUTOMATIC, OSEK_COM_APPL_DATA) vars,
+    P2CONST(Msg_Consts, AUTOMATIC, OSEK_COM_APPL_DATA) consts
+);
+#else
 static boolean  ComFlt_Always(const Msg_Vars * vars, const Msg_Consts * consts);
 static boolean  ComFlt_Never(const Msg_Vars * vars, const Msg_Consts * consts);
 static boolean  ComFlt_MaskedNewEqualsX(const Msg_Vars * vars, const Msg_Consts * consts);
@@ -61,7 +123,7 @@ static boolean  ComFlt_NewIsLessOrEqual(const Msg_Vars * vars, const Msg_Consts 
 static boolean  ComFlt_NewIsLess(const Msg_Vars * vars, const Msg_Consts * consts);
 static boolean  ComFlt_NewIsGreaterOrEqual(const Msg_Vars * vars, const Msg_Consts * consts);
 static boolean  ComFlt_OneEveryN(const Msg_Vars * vars, const Msg_Consts * consts);
-
+#endif /* KOS_MEMORY_MAPPING */
 
 /*
 **  Local Constants.
@@ -93,7 +155,14 @@ static const ComFlt_FilterFunction ComFlt_FilterMapping[] = {
 /*
 **  Local Functions.
 */
+#if KOS_MEMORY_MAPPING == STD_ON
+STATIC FUNC(boolean, OSEK_COM_CODE) ComFlt_Always(
+    P2CONST(Msg_Vars, AUTOMATIC, OSEK_COM_APPL_DATA) vars,
+    P2CONST(Msg_Consts, AUTOMATIC, OSEK_COM_APPL_DATA) consts
+)
+#else
 static boolean ComFlt_Always(const Msg_Vars * vars, const Msg_Consts * consts)
+#endif /* KOS_MEMORY_MAPPING */
 {
     UNREFERENCED_PARAMETER(vars);
     UNREFERENCED_PARAMETER(consts);
@@ -101,8 +170,14 @@ static boolean ComFlt_Always(const Msg_Vars * vars, const Msg_Consts * consts)
     return TRUE;
 }
 
-
+#if KOS_MEMORY_MAPPING == STD_ON
+STATIC FUNC(boolean, OSEK_COM_CODE) ComFlt_Never(
+    P2CONST(Msg_Vars, AUTOMATIC, OSEK_COM_APPL_DATA) vars,
+    P2CONST(Msg_Consts, AUTOMATIC, OSEK_COM_APPL_DATA) consts
+)
+#else
 static boolean ComFlt_Never(const Msg_Vars * vars, const Msg_Consts * consts)
+#endif /* KOS_MEMORY_MAPPING */
 {
     UNREFERENCED_PARAMETER(vars);
     UNREFERENCED_PARAMETER(consts);
@@ -110,80 +185,158 @@ static boolean ComFlt_Never(const Msg_Vars * vars, const Msg_Consts * consts)
     return FALSE;
 }
 
-
+#if KOS_MEMORY_MAPPING == STD_ON
+STATIC FUNC(boolean, OSEK_COM_CODE) ComFlt_MaskedNewEqualsX(
+    P2CONST(Msg_Vars, AUTOMATIC, OSEK_COM_APPL_DATA) vars,
+    P2CONST(Msg_Consts, AUTOMATIC, OSEK_COM_APPL_DATA) consts
+)
+#else
 static boolean ComFlt_MaskedNewEqualsX(const Msg_Vars * vars, const Msg_Consts * consts)
+#endif /* KOS_MEMORY_MAPPING */
 {
     return (vars->new_value & consts->mask) == consts->x;
 }
 
-
+#if KOS_MEMORY_MAPPING == STD_ON
+STATIC FUNC(boolean, OSEK_COM_CODE) ComFlt_MaskedNewDiffersX(
+    P2CONST(Msg_Vars, AUTOMATIC, OSEK_COM_APPL_DATA) vars,
+    P2CONST(Msg_Consts, AUTOMATIC, OSEK_COM_APPL_DATA) consts
+)
+#else
 static boolean ComFlt_MaskedNewDiffersX(const Msg_Vars * vars, const Msg_Consts * consts)
+#endif /* KOS_MEMORY_MAPPING */
 {
     return (vars->new_value & consts->mask) != consts->x;
 }
 
-
+#if KOS_MEMORY_MAPPING == STD_ON
+STATIC FUNC(boolean, OSEK_COM_CODE) ComFlt_NewIsEqual(
+    P2CONST(Msg_Vars, AUTOMATIC, OSEK_COM_APPL_DATA) vars,
+    P2CONST(Msg_Consts, AUTOMATIC, OSEK_COM_APPL_DATA) consts
+)
+#else
 static boolean ComFlt_NewIsEqual(const Msg_Vars * vars, const Msg_Consts * consts)
+#endif /* KOS_MEMORY_MAPPING */
 {
     return vars->new_value == vars->old_value;
 }
 
-
+#if KOS_MEMORY_MAPPING == STD_ON
+STATIC FUNC(boolean, OSEK_COM_CODE) ComFlt_NewIsDifferent(
+    P2CONST(Msg_Vars, AUTOMATIC, OSEK_COM_APPL_DATA) vars,
+    P2CONST(Msg_Consts, AUTOMATIC, OSEK_COM_APPL_DATA) consts
+)
+#else
 static boolean ComFlt_NewIsDifferent(const Msg_Vars * vars, const Msg_Consts * consts)
+#endif /* KOS_MEMORY_MAPPING */
 {
     return vars->new_value != vars->old_value;
 }
 
-
+#if KOS_MEMORY_MAPPING == STD_ON
+STATIC FUNC(boolean, OSEK_COM_CODE) ComFlt_MaskedNewEqualsMaskedOld(
+    P2CONST(Msg_Vars, AUTOMATIC, OSEK_COM_APPL_DATA) vars,
+    P2CONST(Msg_Consts, AUTOMATIC, OSEK_COM_APPL_DATA) consts
+)
+#else
 static boolean ComFlt_MaskedNewEqualsMaskedOld(const Msg_Vars * vars, const Msg_Consts * consts)
+#endif /* KOS_MEMORY_MAPPING */
 {
     return (vars->new_value & consts->mask) == (vars->old_value & consts->mask);
 }
 
-
+#if KOS_MEMORY_MAPPING == STD_ON
+STATIC FUNC(boolean, OSEK_COM_CODE) ComFlt_MaskedNewDiffersMaskedOld(
+    P2CONST(Msg_Vars, AUTOMATIC, OSEK_COM_APPL_DATA) vars,
+    P2CONST(Msg_Consts, AUTOMATIC, OSEK_COM_APPL_DATA) consts
+)
+#else
 static boolean ComFlt_MaskedNewDiffersMaskedOld(const Msg_Vars * vars, const Msg_Consts * consts)
+#endif /* KOS_MEMORY_MAPPING */
 {
     return (vars->new_value & consts->mask) != (vars->old_value & consts->mask);
 }
 
-
+#if KOS_MEMORY_MAPPING == STD_ON
+STATIC FUNC(boolean, OSEK_COM_CODE) ComFlt_NewIsWithin(
+    P2CONST(Msg_Vars, AUTOMATIC, OSEK_COM_APPL_DATA) vars,
+    P2CONST(Msg_Consts, AUTOMATIC, OSEK_COM_APPL_DATA) consts
+)
+#else
 static boolean ComFlt_NewIsWithin(const Msg_Vars * vars, const Msg_Consts * consts)
+#endif /* KOS_MEMORY_MAPPING */
 {
     return (vars->new_value >= consts->min) && (vars->new_value <= consts->max);
 }
 
-
+#if KOS_MEMORY_MAPPING == STD_ON
+STATIC FUNC(boolean, OSEK_COM_CODE) ComFlt_NewIsOutside(
+    P2CONST(Msg_Vars, AUTOMATIC, OSEK_COM_APPL_DATA) vars,
+    P2CONST(Msg_Consts, AUTOMATIC, OSEK_COM_APPL_DATA) consts
+)
+#else
 static boolean ComFlt_NewIsOutside(const Msg_Vars * vars, const Msg_Consts * consts)
+#endif /* KOS_MEMORY_MAPPING */
 {
     return (consts->min > vars->new_value) || (vars->new_value > consts->max);
 }
 
-
+#if KOS_MEMORY_MAPPING == STD_ON
+STATIC FUNC(boolean, OSEK_COM_CODE) ComFlt_NewIsGreater(
+    P2CONST(Msg_Vars, AUTOMATIC, OSEK_COM_APPL_DATA) vars,
+    P2CONST(Msg_Consts, AUTOMATIC, OSEK_COM_APPL_DATA) consts
+)
+#else
 static boolean ComFlt_NewIsGreater(const Msg_Vars * vars, const Msg_Consts * consts)
+#endif /* KOS_MEMORY_MAPPING */
 {
     return vars->new_value > vars->old_value;
 }
 
-
+#if KOS_MEMORY_MAPPING == STD_ON
+STATIC FUNC(boolean, OSEK_COM_CODE) ComFlt_NewIsLessOrEqual(
+    P2CONST(Msg_Vars, AUTOMATIC, OSEK_COM_APPL_DATA) vars,
+    P2CONST(Msg_Consts, AUTOMATIC, OSEK_COM_APPL_DATA) consts
+)
+#else
 static boolean ComFlt_NewIsLessOrEqual(const Msg_Vars * vars, const Msg_Consts * consts)
+#endif /* KOS_MEMORY_MAPPING */
 {
     return vars->new_value <= vars->old_value;
 }
 
-
+#if KOS_MEMORY_MAPPING == STD_ON
+STATIC FUNC(boolean, OSEK_COM_CODE) ComFlt_NewIsLess(
+    P2CONST(Msg_Vars, AUTOMATIC, OSEK_COM_APPL_DATA) vars,
+    P2CONST(Msg_Consts, AUTOMATIC, OSEK_COM_APPL_DATA) consts
+)
+#else
 static boolean ComFlt_NewIsLess(const Msg_Vars * vars, const Msg_Consts * consts)
+#endif /* KOS_MEMORY_MAPPING */
 {
     return vars->new_value <= vars->old_value;
 }
 
-
+#if KOS_MEMORY_MAPPING == STD_ON
+STATIC FUNC(boolean, OSEK_COM_CODE) ComFlt_NewIsGreaterOrEqual(
+    P2CONST(Msg_Vars, AUTOMATIC, OSEK_COM_APPL_DATA) vars,
+    P2CONST(Msg_Consts, AUTOMATIC, OSEK_COM_APPL_DATA) consts
+)
+#else
 static boolean ComFlt_NewIsGreaterOrEqual(const Msg_Vars * vars, const Msg_Consts * consts)
+#endif /* KOS_MEMORY_MAPPING */
 {
     return vars->new_value >= vars->old_value;
 }
 
-
+#if KOS_MEMORY_MAPPING == STD_ON
+STATIC FUNC(boolean, OSEK_COM_CODE) ComFlt_OneEveryN(
+    P2CONST(Msg_Vars, AUTOMATIC, OSEK_COM_APPL_DATA) vars,
+    P2CONST(Msg_Consts, AUTOMATIC, OSEK_COM_APPL_DATA) consts
+)
+#else
 static boolean ComFlt_OneEveryN(const Msg_Vars * vars, const Msg_Consts * consts)
+#endif /* KOS_MEMORY_MAPPING */
 {
     return (vars->occurrence % consts->period) == consts->offset;
 }

@@ -1,7 +1,7 @@
 /*
    k_os (Konnex Operating-System based on the OSEK/VDX-Standard).
 
-   (C) 2007-2011 by Christoph Schueler <github.com/Christoph2,
+   (C) 2007-2012 by Christoph Schueler <github.com/Christoph2,
                                         cpu12.gems@googlemail.com>
 
    All Rights Reserved
@@ -26,6 +26,10 @@
 
 #include "Osek.h"
 
-StatusType OsEvtSetEvent(TaskType TaskID,EventMaskType Mask);
+#if KOS_MEMORY_MAPPING == STD_ON
+FUNC(StatusType, OSEK_OS_CODE) OsEvtSetEvent(TaskType TaskID, EventMaskType Mask);
+#else
+StatusType OsEvtSetEvent(TaskType TaskID, EventMaskType Mask);
+#endif /* KOS_MEMORY_MAPPING */
 
 #endif /* __OS_EVT_H */

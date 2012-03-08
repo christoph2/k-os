@@ -1,7 +1,7 @@
 /*
    k_os (Konnex Operating-System based on the OSEK/VDX-Standard).
 
- * (C) 2007-2010 by Christoph Schueler <github.com/Christoph2,
+ * (C) 2007-2012 by Christoph Schueler <github.com/Christoph2,
  *                                      cpu12.gems@googlemail.com>
 
    All Rights Reserved
@@ -20,12 +20,17 @@
    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
    s. FLOSS-EXCEPTION.txt
-*/
+ */
 #if !defined(__OS_SCHT_H)
 #define __OS_SCHT_H
 
 #include "Osek.h"
 
+#if KOS_MEMORY_MAPPING == STD_ON
+FUNC(void, OSEK_OS_CODE) OsSchTInitScheduleTables(void);
+#else
 void OsSchTInitScheduleTables(void);
+#endif /* KOS_MEMORY_MAPPING */
+
 
 #endif /* __OS_SCHT_H */

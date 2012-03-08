@@ -44,7 +44,11 @@ OS_DEFINE_GLOBAL_IF_DEBUGGING(OsLastError, StatusType);
 /*
 **  Global functions.
 */
+#if KOS_MEMORY_MAPPING == STD_ON
+FUNC(void, OSEK_OS_CODE) OsErrorCallErrorHook(StatusType Error)
+#else
 void OsErrorCallErrorHook(StatusType Error)
+#endif /* KOS_MEMORY_MAPPING */
 {
     if (((OsFlags & OS_SYS_FLAG_IN_OS_ERROR_HOOK) != OS_SYS_FLAG_IN_OS_ERROR_HOOK)) {
         DISABLE_ALL_OS_INTERRUPTS();
@@ -60,7 +64,11 @@ void OsErrorCallErrorHook(StatusType Error)
 }
 
 
+#if KOS_MEMORY_MAPPING == STD_ON
+FUNC(void, OSEK_OS_CODE) COMErrorCallErrorHook(StatusType Error)
+#else
 void COMErrorCallErrorHook(StatusType Error)
+#endif /* KOS_MEMORY_MAPPING */
 {
     if (((OsFlags & OS_SYS_FLAG_IN_COM_ERROR_HOOK) != OS_SYS_FLAG_IN_COM_ERROR_HOOK)) {
         DISABLE_ALL_OS_INTERRUPTS();
@@ -77,28 +85,45 @@ void COMErrorCallErrorHook(StatusType Error)
 
 
 #if defined(OS_USE_GETSERVICEID) && defined(OS_USE_PARAMETERACCESS)
+#if KOS_MEMORY_MAPPING == STD_ON
+FUNC(void, OSEK_OS_CODE) OSSaveServiceContext(Os_ServiceIdType id,
+    P2VAR(void, AUTOMATIC, OSEK_OS_APPL_DATA) param1,
+    P2VAR(void, AUTOMATIC, OSEK_OS_APPL_DATA) param2,
+    P2VAR(void, AUTOMATIC, OSEK_OS_APPL_DATA) param3
+)
+#else
 void OSSaveServiceContext(Os_ServiceIdType id, void * param1, void * param2, void * param3)
+#endif /* KOS_MEMORY_MAPPING */
 {
     Os_ServiceContext.id       = id;
     Os_ServiceContext.param1   = param1;
     Os_ServiceContext.param2   = param2;
     Os_ServiceContext.param3   = param3;
 }
-
-
 #endif
 
+
 #if defined(OS_USE_GETSERVICEID) && !defined(OS_USE_PARAMETERACCESS)
+#if KOS_MEMORY_MAPPING == STD_ON
+FUNC(void, OSEK_OS_CODE) void OSSaveServiceContext(Os_ServiceIdType id)
+#else
 void OSSaveServiceContext(Os_ServiceIdType id)
+#endif /* KOS_MEMORY_MAPPING */
 {
     Os_ServiceContext.id = id;
 }
-
-
 #endif
 
 #if !defined(OS_USE_GETSERVICEID) && defined(OS_USE_PARAMETERACCESS)
+#if KOS_MEMORY_MAPPING == STD_ON
+FUNC(void, OSEK_OS_CODE) void OSSaveServiceContext(
+    P2VAR(void, AUTOMATIC, OSEK_OS_APPL_DATA) param1,
+    P2VAR(void, AUTOMATIC, OSEK_OS_APPL_DATA) param2,
+    P2VAR(void, AUTOMATIC, OSEK_OS_APPL_DATA)param3
+)
+#else
 void OSSaveServiceContext(void * param1, void * param2, void * param3)
+#endif /* KOS_MEMORY_MAPPING */
 {
     Os_ServiceContext.param1   = param1;
     Os_ServiceContext.param2   = param2;

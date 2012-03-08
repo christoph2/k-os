@@ -26,8 +26,13 @@
 /*
 **  Local function prototypes.
 */
+#if KOS_MEMORY_MAPPING == STD_ON
+STATIC FUNC(void, OSEK_OS_CODE) OsCtr_UpdateAttachedAlarms(CounterType CounterID);
+STATIC FUNC(void, OSEK_OS_CODE) OsCtr_UpdateAttachedScheduleTables(CounterType CounterID);
+#else
 static void OsCtr_UpdateAttachedAlarms(CounterType CounterID);
 static void OsCtr_UpdateAttachedScheduleTables(CounterType CounterID);
+#endif /* KOS_MEMORY_MAPPING */
 
 #if KOS_MEMORY_MAPPING == STD_ON
     #define OSEK_OS_START_SEC_CODE
@@ -37,7 +42,11 @@ static void OsCtr_UpdateAttachedScheduleTables(CounterType CounterID);
 /*
 **  Global functions.
 */
+#if KOS_MEMORY_MAPPING == STD_ON
+FUNC(StatusType, OSEK_OS_CODE) InitCounter(CounterType CounterID, TickType InitialValue)
+#else
 StatusType InitCounter(CounterType CounterID, TickType InitialValue)
+#endif /* KOS_MEMORY_MAPPING */
 {
 /*
     Standard-Status:
@@ -66,7 +75,11 @@ StatusType InitCounter(CounterType CounterID, TickType InitialValue)
 }
 
 
+#if KOS_MEMORY_MAPPING == STD_ON
+FUNC(StatusType, OSEK_OS_CODE) IncrementCounter(CounterType CounterID)
+#else
 StatusType IncrementCounter(CounterType CounterID)
+#endif /* KOS_MEMORY_MAPPING */
 {
 /*
 **	Standard-Status:
@@ -103,7 +116,11 @@ StatusType IncrementCounter(CounterType CounterID)
 }
 
 
+#if KOS_MEMORY_MAPPING == STD_ON
+FUNC(StatusType, OSEK_OS_CODE) GetCounterInfo(CounterType CounterID, CtrInfoRefType Info)
+#else
 StatusType GetCounterInfo(CounterType CounterID, CtrInfoRefType Info)
+#endif /* KOS_MEMORY_MAPPING */
 {
 /*	Standard-Status:
 **		– E_OK – no error.
@@ -121,7 +138,11 @@ StatusType GetCounterInfo(CounterType CounterID, CtrInfoRefType Info)
 }
 
 
+#if KOS_MEMORY_MAPPING == STD_ON
+FUNC(StatusType, OSEK_OS_CODE) GetCounterValue(CounterType CounterID, TickRefType Value)
+#else
 StatusType GetCounterValue(CounterType CounterID, TickRefType Value)
+#endif /* KOS_MEMORY_MAPPING */
 {
 /*
 **	Standard-Status:
@@ -142,7 +163,11 @@ StatusType GetCounterValue(CounterType CounterID, TickRefType Value)
 }
 
 
+#if KOS_MEMORY_MAPPING == STD_ON
+FUNC(StatusType, OSEK_OS_CODE) GetElapsedCounterValue(CounterType CounterID, TickRefType Value, TickRefType ElapsedValue)
+#else
 StatusType GetElapsedCounterValue(CounterType CounterID, TickRefType Value, TickRefType ElapsedValue)
+#endif /* KOS_MEMORY_MAPPING */
 {
     SAVE_SERVICE_CONTEXT(OSServiceId_GetElapsedCounterValue, CounterID, Value, /*ElapsedValue*/ NULL);
     ASSERT_VALID_COUNTERID(CounterID);
@@ -165,7 +190,11 @@ StatusType GetElapsedCounterValue(CounterType CounterID, TickRefType Value, Tick
 }
 
 
+#if KOS_MEMORY_MAPPING == STD_ON
+FUNC( void, OSEK_OS_CODE) OsCtr_InitCounters(void)
+#else
 void OsCtr_InitCounters(void)
+#endif /* KOS_MEMORY_MAPPING */
 {
     CounterType i;
 
@@ -178,7 +207,11 @@ void OsCtr_InitCounters(void)
 /*
 **  Local functions.
 */
+#if KOS_MEMORY_MAPPING == STD_ON
+STATIC FUNC(void, OSEK_OS_CODE) OsCtr_UpdateAttachedAlarms(CounterType CounterID)
+#else
 static void OsCtr_UpdateAttachedAlarms(CounterType CounterID)
+#endif /* KOS_MEMORY_MAPPING */
 {
     uint8       idx    = (uint8)0x00;
     uint16      Alarms = OsAlm_GetActiveAlarms();
@@ -199,7 +232,11 @@ static void OsCtr_UpdateAttachedAlarms(CounterType CounterID)
 }
 
 
+#if KOS_MEMORY_MAPPING == STD_ON
+STATIC FUNC( void, OSEK_OS_CODE) OsCtr_UpdateAttachedScheduleTables(CounterType CounterID)
+#else
 static void OsCtr_UpdateAttachedScheduleTables(CounterType CounterID)
+#endif /* KOS_MEMORY_MAPPING */
 {
 }
 

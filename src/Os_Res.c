@@ -40,7 +40,11 @@ static uint16 BM_InternalResources;
 /*
 **  Global functions.
 */
+#if KOS_MEMORY_MAPPING == STD_ON
+FUNC(void, OSEK_OS_CODE) OsRes_InitResources(void)
+#else
 void OsRes_InitResources(void)
+#endif /* KOS_MEMORY_MAPPING */
 {
 #if defined(OS_USE_RESOURCES)
     uint8 i;
@@ -63,7 +67,11 @@ void OsRes_InitResources(void)
 }
 
 
+#if KOS_MEMORY_MAPPING == STD_ON
+FUNC(StatusType, OSEK_OS_CODE) GetResource(ResourceType ResID)
+#else
 StatusType GetResource(ResourceType ResID)
+#endif /* KOS_MEMORY_MAPPING */
 {
 /*
 **      Standard-Status:
@@ -113,7 +121,11 @@ StatusType GetResource(ResourceType ResID)
 }
 
 
+#if KOS_MEMORY_MAPPING == STD_ON
+FUNC(StatusType, OSEK_OS_CODE) ReleaseResource(ResourceType ResID)
+#else
 StatusType ReleaseResource(ResourceType ResID)
+#endif /* KOS_MEMORY_MAPPING */
 {
 /*
 **      Standard-Status:
@@ -171,11 +183,14 @@ StatusType ReleaseResource(ResourceType ResID)
 **  Functions for Internal Resources.
 **
 */
-
 #if defined(OS_USE_INTERNAL_RESOURCES)
 
 /* Hinweis: die 'Idle'-Task darf keine internen Resourcen haben!!! */
+#if KOS_MEMORY_MAPPING == STD_ON
+FUNC(void, OSEK_OS_CODE) OsRes_GetInternalResource(void)
+#else
 void OsRes_GetInternalResource(void)
+#endif /* KOS_MEMORY_MAPPING */
 {
     ResourceType InternalResource = OS_TaskConf[OsCurrentTID].InternalResource;
 
@@ -191,8 +206,11 @@ void OsRes_GetInternalResource(void)
     }
 }
 
-
+#if KOS_MEMORY_MAPPING == STD_ON
+FUNC(void, OSEK_OS_CODE) OsRes_ReleaseInternalResource(void)
+#else
 void OsRes_ReleaseInternalResource(void)
+#endif /* KOS_MEMORY_MAPPING */
 {
     if (OsCurrentTCB->CurrentPriority != OS_TaskConf[OsCurrentTID].Priority) {
         OsCurrentTCB->CurrentPriority  = OS_TaskConf[OsCurrentTID].Priority;

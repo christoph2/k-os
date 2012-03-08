@@ -85,7 +85,12 @@ typedef struct tagOsExpiryPointType {
     #include "MemMap.h"
 #endif /* KOS_MEMORY_MAPPING */
 
+
+#if KOS_MEMORY_MAPPING == STD_ON
+FUNC(StatusType, OSEK_OS_CODE) StartScheduleTableRel(ScheduleTableType ScheduleTableID, TickType Offset)
+#else
 StatusType StartScheduleTableRel(ScheduleTableType ScheduleTableID, TickType Offset)
+#endif /* KOS_MEMORY_MAPPING */
 {
     SAVE_SERVICE_CONTEXT(OSServiceId_StartScheduleTableRel, ScheduleTableID, Offset, NULL);
     ASSERT_VALID_CALLEVEL(OS_CL_TASK | OS_CL_ISR2);
@@ -99,7 +104,11 @@ StatusType StartScheduleTableRel(ScheduleTableType ScheduleTableID, TickType Off
 }
 
 
+#if KOS_MEMORY_MAPPING == STD_ON
+FUNC(StatusType, OSEK_OS_CODE) StartScheduleTableAbs(ScheduleTableType ScheduleTableID, TickType Tickvalue)
+#else
 StatusType StartScheduleTableAbs(ScheduleTableType ScheduleTableID, TickType Tickvalue)
+#endif /* KOS_MEMORY_MAPPING */
 {
     SAVE_SERVICE_CONTEXT(OSServiceId_StartScheduleTableAbs, ScheduleTableID, Tickvalue, NULL);
     ASSERT_VALID_CALLEVEL(OS_CL_TASK | OS_CL_ISR2);
@@ -113,7 +122,11 @@ StatusType StartScheduleTableAbs(ScheduleTableType ScheduleTableID, TickType Tic
 }
 
 
+#if KOS_MEMORY_MAPPING == STD_ON
+FUNC(StatusType, OSEK_OS_CODE) StopScheduleTable(ScheduleTableType ScheduleTableID)
+#else
 StatusType StopScheduleTable(ScheduleTableType ScheduleTableID)
+#endif /* KOS_MEMORY_MAPPING */
 {
     SAVE_SERVICE_CONTEXT(OSServiceId_StopScheduleTable, ScheduleTableID, NULL, NULL);
     ASSERT_VALID_CALLEVEL(OS_CL_TASK | OS_CL_ISR2);
@@ -127,7 +140,14 @@ StatusType StopScheduleTable(ScheduleTableType ScheduleTableID)
 }
 
 
+#if KOS_MEMORY_MAPPING == STD_ON
+FUNC(StatusType, OSEK_OS_CODE) NextScheduleTable(ScheduleTableType ScheduleTableID_From,
+    ScheduleTableType
+    ScheduleTableID_To
+)
+#else
 StatusType NextScheduleTable(ScheduleTableType ScheduleTableID_From, ScheduleTableType ScheduleTableID_To)
+#endif /* KOS_MEMORY_MAPPING */
 {
     SAVE_SERVICE_CONTEXT(OSServiceId_NextScheduleTable, ScheduleTableID_From, ScheduleTableID_To, NULL);
     ASSERT_VALID_CALLEVEL(OS_CL_TASK | OS_CL_ISR2);
@@ -141,7 +161,11 @@ StatusType NextScheduleTable(ScheduleTableType ScheduleTableID_From, ScheduleTab
 }
 
 
+#if KOS_MEMORY_MAPPING == STD_ON
+FUNC(StatusType, OSEK_OS_CODE) StartScheduleTableSynchron(ScheduleTableType ScheduleTableID)
+#else
 StatusType StartScheduleTableSynchron(ScheduleTableType ScheduleTableID)
+#endif /* KOS_MEMORY_MAPPING */
 {
     SAVE_SERVICE_CONTEXT(OSServiceId_StartScheduleTableSynchron, ScheduleTableID, NULL, NULL);
     ASSERT_VALID_CALLEVEL(OS_CL_TASK | OS_CL_ISR2);
@@ -154,7 +178,11 @@ StatusType StartScheduleTableSynchron(ScheduleTableType ScheduleTableID)
 }
 
 
+#if KOS_MEMORY_MAPPING == STD_ON
+FUNC(StatusType, OSEK_OS_CODE) SyncScheduleTable(ScheduleTableType ScheduleTableID, TickType Value)
+#else
 StatusType SyncScheduleTable(ScheduleTableType ScheduleTableID, TickType Value)
+#endif /* KOS_MEMORY_MAPPING */
 {
     SAVE_SERVICE_CONTEXT(OSServiceId_SyncScheduleTable, ScheduleTableID, Value, NULL);
     ASSERT_VALID_CALLEVEL(OS_CL_TASK | OS_CL_ISR2);
@@ -168,7 +196,11 @@ StatusType SyncScheduleTable(ScheduleTableType ScheduleTableID, TickType Value)
 }
 
 
+#if KOS_MEMORY_MAPPING == STD_ON
+FUNC(StatusType, OSEK_OS_CODE) SetScheduleTableAsync(ScheduleTableType ScheduleID)
+#else
 StatusType SetScheduleTableAsync(ScheduleTableType ScheduleID)
+#endif /* KOS_MEMORY_MAPPING */
 {
     SAVE_SERVICE_CONTEXT(OSServiceId_SetScheduleTableAsync, ScheduleID, NULL, NULL);
     ASSERT_VALID_CALLEVEL(OS_CL_TASK | OS_CL_ISR2);
@@ -182,7 +214,13 @@ StatusType SetScheduleTableAsync(ScheduleTableType ScheduleID)
 }
 
 
+#if KOS_MEMORY_MAPPING == STD_ON
+FUNC(StatusType, OSEK_OS_CODE) GetScheduleTableStatus(ScheduleTableType ScheduleID,
+    ScheduleTableStatusRefType /*@out@*/ ScheduleStatus
+)
+#else
 StatusType GetScheduleTableStatus(ScheduleTableType ScheduleID, ScheduleTableStatusRefType /*@out@*/ ScheduleStatus)
+#endif /* KOS_MEMORY_MAPPING */
 {
     SAVE_SERVICE_CONTEXT(OSServiceId_GetScheduleTableStatus, ScheduleID, ScheduleStatus, NULL);
     ASSERT_VALID_CALLEVEL(OS_CL_TASK | OS_CL_ISR2);
@@ -196,7 +234,11 @@ StatusType GetScheduleTableStatus(ScheduleTableType ScheduleID, ScheduleTableSta
 }
 
 
+#if KOS_MEMORY_MAPPING == STD_ON
+FUNC(void, OSEK_OS_CODE) OsSchTInitScheduleTables(void)
+#else
 void OsSchTInitScheduleTables(void)
+#endif /* KOS_MEMORY_MAPPING */
 {
 
 }

@@ -1,8 +1,8 @@
 /*
    k_os (Konnex Operating-System based on the OSEK/VDX-Standard).
 
- * (C) 2007-2010 by Christoph Schueler <github.com/Christoph2,
- *                                      cpu12.gems@googlemail.com>
+   (C) 2007-2012 by Christoph Schueler <github.com/Christoph2,
+                                        cpu12.gems@googlemail.com>
 
    All Rights Reserved
 
@@ -20,11 +20,46 @@
    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
    s. FLOSS-EXCEPTION.txt
-*/
+ */
 #if !defined(__OS_CTR_H)
 #define __OS_CTR_H
 
+#if defined(__cplusplus)
+extern "C"
+{
+#endif  /* __cplusplus */
+
+/*
+**  Global Functions.
+*/
+#if KOS_MEMORY_MAPPING == STD_ON
+FUNC(void, OSEK_OS_CODE) OsCtr_InitCounters(void);
+#else
 void OsCtr_InitCounters(void);
+#endif /* KOS_MEMORY_MAPPING */
 
-#endif /* __OS_CTR_H */
 
+
+/*
+**  Global Function-like Macros.
+*/
+#if 0
+#define OS_INCREMENT_COUNTER_VALUE(CounterID)                                       \
+    Os_CounterValues[(CounterID)] = (Os_CounterValues[(CounterID)] + (TickType)1) % \
+                                    Os_CounterDefs[(CounterID)].CounterParams.maxallowedvalue
+#endif
+
+/* Yields to better code, at least on the CPU12. */
+#define OS_INCREMENT_COUNTER_VALUE(CounterID)                                                         \
+    _BEGIN_BLOCK                                                                                      \
+    Os_CounterValues[(CounterID)]++;                                                                  \
+    if (Os_CounterValues[(CounterID)] >= Os_CounterDefs[(CounterID)].CounterParams.maxallowedvalue) { \
+        Os_CounterValues[(CounterID)] = (TickType)0;                                                  \
+    }                                                                                                 \
+    _END_BLOCK
+
+#if defined(__cplusplus)
+}
+#endif  /* __cplusplus */
+
+#endif  /* __OS_CTR_H */

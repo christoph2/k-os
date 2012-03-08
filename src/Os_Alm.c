@@ -37,28 +37,42 @@ static Os_AlarmStateType OsAlm_ActiveAlarms;
 /*
 **  Global functions.
 */
+#if KOS_MEMORY_MAPPING == STD_ON
+FUNC(void, OSEK_OS_CODE) OsAlm_StartAlarm(uint8 num)
+#else
 void OsAlm_StartAlarm(uint8 num)
+#endif /* KOS_MEMORY_MAPPING */
 {
 /*    OsAlm_ActiveAlarms=Utl_BitSet((uint16)OsAlm_ActiveAlarms,num); */
     UTL_BIT_SET16(OsAlm_ActiveAlarms, num);
 }
 
-
+#if KOS_MEMORY_MAPPING == STD_ON
+FUNC(void, OSEK_OS_CODE) OsAlm_StopAlarm(uint8 num)
+#else
 void OsAlm_StopAlarm(uint8 num)
+#endif /* KOS_MEMORY_MAPPING */
 {
 /*    OsAlm_ActiveAlarms=Utl_BitReset((uint16)OsAlm_ActiveAlarms,num); */
     UTL_BIT_RESET16(OsAlm_ActiveAlarms, num);
 }
 
-
+#if KOS_MEMORY_MAPPING == STD_ON
+FUNC(boolean, OSEK_OS_CODE) OsAlm_IsRunning(uint8 num)
+#else
 boolean OsAlm_IsRunning(uint8 num)
+#endif /* KOS_MEMORY_MAPPING */
 {
 /*    return Utl_BitGet((uint16)OsAlm_ActiveAlarms,num); */
     return UTL_BIT_GET16((uint16)OsAlm_ActiveAlarms, num);
 }
 
 
+#if KOS_MEMORY_MAPPING == STD_ON
+FUNC(uint16, OSEK_OS_CODE) OsAlm_GetActiveAlarms(void)
+#else
 /*Os_AlarmStateType*/ uint16  OsAlm_GetActiveAlarms(void)
+#endif /* KOS_MEMORY_MAPPING */
 {
     return OsAlm_ActiveAlarms;
 }
@@ -70,7 +84,11 @@ boolean OsAlm_IsRunning(uint8 num)
 **
 */
 
+#if KOS_MEMORY_MAPPING == STD_ON
+FUNC(StatusType, OSEK_OS_CODE) GetAlarmBase(AlarmType AlarmID, AlarmBaseRefType Info)
+#else
 StatusType GetAlarmBase(AlarmType AlarmID, AlarmBaseRefType Info)
+#endif /* KOS_MEMORY_MAPPING */
 {
 /*
 **      Standard-Status:
@@ -89,7 +107,11 @@ StatusType GetAlarmBase(AlarmType AlarmID, AlarmBaseRefType Info)
 }
 
 
+#if KOS_MEMORY_MAPPING == STD_ON
+FUNC(StatusType, OSEK_OS_CODE) GetAlarm(AlarmType AlarmID, TickRefType Tick)
+#else
 StatusType GetAlarm(AlarmType AlarmID, TickRefType Tick)
+#endif /* KOS_MEMORY_MAPPING */
 {
 /*
 **      Standard:
@@ -112,7 +134,11 @@ StatusType GetAlarm(AlarmType AlarmID, TickRefType Tick)
 }
 
 
+#if KOS_MEMORY_MAPPING == STD_ON
+FUNC(StatusType, OSEK_OS_CODE) SetRelAlarm(AlarmType AlarmID, TickType increment, TickType cycle)
+#else
 StatusType SetRelAlarm(AlarmType AlarmID, TickType increment, TickType cycle)
+#endif /* KOS_MEMORY_MAPPING */
 {
 /*
 **      Standard-Status:
@@ -150,7 +176,11 @@ StatusType SetRelAlarm(AlarmType AlarmID, TickType increment, TickType cycle)
 }
 
 
+#if KOS_MEMORY_MAPPING == STD_ON
+FUNC(StatusType, OSEK_OS_CODE) SetAbsAlarm(AlarmType AlarmID, TickType start, TickType cycle)
+#else
 StatusType SetAbsAlarm(AlarmType AlarmID, TickType start, TickType cycle)
+#endif /* KOS_MEMORY_MAPPING */
 {
 /*
 **      Standard-Status:
@@ -205,7 +235,11 @@ StatusType SetAbsAlarm(AlarmType AlarmID, TickType start, TickType cycle)
 }
 
 
+#if KOS_MEMORY_MAPPING == STD_ON
+FUNC(StatusType, OSEK_OS_CODE) CancelAlarm(AlarmType AlarmID)
+#else
 StatusType CancelAlarm(AlarmType AlarmID)
+#endif /* KOS_MEMORY_MAPPING */
 {
 /*
 **      Standard-Status:
@@ -229,7 +263,11 @@ StatusType CancelAlarm(AlarmType AlarmID)
 }
 
 
+#if KOS_MEMORY_MAPPING == STD_ON
+FUNC(void, OSEK_OS_CODE) OsAlm_InitAlarms(void)
+#else
 void OsAlm_InitAlarms(void)
+#endif /* KOS_MEMORY_MAPPING */
 {
     uint8_least i;
 
@@ -258,7 +296,11 @@ void OsAlm_InitAlarms(void)
 }
 
 
+#if KOS_MEMORY_MAPPING == STD_ON
+FUNC(void, OSEK_OS_CODE) OsAlm_NotifyAlarm(AlarmType AlarmID)
+#else
 void OsAlm_NotifyAlarm(AlarmType AlarmID)
+#endif /* KOS_MEMORY_MAPPING */
 {
     AlarmConfigurationType * Alarm;
 

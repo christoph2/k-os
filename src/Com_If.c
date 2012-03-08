@@ -27,7 +27,6 @@
 ** Interface/Dispatcher (internal/external Comm.) for OSEK-COM-Functions.
 **
 */
-
 #include "Com_Int.h"
 #include "Os_Cfg.h"
 
@@ -73,7 +72,11 @@ static COMApplicationModeType   Com_AppMode;
 /*
 **  Global functions.
 */
+#if KOS_MEMORY_MAPPING == STD_ON
+FUNC(StatusType, OSEK_COM_CODE) StartCOM(COMApplicationModeType Mode)
+#else
 StatusType StartCOM(COMApplicationModeType Mode)
+#endif /* KOS_MEMORY_MAPPING */
 {
 /*
     Standard:
@@ -122,7 +125,11 @@ StatusType StartCOM(COMApplicationModeType Mode)
 }
 
 
+#if KOS_MEMORY_MAPPING == STD_ON
+FUNC(StatusType, OSEK_COM_CODE) StopCOM(COMShutdownModeType Mode)
+#else
 StatusType StopCOM(COMShutdownModeType Mode)
+#endif /* KOS_MEMORY_MAPPING */
 {
 /*
     Parameter (in): Mode COM_SHUTDOWN_IMMEDIATE
@@ -146,15 +153,21 @@ StatusType StopCOM(COMShutdownModeType Mode)
     return E_OK;
 }
 
-
+#if KOS_MEMORY_MAPPING == STD_ON
+FUNC(COMApplicationModeType, OSEK_COM_CODE) GetCOMApplicationMode(void)
+#else
 COMApplicationModeType GetCOMApplicationMode(void)
+#endif /* KOS_MEMORY_MAPPING */
 {
 /*  Return value: Current COM application mode. */
     return Com_AppMode;
 }
 
-
+#if KOS_MEMORY_MAPPING == STD_ON
+FUNC(StatusType, OSEK_COM_CODE) InitMessage(MessageIdentifier Message, ApplicationDataRef DataRef)
+#else
 StatusType InitMessage(MessageIdentifier Message, ApplicationDataRef DataRef)
+#endif /* KOS_MEMORY_MAPPING */
 {
 /*
     Standard:
@@ -180,8 +193,11 @@ StatusType InitMessage(MessageIdentifier Message, ApplicationDataRef DataRef)
     return E_OK;
 }
 
-
+#if KOS_MEMORY_MAPPING == STD_ON
+FUNC(StatusType, OSEK_COM_CODE) StartPeriodic(void)
+#else
 StatusType StartPeriodic(void)
+#endif /* KOS_MEMORY_MAPPING */
 {
 /*
    Standard and Extended:
@@ -196,8 +212,11 @@ StatusType StartPeriodic(void)
     return E_OK;
 }
 
-
+#if KOS_MEMORY_MAPPING == STD_ON
+FUNC(StatusType, OSEK_COM_CODE) StopPeriodic(void)
+#else
 StatusType StopPeriodic(void)
+#endif /* KOS_MEMORY_MAPPING */
 {
 /*
     Standard and Extended:
@@ -212,8 +231,11 @@ StatusType StopPeriodic(void)
     return E_OK;
 }
 
-
+#if KOS_MEMORY_MAPPING == STD_ON
+FUNC(StatusType, OSEK_COM_CODE) SendMessage(MessageIdentifier Message, ApplicationDataRef DataRef)
+#else
 StatusType SendMessage(MessageIdentifier Message, ApplicationDataRef DataRef)
+#endif /* KOS_MEMORY_MAPPING */
 {
 /*
     Standard:
@@ -252,8 +274,11 @@ StatusType SendMessage(MessageIdentifier Message, ApplicationDataRef DataRef)
     return Status;
 }
 
-
+#if KOS_MEMORY_MAPPING == STD_ON
+FUNC(StatusType, OSEK_COM_CODE) ReceiveMessage(MessageIdentifier Message, ApplicationDataRef DataRef)
+#else
 StatusType ReceiveMessage(MessageIdentifier Message, ApplicationDataRef DataRef)
+#endif /* KOS_MEMORY_MAPPING */
 {
 /*
     Standard:
@@ -306,8 +331,13 @@ StatusType ReceiveMessage(MessageIdentifier Message, ApplicationDataRef DataRef)
     return Status;
 }
 
-
+#if KOS_MEMORY_MAPPING == STD_ON
+FUNC(StatusType, OSEK_COM_CODE) SendDynamicMessage(MessageIdentifier Message, ApplicationDataRef DataRef,
+    LengthRef LengthRef
+)
+#else
 StatusType SendDynamicMessage(MessageIdentifier Message, ApplicationDataRef DataRef, LengthRef LengthRef)
+#endif /* KOS_MEMORY_MAPPING */
 {
 /*
     Standard:
@@ -330,8 +360,13 @@ StatusType SendDynamicMessage(MessageIdentifier Message, ApplicationDataRef Data
     return E_OK;
 }
 
-
+#if KOS_MEMORY_MAPPING == STD_ON
+FUNC(StatusType, OSEK_COM_CODE) ReceiveDynamicMessage(MessageIdentifier Message, ApplicationDataRef DataRef,
+    LengthRef LengthRef
+)
+#else
 StatusType ReceiveDynamicMessage(MessageIdentifier Message, ApplicationDataRef DataRef, LengthRef LengthRef)
+#endif /* KOS_MEMORY_MAPPING */
 {
 /*
     Standard:
@@ -352,8 +387,11 @@ StatusType ReceiveDynamicMessage(MessageIdentifier Message, ApplicationDataRef D
     return E_OK;
 }
 
-
+#if KOS_MEMORY_MAPPING == STD_ON
+FUNC(StatusType, OSEK_COM_CODE)
+#else
 StatusType SendZeroMessage(MessageIdentifier Message)
+#endif /* KOS_MEMORY_MAPPING */
 {
 /*
     Standard:
@@ -372,8 +410,11 @@ StatusType SendZeroMessage(MessageIdentifier Message)
     return E_OK;
 }
 
-
+#if KOS_MEMORY_MAPPING == STD_ON
+FUNC(StatusType, OSEK_COM_CODE) GetMessageStatus(MessageIdentifier Message)
+#else
 StatusType GetMessageStatus(MessageIdentifier Message)
+#endif /* KOS_MEMORY_MAPPING */
 {
 /*
     Standard:
@@ -398,8 +439,11 @@ StatusType GetMessageStatus(MessageIdentifier Message)
     return E_OK;
 }
 
-
+#if KOS_MEMORY_MAPPING == STD_ON
+FUNC(COMServiceIdType, OSEK_COM_CODE) COMErrorGetServiceId(void)
+#else
 COMServiceIdType COMErrorGetServiceId(void)
+#endif /* KOS_MEMORY_MAPPING */
 {
 /*
     Return value: Service Identifier.
@@ -408,7 +452,14 @@ COMServiceIdType COMErrorGetServiceId(void)
 }
 
 
+#if KOS_MEMORY_MAPPING == STD_ON
+FUNC(void, OSEK_COM_CODE) ComIfUpdateAndNotifyReceivers(
+    P2VAR(Com_MessageObjectType, AUTOMATIC, OSEK_COM_APPL_DATA) MessageSendObject
+    ApplicationDataRef DataRef
+)
+#else
 void ComIfUpdateAndNotifyReceivers(Com_MessageObjectType * MessageSendObject, ApplicationDataRef DataRef)
+#endif /* KOS_MEMORY_MAPPING */
 {
     uint8_least             idx, count;
     Com_MessageObjectType * MessageObject;
@@ -475,4 +526,3 @@ void ComIfUpdateAndNotifyReceivers(Com_MessageObjectType * MessageSendObject, Ap
 /*  COMCallout(CalloutRoutineName) */
 
 #endif /* OS_FEATURE_COM */
-

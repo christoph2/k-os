@@ -32,7 +32,11 @@
 /*
 **  Global functions.
 */
+#if KOS_MEMORY_MAPPING == STD_ON
+FUNC(StatusType, OSEK_OS_CODE) OsEvtSetEvent(TaskType TaskID, EventMaskType Mask)
+#else
 StatusType OsEvtSetEvent(TaskType TaskID, EventMaskType Mask)
+#endif /* KOS_MEMORY_MAPPING */
 {
 #if defined(OS_BCC1) || defined(OS_BCC2)
     UNREFERENCED_PARAMETER(TaskID);
@@ -63,8 +67,11 @@ StatusType OsEvtSetEvent(TaskType TaskID, EventMaskType Mask)
 #endif
 }
 
-
+#if KOS_MEMORY_MAPPING == STD_ON
+FUNC(StatusType, OSEK_OS_CODE) SetEvent(TaskType TaskID, EventMaskType Mask)
+#else
 StatusType SetEvent(TaskType TaskID, EventMaskType Mask)
+#endif /* KOS_MEMORY_MAPPING */
 {
 /*
 **
@@ -98,8 +105,11 @@ StatusType SetEvent(TaskType TaskID, EventMaskType Mask)
 #endif
 }
 
-
+#if KOS_MEMORY_MAPPING == STD_ON
+FUNC(StatusType, OSEK_OS_CODE) ClearEvent(EventMaskType Mask)
+#else
 StatusType ClearEvent(EventMaskType Mask)
+#endif /* KOS_MEMORY_MAPPING */
 {
 
 /*
@@ -128,8 +138,11 @@ StatusType ClearEvent(EventMaskType Mask)
 #endif
 }
 
-
+#if KOS_MEMORY_MAPPING == STD_ON
+FUNC(StatusType, OSEK_OS_CODE) GetEvent(TaskType TaskID, EventMaskRefType Event)
+#else
 StatusType GetEvent(TaskType TaskID, EventMaskRefType Event)
+#endif /* KOS_MEMORY_MAPPING */
 {
 /*
 **      Standard-Status:
@@ -160,8 +173,11 @@ StatusType GetEvent(TaskType TaskID, EventMaskRefType Event)
 #endif
 }
 
-
+#if KOS_MEMORY_MAPPING == STD_ON
+FUNC(StatusType, OSEK_OS_CODE) WaitEvent(EventMaskType Mask)
+#else
 StatusType WaitEvent(EventMaskType Mask)
+#endif /* KOS_MEMORY_MAPPING */
 {
 /*
 **      former state: 'running', new state 'waiting'.   - only ETs.
