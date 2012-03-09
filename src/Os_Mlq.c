@@ -93,14 +93,16 @@ FUNC(void, OSEK_OS_CODE) OsMLQ_Init(void)
 void OsMLQ_Init(void)
 #endif /* KOS_MEMORY_MAPPING */
 {
-    BM_NotEmpty = (uint16)0x0000U;
 #if !defined(OS_SCHED_BM_ONLY)
     uint8 idx;
+
+    BM_NotEmpty = (uint16)0x0000U;
 
     for (idx = (uint8)0; idx < OS_MLQ_NUMBER_OF_PRIORITIES; ++idx) {
         OsMLQ_InitQueue(idx);
     }
-
+#else
+    BM_NotEmpty = (uint16)0x0000U;
 #endif
 }
 
