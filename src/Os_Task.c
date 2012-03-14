@@ -378,7 +378,9 @@ static void OsTask_Init(TaskType TaskID, boolean Schedule)
 #endif
 
     tcb->Stackpointer =
-        OsPort_TaskStackInit(&task_def->TaskFunction, ((uint8 *)task_def->StackStart + task_def->StackSize - (uint8)1));
+        OsPort_TaskStackInit(TaskID, &task_def->TaskFunction,
+            ((uint8 *)task_def->StackStart + task_def->StackSize - (uint8)1)
+        );
     tcb->State = SUSPENDED;
 #if defined(OS_BCC2) || defined(OS_ECC2)
     tcb->Activations = (uint8)0x00;
