@@ -21,38 +21,34 @@
 
    s. FLOSS-EXCEPTION.txt
  */
-/*
-**
-**  Hardware-Dependencies  (Context-Switching, Interrupt-Handling etc.).
-**
-*/
-
 #if !defined(__OS_PORT_H)
 #define __OS_PORT_H
-
-#include "Osek.h"
-#include "InstallISR/ISR.h"
-#include "Hw_Cfg.h"
-#include "Os_Cfg.h"
-
-#if defined(__IAR_SYSTEMS_ICC__)
-    #include <intrinsics.h>
-#endif  /* __IAR_SYSTEMS_ICC__ */
 
 #ifdef __cplusplus
 extern "C"
 {
 #endif  /* __cplusplus */
 
+#include "InstallISR/ISR.h"
+#include "Os_Cfg.h"
+#include "Os_Macros.h"
+#include "CPU_Primitives.h"
+
 /*
 **  Global Types.
 */
 typedef uint16 * OsPort_StackPointerType;
 
+
 /*
 **  Global Variables.
 */
+#if defined(_MSC_VER)
+typedef uint8 InterruptStateType;
+#endif
+
 extern InterruptStateType OsPort_InterruptState;
+
 
 /*
 **  Global Functions.
@@ -60,7 +56,7 @@ extern InterruptStateType OsPort_InterruptState;
 #if KOS_MEMORY_MAPPING == STD_ON
 FUNC(void, OSEK_OS_CODE) OsPort_Init(void);
 FUNC(uint8 *, OSEK_OS_CODE) OsPort_TaskStackInit(
-    P2VAR(TaskFunctionType, AUTOMATIC, OSEK_OS_APPL_DATA) TaskFunc, 
+    P2VAR(TaskFunctionType, AUTOMATIC, OSEK_OS_APPL_DATA) TaskFunc,
     P2VAR(uint8, AUTOMATIC, OSEK_OS_APPL_DATA) sp
 );
 FUNC(uint32, OSEK_OS_CODE) OsPort_GetTimestamp(void);
@@ -74,128 +70,66 @@ uint32  OsPort_GetTimestamp(void);
 #define DISABLE_ALL_OS_INTERRUPTS() CPU_SAVE_AND_DISABLE_INTERRUPTS(OsPort_InterruptState)
 #define ENABLE_ALL_OS_INTERRUPTS()  CPU_RESTORE_INTERRUPTS(OsPort_InterruptState)
 
-#if defined(__IAR_SYSTEMS_ICC__)
-void    OS_START_CURRENT_TASK(void);
-void    OS_SAVE_CONTEXT(void);
-void    OS_RESTORE_CONTEXT(void);
-void    OS_ISR_CONTEXT(void);
-
-
-#endif /* __IAR_SYSTEMS_ICC__ */
 
 extern const SizeType OS_TOS_ISR;
 
-/*
-**  Port-Macros.
-*/
 
-#if defined(__IMAGECRAFT__)
-#define OS_SAVE_CONTEXT()             \
-    _BEGIN_BLOCK                      \
-    asm ("ldy        _OsCurrentTCB"); \
-    asm ("sts        0,y");           \
-    _END_BLOCK
-#elif defined(__HIWARE__)
-#define OS_SAVE_CONTEXT()   \
-    _BEGIN_BLOCK            \
-    __asm ldy OsCurrentTCB; \
-    __asm sts       0, y;   \
-    _END_BLOCK
-#elif defined(__CSMC__)
-#define OS_SAVE_CONTEXT()            \
-    _BEGIN_BLOCK                     \
-    _asm("ldy       _OsCurrentTCB"); \
-    _asm("sts       0,y");           \
-    _END_BLOCK
-#elif defined(__GNUC__)
-/* todo: Testen!!! */
-#define OS_SAVE_CONTEXT()           \
-    _BEGIN_BLOCK                    \
-    __asm__("movw   _.tmp,2,-sp");  \
-    __asm__("movw   _.z,2,-sp");    \
-    __asm__("movw   _.xy,2,-sp");   \
-    __asm__("ldy    OsCurrentTCB"); \
-    __asm__("sts    0,y");          \
-    _END_BLOCK
+#if defined(__CSMC__)               /* Cosmic               */
+    #include "port/cpu12/cosmic/Os_Port_S12_Cosmic.h"
+#elif defined(__GNUC__)             /* GNU GCC              */
 
+    #if defined(__arm__)
+        #include "port/arm/gcc/Os_Port_arm_gcc.h"
+    #elif defined(__AVR__)
+        #include "port/avr/gcc/Os_Port_avr_gcc.h"
+    #elif defined(MC6812)
+        #include "port/cpu12/gcc/Os_Port_S12_gcc.h"
+    #elif defined(__MSP430__)
+        #include "port/msp430/gcc/Os_Port_msp430_gcc.h"
+    #elif defined( __CYGWIN32__) /* && defined(__I386__) */
+        #include "port/i386/gcc/Os_Port_i386_gcc.h"
+    #else
+        #error Unsupported Target for GCC.
+    #endif
+
+#elif defined(__HIWARE__)           /* Metrowerks/Freescale */
+
+    #if defined(__HC12__)
+        #include "port/cpu12/codewarrior/Os_Port_S12_hiware.h"
+    #else
+        #error Unsupported Target for Metrowerks.
+    #endif
+
+#elif defined(__IAR_SYSTEMS_ICC__)  /* IAR Systems          */
+
+    #if defined(__ICCARM__)
+        #include "port/arm/iar/Os_Port_arm_IAR.h"
+    #elif defined(__ICCHCS12__)
+        #include "port/cpu12/iar/Os_Port_S12_IAR.h"
+    #else
+        #error Unsupported Target for IAR-ICC.
+    #endif
+
+#elif defined(__IMAGECRAFT__)       /* Imagecraft           */
+
+    #include "port/cpu12/imagecraft/Os_Port_S12_icc.h"
+
+#elif defined(__18CXX )
+
+    #include "port/pic/mpl_c18/Os_Port_pic_mplc18.h"
+
+#elif defined(__PCH__) || defined(__PCB__) || defined(__PCM__)
+
+    #include "port/pic/ccsc/Os_Port_pic_pch.h"
+#elif defined(_MSC_VER)
+
+/* Microsoft Visual C. */
+
+    #include "port/i386/msvc/Os_Port_i386_mscv.h"
+
+#else                               /* todo: Add Support    */
+    #error Unsupported Compiler.
 #endif
-
-#if defined(__IMAGECRAFT__)
-#define OS_RESTORE_CONTEXT()          \
-    _BEGIN_BLOCK                      \
-    asm ("ldy        _OsCurrentTCB"); \
-    asm ("lds        0,y");           \
-    _END_BLOCK
-#elif defined(__HIWARE__)
-#define OS_RESTORE_CONTEXT() \
-    _BEGIN_BLOCK             \
-    __asm ldy OsCurrentTCB;  \
-    __asm lds       0, y;    \
-    _END_BLOCK
-#elif defined(__CSMC__)
-#define OS_RESTORE_CONTEXT()         \
-    _BEGIN_BLOCK                     \
-    _asm("xref _OsCurrentTCB");      \
-    _asm("ldy       _OsCurrentTCB"); \
-    _asm("lds       0,y");           \
-    _END_BLOCK
-#elif defined(__GNUC__)
-/* todo: Testen!!! */
-#define OS_RESTORE_CONTEXT()        \
-    _BEGIN_BLOCK                    \
-    __asm__("ldy    OsCurrentTCB"); \
-    __asm__("movw   2,sp+,_.xy");   \
-    __asm__("movw   2,sp+,_.z");    \
-    __asm__("movw   2,sp+,_.tmp");  \
-    __asm__("lds    0,y");          \
-    _END_BLOCK
-
-#endif
-
-#if defined(__IMAGECRAFT__)
-#define OS_START_CURRENT_TASK()       \
-    _BEGIN_BLOCK                      \
-    asm ("ldy        _OsCurrentTCB"); \
-    asm ("lds        0,y");           \
-    CPU_RETURN_FROM_INTERRUPT();      \
-    _END_BLOCK
-#elif defined(__HIWARE__)
-#define OS_START_CURRENT_TASK()  \
-    _BEGIN_BLOCK                 \
-    __asm ldy OsCurrentTCB;      \
-    __asm lds       0, y;        \
-    CPU_RETURN_FROM_INTERRUPT(); \
-    _END_BLOCK
-#elif defined(__CSMC__)
-#define OS_START_CURRENT_TASK()      \
-    _BEGIN_BLOCK                     \
-    _asm("xref _OsCurrentTCB");      \
-    _asm("ldy       _OsCurrentTCB"); \
-    _asm("lds       0,y");           \
-    CPU_RETURN_FROM_INTERRUPT();     \
-    _END_BLOCK
-
-#elif defined(__GNUC__)
-#define OS_START_CURRENT_TASK()     \
-    _BEGIN_BLOCK                    \
-    __asm__("ldy    OsCurrentTCB"); \
-    __asm__("lds    0,y");          \
-    CPU_RETURN_FROM_INTERRUPT();    \
-    _END_BLOCK
-
-#endif
-
-#if defined(__IMAGECRAFT__)
-#define OS_ISR_CONTEXT()    asm ("lds    OS_TOS_ISR")
-#elif defined(__HIWARE__)
-#define OS_ISR_CONTEXT()    __asm lds OS_TOS_ISR
-#elif defined(__CSMC__)
-#define OS_ISR_CONTEXT()    _asm("xref _OS_TOS_ISR\nlds   _OS_TOS_ISR")
-#elif defined(__GNUC__)
-#define OS_ISR_CONTEXT()    __asm__("lds    OS_TOS_ISR")
-#endif
-
-void OsPortInit(void);
 
 
 #ifdef __cplusplus
@@ -203,4 +137,3 @@ void OsPortInit(void);
 #endif  /* __cplusplus */
 
 #endif  /* __OS_PORT_H  */
-

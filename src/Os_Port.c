@@ -24,6 +24,9 @@
 #include "Os_Port.h"
 #include "Os_Cfg.h"
 
+#include "Hw_Cfg.h"
+#include "mcu/S12/inc/S12_Ect.h"
+
 #if defined(CPU12_S12)
 #define PORT_ACKNOWLEDGE_MDCU_INTR()    S12ECT_ACKNOWLEDGE_MDCU_INTR()
 #define PORT_ACKNOWLEDGE_RTI_INTR()     S12CRG_ACKNOWLEDGE_RTI_INTR()
