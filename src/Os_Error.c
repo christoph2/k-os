@@ -22,6 +22,7 @@
    s. FLOSS-EXCEPTION.txt
  */
 #include "Os_Error.h"
+#include "Os_Vars.h"
 
 #if defined(OS_USE_GETSERVICEID) || defined(OS_USE_PARAMETERACCESS) || defined(OS_FEATURE_ORTI_DEBUG)
 OS_DEFINE_GLOBAL_IF_DEBUGGING(Os_ServiceContext, Os_ServiceContextType);
