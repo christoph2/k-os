@@ -24,6 +24,7 @@
 
 #include "Os_Port.h"
 #include "Os_Cfg.h"
+#include "Os_Vars.h"
 
 /*////////////////////////////////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -56,6 +57,8 @@ DECLSPEC_IMPORT boolean WINAPI SwitchToThread(void);
 ///////////////////////////////////////////////////////////////////////////////////////////////////////*/
 
 
+#define OS_PORT_ADDITIONAL_STACK_SPACE  ((uint32)0x400)
+
 void fiberFunc(void *param);
 
 static const uint8 ReversedLog2Tab[] = {
@@ -69,6 +72,9 @@ static const uint8 ReversedLog2Tab[] = {
     0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,
     0x01
 };
+
+static void * OsPort_BaseFiber;
+static void * OsPort_Fibers[OS_NUMBER_OF_TASKS];
 
 #if KOS_MEMORY_MAPPING == STD_ON
     #define OSEK_OS_START_SEC_CODE
@@ -85,12 +91,11 @@ FUNC(void, OSEK_OS_CODE) OsPort_Init(void)
 void OsPort_Init(void)
 #endif /* KOS_MEMORY_MAPPING */
 {
-    void * fp, * main_fiber;
-
-    main_fiber = ConvertThreadToFiber(NULL);
-    fp = CreateFiber(0x40, (LPFIBER_START_ROUTINE)fiberFunc, NULL);
+    void * fp;
+    OsPort_BaseFiber = ConvertThreadToFiber(NULL);
+    fp = CreateFiber(0x400, (LPFIBER_START_ROUTINE)fiberFunc, NULL);
     //SwitchToFiber(main_fiber);
-    //SwitchToFiber(fp);
+//    SwitchToFiber(fp);
 }
 
 uint8 OsMLQ_GetLowestBitNumber(uint16 Bitmap)
@@ -115,17 +120,27 @@ void TC2Timer_Handler(void)
 
 }
 
-uint8 * OsPort_TaskStackInit(TaskFunctionType * TaskFunc, uint8 * sp)
+uint8 * OsPort_TaskStackInit(TaskType TaskID, TaskFunctionType * TaskFunc, uint8 * sp)
 {
+    UNREFERENCED_PARAMETER(sp);
+
+    if (OsPort_Fibers[TaskID] != (void*)NULL) {
+        DeleteFiber(OsPort_Fibers[TaskID]);
+    }
+
+    OsPort_Fibers[TaskID] = CreateFiber(OS_PORT_ADDITIONAL_STACK_SPACE + (uint32)OS_TaskConf[TaskID].StackSize, 
+        (LPFIBER_START_ROUTINE)*TaskFunc, NULL
+    );
     return (uint8 *)NULL;
 }
 
 void OS_START_CURRENT_TASK(void)
 {
-
+    SwitchToFiber(OsPort_Fibers[OsCurrentTID]);
 }
 
-void OS_SAVE_CONTEXT(void){
+void OS_SAVE_CONTEXT(void)
+{
 
 }
 
@@ -144,4 +159,3 @@ void fiberFunc(void *param)
     uint8 i;
     i=0;
 }
-

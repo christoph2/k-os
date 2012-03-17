@@ -56,13 +56,14 @@ extern InterruptStateType OsPort_InterruptState;
 #if KOS_MEMORY_MAPPING == STD_ON
 FUNC(void, OSEK_OS_CODE) OsPort_Init(void);
 FUNC(uint8 *, OSEK_OS_CODE) OsPort_TaskStackInit(
+    TaskType TaskID,
     P2VAR(TaskFunctionType, AUTOMATIC, OSEK_OS_APPL_DATA) TaskFunc,
     P2VAR(uint8, AUTOMATIC, OSEK_OS_APPL_DATA) sp
 );
 FUNC(uint32, OSEK_OS_CODE) OsPort_GetTimestamp(void);
 #else
 void    OsPort_Init(void);
-uint8 * OsPort_TaskStackInit(TaskFunctionType * TaskFunc, uint8 * sp);
+uint8 * OsPort_TaskStackInit(TaskType TaskID, TaskFunctionType * TaskFunc, uint8 * sp);
 uint32  OsPort_GetTimestamp(void);
 #endif /* KOS_MEMORY_MAPPING */
 
@@ -137,3 +138,4 @@ extern const SizeType OS_TOS_ISR;
 #endif  /* __cplusplus */
 
 #endif  /* __OS_PORT_H  */
+
