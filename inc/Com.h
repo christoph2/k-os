@@ -183,17 +183,18 @@ COMApplicationModeType  GetCOMApplicationMode(void);
 StatusType              InitMessage(MessageIdentifier Message, ApplicationDataRef DataRef);
 StatusType              StartPeriodic(void);
 StatusType              StopPeriodic(void);
-StatusType          SendMessage(MessageIdentifier Message, ApplicationDataRef DataRef);
-StatusType          SendDynamicMessage(MessageIdentifier Message, ApplicationDataRef DataRef, LengthRef LengthRef);
-StatusType          SendZeroMessage(MessageIdentifier Message);
-StatusType          GetMessageStatus(MessageIdentifier Message);
-StatusType          ReceiveMessage(MessageIdentifier Message, ApplicationDataRef DataRef);
-StatusType          ReceiveDynamicMessage(MessageIdentifier Message, ApplicationDataRef DataRef, LengthRef LengthRef);
-COMServiceIdType    COMErrorGetServiceId(void);
+StatusType              SendMessage(MessageIdentifier Message, ApplicationDataRef DataRef);
+StatusType              SendDynamicMessage(MessageIdentifier Message, ApplicationDataRef DataRef, LengthRef LengthRef);
+StatusType              SendZeroMessage(MessageIdentifier Message);
+StatusType              GetMessageStatus(MessageIdentifier Message);
+StatusType              ReceiveMessage(MessageIdentifier Message, ApplicationDataRef DataRef);
+StatusType              ReceiveDynamicMessage(MessageIdentifier Message, ApplicationDataRef DataRef, LengthRef LengthRef);
+COMServiceIdType        COMErrorGetServiceId(void);
 
 /*  Routines provided by the application. */
-StatusType StartCOMExtension(void);
+StatusType              StartCOMExtension(void);
 #endif /* KOS_MEMORY_MAPPING */
 
-#endif  /*  __COM_H */
+extern const Com_MessageObjectType Com_MessageObjects[];
 
+#endif  /*  __COM_H */

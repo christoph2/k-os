@@ -222,3 +222,31 @@ void ComExt_TimeoutHandler(void)
     #define OSEK_COM_STOP_SEC_CODE
     #include "MemMap.h"
 #endif /* KOS_MEMORY_MAPPING */
+
+
+#if KOS_MEMORY_MAPPING == STD_ON
+FUNC(StatusType, OSEK_COM_CODE) ComExt_SendMessage(MessageIdentifier Message, ApplicationDataRef DataRef)
+#else
+StatusType  ComExt_SendMessage(MessageIdentifier Message, ApplicationDataRef DataRef)
+#endif /* KOS_MEMORY_MAPPING */
+{
+    Com_MessageObjectType * MessageObject;
+
+    MessageObject = (Com_MessageObjectType *)&OSEK_COM_GET_MESSAGE_OBJECT(Message);
+
+    return E_OK;
+}
+
+
+#if KOS_MEMORY_MAPPING == STD_ON
+FUNC(StatusType, OSEK_COM_CODE) ComExt_ReceiveMessage(MessageIdentifier Message, ApplicationDataRef DataRef)
+#else
+StatusType  ComExt_ReceiveMessage(MessageIdentifier Message, ApplicationDataRef DataRef)
+#endif /* KOS_MEMORY_MAPPING */
+{
+    Com_MessageObjectType * MessageObject;
+
+    MessageObject = (Com_MessageObjectType *)&OSEK_COM_GET_MESSAGE_OBJECT(Message);
+
+    return E_OK;
+}

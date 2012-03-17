@@ -519,7 +519,7 @@
 **
 */
 
-#define GET_MESSAGE_OBJECT(obj) Com_MessageObjects[(obj)]
+#define OSEK_COM_GET_MESSAGE_OBJECT(obj) Com_MessageObjects[(obj)]
 
 /*
 **
@@ -549,36 +549,36 @@
 #endif
 
 #if defined(COM_EXTENDED_STATUS)
-#define ASSERT_IS_STATIC_SENDING_MESSAGE(mid)                         \
-    _BEGIN_BLOCK                                                      \
-    if (GET_MESSAGE_OBJECT((mid)).Property != SEND_STATIC_INTERNAL) { \
-        COMCallErrorHookAndReturn(E_COM_ID);                          \
-    }                                                                 \
+#define ASSERT_IS_STATIC_SENDING_MESSAGE(mid)                                   \
+    _BEGIN_BLOCK                                                                \
+    if (OSEK_COM_GET_MESSAGE_OBJECT((mid)).Property != SEND_STATIC_INTERNAL) {  \
+        COMCallErrorHookAndReturn(E_COM_ID);                                    \
+    }                                                                           \
     _END_BLOCK
 #else
 #define ASSERT_IS_STATIC_SENDING_MESSAGE(mid)
 #endif
 
 #if defined(COM_EXTENDED_STATUS)
-#define ASSERT_IS_STATIC_RECEIVING_MESSAGE(mid)                            \
-    _BEGIN_BLOCK                                                           \
-    if (GET_MESSAGE_OBJECT((mid)).Property != RECEIVE_UNQUEUED_INTERNAL) { \
-        COMCallErrorHookAndReturn(E_COM_ID);                               \
-    }                                                                      \
+#define ASSERT_IS_STATIC_RECEIVING_MESSAGE(mid)                                     \
+    _BEGIN_BLOCK                                                                    \
+    if (OSEK_COM_GET_MESSAGE_OBJECT((mid)).Property != RECEIVE_UNQUEUED_INTERNAL) { \
+        COMCallErrorHookAndReturn(E_COM_ID);                                        \
+    }                                                                               \
     _END_BLOCK
 #else
 #define ASSERT_IS_STATIC_RECEIVING_MESSAGE(mid)
 #endif
 
 #if defined(COM_EXTENDED_STATUS)
-#define ASSERT_CAN_INITIALIZE_MESSAGE(mid)                             \
-    _BEGIN_BLOCK                                                       \
-    if (GET_MESSAGE_OBJECT((mid)).Property == SEND_STATIC_INTERNAL ||  \
-        GET_MESSAGE_OBJECT((mid)).Property == SEND_ZERO_INTERNAL ||    \
-        GET_MESSAGE_OBJECT((mid)).Property == SEND_ZERO_EXTERNAL ||    \
-        GET_MESSAGE_OBJECT((mid)).Property == RECEIVE_ZERO_EXTERNAL) { \
-        COMCallErrorHookAndReturn(E_COM_ID);                           \
-    }                                                                  \
+#define ASSERT_CAN_INITIALIZE_MESSAGE(mid)                                      \
+    _BEGIN_BLOCK                                                                \
+    if (OSEK_COM_GET_MESSAGE_OBJECT((mid)).Property == SEND_STATIC_INTERNAL ||  \
+        OSEK_COM_GET_MESSAGE_OBJECT((mid)).Property == SEND_ZERO_INTERNAL ||    \
+        OSEK_COM_GET_MESSAGE_OBJECT((mid)).Property == SEND_ZERO_EXTERNAL ||    \
+        OSEK_COM_GET_MESSAGE_OBJECT((mid)).Property == RECEIVE_ZERO_EXTERNAL) { \
+        COMCallErrorHookAndReturn(E_COM_ID);                                    \
+    }                                                                           \
     _END_BLOCK
 #else
 #define ASSERT_CAN_INITIALIZE_MESSAGE(mid)

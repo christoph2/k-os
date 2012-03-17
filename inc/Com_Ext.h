@@ -29,19 +29,25 @@ extern "C"
 {
 #endif  /* __cplusplus */
 
+#include "Osek.h"
+#include "Com.h"
 #include "Com_If.h"
-#include "mcu/s12/inc/S12_Can.h" /* todo: 'CanIf.h'!!! */
+//#include "mcu/s12/inc/S12_Can.h" /* todo: 'CanIf.h'!!! */
 
 #if KOS_MEMORY_MAPPING == STD_ON
 FUNC(void, OSEK_COM_CODE) ComExt_Init(void);
 FUNC(void, OSEK_COM_CODE) ComExt_RxHandler(void);
 FUNC(void, OSEK_COM_CODE) ComExt_TxHandler(void);
 FUNC(void, OSEK_COM_CODE) ComExt_TimeoutHandler(void);
+FUNC(StatusType, OSEK_COM_CODE) ComExt_SendMessage(MessageIdentifier Message, ApplicationDataRef DataRef);
+FUNC(StatusType, OSEK_COM_CODE) ComExt_ReceiveMessage(MessageIdentifier Message, ApplicationDataRef DataRef);
 #else	
 void    ComExt_Init(void);
 void    ComExt_RxHandler(void);
 void    ComExt_TxHandler(void);
 void    ComExt_TimeoutHandler(void);
+StatusType  ComExt_SendMessage(MessageIdentifier Message, ApplicationDataRef DataRef);
+StatusType  ComExt_ReceiveMessage(MessageIdentifier Message, ApplicationDataRef DataRef);
 #endif /* KOS_MEMORY_MAPPING */
 
 

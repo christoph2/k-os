@@ -30,21 +30,19 @@
 
 #include "Com_Int.h"
 
-extern const Com_MessageObjectType Com_MessageObjects[];
-
 
 #if KOS_MEMORY_MAPPING == STD_ON
-FUNC(StatusType, OSEK_COM_CODE) ComIntSendMessage(MessageIdentifier Message, ApplicationDataRef DataRef)
+FUNC(StatusType, OSEK_COM_CODE) ComInt_SendMessage(MessageIdentifier Message, ApplicationDataRef DataRef)
 #else
-StatusType ComIntSendMessage(MessageIdentifier Message, ApplicationDataRef DataRef)
+StatusType ComInt_SendMessage(MessageIdentifier Message, ApplicationDataRef DataRef)
 #endif /* KOS_MEMORY_MAPPING */
 {
-    Com_MessageObjectType * MessageSendObject;
+    Com_MessageObjectType * MessageObject;
 
-    MessageSendObject = (Com_MessageObjectType *)&GET_MESSAGE_OBJECT(Message);
+    MessageObject = (Com_MessageObjectType *)&OSEK_COM_GET_MESSAGE_OBJECT(Message);
 
-    if (MessageSendObject->NumReceivers != (uint8)0) {
-        ComIfUpdateAndNotifyReceivers((Com_MessageObjectType *)MessageSendObject, DataRef);
+    if (MessageObject->NumReceivers != (uint8)0) {
+        ComIfUpdateAndNotifyReceivers((Com_MessageObjectType *)MessageObject, DataRef);
         OS_COND_SCHEDULE_FROM_TASK_LEVEL();
     }
 
@@ -53,14 +51,14 @@ StatusType ComIntSendMessage(MessageIdentifier Message, ApplicationDataRef DataR
 
 
 #if KOS_MEMORY_MAPPING == STD_ON
-FUNC(StatusType, OSEK_COM_CODE) ComIntReceiveMessage(MessageIdentifier Message, ApplicationDataRef DataRef)
+FUNC(StatusType, OSEK_COM_CODE) ComInt_ReceiveMessage(MessageIdentifier Message, ApplicationDataRef DataRef)
 #else
-StatusType ComIntReceiveMessage(MessageIdentifier Message, ApplicationDataRef DataRef)
+StatusType ComInt_ReceiveMessage(MessageIdentifier Message, ApplicationDataRef DataRef)
 #endif /* KOS_MEMORY_MAPPING */
 {
     Com_MessageObjectType * MessageObject;
 
-    MessageObject = (Com_MessageObjectType *)&GET_MESSAGE_OBJECT(Message);
+    MessageObject = (Com_MessageObjectType *)&OSEK_COM_GET_MESSAGE_OBJECT(Message);
 
     DISABLE_ALL_OS_INTERRUPTS();
     Utl_MemCopy((void *)DataRef, (void *)MessageObject->Data, (uint16)MessageObject->Size);

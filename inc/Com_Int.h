@@ -30,12 +30,11 @@
 #include "Com_If.h"
 
 #if KOS_MEMORY_MAPPING == STD_ON
-FUNC(StatusType, OSEK_COM_CODE) ComIntSendMessage(MessageIdentifier Message, ApplicationDataRef DataRef);
-FUNC(StatusType, OSEK_COM_CODE) ComIntReceiveMessage(MessageIdentifier Message, ApplicationDataRef DataRef);
+FUNC(StatusType, OSEK_COM_CODE) ComInt_SendMessage(MessageIdentifier Message, ApplicationDataRef DataRef);
+FUNC(StatusType, OSEK_COM_CODE) ComInt_ReceiveMessage(MessageIdentifier Message, ApplicationDataRef DataRef);
 #else
-StatusType  ComIntSendMessage(MessageIdentifier Message, ApplicationDataRef DataRef);
-StatusType  ComIntReceiveMessage(MessageIdentifier Message, ApplicationDataRef DataRef);
+StatusType  ComInt_SendMessage(MessageIdentifier Message, ApplicationDataRef DataRef);
+StatusType  ComInt_ReceiveMessage(MessageIdentifier Message, ApplicationDataRef DataRef);
 #endif /* KOS_MEMORY_MAPPING */
 
 #endif /* __COM_INT_H */
-

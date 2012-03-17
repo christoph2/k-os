@@ -28,6 +28,7 @@
 **
 */
 #include "Com_Int.h"
+#include "Com_Ext.h"
 #include "Os_Cfg.h"
 
 #if OS_FEATURE_COM == STD_ON
@@ -99,7 +100,7 @@ StatusType StartCOM(COMApplicationModeType Mode)
     Com_AppMode = Mode;
 
     for (idx = (uint8_least)0; idx < COM_NUMBER_OF_MESSAGES; ++idx) {
-        MessageObject = (Com_MessageObjectType *)&GET_MESSAGE_OBJECT(idx);
+        MessageObject = (Com_MessageObjectType *)&OSEK_COM_GET_MESSAGE_OBJECT(idx);
 
         if (MessageObject->Property != SEND_STATIC_INTERNAL &&
             MessageObject->Property != SEND_ZERO_INTERNAL &&
@@ -186,7 +187,7 @@ StatusType InitMessage(MessageIdentifier Message, ApplicationDataRef DataRef)
     ASSERT_CAN_INITIALIZE_MESSAGE(Message);
 
     DISABLE_ALL_OS_INTERRUPTS();
-    Utl_MemCopy((void *)GET_MESSAGE_OBJECT(Message).Data, (void *)DataRef, (uint16)GET_MESSAGE_OBJECT(Message).Size);
+    Utl_MemCopy((void *)OSEK_COM_GET_MESSAGE_OBJECT(Message).Data, (void *)DataRef, (uint16)OSEK_COM_GET_MESSAGE_OBJECT(Message).Size);
     ENABLE_ALL_OS_INTERRUPTS();
 
     CLEAR_SERVICE_CONTEXT();
@@ -254,18 +255,20 @@ StatusType SendMessage(MessageIdentifier Message, ApplicationDataRef DataRef)
     ASSERT_VALID_MESSAGE_ID(Message);
     ASSERT_IS_STATIC_SENDING_MESSAGE(Message);
 
-    switch (GET_MESSAGE_OBJECT(Message).Property) {
+    switch (OSEK_COM_GET_MESSAGE_OBJECT(Message).Property) {
         case SEND_STATIC_INTERNAL:
-            Status = ComIntSendMessage(Message, DataRef);
+            Status = ComInt_SendMessage(Message, DataRef);
             break;
-#if 0
-/* not supported yet. */
+        /* not supported yet. */
         case SEND_ZERO_INTERNAL:
+            break;
         case SEND_STATIC_EXTERNAL:
+            Status = ComExt_SendMessage(Message, DataRef);
+            break;
         case SEND_DYNAMIC_EXTERNAL:
+            break;
         case SEND_ZERO_EXTERNAL:
             break;
-#endif
         default:
             ASSERT(FALSE);
     }
@@ -308,9 +311,9 @@ StatusType ReceiveMessage(MessageIdentifier Message, ApplicationDataRef DataRef)
     ASSERT_VALID_MESSAGE_ID(Message);
     ASSERT_IS_STATIC_RECEIVING_MESSAGE(Message);
 
-    switch (GET_MESSAGE_OBJECT(Message).Property) {
+    switch (OSEK_COM_GET_MESSAGE_OBJECT(Message).Property) {
         case RECEIVE_UNQUEUED_INTERNAL:
-            Status = ComIntReceiveMessage(Message, DataRef);
+            Status = ComInt_ReceiveMessage(Message, DataRef);
             break;
         case RECEIVE_QUEUED_INTERNAL:
             break;
@@ -474,7 +477,7 @@ void ComIfUpdateAndNotifyReceivers(Com_MessageObjectType * MessageSendObject, Ap
 
     for (idx = (uint8_least)0; idx < count; ++idx) {
         DISABLE_ALL_OS_INTERRUPTS();
-        MessageObject = (Com_MessageObjectType *)&GET_MESSAGE_OBJECT(MessageSendObject->Receiver[idx].Message);
+        MessageObject = (Com_MessageObjectType *)&OSEK_COM_GET_MESSAGE_OBJECT(MessageSendObject->Receiver[idx].Message);
         ASSERT(MessageSendObject->Size == MessageObject->Size);
         ASSERT(MessageObject->Property == RECEIVE_UNQUEUED_INTERNAL);    /* todo: CCCB */
         ASSERT(MessageObject->Action.Dummy != (void *)NULL);
