@@ -32,7 +32,9 @@ FUNC(void, OSEK_OS_CODE) OsRes_ReleaseInternalResource(void);
 void    OsRes_InitResources(void);
 void    OsRes_GetInternalResource(void);
 void    OsRes_ReleaseInternalResource(void);
-#endif /* KOS_MEMORY_MAPPING */
 
-#endif /* __OS_RES_H */
+
+#endif  /* KOS_MEMORY_MAPPING */
+
+#endif  /* __OS_RES_H */
 

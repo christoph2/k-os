@@ -299,21 +299,18 @@ void    COMErrorCallErrorHook(StatusType Error);
     #define CLEAR_SERVICE_CONTEXT()
 #endif
 
-
 #if KOS_MEMORY_MAPPING == STD_ON
 #if defined(OS_USE_GETSERVICEID) && defined(OS_USE_PARAMETERACCESS)
 FUNC(void, OSEK_OS_CODE) OSSaveServiceContext(Os_ServiceIdType id,
-    /*@null@*//*@in@*/ P2VAR(void, AUTOMATIC, OSEK_OS_APPL_DATA) param1,
-    /*@null@*//*@in@*/ P2VAR(void, AUTOMATIC, OSEK_OS_APPL_DATA) param2,
-    /*@null@*//*@in@*/ P2VAR(void, AUTOMATIC, OSEK_OS_APPL_DATA) param3
-);
-
+                                              /*@null@*//*@in@*/ P2VAR(void, AUTOMATIC, OSEK_OS_APPL_DATA) param1,
+                                              /*@null@*//*@in@*/ P2VAR(void, AUTOMATIC, OSEK_OS_APPL_DATA) param2,
+                                              /*@null@*//*@in@*/ P2VAR(void, AUTOMATIC, OSEK_OS_APPL_DATA) param3
+                                              );
 
 #endif
 
 #if defined(OS_USE_GETSERVICEID) && !defined(OS_USE_PARAMETERACCESS)
 FUNC(void, OSEK_OS_CODE) OSSaveServiceContext(Os_ServiceIdType id);
-
 
 #endif
 
@@ -322,17 +319,16 @@ FUNC(void, OSEK_OS_CODE) OSSaveServiceContext(
     /*@null@*//*@in@*/ P2VAR(void, AUTOMATIC, OSEK_OS_APPL_DATA) param1,
     /*@null@*//*@in@*/ P2VAR(void, AUTOMATIC, OSEK_OS_APPL_DATA) param2,
     /*@null@*//*@in@*/ P2VAR(void, AUTOMATIC, OSEK_OS_APPL_DATA) param3
-);
-
+    );
 
 #endif
 #else
 #if defined(OS_USE_GETSERVICEID) && defined(OS_USE_PARAMETERACCESS)
-void OSSaveServiceContext(Os_ServiceIdType id,
-    /*@null@*//*@in@*/ void * param1,
-    /*@null@*//*@in@*/ void * param2,
-    /*@null@*//*@in@*/ void * param3
-);
+void OSSaveServiceContext(Os_ServiceIdType          id,
+                          /*@null@*//*@in@*/ void * param1,
+                          /*@null@*//*@in@*/ void * param2,
+                          /*@null@*//*@in@*/ void * param3
+                          );
 
 
 #endif
@@ -345,10 +341,10 @@ void OSSaveServiceContext(Os_ServiceIdType id);
 
 #if !defined(OS_USE_GETSERVICEID) && defined(OS_USE_PARAMETERACCESS)
 void OSSaveServiceContext(
-    /*@null@*//*@in@*/ void * param1,
-    /*@null@*//*@in@*/ void * param2,
-    /*@null@*//*@in@*/ void * param3
-);
+    /*@null@*//*@in@*/ void *   param1,
+    /*@null@*//*@in@*/ void *   param2,
+    /*@null@*//*@in@*/ void *   param3
+    );
 
 
 #endif

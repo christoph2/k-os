@@ -30,6 +30,8 @@ FUNC(ISRType, OSEK_OS_CODE) GetISRID(void);
 #else
 void    OsIntr_InitInterrupts(void);
 ISRType GetISRID(void);
-#endif /* KOS_MEMORY_MAPPING */
 
-#endif /* __OS_INTR_H */
+
+#endif  /* KOS_MEMORY_MAPPING */
+
+#endif  /* __OS_INTR_H */

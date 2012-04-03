@@ -39,7 +39,6 @@ extern "C"
 */
 typedef uint16 * OsPort_StackPointerType;
 
-
 /*
 **  Global Variables.
 */
@@ -48,7 +47,6 @@ typedef uint8 InterruptStateType;
 #endif
 
 extern InterruptStateType OsPort_InterruptState;
-
 
 /*
 **  Global Functions.
@@ -59,21 +57,20 @@ FUNC(uint8 *, OSEK_OS_CODE) OsPort_TaskStackInit(
     TaskType TaskID,
     P2VAR(TaskFunctionType, AUTOMATIC, OSEK_OS_APPL_DATA) TaskFunc,
     P2VAR(uint8, AUTOMATIC, OSEK_OS_APPL_DATA) sp
-);
+    );
 FUNC(uint32, OSEK_OS_CODE) OsPort_GetTimestamp(void);
 #else
 void    OsPort_Init(void);
 uint8 * OsPort_TaskStackInit(TaskType TaskID, TaskFunctionType * TaskFunc, uint8 * sp);
 uint32  OsPort_GetTimestamp(void);
-#endif /* KOS_MEMORY_MAPPING */
 
+
+#endif /* KOS_MEMORY_MAPPING */
 
 #define DISABLE_ALL_OS_INTERRUPTS() CPU_SAVE_AND_DISABLE_INTERRUPTS(OsPort_InterruptState)
 #define ENABLE_ALL_OS_INTERRUPTS()  CPU_RESTORE_INTERRUPTS(OsPort_InterruptState)
 
-
 extern const SizeType OS_TOS_ISR;
-
 
 #if defined(__CSMC__)               /* Cosmic               */
     #include "port/cpu12/cosmic/Os_Port_S12_Cosmic.h"
@@ -131,7 +128,6 @@ extern const SizeType OS_TOS_ISR;
 #else                               /* todo: Add Support    */
     #error Unsupported Compiler.
 #endif
-
 
 #ifdef __cplusplus
 }

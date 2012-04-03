@@ -82,7 +82,7 @@
 
 #define OS_TASK_GET_EVENTS_SET(tid)         (OS_TCB[(tid)].EventsSet)
 #define OS_TASK_SET_EVENT(tid, evt)         (OS_TCB[(tid)].EventsSet |= (evt))
-#define OS_TASK_CLR_EVENT(tid, evt)         (OS_TCB[(tid)].EventsSet &= (~(evt)))
+#define OS_TASK_CLR_EVENT(tid, evt)         (OS_TCB[(tid)].EventsSet &= ((uint8) ~(evt)))
 #define OS_TASK_WAIT_FOR_EVENTS(tid, evt)   (OS_TCB[(tid)].EventsWaitingFor = (evt))
 #define OS_TASK_GET_EVENTS_WAITING_FOR(tid) (OS_TCB[(tid)].EventsWaitingFor)
 
@@ -150,7 +150,7 @@
 
 #if     defined(OS_USE_RESSCHEDULER)
 #define OS_LOCK_SCHEDULER()             (OsFlags |= OS_SYS_FLAG_SCHED_OCCUPIED)
-#define OS_UNLOCK_SCHEDULER()           (OsFlags &= ~OS_SYS_FLAG_SCHED_OCCUPIED)
+#define OS_UNLOCK_SCHEDULER()           (OsFlags &= (uint8) ~OS_SYS_FLAG_SCHED_OCCUPIED)
 #define OS_IS_SCHEDULER_LOCKED()        ((OsFlags & OS_SYS_FLAG_SCHED_OCCUPIED) == OS_SYS_FLAG_SCHED_OCCUPIED)
 #else
 #define OS_LOCK_SCHEDULER()
@@ -159,7 +159,7 @@
 #endif  /* OS_USE_RESSCHEDULER */
 
 #define OS_SET_ISR_LEVEL()              (OsFlags |= OS_SYS_FLAG_ISR_LEVEL)
-#define OS_SET_TASK_LEVEL()             (OsFlags &= ~OS_SYS_FLAG_ISR_LEVEL)
+#define OS_SET_TASK_LEVEL()             (OsFlags &= (uint8) ~OS_SYS_FLAG_ISR_LEVEL)
 #define OS_IS_ISR_LEVEL()               ((OsFlags & OS_SYS_FLAG_ISR_LEVEL) == OS_SYS_FLAG_ISR_LEVEL)
 
 #define OS_IDLE_TIME_ACTION()           CPU_ENTER_POWERDOWN_MODE() /*  'osconfig.h'  */
@@ -549,11 +549,11 @@
 #endif
 
 #if defined(COM_EXTENDED_STATUS)
-#define ASSERT_IS_STATIC_SENDING_MESSAGE(mid)                                   \
-    _BEGIN_BLOCK                                                                \
-    if (OSEK_COM_GET_MESSAGE_OBJECT((mid)).Property != SEND_STATIC_INTERNAL) {  \
-        COMCallErrorHookAndReturn(E_COM_ID);                                    \
-    }                                                                           \
+#define ASSERT_IS_STATIC_SENDING_MESSAGE(mid)                                  \
+    _BEGIN_BLOCK                                                               \
+    if (OSEK_COM_GET_MESSAGE_OBJECT((mid)).Property != SEND_STATIC_INTERNAL) { \
+        COMCallErrorHookAndReturn(E_COM_ID);                                   \
+    }                                                                          \
     _END_BLOCK
 #else
 #define ASSERT_IS_STATIC_SENDING_MESSAGE(mid)
@@ -571,14 +571,14 @@
 #endif
 
 #if defined(COM_EXTENDED_STATUS)
-#define ASSERT_CAN_INITIALIZE_MESSAGE(mid)                                      \
-    _BEGIN_BLOCK                                                                \
-    if (OSEK_COM_GET_MESSAGE_OBJECT((mid)).Property == SEND_STATIC_INTERNAL ||  \
-        OSEK_COM_GET_MESSAGE_OBJECT((mid)).Property == SEND_ZERO_INTERNAL ||    \
-        OSEK_COM_GET_MESSAGE_OBJECT((mid)).Property == SEND_ZERO_EXTERNAL ||    \
-        OSEK_COM_GET_MESSAGE_OBJECT((mid)).Property == RECEIVE_ZERO_EXTERNAL) { \
-        COMCallErrorHookAndReturn(E_COM_ID);                                    \
-    }                                                                           \
+#define ASSERT_CAN_INITIALIZE_MESSAGE(mid)                                        \
+    _BEGIN_BLOCK                                                                  \
+    if ((OSEK_COM_GET_MESSAGE_OBJECT((mid)).Property == SEND_STATIC_INTERNAL) ||  \
+        (OSEK_COM_GET_MESSAGE_OBJECT((mid)).Property == SEND_ZERO_INTERNAL) ||    \
+        (OSEK_COM_GET_MESSAGE_OBJECT((mid)).Property == SEND_ZERO_EXTERNAL) ||    \
+        (OSEK_COM_GET_MESSAGE_OBJECT((mid)).Property == RECEIVE_ZERO_EXTERNAL)) { \
+        COMCallErrorHookAndReturn(E_COM_ID);                                      \
+    }                                                                             \
     _END_BLOCK
 #else
 #define ASSERT_CAN_INITIALIZE_MESSAGE(mid)

@@ -26,7 +26,6 @@
 
 #include "Os_Types.h"
 
-
 #if KOS_MEMORY_MAPPING == STD_ON
 FUNC(void, OSEK_OS_CODE) OsAlm_InitAlarms(void);
 FUNC(void, OSEK_OS_CODE) OsAlm_NotifyAlarm(AlarmType AlarmID);
@@ -39,6 +38,8 @@ void    OsAlm_NotifyAlarm(AlarmType AlarmID);
 void    OsAlm_StartAlarm(uint8 num);
 void    OsAlm_StopAlarm(uint8 num);
 boolean OsAlm_IsRunning(uint8 num);
+
+
 #endif /* KOS_MEMORY_MAPPING */
 
 /*Os_AlarmStateType*/ uint16 OsAlm_GetActiveAlarms(void);

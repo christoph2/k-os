@@ -139,6 +139,8 @@
 FUNC(void, OSEK_OS_CODE) IdleTimeHook(void);
 #else
 void IdleTimeHook(void);
+
+
 #endif /* KOS_MEMORY_MAPPING */
 DeclareTask(OsExec_IdleTask);
 

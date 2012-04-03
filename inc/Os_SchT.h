@@ -30,7 +30,8 @@
 FUNC(void, OSEK_OS_CODE) OsSchTInitScheduleTables(void);
 #else
 void OsSchTInitScheduleTables(void);
-#endif /* KOS_MEMORY_MAPPING */
 
 
-#endif /* __OS_SCHT_H */
+#endif  /* KOS_MEMORY_MAPPING */
+
+#endif  /* __OS_SCHT_H */

@@ -36,7 +36,8 @@ void    OsExec_StartHighestReadyTask(void);
 boolean OsExec_HigherPriorityThenCurrentReady(void);
 void    OsExec_TaskReturnGuard(void);
 void    OsExec_ScheduleFromISR(void);
-#endif /* KOS_MEMORY_MAPPING */
 
 
-#endif /* __OS_EXEC_H */
+#endif  /* KOS_MEMORY_MAPPING */
+
+#endif  /* __OS_EXEC_H */

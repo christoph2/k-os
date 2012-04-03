@@ -30,6 +30,8 @@
 FUNC(StatusType, OSEK_OS_CODE) OsEvtSetEvent(TaskType TaskID, EventMaskType Mask);
 #else
 StatusType OsEvtSetEvent(TaskType TaskID, EventMaskType Mask);
-#endif /* KOS_MEMORY_MAPPING */
 
-#endif /* __OS_EVT_H */
+
+#endif  /* KOS_MEMORY_MAPPING */
+
+#endif  /* __OS_EVT_H */

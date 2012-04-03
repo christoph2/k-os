@@ -160,22 +160,24 @@ typedef struct tagCom_ComfigType {
 */
 
 #if KOS_MEMORY_MAPPING == STD_ON
-FUNC(StatusType, OSEK_COM_CODE)	StartCOM(COMApplicationModeType Mode);
-FUNC(StatusType, OSEK_COM_CODE)	StopCOM(COMShutdownModeType Mode);
+FUNC(StatusType, OSEK_COM_CODE) StartCOM(COMApplicationModeType Mode);
+FUNC(StatusType, OSEK_COM_CODE) StopCOM(COMShutdownModeType Mode);
 FUNC(COMApplicationModeType, OSEK_COM_CODE) GetCOMApplicationMode(void);
-FUNC(StatusType, OSEK_COM_CODE)	InitMessage(MessageIdentifier Message, ApplicationDataRef DataRef);
-FUNC(StatusType, OSEK_COM_CODE)	StartPeriodic(void);
-FUNC(StatusType, OSEK_COM_CODE)	StopPeriodic(void);
-FUNC(StatusType, OSEK_COM_CODE)	SendMessage(MessageIdentifier Message, ApplicationDataRef DataRef);
-FUNC(StatusType, OSEK_COM_CODE)	SendDynamicMessage(MessageIdentifier Message, ApplicationDataRef DataRef, LengthRef LengthRef);
-FUNC(StatusType, OSEK_COM_CODE)	SendZeroMessage(MessageIdentifier Message);
-FUNC(StatusType, OSEK_COM_CODE)	GetMessageStatus(MessageIdentifier Message);
-FUNC(StatusType, OSEK_COM_CODE)	ReceiveMessage(MessageIdentifier Message, ApplicationDataRef DataRef);
-FUNC(StatusType, OSEK_COM_CODE)	ReceiveDynamicMessage(MessageIdentifier Message, ApplicationDataRef DataRef, LengthRef LengthRef);
+FUNC(StatusType, OSEK_COM_CODE) InitMessage(MessageIdentifier Message, ApplicationDataRef DataRef);
+FUNC(StatusType, OSEK_COM_CODE) StartPeriodic(void);
+FUNC(StatusType, OSEK_COM_CODE) StopPeriodic(void);
+FUNC(StatusType, OSEK_COM_CODE) SendMessage(MessageIdentifier Message, ApplicationDataRef DataRef);
+FUNC(StatusType, OSEK_COM_CODE) SendDynamicMessage(MessageIdentifier Message, ApplicationDataRef DataRef, LengthRef LengthRef);
+FUNC(StatusType, OSEK_COM_CODE) SendZeroMessage(MessageIdentifier Message);
+FUNC(StatusType, OSEK_COM_CODE) GetMessageStatus(MessageIdentifier Message);
+FUNC(StatusType, OSEK_COM_CODE) ReceiveMessage(MessageIdentifier Message, ApplicationDataRef DataRef);
+FUNC(StatusType, OSEK_COM_CODE) ReceiveDynamicMessage(MessageIdentifier Message, ApplicationDataRef DataRef, LengthRef LengthRef);
 FUNC(COMServiceIdType, OSEK_COM_CODE) COMErrorGetServiceId(void);
 
 /*  Routines provided by the application. */
 StatusType StartCOMExtension(void);
+
+
 #else
 StatusType              StartCOM(COMApplicationModeType Mode);
 StatusType              StopCOM(COMShutdownModeType Mode);
@@ -191,8 +193,11 @@ StatusType              ReceiveMessage(MessageIdentifier Message, ApplicationDat
 StatusType              ReceiveDynamicMessage(MessageIdentifier Message, ApplicationDataRef DataRef, LengthRef LengthRef);
 COMServiceIdType        COMErrorGetServiceId(void);
 
+
 /*  Routines provided by the application. */
-StatusType              StartCOMExtension(void);
+StatusType StartCOMExtension(void);
+
+
 #endif /* KOS_MEMORY_MAPPING */
 
 extern const Com_MessageObjectType Com_MessageObjects[];

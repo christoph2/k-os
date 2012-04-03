@@ -35,6 +35,9 @@ FUNC(StatusType, OSEK_COM_CODE) ComInt_ReceiveMessage(MessageIdentifier Message,
 #else
 StatusType  ComInt_SendMessage(MessageIdentifier Message, ApplicationDataRef DataRef);
 StatusType  ComInt_ReceiveMessage(MessageIdentifier Message, ApplicationDataRef DataRef);
-#endif /* KOS_MEMORY_MAPPING */
 
-#endif /* __COM_INT_H */
+
+#endif  /* KOS_MEMORY_MAPPING */
+
+#endif  /* __COM_INT_H */
+

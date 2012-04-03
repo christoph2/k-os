@@ -36,6 +36,8 @@ void        OsTask_Ready(TaskType TaskID);
 void        OsTask_Suspend(TaskType TaskID);
 void        OsTask_Wait(TaskType TaskID);
 StatusType  OsTask_Activate(TaskType TaskID);
-#endif /* KOS_MEMORY_MAPPING */
 
-#endif /* __OS_TASK_H */
+
+#endif  /* KOS_MEMORY_MAPPING */
+
+#endif  /* __OS_TASK_H */

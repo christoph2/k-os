@@ -28,12 +28,15 @@
 #include "Com.h"
 
 #if KOS_MEMORY_MAPPING == STD_ON
-FUNC(void, OSEK_COM_CODE) ComIfUpdateAndNotifyReceivers(
-    P2VAR(Com_MessageObjectType, AUTOMATIC, OSEK_COM_APPL_DATA) MessageSendObject, ApplicationDataRef DataRef
-);
+FUNC(void, OSEK_COM_CODE) ComIf_UpdateAndNotifyReceivers(
+    CONSTP2CONST(Com_MessageObjectType, AUTOMATIC, OSEK_COM_APPL_DATA) MessageSendObject,
+    ApplicationDataRef DataRef
+    );
 #else
-void ComIfUpdateAndNotifyReceivers(Com_MessageObjectType * MessageSendObject, ApplicationDataRef DataRef);
-#endif /* KOS_MEMORY_MAPPING */
+void ComIf_UpdateAndNotifyReceivers(Com_MessageObjectType const * const MessageSendObject, ApplicationDataRef DataRef);
 
-#endif /* __COM_IF_H */
+
+#endif  /* KOS_MEMORY_MAPPING */
+
+#endif  /* __COM_IF_H */
 

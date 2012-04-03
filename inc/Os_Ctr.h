@@ -36,9 +36,9 @@ extern "C"
 FUNC(void, OSEK_OS_CODE) OsCtr_InitCounters(void);
 #else
 void OsCtr_InitCounters(void);
+
+
 #endif /* KOS_MEMORY_MAPPING */
-
-
 
 /*
 **  Global Function-like Macros.

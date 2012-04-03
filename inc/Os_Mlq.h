@@ -31,7 +31,6 @@ extern "C"
 {
 #endif  /* __cplusplus */
 
-
 #if KOS_MEMORY_MAPPING == STD_ON
 FUNC(void, OSEK_OS_CODE) OsMLQ_Init(void);
 FUNC(TaskType, OSEK_OS_CODE) OsMLQ_GetHighestPrio(void);
@@ -42,7 +41,7 @@ FUNC(void, OSEK_OS_CODE) OsMLQ_AddTaskLast(TaskType TaskID, PriorityType prio);
 FUNC(void, OSEK_OS_CODE) OsMLQ_RemoveTask(TaskType TaskID);
 FUNC(void, OSEK_OS_CODE) OsMLQ_ChangePrio(TaskType TaskID, PriorityType old_prio, PriorityType new_prio);
 FUNC(uint8, OSEK_OS_CODE) OsMLQ_GetLowestBitNumber(uint16 Bitmap);
-#else	
+#else
 void        OsMLQ_Init(void);
 TaskType    OsMLQ_GetHighestPrio(void);
 boolean     OsMLQ_TasksAreReady(void);
@@ -52,8 +51,9 @@ void        OsMLQ_AddTaskLast(TaskType TaskID, PriorityType prio);
 void        OsMLQ_RemoveTask(TaskType TaskID);
 void        OsMLQ_ChangePrio(TaskType TaskID, PriorityType old_prio, PriorityType new_prio);
 uint8       OsMLQ_GetLowestBitNumber(uint16 Bitmap);
-#endif /* KOS_MEMORY_MAPPING */
 
+
+#endif /* KOS_MEMORY_MAPPING */
 
 #ifdef __cplusplus
 }
