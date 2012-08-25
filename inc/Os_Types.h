@@ -286,6 +286,8 @@ typedef struct tagOsMLQ_QueueType {
 /*
 **      AUTOSAR-OS.
 */
+typedef uint8 ISRType;  /* wird benötigt. */
+#if 0
 
 typedef uint8 ApplicationType;
 
@@ -328,5 +330,6 @@ typedef enum tagRestartType {
 } RestartType;
 
 typedef uint16 PhysicalTimeType;
+#endif
 
 #endif /* __OS_TYPES_H */

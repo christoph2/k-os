@@ -53,6 +53,7 @@ extern InterruptStateType OsPort_InterruptState;
 */
 #if KOS_MEMORY_MAPPING == STD_ON
 FUNC(void, OSEK_OS_CODE) OsPort_Init(void);
+FUNC(void, OSEK_OS_CODE) OsPort_Shutdown(void);
 FUNC(uint8 *, OSEK_OS_CODE) OsPort_TaskStackInit(
     TaskType TaskID,
     P2VAR(TaskFunctionType, AUTOMATIC, OSEK_OS_APPL_DATA) TaskFunc,
@@ -61,6 +62,7 @@ FUNC(uint8 *, OSEK_OS_CODE) OsPort_TaskStackInit(
 FUNC(uint32, OSEK_OS_CODE) OsPort_GetTimestamp(void);
 #else
 void    OsPort_Init(void);
+void    OsPort_Shutdown(void);
 uint8 * OsPort_TaskStackInit(TaskType TaskID, TaskFunctionType * TaskFunc, uint8 * sp);
 uint32  OsPort_GetTimestamp(void);
 
