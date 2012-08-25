@@ -58,16 +58,16 @@
 #endif /* OS_FEATURE_ORTI_DEBUG */
 
 #if defined(OS_SCHED_POLICY_NON)
-#define OS_IS_TASK_PREEMPTABLE(tid)                 ((boolean)FALSE)
+#define OS_IS_TASK_PREEMPTABLE(tid)                 (FALSE)
 #elif defined(OS_SCHED_POLICY_PRE)
-#define OS_IS_TASK_PREEMPTABLE(tid)                 ((boolean)TRUE)
+#define OS_IS_TASK_PREEMPTABLE(tid)                 (TRUE)
 #elif defined(OS_SCHED_POLICY_MIX)
 #if defined(OS_USE_RESOURCES) || defined(OS_USE_INTERNAL_RESOURCES)
 #define OS_IS_TASK_PREEMPTABLE(tid)                 (OsCurrentTCB->CurrentPriority != PRIO_SCHEDULER)
 #else
 /* todo: CHECK!!! */
 /* #define OS_IS_TASK_PREEMPTABLE(tid) (OS_TaskConf[(tid)].Priority=!=PRIO_SCHEDULER) */
-#define OS_IS_TASK_PREEMPTABLE(tid)                 ((boolean)TRUE)
+#define OS_IS_TASK_PREEMPTABLE(tid)                 (TRUE)
 #endif /* (OS_USE_RESOURCES) || (OS_USE_INTERNAL_RESOURCES) */
 #else
 #error "unknwon Scheduling-Policy!"
@@ -155,7 +155,7 @@
 #else
 #define OS_LOCK_SCHEDULER()
 #define OS_UNLOCK_SCHEDULER()
-#define OS_IS_SCHEDULER_LOCKED()        ((boolean)FALSE)
+#define OS_IS_SCHEDULER_LOCKED()        (FALSE)
 #endif  /* OS_USE_RESSCHEDULER */
 
 #define OS_SET_ISR_LEVEL()              (OsFlags |= OS_SYS_FLAG_ISR_LEVEL)
@@ -551,7 +551,7 @@
 #if defined(COM_EXTENDED_STATUS)
 #define ASSERT_IS_STATIC_SENDING_MESSAGE(mid)                                  \
     _BEGIN_BLOCK                                                               \
-    if (OSEK_COM_GET_MESSAGE_OBJECT((mid)).Property != SEND_STATIC_INTERNAL) { \
+    if ((OSEK_COM_GET_MESSAGE_OBJECT((mid)).Property != SEND_STATIC_INTERNAL) && (OSEK_COM_GET_MESSAGE_OBJECT((mid)).Property != SEND_STATIC_EXTERNAL)) { \
         COMCallErrorHookAndReturn(E_COM_ID);                                   \
     }                                                                          \
     _END_BLOCK
@@ -593,3 +593,4 @@
 #endif
 
 #endif  /*  __OSMACROS_H  */
+
