@@ -44,7 +44,7 @@ ImplRefDef = namedtuple("ImplRefDef", "object_ref_type, name, multiple_specifier
 
 EMPTY_APP_DEF = 'CPU cpu {};'
 
-MAX_PRIORITIES = 16  # # todo: Cfg. !!!
+MAX_PRIORITIES = 16  # # TODO: Cfg. !!!
 
 data = []
 
@@ -155,7 +155,7 @@ class ImplAttrDef(object):
     def __init__(self, name, attrType, auto_specifier, valueRange, multiple_specifier, default, description):
         self.name = name
         self.attrType = attrType
-        self.auto_specifier = auto_specifier  # todo: withAuto
+        self.auto_specifier = auto_specifier  # TODO: withAuto
         self.valueRange = valueRange
         self.multiple_specifier = multiple_specifier
         self.default = default
@@ -292,7 +292,7 @@ class NumberRangeRange(NumberRange):
         NumberRange.__init__(self, lhs, rhs)
 
 
-class NumberRangeList(NumberRange): # todo: eigenständig!!!
+class NumberRangeList(NumberRange): # TODO: eigenständig!!!
     def __init__(self, lhs):
         NumberRange.__init__(self, lhs, None)
 
@@ -332,9 +332,9 @@ class EnumRange(object):  # Range
         return "%s ['%s']\n" % (self.__class__, self._values)
 
 
-def GetParameterDefinition(obj, name, path=[]):
+def GetParameterDefinition(obj, name, path = []):
     ##
-    ## todo: 'Normale', 'Enum' und 'Boolean' Parameter unterscheiden!!!
+    ## TODO: 'Normale', 'Enum' und 'Boolean' Parameter unterscheiden!!!
     ##
     defMap = ImplDefMap.get(obj.type_)
 
@@ -474,7 +474,7 @@ class ObjectDefinition(NameMappedDict):
             else:
                 #implDef = filter(lambda x: x.name == attr.value, validParams)
 
-                #implDef = attr.implDef.valueRange.get(attr.value)[0][1] # todo: gehöhrt zu 'get' !?
+                #implDef = attr.implDef.valueRange.get(attr.value)[0][1] # TODO: gehöhrt zu 'get' !?
                 # implDef = attr.implDef.valueRange.get(attr.value)
 
                 di = dict(map(lambda x: (x[1].name, x[1]), attr.implDef.valueRange.get(attr.value)))
@@ -599,7 +599,7 @@ class NestedParameter(NameMappedDict):
                     print v
                 """
             else:
-                pass    # todo: ErrorHandling!!!
+                pass    # TODO: ErrorHandling!!!
         # self.implDef = GetParameterDefinition(self.root, name, self.path)
 
     def AddParameter(self, name, value):
@@ -1197,30 +1197,35 @@ def checkBoolean(appDef, objName, attr, implDef, autoList):
             pass
 
 
+## Nested attributes are now checked correctly.
+
 def checkEnum(appDef, objName, attr, implDef, autoList):
-    if isinstance(appDef[attr], NestedParameter):
-        pass
+    if isinstance(appDef, NestedParameter):
+        #ad = appDef[attr]
+        #idef = ad.implDef
+        idef = appDef.implDef
+        checkAttr(appDef, objName, attr, idef, autoList)
+
         # print "NESTED: '%s'" % (appDef[attr].value in implDef.valueRange.getValues())
-    elif appDef[attr].parameterised:
+    elif appDef.parameterised:
         print "parameterised:"
+        pass
+    else:
         pass
 
 
 def checkAttr(appDef, objName, attr, implDef, autoList):
-    attrValue = None
-    if attr in appDef:
-        if isinstance(appDef[attr], NestedParameter):
-            attrValue = appDef[attr].value
-        else:
-            if not isinstance(appDef[attr], types.ListType):
-                if hasattr(appDef[attr], 'attribute_value'):
-                    attrValue = appDef[attr].value
-                else:
-                    pass
-            else:
-                pass
+    if attr == 'MESSAGEPROPERTY':
+        pass
+
+    if implDef.multiple_specifier:
+        attrValue = [a.value for a in appDef]
     else:
-        attrValue = None
+        attrValue = appDef.value
+
+    if not attrValue:
+        print "'%s': we need to check for DEFAULT/AUTO" % (attr)
+
     if isinstance(implDef, ImplAttrDef):
         if implDef.default is None and implDef.multiple_specifier  == False and attrValue is None:
             errObj.error("Missing required attribute '%s:%s'."
@@ -1230,9 +1235,13 @@ def checkAttr(appDef, objName, attr, implDef, autoList):
                           % (objType, attr))
         elif implDef.default is not None:
             if implDef.default == 'AUTO':
+                pass    # TODO: AUTO-Wert setzten, falls nicht vorhanden!?
+                # ????
+                """
                 if appDef.type_ != 'OS' and attr != 'CC':
                     appDef[attr] = Parameter(attr, AttributeValue(implDef.attrType, None))
                 objType = appDef.type_
+                """
             elif attrValue is None:
 
 #                autoHandler(objType,attr,(appDef,),implDef,autoList)
@@ -1250,9 +1259,14 @@ def checkAttr(appDef, objName, attr, implDef, autoList):
         elif implDef.multiple_specifier == True:
             pass
         if implDef.attrType == 'BOOLEAN' and attrValue is not None:
-            checkBoolean(appDef, objName, attr, implDef, autoList)
+            #checkBoolean(appDef, objName, attr, implDef, autoList)
+            pass
         elif implDef.attrType == 'ENUM' and attrValue is not None:
-            checkEnum(appDef, objName, attr, implDef, autoList)
+            enumerator = implDef.valueRange.get(attrValue)
+            ttt = enumerator[0][1]
+            vvv = appDef[ttt.name]
+            #checkEnum(appDef, objName, attr, implDef, autoList)
+            ## TODO: überarbeiten!!!
     elif isinstance(implDef, ImplRefDef):
         if implDef.multiple_specifier == False and attrValue is None:
             errObj.error("Missing required attribute '%s:%s'." % (objName, attr))
@@ -1342,7 +1356,16 @@ def setDefaults():
                 autoHandler(objType, attr, (appDef1, appDef2), implDef, autoList)
             for attr in implAttrs:
                 implDef = implDefs[attr]
-                checkAttr(appDef2, objName, attr, implDef, autoList)
+                #checkAttr(appDef2, objName, attr, implDef, autoList)
+
+                appDef = appDef2.get(attr,None)
+                if appDef is None:
+                    if isinstance(implDef, ImplRefDef):
+                        appDef = Parameter(attr, AttributeValue(implDef.object_ref_type, None))
+                    else:
+                        appDef = Parameter(attr, AttributeValue(implDef.attrType, None))
+
+                checkAttr(appDef, objName, attr, implDef, autoList)
             if objType == 'TASK':
                 priority = appDef2['PRIORITY'].value
                 Priorities.setdefault(priority, []).append(appDef2)
@@ -1355,7 +1378,7 @@ def setDefaults():
                     numNonTasks += 1
                 if appDef2['ACTIVATION'].value > 1:
                     multipleActivations = True
-                    ECCx = True  # # todo: check NoOfEvent!!!
+                    ECCx = True  # # TODO: check NoOfEvent!!!
             elif objType == 'OS':
                 osCC = appDef2['CC']
     numberOfDistinctPriorities = len(Priorities)
@@ -1405,7 +1428,7 @@ def setDefaults():
         for g in filter(lambda r: r.relativeCeilingPriority  == \
                         levelPriority, [v for v in applicationDefinition['RESOURCE'].values()]):
             g.ceilingPriority = num
-            hasResources = True  # todo: xCC2 = True
+            hasResources = True  # TODO: xCC2 = True
         activations = 0
         for obj in levelObjs:
             obj['PRIORITY'] = Parameter('PRIORITY',AttributeValue('number', num))

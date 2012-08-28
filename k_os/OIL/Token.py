@@ -7,9 +7,10 @@ __copyright__ = \
     """
    k_os (Konnex Operating-System based on the OSEK/VDX-Standard).
 
-  (C) 2007-2010 by Christoph Schueler <chris@konnex-tools.de>
+  (C) 2007-2011 by Christoph Schueler <github.com/Christoph2,
+                                       cpu12.gems@googlemail.com>
 
-   All Rights Reserved
+  All Rights Reserved
 
   This program is free software; you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -31,13 +32,7 @@ __copyright__ = \
 
 class Token(object):
 
-    def __init__(
-        self,
-        type_,
-        attr=None,
-        lineno='???',
-        filename='',
-        ):
+    def __init__(self, type_, attr = None, lineno = '???', filename = ''):
         self.type_ = type_
         self.attr = attr
         self.lineno = lineno
@@ -50,4 +45,6 @@ class Token(object):
         raise IndexError
 
     def __repr__(self):
-        return "TOKEN <type: '%s' attr: '%s'>" % (self.type_, self.attr)
+        return "%s (type: '%s' attr: '%s' file: '%s' line: '%s')\n" % (
+            self.__class__, self.type_, self.attr, self.filename, self.lineno
+        )

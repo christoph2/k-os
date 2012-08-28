@@ -1,7 +1,7 @@
 /*
    k_os (Konnex Operating-System based on the OSEK/VDX-Standard).
 
-   (C) 2007-2011 by Christoph Schueler <github.com/Christoph2,
+   (C) 2007-2012 by Christoph Schueler <github.com/Christoph2,
                                         cpu12.gems@googlemail.com>
 
    All Rights Reserved
@@ -38,7 +38,7 @@
 extern "C"
 {
 \#endif  /* __cplusplus */
-
+## TODO: #define COM_NUMBER_OF_MESSAGES          (COM_NUMBER_OF_INTERNAL_MESSAGES + COM_NUMBER_OF_EXTERNAL_MESSAGES) // d.h.: Klammern!!!
 /******************************************************************************
 *                            OS-Configuration Part
 ******************************************************************************/
@@ -115,7 +115,6 @@ extern "C"
 \#define OS_USE_INTERNAL_RESOURCES
 \#define OS_USE_RESOURCES
 #end if /* $info.useResources */
-\#define OS_USE_SCHEDULE_TABLES
 #if $app.os.SAVE_STARTUP_CONTEXT.value==True
 \#define OS_FEATURE_SAVE_STARTUP_CONTEXT
 #end if
@@ -248,7 +247,7 @@ of the Counter, e.g. OS_TICKS2MS_MyCounter()
 #for $num,$counter in $enumerate($app.counters)
 
 /* ${counter.name} */
-\#define $counter.name                      ((CounterType)$num)
+\#define $counter.name                    ((CounterType)$num)
 ## todo: only for Hardware-Counters!!!
 #set $conversionMacros='\n'.join(map(lambda x: "#define OS_TICKS2%s_%s(ticks)" % (x,counter.name),units))
 $conversionMacros
@@ -264,9 +263,11 @@ $conversionMacros
 */
 #set $counterDrivers=set([c['TYPE']['DRIVER'].value for c in $app.counters if c['TYPE'].value=='HARDWARE'])
 #for $driver in $counterDrivers
-\#define OS_FEATURE_INSTALL_${driver}_TIMER_HANDLER
-#set $counters=["(void)IncrementCounter(%s);" % c.name for c in $app.counters if c['TYPE'].value=='HARDWARE' and c['TYPE']['DRIVER'].value==$driver]
-\#define OS_${driver}_TIMER_DRIVER_IMPL() \
+\#define OS_FEATURE_INSTALL_${driver}_HANDLER
+## #set $counters=["(void)IncrementCounter(%s);" % c.name for c in $app.counters if c['TYPE'].value=='HARDWARE' and c['TYPE']['DRIVER'].value==$driver]
+## OS_INCREMENT_COUNTER_VALUE(%s);  OsCtr_UpdateAttachedAlarms(%s);
+#set $counters=["""(void)IncrementCounter(%s);""" % c.name for c in $app.counters if c['TYPE'].value=='HARDWARE' and c['TYPE']['DRIVER'].value==$driver]
+\#define OS_${driver}_DRIVER_IMPL() \
 ##\#define OS_COUNTER_DRIVER_IMPL() \
     _BEGIN_BLOCK \
 #for $counter in $counters

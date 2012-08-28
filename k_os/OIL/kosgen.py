@@ -7,7 +7,7 @@ __copyright__ = \
     """
    k_os (Konnex Operating-System based on the OSEK/VDX-Standard).
 
-  (C) 2007-2011 by Christoph Schueler <github.com/Christoph2,
+  (C) 2007-2012 by Christoph Schueler <github.com/Christoph2,
                                        cpu12.gems@googlemail.com>
 
   All Rights Reserved
@@ -39,6 +39,11 @@ import k_os.OIL.GenCfg
 import k_os.OIL.Parser
 import k_os.OIL.Preproc
 
+##
+##  TODO: Package-Root: kosek
+##
+
+
 
 def SetIncludePaths(paths):
     inc_paths = os.getenv('KOS_INCLUDE')
@@ -56,77 +61,32 @@ def main():
     options = []
     args = []
 
-    op = OptionParser(usage=usage, version='%prog ' + __version__,
-                      description="Generate K-OS-Configuration from '.oil'-File."
-                      )
-    op.add_option(
-        '-f',
-        '--command-file',
-        type='string',
-        metavar='FILE',
-        dest='command_file',
-        help='read options from command-FILE',
+    op = OptionParser(usage = usage, version = '%prog ' + __version__,
+        description = "Generate K-OS-Configuration from '.oil'-File."
         )
+    op.add_option('-f', '--command-file', type = 'string', metavar = 'FILE', dest = 'command_file',
+        help = 'read options from command-FILE')
 
     input_group = OptionGroup(op, 'Input')
-    input_group.add_option(
-        '-I',
-        '--include-path',
-        dest='inc_path',
-        action='append',
-        metavar='dir',
-        help="Add directory to the list of directories to be searched for include files. Environment-Variable 'KOS_INCLUDE' is also used to locate Include-Files."
-            ,
+    input_group.add_option('-I', '--include-path', dest = 'inc_path', action = 'append',
+        metavar = 'dir',
+        help = """Add directory to the list of directories to be searched for include files.
+        Environment-Variable 'KOS_INCLUDE' is also used to locate Include-Files."""
         )
-
     op.add_option_group(input_group)
 
     group = OptionGroup(op, 'Output')
-    group.add_option(
-        '-o',
-        '--orti',
-        help='generate orti-FILE',
-        dest='orti',
-        action='store_true',
-        default=False,
-        )
-    group.add_option(
-        '-r',
-        '--resource-usage',
-        help='generate resource statistics',
-        dest='res_usage',
-        action='store_true',
-        default=False,
-        )
-    group.add_option(
-        '-t',
-        '--test',
-        help="verify only, don't generate anything",
-        dest='test',
-        action='store_true',
-        default=False,
-        )
-
-    group.add_option(
-        '-V',
-        '--verbose',
-        help='print Information messages',
-        dest='verbose',
-        action='store_true',
-        default=False,
-        )
-
-    group.add_option(
-        '-S',
-        '--silent',
-        help="don't print any messages.",
-        dest='silent',
-        action='store_true',
-        default=False,
-        )
+    group.add_option('-o', '--orti', help = 'generate orti-FILE', dest = 'orti', action = 'store_true', default = False)
+    group.add_option('-r', '--resource-usage', help = 'generate resource statistics', dest = 'res_usage',
+        action = 'store_true', default = False)
+    group.add_option('-t', '--test', help = "verify only, don't generate anything", dest = 'test',
+        action = 'store_true', default = False)
+    group.add_option('-V', '--verbose', help = 'print Information messages', dest = 'verbose',
+        action = 'store_true', default = False)
+    group.add_option('-S', '--silent', help = "don't print any messages.", dest = 'silent', action = 'store_true',
+        default = False)
 
 ## keep immediate file.
-
     op.add_option_group(group)
 
     (options, args) = op.parse_args()
@@ -157,18 +117,19 @@ def main():
     try:
         inFile = open(outFilename)
     except IOError:
-        errObj.fatalError("Could not open file '%s'.\n" % fname)
+        error.fatalError("Could not open file '%s'.\n" % outFilename)
     else:
         inp = inFile.read()
         (implDefMap, appDefMap, info) = k_os.OIL.Parser.ParseOil(inp)
         info['version'] = __version__.replace('.', '_')
         if options.test == False:
             if error.errorCounter > 0:
-                errObj.error('\n%u Error(s) occured during parsing, generating nothing.'
+                error.error('\n%u Error(s) occured during parsing, generating nothing.'
                               % error.errorCounter)
             else:
-                k_os.OIL.GenCfg.Generate(os.path.splitext(args[0])[0],
-                        appDefMap, info)
+                k_os.OIL.GenCfg.Generate(os.path.splitext(args[0])[0], appDefMap, info)
+# test.oil
+# C:\projekte\csProjects\k-os\samples\first\first.oil
 
 
 if __name__ == '__main__':

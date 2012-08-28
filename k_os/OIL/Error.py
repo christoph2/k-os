@@ -88,3 +88,4 @@ class OILError(object):
     def information(self,message,lineno=None,filename=None,code=''):
         self.logMessage(logging.INFO,message,lineno,filename,"I-"+code)
         self.informationCounter+=1
+

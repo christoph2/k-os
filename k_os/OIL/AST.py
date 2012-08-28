@@ -7,9 +7,10 @@ __copyright__ = \
     """
    k_os (Konnex Operating-System based on the OSEK/VDX-Standard).
 
-  (C) 2007-2010 by Christoph Schueler <chris@konnex-tools.de>
+  (C) 2007-2011 by Christoph Schueler <github.com/Christoph2,
+                                       cpu12.gems@googlemail.com>
 
-   All Rights Reserved
+  All Rights Reserved
 
   This program is free software; you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -41,17 +42,11 @@ class AST(object):
     def __len__(self):
         return len(self._kids)
 
-    def __setslice__(
-        self,
-        low,
-        high,
-        seq,
-        ):
-
+    def __setslice__(self, low, high, seq):
         self._kids[low:high] = seq
 
     def __cmp__(self, o):
         return cmp(self.type_, o)
 
     def __repr__(self):
-        return str(self.type_)
+        return "%s (type: '%s children: '%s')\n" % (self.__class__, str(self.type_), self._kids)

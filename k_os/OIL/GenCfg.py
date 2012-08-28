@@ -48,6 +48,10 @@ app = None
 info = None
 
 
+INTERNAL_MESSAGE_TYPES = ('SEND_STATIC_INTERNAL', 'SEND_ZERO_INTERNAL', 'RECEIVE_ZERO_INTERNAL',
+                     'RECEIVE_UNQUEUED_INTERNAL', 'RECEIVE_QUEUED_INTERNAL')
+
+
 def simplifiedApplicationDefinition(appDefs):
     standardResources = []
     internalResources = []
@@ -76,6 +80,14 @@ def simplifiedApplicationDefinition(appDefs):
             task.taskType = 'BASIC'
         else:
             task.taskType = 'EXTENDED'
+
+    setattr(app, 'internalMessages',
+        [msg for msg in app.messages if msg.MESSAGEPROPERTY.value in INTERNAL_MESSAGE_TYPES]
+    )
+    setattr(app, 'externalMessages',
+        [msg for msg in app.messages if msg.MESSAGEPROPERTY.value not in INTERNAL_MESSAGE_TYPES]
+    )
+
     return app
 
 
@@ -122,7 +134,7 @@ def enumerateStatusCodes():
 
 
 def enumeratePriorities():
-    ## todo: PRIO_RES_SCHEDULER and IDLE !!!
+    ## TODO: PRIO_RES_SCHEDULER and IDLE !!!
 
     return ',\n'.join(map(lambda n, t: '            "%s" = %u' % (t, (~n + 1) & 0x0f),
         range(len(info['priorityMap']) + 1), ['NONE'] + map(lambda x: x, info['priorityMap']))
@@ -213,20 +225,14 @@ def Generate(fname, AppDef, Info):
 
 #    from pkg_resources import Requirement, resource_filename
 #    filename = resource_filename(Requirement.parse("MyProject"),"sample.conf")
-
-    writeTemplate(r'hfile.tmpl', 'Os_Cfg.h', namespace,
-                  encodeAsUTF8=False)
-    writeTemplate('cfile.tmpl', 'Os_Cfg.c', namespace,
-                  encodeAsUTF8=False)
-    writeTemplate('isrcfgfile.tmpl', 'ISR_Cfg.h', namespace,
-                  encodeAsUTF8=False)
+    writeTemplate(r'hfile.tmpl', 'Os_Cfg.h', namespace, encodeAsUTF8 = False)
+    writeTemplate('cfile.tmpl', 'Os_Cfg.c', namespace, encodeAsUTF8 = False)
+    writeTemplate('isrcfgfile.tmpl', 'ISR_Cfg.h', namespace, encodeAsUTF8 = False)
     if app.os['ORTI_DEBUG'].value == True:
         info['vendor'] = 'K_OS'
 
-        info['koilVersion'] = app.os['ORTI_DEBUG']['KOIL_VERSION'
-                ].value.strip('"')
-        info['osekVersion'] = app.os['ORTI_DEBUG']['OSEK_VERSION'
-                ].value.strip('"')
+        info['koilVersion'] = app.os['ORTI_DEBUG']['KOIL_VERSION'].value.strip('"')
+        info['osekVersion'] = app.os['ORTI_DEBUG']['OSEK_VERSION'].value.strip('"')
 
         info['context'] = (
             Register('PC', 'uint16', 7),
@@ -237,4 +243,4 @@ def Generate(fname, AppDef, Info):
             Register('B', 'uint8', 1),
             Register('CCR', 'uint8', 0x00),
             )
-        writeTemplate('ortifile.tmpl', 'App.ort', namespace, encodeAsUTF8=False)
+        writeTemplate('ortifile.tmpl', 'App.ort', namespace, encodeAsUTF8 = False)

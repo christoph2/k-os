@@ -1,7 +1,7 @@
 /*
    k_os (Konnex Operating-System based on the OSEK/VDX-Standard).
 
-   (C) 2007-2011 by Christoph Schueler <github.com/Christoph2,
+   (C) 2007-2012 by Christoph Schueler <github.com/Christoph2,
                                         cpu12.gems@googlemail.com>
 
    All Rights Reserved
@@ -32,6 +32,7 @@
 **
 */
 \#include "Os_Cfg.h"
+\#include "Os_Vars.h"
 
 #def getTaskFlags($task)
     #set $flags=[]
@@ -105,7 +106,8 @@ $getTaskFlags($task)
 #end if
 #if $task.AUTOSTART.value==True
     $getApplicationModes($task),
-#elif $len($info.autostartedTasks)>0
+## #elif $len($info.autostartedTasks)>0
+#else
     OS_AUTOSTART_NEVER,
 #end if
 \#if defined(OS_USE_INTERNAL_RESOURCES)
@@ -256,3 +258,4 @@ IMPLEMENT_ISR2_VECTOR(${counter.TYPE.DRIVER.value}Timer)
 IMPLEMENT_ISR2_VECTOR(${isr.name})
 #end if
 #end for
+
