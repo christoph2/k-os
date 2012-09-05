@@ -1,0 +1,256 @@
+OIL_VERSION="2.5";
+
+IMPLEMENTATION Standard {
+	OS {
+		ENUM [STANDARD, EXTENDED] STATUS;
+		BOOLEAN STARTUPHOOK;
+		BOOLEAN ERRORHOOK;
+		BOOLEAN SHUTDOWNHOOK;
+		BOOLEAN PRETASKHOOK;
+		BOOLEAN POSTTASKHOOK;
+		BOOLEAN USEGETSERVICEID;
+		BOOLEAN USEPARAMETERACCESS;
+		BOOLEAN USERESSCHEDULER = TRUE;
+		BOOLEAN USECALLLEVELCHECK = FALSE;
+		BOOLEAN SAVE_STARTUP_CONTEXT=FALSE;
+		ENUM WITH_AUTO [BCC1,BCC2,ECC1,ECC2] CC=AUTO;
+		UINT32 [32..128] IDLE_TASK_STACK_SIZE=32;
+		UINT32 [32..128] ISR_STACK_SIZE=32;
+		BOOLEAN O1SCHEDULER=FALSE;
+		FLOAT [2.0 .. 80.0] XTAL_FREQ=16.0;
+		BOOLEAN [
+			TRUE {
+				STRING KOIL_VERSION="2.2" : "Needed for compatibility issues.";
+				STRING OSEK_VERSION="2.2" : "Needed for compatibility issues.";
+				STRING TRACE_VAR[];
+			},
+			FALSE
+		] ORTI_DEBUG=FALSE;
+		
+		BOOLEAN [
+			TRUE {
+				UINT32 SYNR;
+				UINT32 REFDEV;
+			},
+			FALSE
+		] USE_PLL=FALSE;
+		// COUNTER_TYPE  SYSTEM_TIMER;
+		/*
+		BOOLEAN [
+			TRUE {
+				COUNTER_TYPE COUNTER : "The Counter that is incremented when the associated Timer-Interrupt occures.";
+				UINT32 TICKS_PER_CYCLE;
+				ENUM [
+					MDCU : "Modulus Count Down Interrupt",
+					RTI : "Realtime Interrupt",
+					TC0 : "Timerchannel #0",
+					TC1 : "Timerchannel #1",
+					TC2 : "Timerchannel #2",
+					TC3 : "Timerchannel #3",
+					TC4 : "Timerchannel #4",
+					TC5 : "Timerchannel #5",
+					TC6 : "Timerchannel #6",
+					TC7 : "Timerchannel #7",
+				] SOURCE=MDCU : "Interrupt Source of the Systemtimer";
+			},
+			FALSE
+		] SYSTEM_TIMER=TRUE;	// todo: Counter-Parameter 'DRIVER'!!!
+		*/
+	};
+
+	APPMODE {	// BOOLEAN WITH_AUTO DEFAULT=AUTO;
+	};
+
+	TASK {
+		BOOLEAN [
+			TRUE {
+				APPMODE_TYPE APPMODE[];
+			},
+			FALSE
+		] AUTOSTART;
+		UINT32 PRIORITY;
+		UINT32 ACTIVATION;
+		ENUM [NON, FULL] SCHEDULE;
+		EVENT_TYPE EVENT[];
+		RESOURCE_TYPE RESOURCE[];
+		MESSAGE_TYPE MESSAGE[];
+
+		UINT32 [32..1024] STACKSIZE=32;
+		ENUM [YES,NO,UNKNOWN] CALLSCHEDULE=UNKNOWN : "Non-preemptive tasks not calling 'Schedule()' can share a common stack.";
+		ENUM WITH_AUTO [BASIC, EXTENDED] TYPE=AUTO;
+	};
+
+	ISR {
+		UINT32 [1, 2] CATEGORY;
+		RESOURCE_TYPE RESOURCE[];
+		MESSAGE_TYPE MESSAGE[];
+		ENUM [
+			PWMES  /*: "PWM Emergency Shutdown"*/,
+			PP     /*: "Port P Interrupt"*/,
+			CAN4T,      /*: "MSCAN 4 Transmit",                 */
+			CAN4R,      /*: "MSCAN 4 Receive",                  */
+			CAN4E,      /*: "MSCAN 4 Error",                    */
+			CAN4W,      /*: "MSCAN 4 Wake-up",                  */
+			CAN3T,      /*: "MSCAN 3 Transmit",                 */
+			CAN3R,      /*: "MSCAN 3 Receive",                  */
+			CAN3E,      /*: "MSCAN 3 Error",                    */
+			CAN3E,      /*: "MSCAN 3 Wake-up",                  */
+			CAN2T,      /*: "MSCAN 2 Transmit",                 */
+			CAN2R,      /*: "MSCAN 2 Receive",                  */
+			CAN2E,      /*: "MSCAN 2 Error",                    */
+			CAN2W,      /*: "MSCAN 2 Wake-up",                  */
+			CAN1T,      /*: "MSCAN 1 Transmit",                 */
+			CAN1R,      /*: "MSCAN 1 Receive",                  */
+			CAN1E,      /*: "MSCAN 1 Error",                    */
+			CAN1W,      /*: "MSCAN 1 Wake-up",                  */
+			CAN0T,      /*: "MSCAN 0 Transmit",                 */
+			CAN0R,      /*: "MSCAN 0 Receive",                  */
+			CAN0E,      /*: "MSCAN 0 Error",                    */
+			CAN0W,      /*: "MSCAN 0 Wake-up",                  */
+			FLS,        /*: "Flash",                            */
+			EEP,        /*: "EEPROM",                           */
+			SPI2,       /*: "SPI2",                             */
+			SPI1,       /*: "SPI1",                             */
+			IIC,        /*: "IIC Bus",                          */
+			DLC,        /*: "DLC",                              */
+			SCME,       /*: "SCME",                             */
+			CRG,        /*: "CRG Lock",                         */
+			PBOF,       /*: "Pulse Accumulator B Overflow",     */
+			MDCU,       /*: "Modulus Down Counter Underflow",   */
+			PH,         /*: "Port H Interrupt",                 */
+			PJ,         /*: "Port J Interrupt",                 */
+			ATD1,       /*: "ATD1",                             */
+			ATD0,       /*: "ATD0",                             */
+			SCI1,       /*: "SCI1",                             */
+			SCI0,       /*: "SCI0",                             */
+			SPI0,       /*: "SPI0",                             */
+			PAIE,       /*: "Pulse Accumulator A Input Edge",   */
+			PAOF,       /*: "Pulse Accumulator A Overflow",     */
+			TOF,        /*: "Timer Overflow",                   */
+			TC7,        /*: "Timer Channel 7",                  */
+			TC6,        /*: "Timer Channel 6",                  */
+			TC5,        /*: "Timer Channel 5",                  */
+			TC4,        /*: "Timer Channel 4",                  */
+			TC3,        /*: "Timer Channel 3",                  */
+			TC2,        /*: "Timer Channel 2",                  */
+			TC1,        /*: "Timer Channel 1",                  */
+			TC0,        /*: "Timer Channel 0",                  */
+			RTI,        /*: "Real Time Interrupt",              */
+			IRQ,        /*: "IRQ",                              */
+			XIRQ,       /*: "XIRQ",                             */
+			TRAP,       /*: "Unimplement Intruction Trap",      */
+			COP,        /*: "COP failure reset",               */
+			CMF         /*: "Clock monitor fail reset",         */
+		] SOURCE;
+	};
+
+	COUNTER {
+		UINT32 MINCYCLE;
+		UINT32 MAXALLOWEDVALUE;
+		UINT32 TICKSPERBASE;
+		ENUM [
+			HARDWARE {
+				ENUM [
+					MDCU /*: "Modulus Count Down Interrupt"*/,
+					RTI /*: "Realtime Interrupt"*/,
+					TC0 /*: "Timerchannel #0"*/,
+					TC1 /*: "Timerchannel #1"*/,
+					TC2 /*: "Timerchannel #2"*/,
+					TC3 /*: "Timerchannel #3"*/,
+					TC4 /*: "Timerchannel #4"*/,
+					TC5 /*: "Timerchannel #5"*/,
+					TC6 /*: "Timerchannel #6"*/,
+					TC7 /*: "Timerchannel #7" */
+				] DRIVER=MDCU : "Interrupt Source of the Systemtimer";
+			},
+			SOFTWARE
+		] TYPE;
+	};
+
+	ALARM {
+		COUNTER_TYPE COUNTER;
+		ENUM [
+			ACTIVATETASK {
+				TASK_TYPE TASK;
+			},
+			SETEVENT {
+				TASK_TYPE TASK;
+				EVENT_TYPE EVENT;
+			},
+			ALARMCALLBACK {
+				STRING ALARMCALLBACKNAME;
+			}
+		] ACTION;
+		BOOLEAN [
+			TRUE {
+				UINT32 ALARMTIME;
+				UINT32 CYCLETIME;
+				APPMODE_TYPE APPMODE[];
+			},
+			FALSE
+		] AUTOSTART;
+	};
+
+	EVENT {
+		UINT64 WITH_AUTO [1,2,4,8,16,32,64,128,256,512,1024,2048,4096,8192,16384,32768] MASK;
+	};
+	
+	RESOURCE {
+		ENUM [
+			STANDARD,
+			LINKED {
+				RESOURCE_TYPE LINKEDRESOURCE;
+			},
+			INTERNAL
+		] RESOURCEPROPERTY;
+	};
+
+	MESSAGE {
+		ENUM [
+			SEND_STATIC_INTERNAL {
+				STRING CDATATYPE;
+			},
+			RECEIVE_UNQUEUED_INTERNAL {
+				MESSAGE_TYPE SENDINGMESSAGE;
+				UINT64 INITIALVALUE = 0;
+			},
+			RECEIVE_QUEUED_INTERNAL {
+				MESSAGE_TYPE SENDINGMESSAGE;
+				UINT32 QUEUESIZE;
+			}
+		] MESSAGEPROPERTY;
+		ENUM [
+			NONE,
+			ACTIVATETASK {
+				TASK_TYPE TASK;
+			},
+			SETEVENT {
+				TASK_TYPE TASK;
+				EVENT_TYPE EVENT;
+			},
+			COMCALLBACK {
+				STRING CALLBACKROUTINENAME;
+				MESSAGE_TYPE MESSAGE[];
+			},
+			FLAG {
+				STRING FLAGNAME;
+			}
+		] NOTIFICATION = NONE;
+	};
+
+	COM {
+		BOOLEAN COMERRORHOOK = FALSE;
+		BOOLEAN COMUSEGETSERVICEID = FALSE;
+		BOOLEAN COMUSEPARAMETERACCESS = FALSE;
+		BOOLEAN COMSTARTCOMEXTENSION = FALSE;
+		STRING COMAPPMODE[];
+		ENUM [
+			COMSTANDARD,
+			COMEXTENDED
+		] COMSTATUS = COMSTANDARD;
+	};
+
+	NM {
+	};
+
+};

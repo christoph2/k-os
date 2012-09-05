@@ -21,8 +21,8 @@
 
    s. FLOSS-EXCEPTION.txt
  */
-#include "Os_Error.h"
-#include "Os_Vars.h"
+#include "Os_ParamAccess.h"
+//#include "Os_Vars.h"
 
 #if defined(OS_USE_GETSERVICEID) || defined(OS_USE_PARAMETERACCESS) || defined(OS_FEATURE_ORTI_DEBUG)
 OS_DEFINE_GLOBAL_IF_DEBUGGING(Os_ServiceContext, Os_ServiceContextType);
@@ -44,46 +44,52 @@ OS_DEFINE_GLOBAL_IF_DEBUGGING(OsLastError, StatusType);
 /*
 **  Global functions.
 */
+#if defined(OS_USE_GETSERVICEID) && defined(OS_USE_PARAMETERACCESS)
 #if KOS_MEMORY_MAPPING == STD_ON
-FUNC(void, OSEK_OS_CODE) OsErrorCallErrorHook(StatusType Error)
+FUNC(void, OSEK_OS_CODE) OSSaveServiceContext(Os_ServiceIdType id,
+                                              P2VAR(void, AUTOMATIC, OSEK_OS_APPL_DATA) param1,
+                                              P2VAR(void, AUTOMATIC, OSEK_OS_APPL_DATA) param2,
+                                              P2VAR(void, AUTOMATIC, OSEK_OS_APPL_DATA) param3
+                                              )
 #else
-void OsErrorCallErrorHook(StatusType Error)
+void OSSaveServiceContext(Os_ServiceIdType id, void * param1, void * param2, void * param3)
 #endif /* KOS_MEMORY_MAPPING */
 {
-    if (((OsFlags & OS_SYS_FLAG_IN_OS_ERROR_HOOK) != OS_SYS_FLAG_IN_OS_ERROR_HOOK)) {
-        DISABLE_ALL_OS_INTERRUPTS();
-        OsFlags |= OS_SYS_FLAG_IN_OS_ERROR_HOOK;
-        OS_SAVE_CALLEVEL(); /* s. 'os_alm' !!! */
-        OS_SET_CALLEVEL(OS_CL_ERROR_HOOK);
-        OS_SAVE_LAST_ERROR(Error);
-        ErrorHook(Error);
-        OS_RESTORE_CALLEVEL();
-        OsFlags &= (uint8)~OS_SYS_FLAG_IN_OS_ERROR_HOOK;
-        ENABLE_ALL_OS_INTERRUPTS();
-    }
+    Os_ServiceContext.id       = id;
+    Os_ServiceContext.param1   = param1;
+    Os_ServiceContext.param2   = param2;
+    Os_ServiceContext.param3   = param3;
 }
+#endif
 
 
-#if OS_FEATURE_COM == STD_ON
+#if defined(OS_USE_GETSERVICEID) && !defined(OS_USE_PARAMETERACCESS)
 #if KOS_MEMORY_MAPPING == STD_ON
-FUNC(void, OSEK_OS_CODE) COMErrorCallErrorHook(StatusType Error)
+FUNC(void, OSEK_OS_CODE) void OSSaveServiceContext(Os_ServiceIdType id)
 #else
-void COMErrorCallErrorHook(StatusType Error)
+void OSSaveServiceContext(Os_ServiceIdType id)
 #endif /* KOS_MEMORY_MAPPING */
 {
-    if (((OsFlags & OS_SYS_FLAG_IN_COM_ERROR_HOOK) != OS_SYS_FLAG_IN_COM_ERROR_HOOK)) {
-        DISABLE_ALL_OS_INTERRUPTS();
-        OsFlags |= OS_SYS_FLAG_IN_COM_ERROR_HOOK;
-        OS_SAVE_CALLEVEL();
-        OS_SET_CALLEVEL(OS_CL_ERROR_HOOK);
-        OS_SAVE_LAST_ERROR(Error);
-        COMErrorHook(Error);
-        OS_RESTORE_CALLEVEL();
-        OsFlags &= (uint8)~OS_SYS_FLAG_IN_COM_ERROR_HOOK;
-        ENABLE_ALL_OS_INTERRUPTS();
-    }
+    Os_ServiceContext.id = id;
 }
-#endif /* OS_FEATURE_COM */
+#endif
+
+
+#if !defined(OS_USE_GETSERVICEID) && defined(OS_USE_PARAMETERACCESS)
+#if KOS_MEMORY_MAPPING == STD_ON
+FUNC(void, OSEK_OS_CODE) void OSSaveServiceContext(P2VAR(void, AUTOMATIC, OSEK_OS_APPL_DATA)param1,
+                                                   P2VAR(void, AUTOMATIC, OSEK_OS_APPL_DATA)param2,
+                                                   P2VAR(void, AUTOMATIC, OSEK_OS_APPL_DATA)param3
+                                                   )
+#else
+void OSSaveServiceContext(void * param1, void * param2, void * param3)
+#endif /* KOS_MEMORY_MAPPING */
+{
+    Os_ServiceContext.param1   = param1;
+    Os_ServiceContext.param2   = param2;
+    Os_ServiceContext.param3   = param3;
+}
+#endif
 
 
 #if KOS_MEMORY_MAPPING == STD_ON

@@ -1,0 +1,279 @@
+/*
+**  k_os (Konnex Operating-System based on the OSEK/VDX-Standard).
+**
+**  (C) 2007-2012 by Christoph Schueler <github.com/Christoph2,
+**                                       cpu12.gems@googlemail.com>
+**
+**  All Rights Reserved
+**
+**  This program is free software; you can redistribute it and/or modify
+**  it under the terms of the GNU General Public License as published by
+**  the Free Software Foundation; version 2 of the License.
+**
+**  This program is distributed in the hope that it will be useful,
+**  but WITHOUT ANY WARRANTY; without even the implied warranty of
+**  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+**  GNU General Public License for more details.
+**
+**  You should have received a copy of the GNU General Public License
+**  along with this program; if not, write to the Free Software
+**  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+**
+**  s. FLOSS-EXCEPTION.txt
+*/
+
+/*
+**
+**  !!! AUTOMATICALLY GENERATED FILE - DO NOT EDIT !!!
+**
+**
+**  GENERATED WITH  : '${sys.argv[0]}', Part of k_os (Konnex Operating-System based on the OSEK/VDX-Standard).
+**  VERSION:        : ${$info.version}
+**  DATE            : ${time.ctime()}
+**
+*/
+
+
+/*
+**
+**  Information Section.
+**
+*/
+VERSION {
+    KOIL        = "$info.koilVersion";
+    OSSEMANTICS = "ORTI", "$info.osekVersion";
+};
+
+
+/*
+**
+**  Implementation Section.
+**
+*/
+#slurp
+#set $line = None
+#set $num = 0
+#errorCatcher Echo
+IMPLEMENTATION ${info.vendor}_${info.version}_ORTI {
+    OS {
+        TOTRACE ENUM "uint8" [
+#echo ',\n'.join(map(lambda t: '            "%s" = %s' % (t[0], t[1]), $ORTICfg.SERVICE_IDS))
+
+        ] SERVICETRACE, "OS Service Watches";
+
+        ENUM "uint8" [
+#echo ',\n'.join(map(lambda n, t: '            "%s" = %u' % (t, (~n + 1) & 0x0f),   \
+        range(len($info.priorityMap) + 1), ['NONE'] + map(lambda x: x, $info.priorityMap)))
+
+        ] RUNNINGTASKPRIORITY, "Priority of running Task";
+
+        ENUM "uint8" [
+#echo ',\n'.join(map(lambda n, t: '            "%s" = %u' % (t, n),   \
+        range(len($app.isrs) + 1), ['NONE'] + map(lambda x: x.name, $app.isrs)))
+
+        ] RUNNINGISR2, "Running ISR of category 2";
+
+        ENUM "uint8" [
+#echo ',\n'.join(map(lambda t: '            "%s" = %u' % (t[0], t[1]), $ORTICfg.STATUS_TYPES))
+
+        ] LASTERROR, "Last OSEK error";
+
+        ENUM [
+#echo ',\n'.join(map(lambda n, t: '            "%s" = "%u"' % (t, n),   \
+        range(len($app.tasks) + 1), ['IdleTask'] + map(lambda x: x.name, $app.tasks)))
+
+        ] RUNNINGTASK, "Running Task Identification";
+
+        ENUM "uint8" [
+            "DEFAULT APPMODE" = 0,
+#echo ',\n'.join(map(lambda n: '            "%s" = %s' %(n[1].name, n[0]), $enumerate($app.appmodes, 1)))
+
+        ] CURRENTAPPMODE, "Current application mode";
+
+    }, "OS";
+
+    TASK {
+        ENUM "uint8" [
+#echo ',\n'.join(map(lambda n, t: '            "%s" = %u' % (t, (~n + 1) & 0x0f),   \
+        range(len($info.priorityMap) + 1), ['NONE'] + map(lambda x: x, $info.priorityMap)))
+
+        ] PRIORITY, "Actual Priority";
+        ENUM "uint8" [
+            "SUSPENDED" = 0,
+            "READY"     = 1,
+            "RUNNING"   = 2,
+            "WAITING"   = 3
+        ] STATE, "Current Task State";
+        ENUM "uint8 *" [
+#for $num, $task in $enumerate($app.tasks,0)
+            "Stack${num}" : ${task.name}_Stack = "&(${task.name}_Stack[0])"#slurp
+#if $num < len($app.tasks) - 1
+,
+#else
+
+#end if
+#end for
+        ] STACK, "Task Stack";
+        ENUM "uint8 *" [
+#for $num, $task in $enumerate($app.tasks, 0)
+            "CONTEXT_${task.name}" : CONTEXT_${task.name} = $num#slurp
+#if $num < len($app.tasks) - 1
+,
+#else
+
+#end if
+#end for
+        ] CONTEXT, "Task Context";
+        CTYPE "uint8" CURRENTACTIVATIONS, "Current Activations";
+        STRING vs_Base_Priority, "Configured Base Priority";
+        STRING vs_Schedule, "Schedule";
+        STRING vs_Task_Type, "Task Type";
+        CTYPE "uint8" vs_Events_Set, "Events Set";
+        CTYPE "uint8" vs_Events_WaitingFor, "Events Waiting for";
+    }, "Tasks";
+
+    vs_COUNTER {
+        CTYPE "TickType" vs_MAXALLOWEDVALUE, "Maximum possible allowed count value";
+        CTYPE "TickType" vs_MINCYCLE, "Minimum allowed number of ticks for a cyclic alarm";
+        CTYPE "TickType" vs_TICKSPERBASE, "Number of ticks required to reach a counter-specific";
+        STRING vs_TYPE, "Type of counter";
+        CTYPE "TickType" vs_CURRENTVALUE, "Current Value";
+    }, "Counters";
+
+    ALARM {
+        CTYPE "TickType" ALARMTIME, "Alarm Time";
+        CTYPE "TickType" CYCLETIME, "Cycle Time";
+        ENUM [
+            "STOPPED" = 0,
+            "RUNNING" = 1
+        ] STATE, "Alarm State";
+        STRING ACTION, "associated Action";
+        STRING COUNTER, "associated Counter";
+    }, "Alarms";
+
+    RESOURCE {
+        ENUM "uint8" [
+            "UNLOCKED"=0,
+            "LOCKED"=1
+        ] STATE, "Resource State";
+        ENUM "uint8" [
+            "NONE" = 0,
+#for $num, $task in $enumerate($app.tasks, 1)
+            "$task.name"=$num#slurp
+#if $num < len($app.tasks)
+,
+#else
+
+#end if
+#end for
+        ] LOCKER, "Resource Locker";
+        STRING PRIORITY, "Ceiling priority";
+    }, "Resources";
+
+    CONTEXT {
+#for $name, $type_,_ in $info.context
+        CTYPE "$type_" _CPU_$name, "CPU Register $name";
+#end for
+        CTYPE "unsigned char" VALID;
+    }, "Task Context";
+    STACK {
+        CTYPE "uint16" SIZE, "Stacksize in Bytes";
+        CTYPE "uint16*" BASEADDRESS, "Base Address";    /* AddressType oder so!!! */
+        STRING STACKDIRECTION, "Stack Direction";
+        CTYPE "uint8" FILLPATTERN, "Stack Fill Pattern";
+    }, "Stacks";
+}; /* END OF IMPLEMENTATION */
+
+
+/*
+**
+**  Information Section.
+**
+*/
+OS ${info.vendor}_${info.version}_arch {
+    RUNNINGTASK         = "$osVars.runningTask";
+    RUNNINGTASKPRIORITY = "$osVars.runningTaskPriority";
+    RUNNINGISR2         = "$osVars.isrID";
+    SERVICETRACE        = "$osVars.serviceID";
+    LASTERROR           = "$osVars.lastError";
+    CURRENTAPPMODE      = "$osVars.appMode";
+};
+
+#for $num, $task in $enumerate($app.tasks, 1)
+TASK $task.name {
+    PRIORITY            = "(OS_TCB[$num].CurrentPriority)";
+    STATE               = "(OS_TCB[$num].State)";
+    STACK               = "&(${task.name}_Stack[0])";
+    CURRENTACTIVATIONS  = "(OS_TCB[$num].Activations)";
+    CONTEXT             = "${num-1}";
+    vs_Base_Priority    = "$task.RELATIVE_PRIORITY";
+    vs_Schedule         = "$task.SCHEDULE";
+    vs_Task_Type        = "$task.taskType";
+    vs_Events_WaitingFor= "(OS_TCB[$num].EventsSet)";
+    vs_Events_Set       = "(OS_TCB[$num].EventsWaitingFor)";
+};
+
+STACK ${task.name}_Stack {
+    SIZE                = "(OS_TaskConf[$num].StackSize)";
+    STACKDIRECTION      = "${info.stack.direction}";
+    BASEADDRESS         = "&(${task.name}_Stack[0])";
+    FILLPATTERN         = "${info.stack.fillpattern}";
+};
+
+CONTEXT CONTEXT_$task.name {
+#for $name, $type_,$offs in $info.context
+#if $name == 'D'
+    _CPU_$name = "($type_ ) ( (*(OS_TCB[$num].Stackpointer + $offs)) | (*(OS_TCB[$num].Stackpointer + ${offs+1}) << 8 ) )";
+#else
+    _CPU_$name = "*($type_ *)((uint8*)(OS_TCB[$num].Stackpointer + $offs))";
+#end if
+#end for
+    VALID = "((OS_TCB[$num].State!=SUSPENDED) && (OS_TCB[$num].State!=RUNNING))";
+};
+
+#end for
+
+#for $num, $counter in $enumerate($app.counters)
+vs_COUNTER $(counter.name) {
+    vs_MAXALLOWEDVALUE  = "$counter.MAXALLOWEDVALUE";
+    vs_MINCYCLE         = "$counter.MINCYCLE";
+    vs_TICKSPERBASE     = "$counter.TICKSPERBASE";
+    vs_CURRENTVALUE     = "Os_CounterValues[$num]";
+    vs_TYPE             = "${counter.TYPE}#slurp
+#if $counter.TYPE == 'HARDWARE'
+ [Driver: ${counter.TYPE.DRIVER}]#slurp
+#end if
+";
+};
+
+#end for
+
+#for $num, $alarm in $enumerate($app.alarms, 0)
+ALARM ${alarm.name} {
+    ALARMTIME = "OS_AlarmValue[$num].ExpireCounter";
+    CYCLETIME = "OS_AlarmValue[$num].CycleCounter";
+    STATE     = "((OsAlm_ActiveAlarms & (1 << $num))!=0) ? 1 : 0";
+    ACTION    = "$alarmAction($alarm)";
+    COUNTER   = "$alarm.COUNTER";
+};
+
+#end for
+#for $num, $res in $enumerate($app.standardResources, 0)
+RESOURCE ${res.name} {
+## todo: Priority of Locker!
+    PRIORITY = "TASK: ${res.relativeCeilingPriority}";
+    LOCKER   = "Os_Resources[$num].Locker";
+    STATE    = "Os_Resources[$num].Locker != INVALID_TASK";
+};
+
+#end for
+#def alarmAction($alarm)
+#if $alarm.ACTION == 'ACTIVATETASK'
+#set $action = 'ActivateTask [' + $alarm.ACTION.TASK + ']'
+#elif $alarm.ACTION == 'SETEVENT'
+#set $action = 'SetEvent [' + $alarm.ACTION.TASK + ':' + $alarm.ACTION.EVENT + ']'
+#elif $alarm.ACTION == 'ALARMCALLBACK'
+#set $action = 'AlarmCallback [' + $alarm.ACTION.ALARMCALLBACKNAME + ']'
+#end if
+$action#slurp
+#end def
