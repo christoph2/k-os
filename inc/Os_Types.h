@@ -263,9 +263,9 @@ typedef enum tagOsCallevelType {
     OS_CL_SHUTDOWN_HOOK    =    ((uint16) 0x0040u),
     OS_CL_ALARM_CALLBACK   =   ((uint16) 0x0080u),
     OS_CL_PROTECTION_HOOK  =  ((uint16) 0x0100u),
-    OS_CL_ANY              =              OS_CL_TASK | OS_CL_ISR2 | OS_CL_ERROR_HOOK | OS_CL_PRE_TASK_HOOK | \
-                             OS_CL_POST_TASK_HOOK | OS_CL_STARTUP_HOOK | OS_CL_SHUTDOWN_HOOK |               \
-                             OS_CL_ALARM_CALLBACK | OS_CL_PROTECTION_HOOK
+    OS_CL_ANY              =              OS_CL_TASK + OS_CL_ISR2 + OS_CL_ERROR_HOOK + OS_CL_PRE_TASK_HOOK + \
+                             OS_CL_POST_TASK_HOOK + OS_CL_STARTUP_HOOK + OS_CL_SHUTDOWN_HOOK +               \
+                             OS_CL_ALARM_CALLBACK + OS_CL_PROTECTION_HOOK
 } OsCallevelType;
 
 /*
@@ -333,3 +333,4 @@ typedef uint16 PhysicalTimeType;
 #endif
 
 #endif /* __OS_TYPES_H */
+
