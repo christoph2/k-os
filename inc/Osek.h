@@ -30,22 +30,12 @@ extern "C" {
 
 #define __RTOS_K_OS__
 
-/* #include "Os_Cfg.h" */
+
 #include "Os_Error.h"
 #include "Os_Vars.h"
 #include "Os_Macros.h"
 #include "Os_Api.h"
-#include "Os_Alm.h"
-#include "Os_Ctr.h"
-#include "Os_Evt.h"
-#include "Os_Exec.h"
-#include "Os_Intr.h"
-#include "Os_MLQ.h"
-#include "Os_Res.h"
-#include "Os_Task.h"
-#include "Utl.h"
-#include "Os_SchT.h"
-#include "InstallIsr/ISR.h"
+
 
 #if defined(__cplusplus)
 }
