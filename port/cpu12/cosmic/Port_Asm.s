@@ -1,32 +1,32 @@
 ;
-;  k_os (Konnex Operating-System based on the OSEK/VDX-Standard).
+;   k_os (Konnex Operating-System based on the OSEK/VDX-Standard).
 ;
-;  (C) 2007-2010 by Christoph Schueler <chris@konnex-tools.de,
+;  (C) 2007-2011 by Christoph Schueler <chris@konnex-tools.de,
 ;                                      cpu12.gems@googlemail.com>
 ;
-;  All Rights Reserved
+;   All Rights Reserved
 ;
-;  This program is free software; you can redistribute it and/or modify
-;  it under the terms of the GNU General Public License as published by
-;  the Free Software Foundation; version 2 of the License.
+;   This program is free software; you can redistribute it and/or modify
+;   it under the terms of the GNU General Public License as published by
+;   the Free Software Foundation; version 2 of the License.
 ;
-;  This program is distributed in the hope that it will be useful,
-;  but WITHOUT ANY WARRANTY; without even the implied warranty of
-;  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-;  GNU General Public License for more details.
+;   This program is distributed in the hope that it will be useful,
+;   but WITHOUT ANY WARRANTY; without even the implied warranty of
+;   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+;   GNU General Public License for more details.
 ;
-;  You should have received a copy of the GNU General Public License
-;  along with this program; if not, write to the Free Software
-;  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA 
+;   You should have received a copy of the GNU General Public License
+;   along with this program; if not, write to the Free Software
+;   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 ;
-;  s. FLOSS-EXCEPTION.txt
+;   s. FLOSS-EXCEPTION.txt
 ;
 
 	xdef _Utl_SetJump
 	xdef _Utl_LongJump
 	xdef _Utl_Divrem
 	xdef _OsMLQ_GetLowestBitNumber	
-	xdef _Mem_GetStackBOS 
+	xdef _Mem_GetStackBOS
 
 	xref __stack
 	xref __stack_size
@@ -67,8 +67,8 @@ _Utl_LongJump:
     ldd     2,sp
     tbne    d,__ljexit
 ;    addd    #1
-    inx 
-__ljexit:    
+    inx
+__ljexit:
     jmp     [0,x]
     rts
 
@@ -104,9 +104,9 @@ _Utl_Divrem:
     rts
 
 _Mem_GetStackBOS:
-	ldd #__stack
-	subd #__stack_size
-	rts
+    ldd #__stack
+    subd #__stack_size
+    rts
 
     end
 

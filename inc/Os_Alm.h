@@ -24,7 +24,6 @@
 #if !defined(__OS_ALM_H)
 #define __OS_ALM_H
 
-#include "Os_Types.h"
 
 #if KOS_MEMORY_MAPPING == STD_ON
 FUNC(void, OSEK_OS_CODE) OsAlm_InitAlarms(void);
@@ -46,4 +45,3 @@ boolean OsAlm_IsRunning(uint8 num);
 
 
 #endif /* __OS_ALM_H */
-

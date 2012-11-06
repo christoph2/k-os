@@ -1,7 +1,7 @@
 ;
 ;   k_os (Konnex Operating-System based on the OSEK/VDX-Standard).
 ;
-;   (C) 2007-2010 by Christoph Schueler <chris@konnex-tools.de,
+;  (C) 2007-2011 by Christoph Schueler <github.com/Christoph2,
 ;                                       cpu12.gems@googlemail.com>
 ;
 ;   All Rights Reserved
@@ -17,7 +17,7 @@
 ;
 ;   You should have received a copy of the GNU General Public License
 ;   along with this program; if not, write to the Free Software
-;   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA 
+;   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 ;
 ;   s. FLOSS-EXCEPTION.txt
 ;
@@ -36,6 +36,7 @@ MEM_STACK_UNDERFLOW=2
     PUBLIC  Utl_SetJump
     PUBLIC  Utl_LongJump
     PUBLIC  OsMLQ_GetLowestBitNumber
+    PUBLIC  OsPort_TaskStackInit
 
     PUBLIC  Utl_Divrem
 
@@ -44,14 +45,15 @@ MEM_STACK_UNDERFLOW=2
     PUBLIC  Mem_GetStackTOS
     PUBLIC  Mem_GetStackBOS
     PUBLIC  Mem_StackCheck
-    
+
     PUBLIC  MemoryStuff
 
     EXTERN  OsCurrentTCB
     EXTERN  OS_TOS_ISR
+    EXTERN  OsExec_StartHighestReadyTask
 
-    rseg    CSTACK:DATA:REORDER:NOROOT(0)   ; ForwardDBG_CODE Declarations.    
-    rseg    DATA16_Z:DATA:REORDER:NOROOT(0)        
+    rseg    CSTACK:DATA:REORDER:NOROOT(0)   ; ForwardDBG_CODE Declarations.
+    rseg    DATA16_Z:DATA:REORDER:NOROOT(0)
 
     rseg    DBG_CODE:DATA:REORDER:NOROOT(0)
 
@@ -74,7 +76,7 @@ OS_START_CURRENT_TASK:
     ldy     OsCurrentTCB
     lds     0,y
     rti
-  
+
 
 OS_SAVE_CONTEXT:
     ldy     OsCurrentTCB
@@ -82,7 +84,7 @@ OS_SAVE_CONTEXT:
     addd    #2
     std     0,y
     rts
-  
+
 
 OS_RESTORE_CONTEXT:
     ldy     OsCurrentTCB
@@ -95,7 +97,7 @@ OS_ISR_CONTEXT:
     ldy     OS_TOS_ISR
     std     0,y
     tfr     y,sp
-    rts  
+    rts
 
 
 Utl_SetJump:
@@ -103,7 +105,7 @@ Utl_SetJump:
     sts     0,y
     ldd     #0x0000
     rts
-    
+
 
 Utl_LongJump:
 ; Y -> Pointer to Context.
@@ -112,12 +114,25 @@ Utl_LongJump:
     ldx     0,y ; PC
     tbne    d,__ljexit
 ;    addd    #1
-    inx 
-__ljexit:    
+    inx
+__ljexit:
     jmp     [0,x]
     rts
 
- 
+
+OsPort_TaskStackInit:
+;   D -> StackPointer
+;   Y   -> TaskFunc
+    pshx
+    tfr     d,x
+    ldy     0,y
+    sty     1,-x
+    leax    -6,x
+    movb    #0xc0,1,-x
+    tfr     x,y
+    pulx
+    rts
+
 OsMLQ_GetLowestBitNumber:
     ldy     #ReversedLog2Tab    ; 2
     tbeq    a,L10               ; 3
@@ -160,7 +175,7 @@ Mem_GetStackBOS:
 Mem_GetStackTOS:
     ldd     #SFE(CSTACK)
     rts
-    
+
 Mem_StackCheck:
     movw    #SFE(CSTACK),2,-sp
     movw    #SFB(CSTACK),2,-sp
@@ -169,7 +184,7 @@ Mem_StackCheck:
     bhs     st_cont1
     ldab    #MEM_STACK_OVERFLOW
     bra     st_exit
-st_cont1:   
+st_cont1:
     cpd     2,sp
     bls     st_cont2
     ldab    #MEM_STACK_UNDERFLOW
@@ -187,15 +202,14 @@ Mem_GetFreePointer:
 MemoryStuff:
     ldd     #SFB(CSTACK)
     ldd     #SFE(CSTACK)
-    ldd     #SIZEOF(CSTACK)    
+    ldd     #SIZEOF(CSTACK)
 
     ldd     #SFB(DATA16_Z)
     ldd     #SFE(DATA16_Z)
     ldd     #SIZEOF(DATA16_Z)
-    
+
     ldd     #SIZEOF(DBG_CODE)
 
     rts
 
     END
-    

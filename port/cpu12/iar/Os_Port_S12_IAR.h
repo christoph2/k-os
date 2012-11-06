@@ -30,8 +30,9 @@ extern "C"
 {
 #endif  /* __cplusplus */
 
-
+#if !defined(S_SPLINT_S)
 #include <intrinsics.h>
+#endif
 
 void    OS_START_CURRENT_TASK(void);
 void    OS_SAVE_CONTEXT(void);
