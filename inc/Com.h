@@ -50,11 +50,10 @@ typedef enum tagCOMShutdownModeType {COM_SHUTDOWN_IMMEDIATE}    COMShutdownModeT
 typedef COMBool                                                 CalloutReturnType;
 /*  typedef enum {COMServiceId_SendMessage,COMServiceId_xx} COMServiceIdType; */
 typedef uint8 COMFlagType;
-
 typedef void COMServiceIdType;
-
 typedef void (*COMCallbackType)(void);
 typedef void (*COMCalloutType)(void);
+
 
 typedef enum tagCom_FilterAlgorithm {
     COM_FILTER_ALWAYS,
@@ -74,10 +73,12 @@ typedef enum tagCom_FilterAlgorithm {
     COM_FILTER_ONEEVERYN
 } Com_FilterAlgorithm;
 
+
 typedef struct tagCom_MessageSetEventType {
     TaskType        TaskID;
     EventMaskType   Mask;
 } Com_MessageSetEventType;
+
 
 typedef enum tagCom_MessageNotificationType {
     COM_NOTIFY_NONE,
@@ -88,9 +89,11 @@ typedef enum tagCom_MessageNotificationType {
     COM_COMINMCALLBACK
 } Com_MessageNotificationType;
 
+
 typedef struct tagCom_ReceiverType {
     MessageIdentifier Message;
 } Com_ReceiverType;
+
 
 typedef enum tagCom_MessagePropertyType {
     /* internal Messages */
@@ -109,6 +112,7 @@ typedef enum tagCom_MessagePropertyType {
     RECEIVE_DYNAMIC_EXTERNAL
 } Com_MessagePropertyType;
 
+
 typedef union tagCom_MessageActionType {
     void *                      Dummy;
     Com_MessageSetEventType *   Event;
@@ -116,6 +120,13 @@ typedef union tagCom_MessageActionType {
     COMCallbackType             Callback;
     COMFlagType                 Flag;
 } Com_MessageActionType;
+
+
+typedef struct tagCom_AddressInformation {
+    uint8   Bus;
+    uint32  Address;
+} Com_AddressInformation;
+
 
 typedef struct tagCom_MessageObjectType {
     Com_MessagePropertyType     Property;
@@ -129,10 +140,13 @@ typedef struct tagCom_MessageObjectType {
     const ApplicationDataRef *  Data;
     uint8                       NumReceivers;
     const Com_ReceiverType *    Receiver;
+
+    Com_AddressInformation  const * const   Address;    // TODO: Nur CCC[0|1] !!!
 /*
     todo: 'TimeoutValue','UseTimeout' .
  */
 } Com_MessageObjectType;
+
 
 /*
 **
