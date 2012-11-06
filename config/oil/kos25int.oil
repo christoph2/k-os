@@ -85,62 +85,62 @@ IMPLEMENTATION Standard {
 		RESOURCE_TYPE RESOURCE[];
 		MESSAGE_TYPE MESSAGE[];
 		ENUM [
-			PWMES : "PWM Emergency Shutdown",
-			PP    : "Port P Interrupt",
-			CAN4T : "MSCAN 4 Transmit",
-			CAN4R : "MSCAN 4 Receive",
-			CAN4E : "MSCAN 4 Error",
-			CAN4W : "MSCAN 4 Wake-up",
-			CAN3T : "MSCAN 3 Transmit",
-			CAN3R : "MSCAN 3 Receive",
-			CAN3E : "MSCAN 3 Error",
-			CAN3E : "MSCAN 3 Wake-up",
-			CAN2T : "MSCAN 2 Transmit",
-			CAN2R : "MSCAN 2 Receive",
-			CAN2E : "MSCAN 2 Error",
-			CAN2W : "MSCAN 2 Wake-up",
-			CAN1T : "MSCAN 1 Transmit",
-			CAN1R : "MSCAN 1 Receive",
-			CAN1E : "MSCAN 1 Error",
-			CAN1W : "MSCAN 1 Wake-up",
-			CAN0T : "MSCAN 0 Transmit",
-			CAN0R : "MSCAN 0 Receive",
-			CAN0E : "MSCAN 0 Error",
-			CAN0W : "MSCAN 0 Wake-up",
-			FLS   : "Flash",
-			EEP   : "EEPROM",
-			SPI2  : "SPI2",
-			SPI1  : "SPI1",
-			IIC   : "IIC Bus",
-			DLC   : "DLC",
-			SCME  : "SCME",
-			CRG   : "CRG Lock",
-			PBOF  : "Pulse Accumulator B Overflow",
-			MDCU  : "Modulus Down Counter Underflow",
-			PH    : "Port H Interrupt",
-			PJ    : "Port J Interrupt",
-			ATD1  : "ATD1",
-			ATD0  : "ATD0",
-			SCI1  : "SCI1",
-			SCI0  : "SCI0",
-			SPI0  : "SPI0",
-			PAIE  : "Pulse Accumulator A Input Edge",
-			PAOF  : "Pulse Accumulator A Overflow",
-			TOF   : "Timer Overflow",
-			TC7   : "Timer Channel 7",
-			TC6   : "Timer Channel 6",
-			TC5   : "Timer Channel 5",
-			TC4   : "Timer Channel 4",
-			TC3   : "Timer Channel 3",
-			TC2   : "Timer Channel 2",
-			TC1   : "Timer Channel 1",
-			TC0   : "Timer Channel 0",
-			RTI   : "Real Time Interrupt",
-			IRQ   : "IRQ",
-			XIRQ  : "XIRQ",
-			TRAP  : "Unimplement Intruction Trap",
-			COP   : "COP failure reset",
-			CMF   : "Clock monitor fail reset"
+			PWMES  /*: "PWM Emergency Shutdown"*/,
+			PP     /*: "Port P Interrupt"*/,
+			CAN4T,      /*: "MSCAN 4 Transmit",                 */
+			CAN4R,      /*: "MSCAN 4 Receive",                  */
+			CAN4E,      /*: "MSCAN 4 Error",                    */
+			CAN4W,      /*: "MSCAN 4 Wake-up",                  */
+			CAN3T,      /*: "MSCAN 3 Transmit",                 */
+			CAN3R,      /*: "MSCAN 3 Receive",                  */
+			CAN3E,      /*: "MSCAN 3 Error",                    */
+			CAN3E,      /*: "MSCAN 3 Wake-up",                  */
+			CAN2T,      /*: "MSCAN 2 Transmit",                 */
+			CAN2R,      /*: "MSCAN 2 Receive",                  */
+			CAN2E,      /*: "MSCAN 2 Error",                    */
+			CAN2W,      /*: "MSCAN 2 Wake-up",                  */
+			CAN1T,      /*: "MSCAN 1 Transmit",                 */
+			CAN1R,      /*: "MSCAN 1 Receive",                  */
+			CAN1E,      /*: "MSCAN 1 Error",                    */
+			CAN1W,      /*: "MSCAN 1 Wake-up",                  */
+			CAN0T,      /*: "MSCAN 0 Transmit",                 */
+			CAN0R,      /*: "MSCAN 0 Receive",                  */
+			CAN0E,      /*: "MSCAN 0 Error",                    */
+			CAN0W,      /*: "MSCAN 0 Wake-up",                  */
+			FLS,        /*: "Flash",                            */
+			EEP,        /*: "EEPROM",                           */
+			SPI2,       /*: "SPI2",                             */
+			SPI1,       /*: "SPI1",                             */
+			IIC,        /*: "IIC Bus",                          */
+			DLC,        /*: "DLC",                              */
+			SCME,       /*: "SCME",                             */
+			CRG,        /*: "CRG Lock",                         */
+			PBOF,       /*: "Pulse Accumulator B Overflow",     */
+			MDCU,       /*: "Modulus Down Counter Underflow",   */
+			PH,         /*: "Port H Interrupt",                 */
+			PJ,         /*: "Port J Interrupt",                 */
+			ATD1,       /*: "ATD1",                             */
+			ATD0,       /*: "ATD0",                             */
+			SCI1,       /*: "SCI1",                             */
+			SCI0,       /*: "SCI0",                             */
+			SPI0,       /*: "SPI0",                             */
+			PAIE,       /*: "Pulse Accumulator A Input Edge",   */
+			PAOF,       /*: "Pulse Accumulator A Overflow",     */
+			TOF,        /*: "Timer Overflow",                   */
+			TC7,        /*: "Timer Channel 7",                  */
+			TC6,        /*: "Timer Channel 6",                  */
+			TC5,        /*: "Timer Channel 5",                  */
+			TC4,        /*: "Timer Channel 4",                  */
+			TC3,        /*: "Timer Channel 3",                  */
+			TC2,        /*: "Timer Channel 2",                  */
+			TC1,        /*: "Timer Channel 1",                  */
+			TC0,        /*: "Timer Channel 0",                  */
+			RTI,        /*: "Real Time Interrupt",              */
+			IRQ,        /*: "IRQ",                              */
+			XIRQ,       /*: "XIRQ",                             */
+			TRAP,       /*: "Unimplement Intruction Trap",      */
+			COP,        /*: "COP failure reset",               */
+			CMF         /*: "Clock monitor fail reset",         */
 		] SOURCE;
 	};
 
@@ -151,16 +151,16 @@ IMPLEMENTATION Standard {
 		ENUM [
 			HARDWARE {
 				ENUM [
-					MDCU: "Modulus Count Down Interrupt",
-					RTI : "Realtime Interrupt",
-					TC0 : "Timerchannel #0",
-					TC1 : "Timerchannel #1",
-					TC2 : "Timerchannel #2",
-					TC3 : "Timerchannel #3",
-					TC4 : "Timerchannel #4",
-					TC5 : "Timerchannel #5",
-					TC6 : "Timerchannel #6",
-					TC7 : "Timerchannel #7"
+					MDCU /*: "Modulus Count Down Interrupt"*/,
+					RTI /*: "Realtime Interrupt"*/,
+					TC0 /*: "Timerchannel #0"*/,
+					TC1 /*: "Timerchannel #1"*/,
+					TC2 /*: "Timerchannel #2"*/,
+					TC3 /*: "Timerchannel #3"*/,
+					TC4 /*: "Timerchannel #4"*/,
+					TC5 /*: "Timerchannel #5"*/,
+					TC6 /*: "Timerchannel #6"*/,
+					TC7 /*: "Timerchannel #7" */
 				] DRIVER=MDCU : "Interrupt Source of the Systemtimer";
 			},
 			SOFTWARE
@@ -194,7 +194,7 @@ IMPLEMENTATION Standard {
 	EVENT {
 		UINT64 WITH_AUTO [1,2,4,8,16,32,64,128,256,512,1024,2048,4096,8192,16384,32768] MASK;
 	};
-
+	
 	RESOURCE {
 		ENUM [
 			STANDARD,

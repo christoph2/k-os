@@ -1,7 +1,7 @@
 OIL_VERSION="2.5";
 
 IMPLEMENTATION Standard {
-	
+
 	OS {
 		ENUM [STANDARD, EXTENDED] STATUS;
 		BOOLEAN STARTUPHOOK;
@@ -15,8 +15,8 @@ IMPLEMENTATION Standard {
 		BOOLEAN USECALLLEVELCHECK = FALSE;
 		BOOLEAN SAVE_STARTUP_CONTEXT=FALSE;
 		ENUM WITH_AUTO [BCC1,BCC2,ECC1,ECC2] CC=AUTO;
-		UINT32 [32..128] IDLE_TASK_STACK_SIZE=32;
-		UINT32 [32..128] ISR_STACK_SIZE=32;
+		UINT32 [32 .. 128] IDLE_TASK_STACK_SIZE=32;
+		UINT32 [32 .. 128] ISR_STACK_SIZE=32;
 		BOOLEAN O1SCHEDULER=FALSE;
 		FLOAT [2.0 .. 80.0] XTAL_FREQ=16.0;
 		BOOLEAN [
@@ -36,7 +36,7 @@ IMPLEMENTATION Standard {
 			FALSE
 		] USE_PLL=FALSE;
 		// COUNTER_TYPE  SYSTEM_TIMER;
-		/*
+/*
 		BOOLEAN [
 			TRUE {
 				COUNTER_TYPE COUNTER : "The Counter that is incremented when the associated Timer-Interrupt occures.";
@@ -56,7 +56,7 @@ IMPLEMENTATION Standard {
 			},
 			FALSE
 		] SYSTEM_TIMER=TRUE;	// todo: Counter-Parameter 'DRIVER'!!!
-		*/
+    */
 	};
 	
 	APPMODE {
@@ -76,7 +76,7 @@ IMPLEMENTATION Standard {
 		RESOURCE_TYPE RESOURCE[];
 		MESSAGE_TYPE MESSAGE[];
 
-		UINT32 [32..1024] STACKSIZE=32;
+		UINT32 [32 .. 1024] STACKSIZE=32;
 		ENUM [YES,NO,UNKNOWN] CALLSCHEDULE=UNKNOWN : "Non-preemptive tasks not calling 'Schedule()' can share a common stack.";
 		ENUM WITH_AUTO [BASIC, EXTENDED] TYPE=AUTO;
 	};
@@ -141,7 +141,7 @@ IMPLEMENTATION Standard {
 			XIRQ  : "XIRQ",
 			TRAP  : "Unimplement Intruction Trap",
 			COP   : "COP failure reset",
-			CMF    : "Clock monitor fail reset"
+			CMF   : "Clock monitor fail reset"
 		] SOURCE;
 	};
 
@@ -152,7 +152,7 @@ IMPLEMENTATION Standard {
 		ENUM [
 			HARDWARE {
 				ENUM [
-					MDCU : "Modulus Count Down Interrupt",
+					MDCU: "Modulus Count Down Interrupt",
 					RTI : "Realtime Interrupt",
 					TC0 : "Timerchannel #0",
 					TC1 : "Timerchannel #1",
@@ -196,7 +196,7 @@ IMPLEMENTATION Standard {
 		UINT64 WITH_AUTO [1,2,4,8,16,32,64,128,256,512,1024,2048,4096,8192,16384,32768] MASK;
 	};
 
-	RESOURCE { 
+	RESOURCE {
 		ENUM [
 			STANDARD,
 			LINKED {
@@ -622,3 +622,4 @@ IMPLEMENTATION Standard {
 	};
 	
 };
+
