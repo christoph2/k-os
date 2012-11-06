@@ -32,34 +32,21 @@ extern "C"
 /*
 **  Global Functions.
 */
+#if 0
 #if KOS_MEMORY_MAPPING == STD_ON
 FUNC(void, OSEK_OS_CODE) OsCtr_InitCounters(void);
 #else
 void OsCtr_InitCounters(void);
-
+#endif
 
 #endif /* KOS_MEMORY_MAPPING */
 
-/*
-**  Global Function-like Macros.
-*/
-#if 0
-#define OS_INCREMENT_COUNTER_VALUE(CounterID)                                       \
-    Os_CounterValues[(CounterID)] = (Os_CounterValues[(CounterID)] + (TickType)1) % \
-                                    Os_CounterDefs[(CounterID)].CounterParams.maxallowedvalue
-#endif
-
-/* Yields to better code, at least on the CPU12. */
-#define OS_INCREMENT_COUNTER_VALUE(CounterID)                                                         \
-    _BEGIN_BLOCK                                                                                      \
-    Os_CounterValues[(CounterID)]++;                                                                  \
-    if (Os_CounterValues[(CounterID)] >= Os_CounterDefs[(CounterID)].CounterParams.maxallowedvalue) { \
-        Os_CounterValues[(CounterID)] = (TickType)0;                                                  \
-    }                                                                                                 \
-    _END_BLOCK
 
 #if defined(__cplusplus)
 }
 #endif  /* __cplusplus */
+
+#undef STD_OFF
+#undef STD_ON
 
 #endif  /* __OS_CTR_H */

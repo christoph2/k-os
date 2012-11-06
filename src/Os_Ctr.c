@@ -18,17 +18,21 @@
    You should have received a copy of the GNU General Public License
    along with this program; if not, write to the Free Software
    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
-
+#
    s. FLOSS-EXCEPTION.txt
  */
+
+
 #include "Osek.h"
+#include "Utl.h"
+#include "Os_Alm.h"
 
 /*
 **  Local function prototypes.
 */
 #if KOS_MEMORY_MAPPING == STD_ON
-STATIC FUNC(void, OSEK_OS_CODE) OsCtr_UpdateAttachedAlarms(CounterType CounterID);
-STATIC FUNC(void, OSEK_OS_CODE) OsCtr_UpdateAttachedScheduleTables(CounterType CounterID);
+STATIC  FUNC(void, OSEK_OS_CODE) OsCtr_UpdateAttachedAlarms(CounterType CounterID);
+STATIC  FUNC(void, OSEK_OS_CODE) OsCtr_UpdateAttachedScheduleTables(CounterType CounterID);
 #else
 static void OsCtr_UpdateAttachedAlarms(CounterType CounterID);
 static void OsCtr_UpdateAttachedScheduleTables(CounterType CounterID);
@@ -38,6 +42,18 @@ static void OsCtr_UpdateAttachedScheduleTables(CounterType CounterID);
     #define OSEK_OS_START_SEC_CODE
     #include "MemMap.h"
 #endif /* KOS_MEMORY_MAPPING */
+
+/*
+**  Local Function-like Macros.
+*/
+/* Yields to better code, at least on the CPU12. */
+#define OS_INCREMENT_COUNTER_VALUE(CounterID)                                                         \
+    _BEGIN_BLOCK                                                                                      \
+    Os_CounterValues[(CounterID)]++;                                                                  \
+    if (Os_CounterValues[(CounterID)] >= Os_CounterDefs[(CounterID)].CounterParams.maxallowedvalue) { \
+        Os_CounterValues[(CounterID)] = (TickType)0;                                                  \
+    }                                                                                                 \
+    _END_BLOCK
 
 /*
 **  Global functions.
@@ -127,6 +143,8 @@ StatusType GetCounterInfo(CounterType CounterID, CtrInfoRefType Info)
 **	Extended-Status:
 **		– E_OS_ID – the counter identifier is invalid.
 */
+
+/* TODO: NULL pointer test!? */
     SAVE_SERVICE_CONTEXT(OSServiceId_GetCounterInfo, CounterID, /*Info*/ NULL, NULL);
     ASSERT_VALID_COUNTERID(CounterID);
     ASSERT_VALID_CALLEVEL(OS_CL_TASK | OS_CL_ISR2);
@@ -178,7 +196,7 @@ StatusType GetElapsedCounterValue(CounterType CounterID, TickRefType Value, Tick
 
     if (Os_CounterValues[CounterID] < (*Value)) {
         *ElapsedValue = Os_CounterDefs[CounterID].CounterParams.maxallowedvalue -
-                        (*Value) - Os_CounterValues[CounterID] + (TickType)1;
+                        ((*Value) - (Os_CounterValues[CounterID] + (TickType)1));
     } else {
         *ElapsedValue = Os_CounterValues[CounterID] - (*Value);
     }
@@ -238,7 +256,9 @@ STATIC FUNC( void, OSEK_OS_CODE) OsCtr_UpdateAttachedScheduleTables(CounterType 
 static void OsCtr_UpdateAttachedScheduleTables(CounterType CounterID)
 #endif /* KOS_MEMORY_MAPPING */
 {
+    UNREFERENCED_PARAMETER(CounterID);
 }
+
 
 #if KOS_MEMORY_MAPPING == STD_ON
     #define OSEK_OS_STOP_SEC_CODE
