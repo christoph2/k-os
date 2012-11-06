@@ -48,9 +48,10 @@ void        ComExt_TxHandler(void);
 void        ComExt_TimeoutHandler(void);
 StatusType  ComExt_SendMessage(MessageIdentifier Message, ApplicationDataRef DataRef);
 StatusType  ComExt_ReceiveMessage(MessageIdentifier Message, ApplicationDataRef DataRef);
-
-
 #endif /* KOS_MEMORY_MAPPING */
+
+
+void ComPort_SendMessage(Com_MessageObjectType const * const MessageObject, ApplicationDataRef DataRef);  // TODO: Memory-Mapping!!!
 
 #if defined(__cplusplus)
 }
