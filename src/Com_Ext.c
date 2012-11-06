@@ -21,7 +21,9 @@
 
    s. FLOSS-EXCEPTION.txt
  */
+
 #include "Com_Ext.h"
+#include "Os_PortCom.h"
 
 /*
    • InitCOM and CloseCOM:
@@ -78,20 +80,23 @@
 
 static const uint8 ComExt_NodeAddr = (uint8)0x55;
 
-
 /*
 **  Local function prototypes.
 */
 #if KOS_MEMORY_MAPPING == STD_ON
-STATIC FUNC(void, OSEK_COM_CODE) ComExt_Schedule(void);
-STATIC FUNC(void, OSEK_COM_CODE) ComExt_N_Task(void);
-STATIC FUNC(void, OSEK_COM_CODE) ComExt_DL_Task(void);
-STATIC FUNC(void, OSEK_COM_CODE) ComExt_I_Task(void);
+STATIC  FUNC(void, OSEK_COM_CODE) ComExt_Schedule(void);
+STATIC  FUNC(void, OSEK_COM_CODE) ComExt_N_Task(void);
+STATIC  FUNC(void, OSEK_COM_CODE) ComExt_DL_Task(void);
+STATIC  FUNC(void, OSEK_COM_CODE) ComExt_I_Task(void);
+
+
 #else
 static void ComExt_Schedule(void);
 static void ComExt_N_Task(void);
 static void ComExt_DL_Task(void);
 static void ComExt_I_Task(void);
+
+
 #endif /* KOS_MEMORY_MAPPING */
 
 /*
@@ -133,7 +138,6 @@ StatusType N_ChangeParameter_req(< N_Handle >, < N_BS_Value >, < N_ST_Value >)
 StatusType N_ChangeParameter_con(< N_Handle >, < N_Result_ChangeParameter >)
 #endif
 
-
 #if KOS_MEMORY_MAPPING == STD_ON
     #define OSEK_COM_START_SEC_CODE
     #include "MemMap.h"
@@ -148,6 +152,7 @@ void ComExt_Init(void)
 /*    Can_Init(); */
 }
 
+
 #if KOS_MEMORY_MAPPING == STD_ON
 FUNC(void, OSEK_COM_CODE) ComExt_Schedule(void)
 #else
@@ -161,6 +166,7 @@ void ComExt_Schedule(void)
     }
 }
 
+
 #if KOS_MEMORY_MAPPING == STD_ON
 FUNC(void, OSEK_COM_CODE) ComExt_I_Task(void)
 #else
@@ -170,6 +176,7 @@ void ComExt_I_Task(void)
 
 }
 
+
 #if KOS_MEMORY_MAPPING == STD_ON
 FUNC(void, OSEK_COM_CODE) ComExt_N_Task(void)
 #else
@@ -178,6 +185,7 @@ void ComExt_N_Task(void)
 {
 
 }
+
 
 #if KOS_MEMORY_MAPPING == STD_ON
 FUNC(void, OSEK_COM_CODE) ComExt_DL_Task(void)
@@ -218,11 +226,11 @@ void ComExt_TimeoutHandler(void)
 
 }
 
+
 #if KOS_MEMORY_MAPPING == STD_ON
     #define OSEK_COM_STOP_SEC_CODE
     #include "MemMap.h"
 #endif /* KOS_MEMORY_MAPPING */
-
 
 #if KOS_MEMORY_MAPPING == STD_ON
 FUNC(StatusType, OSEK_COM_CODE) ComExt_SendMessage(MessageIdentifier Message, ApplicationDataRef DataRef)
@@ -233,6 +241,8 @@ StatusType  ComExt_SendMessage(MessageIdentifier Message, ApplicationDataRef Dat
     Com_MessageObjectType * MessageObject;
 
     MessageObject = (Com_MessageObjectType *)&OSEK_COM_GET_MESSAGE_OBJECT(Message);
+
+    PortCom_SendMessage(MessageObject->Address, DataRef);
 
     return E_OK;
 }
@@ -250,3 +260,4 @@ StatusType  ComExt_ReceiveMessage(MessageIdentifier Message, ApplicationDataRef 
 
     return E_OK;
 }
+

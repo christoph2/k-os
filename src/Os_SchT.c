@@ -85,7 +85,6 @@ typedef struct tagOsExpiryPointType {
     #include "MemMap.h"
 #endif /* KOS_MEMORY_MAPPING */
 
-
 #if KOS_MEMORY_MAPPING == STD_ON
 FUNC(StatusType, OSEK_OS_CODE) StartScheduleTableRel(ScheduleTableType ScheduleTableID, TickType Offset)
 #else
@@ -142,9 +141,9 @@ StatusType StopScheduleTable(ScheduleTableType ScheduleTableID)
 
 #if KOS_MEMORY_MAPPING == STD_ON
 FUNC(StatusType, OSEK_OS_CODE) NextScheduleTable(ScheduleTableType ScheduleTableID_From,
-    ScheduleTableType
-    ScheduleTableID_To
-)
+                                                 ScheduleTableType
+                                                 ScheduleTableID_To
+                                                 )
 #else
 StatusType NextScheduleTable(ScheduleTableType ScheduleTableID_From, ScheduleTableType ScheduleTableID_To)
 #endif /* KOS_MEMORY_MAPPING */
@@ -216,8 +215,8 @@ StatusType SetScheduleTableAsync(ScheduleTableType ScheduleID)
 
 #if KOS_MEMORY_MAPPING == STD_ON
 FUNC(StatusType, OSEK_OS_CODE) GetScheduleTableStatus(ScheduleTableType ScheduleID,
-    ScheduleTableStatusRefType /*@out@*/ ScheduleStatus
-)
+                                                      ScheduleTableStatusRefType /*@out@*/ ScheduleStatus
+                                                      )
 #else
 StatusType GetScheduleTableStatus(ScheduleTableType ScheduleID, ScheduleTableStatusRefType /*@out@*/ ScheduleStatus)
 #endif /* KOS_MEMORY_MAPPING */

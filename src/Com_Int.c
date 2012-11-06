@@ -29,7 +29,7 @@
 */
 
 #include "Com_Int.h"
-
+#include "Utl.h"
 
 #if KOS_MEMORY_MAPPING == STD_ON
 FUNC(StatusType, OSEK_COM_CODE) ComInt_SendMessage(MessageIdentifier Message, ApplicationDataRef DataRef)
@@ -37,12 +37,11 @@ FUNC(StatusType, OSEK_COM_CODE) ComInt_SendMessage(MessageIdentifier Message, Ap
 StatusType ComInt_SendMessage(MessageIdentifier Message, ApplicationDataRef DataRef)
 #endif /* KOS_MEMORY_MAPPING */
 {
-    Com_MessageObjectType * MessageObject;
-
-    MessageObject = (Com_MessageObjectType *)&OSEK_COM_GET_MESSAGE_OBJECT(Message);
+    Com_MessageObjectType const * const MessageObject = (Com_MessageObjectType *) \
+                                                        &OSEK_COM_GET_MESSAGE_OBJECT(Message);
 
     if (MessageObject->NumReceivers != (uint8)0) {
-        ComIfUpdateAndNotifyReceivers((Com_MessageObjectType *)MessageObject, DataRef);
+        ComIf_UpdateAndNotifyReceivers(MessageObject, DataRef);
         OS_COND_SCHEDULE_FROM_TASK_LEVEL();
     }
 
@@ -56,13 +55,12 @@ FUNC(StatusType, OSEK_COM_CODE) ComInt_ReceiveMessage(MessageIdentifier Message,
 StatusType ComInt_ReceiveMessage(MessageIdentifier Message, ApplicationDataRef DataRef)
 #endif /* KOS_MEMORY_MAPPING */
 {
-    Com_MessageObjectType * MessageObject;
-
-    MessageObject = (Com_MessageObjectType *)&OSEK_COM_GET_MESSAGE_OBJECT(Message);
+    Com_MessageObjectType const * const MessageObject = (Com_MessageObjectType *)&OSEK_COM_GET_MESSAGE_OBJECT(Message);
 
     DISABLE_ALL_OS_INTERRUPTS();
-    Utl_MemCopy((void *)DataRef, (void *)MessageObject->Data, (uint16)MessageObject->Size);
+    Utl_MemCopy((void *)DataRef, (void *)MessageObject->Data, (SizeType)MessageObject->Size);
     ENABLE_ALL_OS_INTERRUPTS();
 
     return E_OK;
 }
+

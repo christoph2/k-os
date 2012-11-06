@@ -21,8 +21,9 @@
 
    s. FLOSS-EXCEPTION.txt
  */
-#include "Osek.h"
 
+#include "Osek.h"
+#include "Os_Task.h"
 
 #if KOS_MEMORY_MAPPING == STD_ON
     #define OSEK_OS_START_SEC_CODE
@@ -67,6 +68,7 @@ StatusType OsEvtSetEvent(TaskType TaskID, EventMaskType Mask)
 #endif
 }
 
+
 #if KOS_MEMORY_MAPPING == STD_ON
 FUNC(StatusType, OSEK_OS_CODE) SetEvent(TaskType TaskID, EventMaskType Mask)
 #else
@@ -105,6 +107,7 @@ StatusType SetEvent(TaskType TaskID, EventMaskType Mask)
 #endif
 }
 
+
 #if KOS_MEMORY_MAPPING == STD_ON
 FUNC(StatusType, OSEK_OS_CODE) ClearEvent(EventMaskType Mask)
 #else
@@ -137,6 +140,7 @@ StatusType ClearEvent(EventMaskType Mask)
     return E_OK;
 #endif
 }
+
 
 #if KOS_MEMORY_MAPPING == STD_ON
 FUNC(StatusType, OSEK_OS_CODE) GetEvent(TaskType TaskID, EventMaskRefType Event)
@@ -172,6 +176,7 @@ StatusType GetEvent(TaskType TaskID, EventMaskRefType Event)
     return E_OK;
 #endif
 }
+
 
 #if KOS_MEMORY_MAPPING == STD_ON
 FUNC(StatusType, OSEK_OS_CODE) WaitEvent(EventMaskType Mask)
@@ -223,6 +228,7 @@ StatusType WaitEvent(EventMaskType Mask)
     return E_OK;
 #endif
 }
+
 
 #if KOS_MEMORY_MAPPING == STD_ON
     #define OSEK_OS_STOP_SEC_CODE

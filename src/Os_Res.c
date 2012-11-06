@@ -23,7 +23,6 @@
  */
 #include "Osek.h"
 
-
 /*
 **  Local variables.
 */
@@ -31,15 +30,14 @@
 static uint16 BM_InternalResources;
 #endif
 
-
 #if KOS_MEMORY_MAPPING == STD_ON
     #define OSEK_OS_START_SEC_CODE
     #include "MemMap.h"
 #endif /* KOS_MEMORY_MAPPING
 
-/*
-**  Global functions.
-*/
+          /*
+        **  Global functions.
+        */
 #if KOS_MEMORY_MAPPING == STD_ON
 FUNC(void, OSEK_OS_CODE) OsRes_InitResources(void)
 #else
@@ -206,6 +204,7 @@ void OsRes_GetInternalResource(void)
     }
 }
 
+
 #if KOS_MEMORY_MAPPING == STD_ON
 FUNC(void, OSEK_OS_CODE) OsRes_ReleaseInternalResource(void)
 #else
@@ -221,6 +220,8 @@ void OsRes_ReleaseInternalResource(void)
         OsMLQ_ChangePrio(OsCurrentTID, OsCurrentTCB->CurrentPriority, OS_TaskConf[OsCurrentTID].Priority);
     }
 }
+
+
 #endif /* OS_USE_INTERNAL_RESOURCES */
 
 #if KOS_MEMORY_MAPPING == STD_ON

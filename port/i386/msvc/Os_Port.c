@@ -23,6 +23,7 @@
  */
 
 #include "Os_Port.h"
+#include "Os_Port_Win32.h"
 #include "Os_Cfg.h"
 #include "Os_Vars.h"
 
@@ -34,13 +35,24 @@
 /*                                                                                                      */
 /*//////////////////////////////////////////////////////////////////////////////////////////////////////*/
 
+// K_OS now offers tight Windows integration.
+
 #define FIBER_FLAG_FLOAT_SWITCH 0x1
 
 typedef void (*PFIBER_START_ROUTINE)(void *lpFiberParameter);
 typedef PFIBER_START_ROUTINE LPFIBER_START_ROUTINE;    
 
+typedef void * HANDLE;
+typedef unsigned long DWORD;
+
+#define INFINITE        0xfffffffful
+#define THREAD_PRIORITY_BELOW_NORMAL    -1
+
 #define DECLSPEC_IMPORT __declspec(dllimport)
 #define WINAPI          __stdcall
+#define CALLBACK        __stdcall
+
+typedef void (CALLBACK * TIMERPROC)(void *,unsigned short,unsigned short,unsigned long);
 
 DECLSPEC_IMPORT void *  WINAPI CreateFiber(uint32 dwStackSize,LPFIBER_START_ROUTINE lpStartAddress, void * lpParameter);
 DECLSPEC_IMPORT void *  WINAPI CreateFiberEx(uint32 dwStackCommitSize, uint32 dwStackReserveSize, uint32 dwFlags,
@@ -52,6 +64,14 @@ DECLSPEC_IMPORT void *  WINAPI ConvertThreadToFiberEx(void * lpParameter, uint32
 DECLSPEC_IMPORT boolean WINAPI ConvertFiberToThread(void);
 DECLSPEC_IMPORT void    WINAPI SwitchToFiber(void *lpFiber);
 DECLSPEC_IMPORT boolean WINAPI SwitchToThread(void);
+DECLSPEC_IMPORT DWORD   WINAPI GetCurrentThreadId(void);
+DECLSPEC_IMPORT DWORD   WINAPI WaitForSingleObject(HANDLE hHandle, DWORD dwMillisecords);
+DECLSPEC_IMPORT boolean WINAPI SetThreadPriority(HANDLE hThread, int nPriority);
+DECLSPEC_IMPORT boolean WINAPI SwitchToThread(void);
+
+DECLSPEC_IMPORT unsigned long WINAPI GetLastError(void);
+
+DECLSPEC_IMPORT unsigned short WINAPI SetTimer(void * hWnd, unsigned short nIDEvent, unsigned short uElapse, TIMERPROC lpTimerFunc);
 /*///////////////////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////////////////*/
@@ -59,7 +79,14 @@ DECLSPEC_IMPORT boolean WINAPI SwitchToThread(void);
 
 #define OS_PORT_ADDITIONAL_STACK_SPACE  ((uint32)0x400)
 
+extern HANDLE Isr2Event;
+
 void fiberFunc(void *param);
+void OsPort_TimerInit(void);
+boolean OsPort_TimerCreate(HANDLE * timerHandle, uint16 number, uint16 first, uint16 period);
+void OsPort_TimerCleanup(void);
+void OsPort_TimerDelete(HANDLE timerHandle);
+TASK(DispatchingTask);
 
 static const uint8 ReversedLog2Tab[] = {
     0x00,0x08,0x07,0x00,0x06,0x00,0x00,0x00,0x05,0x00,0x00,0x00,0x00,0x00,0x00,0x00,
@@ -76,6 +103,10 @@ static const uint8 ReversedLog2Tab[] = {
 static void * OsPort_BaseFiber;
 static void * OsPort_Fibers[OS_NUMBER_OF_TASKS];
 
+HANDLE OsPort_BaseThreadId;
+
+static HANDLE OsPort_TimerHandle[OS_NUMBER_OF_COUNTERS];
+
 #if KOS_MEMORY_MAPPING == STD_ON
     #define OSEK_OS_START_SEC_CODE
     #include "MemMap.h"
@@ -84,6 +115,9 @@ static void * OsPort_Fibers[OS_NUMBER_OF_TASKS];
 
 #define TICKS_PER_MS ((uint16)1000u)
 
+static uint16 timerNumber;
+static void * sf;
+static HANDLE schedThread;
 
 #if KOS_MEMORY_MAPPING == STD_ON
 FUNC(void, OSEK_OS_CODE) OsPort_Init(void)
@@ -91,12 +125,49 @@ FUNC(void, OSEK_OS_CODE) OsPort_Init(void)
 void OsPort_Init(void)
 #endif /* KOS_MEMORY_MAPPING */
 {
-    void * fp;
+    int tm;
+    uint8 idx;
+    unsigned long error;
+
+    OsPort_InitializeCriticalSection();
+    OsPort_BaseThreadId = GetCurrentThreadId();
+    SetThreadPriority(OsPort_BaseThreadId, THREAD_PRIORITY_BELOW_NORMAL);
+
+/*
+**  You can call SwitchToFiber with the address of a fiber created by a different thread. 
+**  To do this, you must have the address returned to the other thread when it called 
+**  CreateFiber and you must use proper synchronization.
+*/
+
     OsPort_BaseFiber = ConvertThreadToFiber(NULL);
-    fp = CreateFiber(0x400, (LPFIBER_START_ROUTINE)fiberFunc, NULL);
-    //SwitchToFiber(main_fiber);
-//    SwitchToFiber(fp);
+
+    OsPort_TimerInit();
+
+    for (idx = (uint8)0x00; idx < OS_NUMBER_OF_COUNTERS; ++idx) {
+        if (!OsPort_TimerCreate(&OsPort_TimerHandle[idx], idx, 10, 10)) {
+            printf("Creation of timer failed: %u", GetLastError());
+            exit(1);
+        }
+    }
 }
+
+
+#if KOS_MEMORY_MAPPING == STD_ON
+FUNC(void, OSEK_OS_CODE) OsPort_Init(void)
+#else
+void OsPort_Shutdown(void)
+#endif /* KOS_MEMORY_MAPPING */
+{
+    uint8 idx;
+
+    for (idx = (uint8)0x00; idx < OS_NUMBER_OF_COUNTERS; ++idx) {
+        OsPort_TimerDelete(OsPort_TimerHandle[idx]);
+    }
+
+    OsPort_TimerCleanup();
+    OsPort_DeleteCriticalSection();
+}
+
 
 uint8 OsMLQ_GetLowestBitNumber(uint16 Bitmap)
 {
@@ -115,10 +186,6 @@ uint8 OsMLQ_GetLowestBitNumber(uint16 Bitmap)
     return res;
 }
 
-void TC2Timer_Handler(void)
-{
-
-}
 
 uint8 * OsPort_TaskStackInit(TaskType TaskID, TaskFunctionType * TaskFunc, uint8 * sp)
 {
@@ -134,6 +201,13 @@ uint8 * OsPort_TaskStackInit(TaskType TaskID, TaskFunctionType * TaskFunc, uint8
     return (uint8 *)NULL;
 }
 
+
+void TC2Timer_Handler(void)
+{
+
+}
+
+
 void OS_START_CURRENT_TASK(void)
 {
     SwitchToFiber(OsPort_Fibers[OsCurrentTID]);
@@ -146,7 +220,7 @@ void OS_SAVE_CONTEXT(void)
 
 void OS_RESTORE_CONTEXT(void)
 {
-
+    SwitchToFiber(OsPort_Fibers[OsCurrentTID]);
 }
 
 void OS_ISR_CONTEXT(void)
@@ -154,8 +228,25 @@ void OS_ISR_CONTEXT(void)
 
 }
 
-void fiberFunc(void *param)
+
+// Performance. Determinism. Superior Quality. Period.
+
+void OsPort_EnterPowerdownMode(void)
 {
-    uint8 i;
-    i=0;
+    (void)SwitchToThread();
+}
+
+
+void OsPort_Dispatch(void)
+{
+    SetEvent(DispatchingTask, DispatchingEvent);
+}
+
+
+TASK(DispatchingTask)
+{
+    FOREVER {
+        WaitEvent(DispatchingEvent);
+        (void)TerminateTask();
+    }
 }

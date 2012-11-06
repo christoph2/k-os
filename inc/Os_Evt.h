@@ -35,3 +35,4 @@ StatusType OsEvtSetEvent(TaskType TaskID, EventMaskType Mask);
 #endif  /* KOS_MEMORY_MAPPING */
 
 #endif  /* __OS_EVT_H */
+

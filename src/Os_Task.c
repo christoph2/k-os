@@ -21,7 +21,11 @@
 
    s. FLOSS-EXCEPTION.txt
  */
+
 #include "Osek.h"
+#include "Os_Task.h"
+#include "Os_Mlq.h"
+#include "Os_Exec.h"
 
 /* Fixed incorrect task activation on ISR level. */
 
@@ -30,10 +34,13 @@
 */
 #if KOS_MEMORY_MAPPING == STD_ON
 STATIC FUNC(void, OSEK_OS_CODE) OsTask_Init(TaskType TaskID, boolean Schedule);
+
+
 #else
 static void OsTask_Init(TaskType TaskID, boolean Schedule);
-#endif /* KOS_MEMORY_MAPPING */
 
+
+#endif /* KOS_MEMORY_MAPPING */
 
 #if KOS_MEMORY_MAPPING == STD_ON
     #define OSEK_OS_START_SEC_CODE
@@ -114,7 +121,6 @@ StatusType OsTask_Activate(TaskType TaskID)
     return E_OK;
 }
 
-
 #if KOS_MEMORY_MAPPING == STD_ON
 STATIC FUNC(StatusType, OSEK_OS_CODE) ActivateTask(TaskType TaskID)
 #else
@@ -129,7 +135,7 @@ StatusType ActivateTask(TaskType TaskID)
 **      'E_OS_ID': invalid TaskID. (EXTENDED_STATUS)
 **
 */
-    StatusType Status = OsTask_Activate(TaskID);
+    const StatusType Status = OsTask_Activate(TaskID);
 
     if (Status != E_OK) {
         return Status;
@@ -217,7 +223,7 @@ StatusType ChainTask(TaskType TaskID)
 
     OS_TASK_INCR_ACTIVATIONS(TaskID);
     OS_TASK_CLEAR_ALL_EVENTS(TaskID);
-    OsTask_Init(TaskID, (TaskID == OsCurrentTID ? TRUE : FALSE));
+    OsTask_Init(TaskID, ((TaskID == OsCurrentTID) ? TRUE : FALSE));
     OsTask_Ready(TaskID);
 
     ASSERT(OS_TCB[OsCurrentTID].State == SUSPENDED);
@@ -354,6 +360,7 @@ void OsTask_InitTasks(void)
 #endif /* OS_FEATURE_AUTOSTART_TASKS */
 }
 
+
 /*
 **  Local functions.
 */
@@ -366,7 +373,7 @@ static void OsTask_Init(TaskType TaskID, boolean Schedule)
     OsTaskConfigurationType *   task_def;
     OsTCBType *                 tcb;
 
-    if (TaskID > OS_NUMBER_OF_TASKS - (uint8)1) {
+    if (TaskID > (OS_NUMBER_OF_TASKS - (uint8)1)) {
         return; /* todo: Only in EXTENDED-Status!!! */
     }
 
@@ -379,8 +386,8 @@ static void OsTask_Init(TaskType TaskID, boolean Schedule)
 
     tcb->Stackpointer =
         OsPort_TaskStackInit(TaskID, &task_def->TaskFunction,
-            ((uint8 *)task_def->StackStart + task_def->StackSize - (uint8)1)
-        );
+                             ((uint8 *)task_def->StackStart + (task_def->StackSize - (uint8)1))
+                             );
     tcb->State = SUSPENDED;
 #if defined(OS_BCC2) || defined(OS_ECC2)
     tcb->Activations = (uint8)0x00;
@@ -400,6 +407,7 @@ static void OsTask_Init(TaskType TaskID, boolean Schedule)
         OsExec_StartHighestReadyTask();
     }
 }
+
 
 #if KOS_MEMORY_MAPPING == STD_ON
     #define OSEK_OS_STOP_SEC_CODE

@@ -21,18 +21,30 @@
 
    s. FLOSS-EXCEPTION.txt
  */
+
 #include "Osek.h"
+#include "Utl.h"
+#include "Os_Alm.h"
+#include "Os_Task.h"
+#include "Os_Evt.h"
 
 /*
 **  Local variables.
 */
-static Os_AlarmStateType OsAlm_ActiveAlarms;
+
+/*
+**
+**  TODO: 'Os_AlarmStateType' in anhängkeit der Anzahl der Alarme
+**          dito: 'UTL_BIT_xxx' (Makros!!!)
+**
+*/
+
+static Os_AlarmStateType OsAlm_ActiveAlarms = (Os_AlarmStateType)0x00;
 
 #if KOS_MEMORY_MAPPING == STD_ON
     #define OSEK_OS_START_SEC_CODE
     #include "MemMap.h"
 #endif /* KOS_MEMORY_MAPPING */
-
 
 /*
 **  Global functions.
@@ -44,8 +56,9 @@ void OsAlm_StartAlarm(uint8 num)
 #endif /* KOS_MEMORY_MAPPING */
 {
 /*    OsAlm_ActiveAlarms=Utl_BitSet((uint16)OsAlm_ActiveAlarms,num); */
-    UTL_BIT_SET16(OsAlm_ActiveAlarms, num);
+    UTL_BIT_SET8(OsAlm_ActiveAlarms, num);
 }
+
 
 #if KOS_MEMORY_MAPPING == STD_ON
 FUNC(void, OSEK_OS_CODE) OsAlm_StopAlarm(uint8 num)
@@ -54,8 +67,9 @@ void OsAlm_StopAlarm(uint8 num)
 #endif /* KOS_MEMORY_MAPPING */
 {
 /*    OsAlm_ActiveAlarms=Utl_BitReset((uint16)OsAlm_ActiveAlarms,num); */
-    UTL_BIT_RESET16(OsAlm_ActiveAlarms, num);
+    UTL_BIT_RESET8(OsAlm_ActiveAlarms, num);
 }
+
 
 #if KOS_MEMORY_MAPPING == STD_ON
 FUNC(boolean, OSEK_OS_CODE) OsAlm_IsRunning(uint8 num)
@@ -64,7 +78,7 @@ boolean OsAlm_IsRunning(uint8 num)
 #endif /* KOS_MEMORY_MAPPING */
 {
 /*    return Utl_BitGet((uint16)OsAlm_ActiveAlarms,num); */
-    return UTL_BIT_GET16((uint16)OsAlm_ActiveAlarms, num);
+    return (boolean)UTL_BIT_GET8(OsAlm_ActiveAlarms, num);
 }
 
 
@@ -74,7 +88,7 @@ FUNC(uint16, OSEK_OS_CODE) OsAlm_GetActiveAlarms(void)
 /*Os_AlarmStateType*/ uint16  OsAlm_GetActiveAlarms(void)
 #endif /* KOS_MEMORY_MAPPING */
 {
-    return OsAlm_ActiveAlarms;
+    return (uint16)OsAlm_ActiveAlarms;
 }
 
 
@@ -103,7 +117,7 @@ StatusType GetAlarmBase(AlarmType AlarmID, AlarmBaseRefType Info)
     ASSERT_VALID_CALLEVEL(OS_CL_TASK | OS_CL_ISR2 | OS_CL_ERROR_HOOK | OS_CL_PRE_TASK_HOOK | OS_CL_POST_TASK_HOOK);
 
     CLEAR_SERVICE_CONTEXT();
-    return GetCounterInfo(OS_AlarmConf[AlarmID].AttachedCounter, Info);
+    return GetCounterInfo(OS_AlarmConf[AlarmID].AttachedCounter, (CtrInfoRefType)Info);
 }
 
 
@@ -114,7 +128,7 @@ StatusType GetAlarm(AlarmType AlarmID, TickRefType Tick)
 #endif /* KOS_MEMORY_MAPPING */
 {
 /*
-**      Standard:
+**      Standard:r
 **              – E_OK – no error.
 **              – E_OS_NOFUNC – the alarm is not in use.
 **      Extended-Status:
@@ -221,7 +235,8 @@ StatusType SetAbsAlarm(AlarmType AlarmID, TickType start, TickType cycle)
         } else {
             OS_AlarmValue[AlarmID].ExpireCounter =
                 Os_CounterDefs[OS_AlarmConf[AlarmID].AttachedCounter].CounterParams.maxallowedvalue -
-                (CurrentCounterValue + start + ((TickType)1));
+                (CurrentCounterValue + start + ((TickType)1)
+                );
         }
 
         OS_AlarmValue[AlarmID].CycleCounter = cycle;
@@ -269,13 +284,13 @@ FUNC(void, OSEK_OS_CODE) OsAlm_InitAlarms(void)
 void OsAlm_InitAlarms(void)
 #endif /* KOS_MEMORY_MAPPING */
 {
-    uint8_least i;
+    uint8 i;
 
 #if defined(OS_FEATURE_AUTOSTART_ALARMS)
     AlarmConfigurationType * alarm_def;
 #endif /* OS_FEATURE_AUTOSTART_ALARMS */
 
-    for (i = (uint8_least)0; i < OS_NUMBER_OF_ALARMS; ++i) {
+    for (i = (uint8)0; i < OS_NUMBER_OF_ALARMS; ++i) {
 #if defined(OS_FEATURE_AUTOSTART_ALARMS)
         alarm_def = (AlarmConfigurationType *)&OS_AlarmConf[i];
 
@@ -302,13 +317,11 @@ FUNC(void, OSEK_OS_CODE) OsAlm_NotifyAlarm(AlarmType AlarmID)
 void OsAlm_NotifyAlarm(AlarmType AlarmID)
 #endif /* KOS_MEMORY_MAPPING */
 {
-    AlarmConfigurationType * Alarm;
+    AlarmConfigurationType const * const Alarm = (AlarmConfigurationType *)&OS_AlarmConf[AlarmID];
 
 #if defined(OS_EXTENDED_STATUS) && defined(OS_FEATURE_CALLEVEL_CHECK)
     OsCallevelType CallevelSaved;
 #endif
-
-    Alarm = (AlarmConfigurationType *)&OS_AlarmConf[AlarmID];
 
     DISABLE_ALL_OS_INTERRUPTS();
 
@@ -319,6 +332,8 @@ void OsAlm_NotifyAlarm(AlarmType AlarmID)
         /* one-shot Alarm. */
         OsAlm_StopAlarm(AlarmID);  /* OS_AlarmValue[AlarmID].State=ALM_STOPPED; */
     }
+
+/*    printf("Alarm %u.\n", AlarmID); */
 
     ENABLE_ALL_OS_INTERRUPTS();
 
@@ -351,7 +366,9 @@ void OsAlm_NotifyAlarm(AlarmType AlarmID)
     }
 }
 
+
 #if KOS_MEMORY_MAPPING == STD_ON
     #define OSEK_OS_STOP_SEC_CODE
     #include "MemMap.h"
 #endif /* KOS_MEMORY_MAPPING */
+

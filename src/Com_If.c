@@ -27,16 +27,16 @@
 ** Interface/Dispatcher (internal/external Comm.) for OSEK-COM-Functions.
 **
 */
+
 #include "Com_Int.h"
 #include "Com_Ext.h"
-#include "Os_Cfg.h"
+#include "Os_Task.h"
+#include "Os_Evt.h"
+#include "Utl.h"
 
 #if OS_FEATURE_COM == STD_ON
 
-extern const Com_MessageObjectType Com_MessageObjects[];
-
 #if 0
-
 #define Message_Send    ((uint8)0)
 #define Message_Receive ((uint8)1)
 
@@ -61,9 +61,18 @@ const Com_MessageObjectType Com_MessageObjects[COM_NUMBER_OF_MESSAGES] = {
 /*
 **  Local variables.
 */
+#if KOS_MEMORY_MAPPING == STD_ON
+#define OSEK_START_SEC_VAR_UNSPECIFIED
+#include "MemMap.h
+#endif /* KOS_MEMORY_MAPPING */
+
 static Com_StatusType           Com_Status = COM_UNINIT;
 static COMApplicationModeType   Com_AppMode;
 
+#if KOS_MEMORY_MAPPING == STD_ON
+#define OSEK_STOP_SEC_VAR_UNSPECIFIED
+#include "MemMap.h"
+#endif /* KOS_MEMORY_MAPPING */
 
 #if KOS_MEMORY_MAPPING == STD_ON
     #define OSEK_COM_START_SEC_CODE
@@ -92,20 +101,20 @@ StatusType StartCOM(COMApplicationModeType Mode)
 #if defined(COM_START_COM_EXTENSION)
     StatusType Status;
 #endif
-    uint8_least             idx;
-    Com_MessageObjectType * MessageObject;
+    uint8                           idx;
+    Com_MessageObjectType const *   MessageObject;
 
     SAVE_SERVICE_CONTEXT(COMServiceId_StartCOM, Mode, NULL, NULL);
 
     Com_AppMode = Mode;
 
-    for (idx = (uint8_least)0; idx < COM_NUMBER_OF_MESSAGES; ++idx) {
+    for (idx = (uint8)0; idx < COM_NUMBER_OF_MESSAGES; ++idx) {
         MessageObject = (Com_MessageObjectType *)&OSEK_COM_GET_MESSAGE_OBJECT(idx);
 
-        if (MessageObject->Property != SEND_STATIC_INTERNAL &&
-            MessageObject->Property != SEND_ZERO_INTERNAL &&
-            MessageObject->Property != SEND_ZERO_EXTERNAL &&
-            MessageObject->Property != RECEIVE_ZERO_EXTERNAL)
+        if ((MessageObject->Property != SEND_STATIC_INTERNAL) &&
+            (MessageObject->Property != SEND_ZERO_INTERNAL) &&
+            (MessageObject->Property != SEND_ZERO_EXTERNAL) &&
+            (MessageObject->Property != RECEIVE_ZERO_EXTERNAL))
         {
 /* todo: use Initialisation-Value. */
 #if 0
@@ -117,12 +126,16 @@ StatusType StartCOM(COMApplicationModeType Mode)
     }
 
 #if defined(COM_START_COM_EXTENSION)
-    Status = StartCOMExtension();
+    Status = (StatusType)StartCOMExtension();
+#else
+    Status = E_OK;
 #endif
-    Com_Status = COM_INIT;
+    if (Status == E_OK) {
+        Com_Status = COM_INIT;
+    }
 
     CLEAR_SERVICE_CONTEXT();
-    return E_OK;
+    return Status;
 }
 
 
@@ -148,11 +161,14 @@ StatusType StopCOM(COMShutdownModeType Mode)
  */
     SAVE_SERVICE_CONTEXT(COMServiceId_StopCOM, Mode, NULL, NULL);
 
+    UNREFERENCED_PARAMETER(Mode);   /* Nur vorübergehend !!! */
+
     Com_Status = COM_UNINIT;
 
     CLEAR_SERVICE_CONTEXT();
     return E_OK;
 }
+
 
 #if KOS_MEMORY_MAPPING == STD_ON
 FUNC(COMApplicationModeType, OSEK_COM_CODE) GetCOMApplicationMode(void)
@@ -163,6 +179,7 @@ COMApplicationModeType GetCOMApplicationMode(void)
 /*  Return value: Current COM application mode. */
     return Com_AppMode;
 }
+
 
 #if KOS_MEMORY_MAPPING == STD_ON
 FUNC(StatusType, OSEK_COM_CODE) InitMessage(MessageIdentifier Message, ApplicationDataRef DataRef)
@@ -187,12 +204,14 @@ StatusType InitMessage(MessageIdentifier Message, ApplicationDataRef DataRef)
     ASSERT_CAN_INITIALIZE_MESSAGE(Message);
 
     DISABLE_ALL_OS_INTERRUPTS();
-    Utl_MemCopy((void *)OSEK_COM_GET_MESSAGE_OBJECT(Message).Data, (void *)DataRef, (uint16)OSEK_COM_GET_MESSAGE_OBJECT(Message).Size);
+    Utl_MemCopy((void *)OSEK_COM_GET_MESSAGE_OBJECT(Message).Data, (void *)DataRef, (SizeType)OSEK_COM_GET_MESSAGE_OBJECT(
+                    Message).Size);
     ENABLE_ALL_OS_INTERRUPTS();
 
     CLEAR_SERVICE_CONTEXT();
     return E_OK;
 }
+
 
 #if KOS_MEMORY_MAPPING == STD_ON
 FUNC(StatusType, OSEK_COM_CODE) StartPeriodic(void)
@@ -213,6 +232,7 @@ StatusType StartPeriodic(void)
     return E_OK;
 }
 
+
 #if KOS_MEMORY_MAPPING == STD_ON
 FUNC(StatusType, OSEK_COM_CODE) StopPeriodic(void)
 #else
@@ -231,6 +251,7 @@ StatusType StopPeriodic(void)
     CLEAR_SERVICE_CONTEXT();
     return E_OK;
 }
+
 
 #if KOS_MEMORY_MAPPING == STD_ON
 FUNC(StatusType, OSEK_COM_CODE) SendMessage(MessageIdentifier Message, ApplicationDataRef DataRef)
@@ -253,22 +274,24 @@ StatusType SendMessage(MessageIdentifier Message, ApplicationDataRef DataRef)
     SAVE_SERVICE_CONTEXT(COMServiceId_SendMessage, Message, DataRef, NULL);
     ASSERT_COM_IS_INITIALIZED();
     ASSERT_VALID_MESSAGE_ID(Message);
-    ASSERT_IS_STATIC_SENDING_MESSAGE(Message);
+    ASSERT_IS_STATIC_SENDING_MESSAGE(Message);    /* TODO: Funktioniert das jetzt? */
 
     switch (OSEK_COM_GET_MESSAGE_OBJECT(Message).Property) {
         case SEND_STATIC_INTERNAL:
             Status = ComInt_SendMessage(Message, DataRef);
             break;
-        /* not supported yet. */
-        case SEND_ZERO_INTERNAL:
-            break;
         case SEND_STATIC_EXTERNAL:
             Status = ComExt_SendMessage(Message, DataRef);
+            break;
+#if 0  
+/* Invalid Message Types. */       
+        case SEND_ZERO_INTERNAL:
             break;
         case SEND_DYNAMIC_EXTERNAL:
             break;
         case SEND_ZERO_EXTERNAL:
             break;
+#endif
         default:
             ASSERT(FALSE);
     }
@@ -276,6 +299,7 @@ StatusType SendMessage(MessageIdentifier Message, ApplicationDataRef DataRef)
     CLEAR_SERVICE_CONTEXT();
     return Status;
 }
+
 
 #if KOS_MEMORY_MAPPING == STD_ON
 FUNC(StatusType, OSEK_COM_CODE) ReceiveMessage(MessageIdentifier Message, ApplicationDataRef DataRef)
@@ -318,7 +342,7 @@ StatusType ReceiveMessage(MessageIdentifier Message, ApplicationDataRef DataRef)
         case RECEIVE_QUEUED_INTERNAL:
             break;
 #if 0
-/* not supported yet. */
+        /* The following are not supported yet. */
         case RECEIVE_ZERO_INTERNAL:
         case RECEIVE_ZERO_EXTERNAL:
         case RECEIVE_UNQUEUED_EXTERNAL:
@@ -334,10 +358,11 @@ StatusType ReceiveMessage(MessageIdentifier Message, ApplicationDataRef DataRef)
     return Status;
 }
 
+
 #if KOS_MEMORY_MAPPING == STD_ON
 FUNC(StatusType, OSEK_COM_CODE) SendDynamicMessage(MessageIdentifier Message, ApplicationDataRef DataRef,
-    LengthRef LengthRef
-)
+                                                   LengthRef LengthRef
+                                                   )
 #else
 StatusType SendDynamicMessage(MessageIdentifier Message, ApplicationDataRef DataRef, LengthRef LengthRef)
 #endif /* KOS_MEMORY_MAPPING */
@@ -363,10 +388,11 @@ StatusType SendDynamicMessage(MessageIdentifier Message, ApplicationDataRef Data
     return E_OK;
 }
 
+
 #if KOS_MEMORY_MAPPING == STD_ON
 FUNC(StatusType, OSEK_COM_CODE) ReceiveDynamicMessage(MessageIdentifier Message, ApplicationDataRef DataRef,
-    LengthRef LengthRef
-)
+                                                      LengthRef LengthRef
+                                                      )
 #else
 StatusType ReceiveDynamicMessage(MessageIdentifier Message, ApplicationDataRef DataRef, LengthRef LengthRef)
 #endif /* KOS_MEMORY_MAPPING */
@@ -390,6 +416,7 @@ StatusType ReceiveDynamicMessage(MessageIdentifier Message, ApplicationDataRef D
     return E_OK;
 }
 
+
 #if KOS_MEMORY_MAPPING == STD_ON
 FUNC(StatusType, OSEK_COM_CODE)
 #else
@@ -412,6 +439,7 @@ StatusType SendZeroMessage(MessageIdentifier Message)
     CLEAR_SERVICE_CONTEXT();
     return E_OK;
 }
+
 
 #if KOS_MEMORY_MAPPING == STD_ON
 FUNC(StatusType, OSEK_COM_CODE) GetMessageStatus(MessageIdentifier Message)
@@ -442,6 +470,7 @@ StatusType GetMessageStatus(MessageIdentifier Message)
     return E_OK;
 }
 
+
 #if KOS_MEMORY_MAPPING == STD_ON
 FUNC(COMServiceIdType, OSEK_COM_CODE) COMErrorGetServiceId(void)
 #else
@@ -456,16 +485,18 @@ COMServiceIdType COMErrorGetServiceId(void)
 
 
 #if KOS_MEMORY_MAPPING == STD_ON
-FUNC(void, OSEK_COM_CODE) ComIfUpdateAndNotifyReceivers(
-    P2VAR(Com_MessageObjectType, AUTOMATIC, OSEK_COM_APPL_DATA) MessageSendObject
+FUNC(void, OSEK_COM_CODE) ComIf_UpdateAndNotifyReceivers(
+    CONSTP2CONST(Com_MessageObjectType, AUTOMATIC, OSEK_COM_APPL_DATA) MessageSendObject,
     ApplicationDataRef DataRef
-)
+    )
 #else
-void ComIfUpdateAndNotifyReceivers(Com_MessageObjectType * MessageSendObject, ApplicationDataRef DataRef)
+void ComIf_UpdateAndNotifyReceivers(Com_MessageObjectType const * const MessageSendObject,
+                                    ApplicationDataRef                  DataRef
+                                    )
 #endif /* KOS_MEMORY_MAPPING */
 {
-    uint8_least             idx, count;
-    Com_MessageObjectType * MessageObject;
+    uint8                           idx;
+    Com_MessageObjectType const *   MessageObject;
 
 #if defined(OS_EXTENDED_STATUS) && defined(OS_USE_CALLEVEL_CHECK)
     OsCallevelType CallevelSaved;
@@ -473,15 +504,13 @@ void ComIfUpdateAndNotifyReceivers(Com_MessageObjectType * MessageSendObject, Ap
 
     ASSERT(MessageSendObject->Receiver != (Com_ReceiverType *)NULL);
 
-    count = MessageSendObject->NumReceivers;
-
-    for (idx = (uint8_least)0; idx < count; ++idx) {
+    for (idx = (uint8)0; idx < MessageSendObject->NumReceivers; ++idx) {
         DISABLE_ALL_OS_INTERRUPTS();
         MessageObject = (Com_MessageObjectType *)&OSEK_COM_GET_MESSAGE_OBJECT(MessageSendObject->Receiver[idx].Message);
         ASSERT(MessageSendObject->Size == MessageObject->Size);
         ASSERT(MessageObject->Property == RECEIVE_UNQUEUED_INTERNAL);    /* todo: CCCB */
         ASSERT(MessageObject->Action.Dummy != (void *)NULL);
-        Utl_MemCopy((void *)MessageObject->Data, (void *)DataRef, (uint16)MessageObject->Size);
+        Utl_MemCopy((void *)MessageObject->Data, (void *)DataRef, (SizeType)MessageObject->Size);
         ENABLE_ALL_OS_INTERRUPTS();
 
         switch (MessageObject->Notification) {  /* NotificationType??? */
@@ -515,17 +544,11 @@ void ComIfUpdateAndNotifyReceivers(Com_MessageObjectType * MessageSendObject, Ap
     }
 }
 
+
 #if KOS_MEMORY_MAPPING == STD_ON
     #define OSEK_COM_STOP_SEC_CODE
     #include "MemMap.h"
-#endif /* KOS_MEMORY_MAPPING */
+#endif  /* KOS_MEMORY_MAPPING */
 
-/*
-**
-**  Routines provided by the application.
-**
-*/
+#endif  /* OS_FEATURE_COM */
 
-/*  COMCallout(CalloutRoutineName) */
-
-#endif /* OS_FEATURE_COM */

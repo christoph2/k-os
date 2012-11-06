@@ -25,7 +25,7 @@
 
 TaskType    OsCurrentTID;
 OsTCBType * OsCurrentTCB;
-uint8       OsFlags;
+uint8       Os_Flags;    /* TODO: Isolate these flags!!! */
 
 #if defined(OS_EXTENDED_STATUS) && defined(OS_FEATURE_CALLEVEL_CHECK)
 OsCallevelType  OsCallevel         = OS_CL_INVALID;

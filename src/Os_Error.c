@@ -50,15 +50,15 @@ FUNC(void, OSEK_OS_CODE) OsErrorCallErrorHook(StatusType Error)
 void OsErrorCallErrorHook(StatusType Error)
 #endif /* KOS_MEMORY_MAPPING */
 {
-    if (((OsFlags & OS_SYS_FLAG_IN_OS_ERROR_HOOK) != OS_SYS_FLAG_IN_OS_ERROR_HOOK)) {
+    if (((Os_Flags & OS_SYS_FLAG_IN_OS_ERROR_HOOK) != OS_SYS_FLAG_IN_OS_ERROR_HOOK)) {
         DISABLE_ALL_OS_INTERRUPTS();
-        OsFlags |= OS_SYS_FLAG_IN_OS_ERROR_HOOK;
+        Os_Flags |= OS_SYS_FLAG_IN_OS_ERROR_HOOK;
         OS_SAVE_CALLEVEL(); /* s. 'os_alm' !!! */
         OS_SET_CALLEVEL(OS_CL_ERROR_HOOK);
         OS_SAVE_LAST_ERROR(Error);
         ErrorHook(Error);
         OS_RESTORE_CALLEVEL();
-        OsFlags &= (uint8)~OS_SYS_FLAG_IN_OS_ERROR_HOOK;
+        Os_Flags &= (uint8)~OS_SYS_FLAG_IN_OS_ERROR_HOOK;
         ENABLE_ALL_OS_INTERRUPTS();
     }
 }
@@ -71,15 +71,15 @@ FUNC(void, OSEK_OS_CODE) COMErrorCallErrorHook(StatusType Error)
 void COMErrorCallErrorHook(StatusType Error)
 #endif /* KOS_MEMORY_MAPPING */
 {
-    if (((OsFlags & OS_SYS_FLAG_IN_COM_ERROR_HOOK) != OS_SYS_FLAG_IN_COM_ERROR_HOOK)) {
+    if (((Os_Flags & OS_SYS_FLAG_IN_COM_ERROR_HOOK) != OS_SYS_FLAG_IN_COM_ERROR_HOOK)) {
         DISABLE_ALL_OS_INTERRUPTS();
-        OsFlags |= OS_SYS_FLAG_IN_COM_ERROR_HOOK;
+        Os_Flags |= OS_SYS_FLAG_IN_COM_ERROR_HOOK;
         OS_SAVE_CALLEVEL();
         OS_SET_CALLEVEL(OS_CL_ERROR_HOOK);
         OS_SAVE_LAST_ERROR(Error);
         COMErrorHook(Error);
         OS_RESTORE_CALLEVEL();
-        OsFlags &= (uint8)~OS_SYS_FLAG_IN_COM_ERROR_HOOK;
+        Os_Flags &= (uint8)~OS_SYS_FLAG_IN_COM_ERROR_HOOK;
         ENABLE_ALL_OS_INTERRUPTS();
     }
 }

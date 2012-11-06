@@ -296,7 +296,7 @@ OS_DECLARE_GLOBAL_IF_DEBUGGING(OsLastError, StatusType);
 
 #if KOS_MEMORY_MAPPING == STD_ON
 #if defined(OS_USE_GETSERVICEID) && defined(OS_USE_PARAMETERACCESS)
-FUNC(void, OSEK_OS_CODE) OSSaveServiceContext(Os_ServiceIdType id,
+FUNC(void, OSEK_OS_CODE) OS_SaveServiceContext(Os_ServiceIdType id,
                                               /*@null@*//*@in@*/ P2VAR(void, AUTOMATIC, OSEK_OS_APPL_DATA) param1,
                                               /*@null@*//*@in@*/ P2VAR(void, AUTOMATIC, OSEK_OS_APPL_DATA) param2,
                                               /*@null@*//*@in@*/ P2VAR(void, AUTOMATIC, OSEK_OS_APPL_DATA) param3
@@ -305,12 +305,12 @@ FUNC(void, OSEK_OS_CODE) OSSaveServiceContext(Os_ServiceIdType id,
 #endif
 
 #if defined(OS_USE_GETSERVICEID) && !defined(OS_USE_PARAMETERACCESS)
-FUNC(void, OSEK_OS_CODE) OSSaveServiceContext(Os_ServiceIdType id);
+FUNC(void, OSEK_OS_CODE) OS_SaveServiceContext(Os_ServiceIdType id);
 
 #endif
 
 #if !defined(OS_USE_GETSERVICEID) && defined(OS_USE_PARAMETERACCESS)
-FUNC(void, OSEK_OS_CODE) OSSaveServiceContext(
+FUNC(void, OSEK_OS_CODE) OS_SaveServiceContext(
     /*@null@*//*@in@*/ P2VAR(void, AUTOMATIC, OSEK_OS_APPL_DATA) param1,
     /*@null@*//*@in@*/ P2VAR(void, AUTOMATIC, OSEK_OS_APPL_DATA) param2,
     /*@null@*//*@in@*/ P2VAR(void, AUTOMATIC, OSEK_OS_APPL_DATA) param3
@@ -319,7 +319,7 @@ FUNC(void, OSEK_OS_CODE) OSSaveServiceContext(
 #endif
 #else
 #if defined(OS_USE_GETSERVICEID) && defined(OS_USE_PARAMETERACCESS)
-void OSSaveServiceContext(Os_ServiceIdType          id,
+void OS_SaveServiceContext(Os_ServiceIdType          id,
                           /*@null@*//*@in@*/ void * param1,
                           /*@null@*//*@in@*/ void * param2,
                           /*@null@*//*@in@*/ void * param3
@@ -329,13 +329,13 @@ void OSSaveServiceContext(Os_ServiceIdType          id,
 #endif
 
 #if defined(OS_USE_GETSERVICEID) && !defined(OS_USE_PARAMETERACCESS)
-void OSSaveServiceContext(Os_ServiceIdType id);
+void OS_SaveServiceContext(Os_ServiceIdType id);
 
 
 #endif
 
 #if !defined(OS_USE_GETSERVICEID) && defined(OS_USE_PARAMETERACCESS)
-void OSSaveServiceContext(
+void OS_SaveServiceContext(
     /*@null@*//*@in@*/ void *   param1,
     /*@null@*//*@in@*/ void *   param2,
     /*@null@*//*@in@*/ void *   param3
@@ -350,15 +350,15 @@ void OSSaveServiceContext(
 #else
     #if defined(OS_USE_GETSERVICEID) && defined(OS_USE_PARAMETERACCESS)
         #define SAVE_SERVICE_CONTEXT(id, param1, param2, param3) \
-    OSSaveServiceContext(id, (void *)param1, (void *)param2, (void *)param3)
+    OS_SaveServiceContext(id, (void *)param1, (void *)param2, (void *)param3)
     #endif
     #if defined(OS_USE_GETSERVICEID) && !defined(OS_USE_PARAMETERACCESS)
         #define SAVE_SERVICE_CONTEXT(id, param1, param2, param3) \
-    OSSaveServiceContext(id)
+    OS_SaveServiceContext(id)
     #endif
     #if !defined(OS_USE_GETSERVICEID) && defined(OS_USE_PARAMETERACCESS)
         #define SAVE_SERVICE_CONTEXT(id, param1, param2, param3) \
-    OSSaveServiceContext((void *)param1, (void *)param2, (void *)param3)
+    OS_SaveServiceContext((void *)param1, (void *)param2, (void *)param3)
     #endif
 #endif
 

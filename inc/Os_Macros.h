@@ -149,18 +149,18 @@
 #endif
 
 #if     defined(OS_USE_RESSCHEDULER)
-#define OS_LOCK_SCHEDULER()             (OsFlags |= OS_SYS_FLAG_SCHED_OCCUPIED)
-#define OS_UNLOCK_SCHEDULER()           (OsFlags &= (uint8) ~OS_SYS_FLAG_SCHED_OCCUPIED)
-#define OS_IS_SCHEDULER_LOCKED()        ((OsFlags & OS_SYS_FLAG_SCHED_OCCUPIED) == OS_SYS_FLAG_SCHED_OCCUPIED)
+#define OS_LOCK_SCHEDULER()             (Os_Flags |= OS_SYS_FLAG_SCHED_OCCUPIED)
+#define OS_UNLOCK_SCHEDULER()           (Os_Flags &= (uint8) ~OS_SYS_FLAG_SCHED_OCCUPIED)
+#define OS_IS_SCHEDULER_LOCKED()        ((Os_Flags & OS_SYS_FLAG_SCHED_OCCUPIED) == OS_SYS_FLAG_SCHED_OCCUPIED)
 #else
 #define OS_LOCK_SCHEDULER()
 #define OS_UNLOCK_SCHEDULER()
 #define OS_IS_SCHEDULER_LOCKED()        (FALSE)
 #endif  /* OS_USE_RESSCHEDULER */
 
-#define OS_SET_ISR_LEVEL()              (OsFlags |= OS_SYS_FLAG_ISR_LEVEL)
-#define OS_SET_TASK_LEVEL()             (OsFlags &= (uint8) ~OS_SYS_FLAG_ISR_LEVEL)
-#define OS_IS_ISR_LEVEL()               ((OsFlags & OS_SYS_FLAG_ISR_LEVEL) == OS_SYS_FLAG_ISR_LEVEL)
+#define OS_SET_ISR_LEVEL()              (Os_Flags |= OS_SYS_FLAG_ISR_LEVEL)
+#define OS_SET_TASK_LEVEL()             (Os_Flags &= (uint8) ~OS_SYS_FLAG_ISR_LEVEL)
+#define OS_IS_ISR_LEVEL()               ((Os_Flags & OS_SYS_FLAG_ISR_LEVEL) == OS_SYS_FLAG_ISR_LEVEL)
 
 #define OS_IDLE_TIME_ACTION()           CPU_ENTER_POWERDOWN_MODE() /*  'osconfig.h'  */
 /*  #define     OS_IDLE_TIME_ACTION()   IdleTimeHook()  */

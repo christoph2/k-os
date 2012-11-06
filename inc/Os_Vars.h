@@ -31,7 +31,7 @@ extern "C"
 
 #include "Os_Macros.h"
 
-extern uint8        OsFlags;
+extern uint8        Os_Flags;
 extern uint8        OsCCRSave;
 extern TaskType     OsCurrentTID;
 extern OsTCBType *  OsCurrentTCB;

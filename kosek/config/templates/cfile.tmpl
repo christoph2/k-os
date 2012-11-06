@@ -38,11 +38,11 @@
 #end if
 #def alarmAction($alarm)
 #if $alarm.ACTION.value=='ACTIVATETASK'
-#set $action = 'ALM_ACTIVATETASK,\n        (void*)GetTaskName('+$alarm.ACTION.TASK+')'
+#set $action = 'ALM_ACTIVATETASK,\n       { (void*)GetTaskName('+$alarm.ACTION.TASK+')' }
 #elif $alarm.ACTION.value=='SETEVENT'
-#set $action = 'ALM_SETEVENT,\n        (void*)&alarmsEvents['+str($alarm.pos)+']'
+#set $action = 'ALM_SETEVENT,\n        { (void*)&alarmsEvents['+str($alarm.pos)+']' }
 #elif $alarm.ACTION.value=='ALARMCALLBACK'
-#set $action = 'ALM_CALLBACK,\n        (void*)GetAlarmCallbackName('+$alarm.ACTION.ALARMCALLBACKNAME+')'
+#set $action = 'ALM_CALLBACK,\n        { (void*)GetAlarmCallbackName('+$alarm.ACTION.ALARMCALLBACKNAME+')' }
 #end if
 $action#slurp
 #end def
@@ -243,7 +243,7 @@ const Com_MessageObjectType Com_MessageObjects[COM_NUMBER_OF_INTERNAL_MESSAGES +
     {   /* $msg.name */
         $msg.MESSAGEPROPERTY
         $mapNotification($msg.NOTIFICATION),
-        (void *)NULL,
+        { (void *)NULL },
 #if $hasattr($msg.MESSAGEPROPERTY, 'CDATATYPE')
         sizeof($msg.MESSAGEPROPERTY.CDATATYPE.strip('"')),
 #else

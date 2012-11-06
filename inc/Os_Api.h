@@ -47,6 +47,8 @@ StatusType  ChainTask(TaskType TaskID);
 StatusType  Schedule(void);
 StatusType  GetTaskID(/*@out@*/ TaskRefType TaskID);
 StatusType  GetTaskState(TaskType TaskID, /*@out@*/ TaskStateRefType State);
+
+
 #endif /* KOS_MEMORY_MAPPING */
 
 /*
@@ -54,7 +56,6 @@ StatusType  GetTaskState(TaskType TaskID, /*@out@*/ TaskStateRefType State);
 */
 #define EnableAllInterrupts()   CPU_ENABLE_ALL_INTERRUPTS()
 #define DisableAllInterrupts()  CPU_DISABLE_ALL_INTERRUPTS()
-
 
 #if KOS_MEMORY_MAPPING == STD_ON
 FUNC(void, OSEK_OS_CODE) ResumeAllInterrupts(void);
@@ -66,6 +67,8 @@ void    ResumeAllInterrupts(void);
 void    SuspendAllInterrupts(void);
 void    ResumeOSInterrupts(void);
 void    SuspendOSInterrupts(void);
+
+
 #endif /* KOS_MEMORY_MAPPING */
 
 /*
@@ -77,8 +80,9 @@ FUNC(StatusType, OSEK_OS_CODE) ReleaseResource(ResourceType ResID);
 #else
 StatusType  GetResource(ResourceType ResID);
 StatusType  ReleaseResource(ResourceType ResID);
-#endif /* KOS_MEMORY_MAPPING */
 
+
+#endif /* KOS_MEMORY_MAPPING */
 
 /*
 **      Event-Control-Functions.
@@ -93,6 +97,8 @@ StatusType  SetEvent(TaskType TaskID, EventMaskType Mask);
 StatusType  ClearEvent(EventMaskType Mask);
 StatusType  GetEvent(TaskType TaskID, /*@out null@*/ EventMaskRefType Event);
 StatusType  WaitEvent(EventMaskType Mask);
+
+
 #endif /* KOS_MEMORY_MAPPING */
 
 /*
@@ -103,15 +109,17 @@ FUNC(StatusType, OSEK_OS_CODE) InitCounter(CounterType CounterID, TickType Initi
 FUNC(StatusType, OSEK_OS_CODE) IncrementCounter(CounterType CounterID);
 FUNC(StatusType, OSEK_OS_CODE) GetCounterInfo(CounterType CounterID, /*@out null@*/ CtrInfoRefType Info);
 FUNC(StatusType, OSEK_OS_CODE) GetCounterValue(CounterType CounterID, /*@out null@*/ TickRefType Value);
-FUNC(StatusType, OSEK_OS_CODE) GetElapsedCounterValue(CounterType CounterID, /*@in @*/ TickRefType Value, /*@out null@*/ TickRefType ElapsedValue);
+FUNC(StatusType, OSEK_OS_CODE) GetElapsedCounterValue(CounterType CounterID, /*@in @*/ TickRefType Value,
+                                                      /*@out null@*/ TickRefType ElapsedValue);
 #else
 StatusType  InitCounter(CounterType CounterID, TickType InitialValue);
 StatusType  IncrementCounter(CounterType CounterID);
 StatusType  GetCounterInfo(CounterType CounterID, /*@out null@*/ CtrInfoRefType Info);
 StatusType  GetCounterValue(CounterType CounterID, /*@out null@*/ TickRefType Value);
 StatusType  GetElapsedCounterValue(CounterType CounterID, /*@in @*/ TickRefType Value, /*@out null@*/ TickRefType ElapsedValue);
-#endif /* KOS_MEMORY_MAPPING */
 
+
+#endif /* KOS_MEMORY_MAPPING */
 
 /*
 **      Alarm-Management-Functions.
@@ -128,6 +136,8 @@ StatusType  GetAlarm(AlarmType AlarmID, /*@out@*/ TickRefType Tick);
 StatusType  SetRelAlarm(AlarmType AlarmID, TickType increment, TickType cycle);
 StatusType  SetAbsAlarm(AlarmType AlarmID, TickType start, TickType cycle);
 StatusType  CancelAlarm(AlarmType AlarmID);
+
+
 #endif /* KOS_MEMORY_MAPPING */
 
 /*
@@ -141,6 +151,8 @@ FUNC(void, OSEK_OS_CODE) ShutdownOS(StatusType Error);
 AppModeType GetActiveApplicationMode(void);
 void        StartOS(AppModeType Mode);
 void        ShutdownOS(StatusType Error);
+
+
 #endif /* KOS_MEMORY_MAPPING */
 
 /*
@@ -156,6 +168,8 @@ void    PreTaskHook(void);
 void    PostTaskHook(void);
 void    StartupHook(void);
 void    ShutdownHook(StatusType Error);
+
+
 #endif /* KOS_MEMORY_MAPPING */
 
 /*
@@ -163,10 +177,16 @@ void    ShutdownHook(StatusType Error);
 **  AUTOSAR-OS.
 **
 */
-#if KOS_MEMORY_MAPPING == STD_ON 
+ISRType GetISRID(void);             /* wird benötigt */
+
+
+#if 0
+#if KOS_MEMORY_MAPPING == STD_ON
 FUNC(ApplicationType, OSEK_OS_CODE) GetApplicationID(void);
 FUNC(ISRType, OSEK_OS_CODE) GetISRID(void);
-StatusType          CallTrustedFunction(TrustedFunctionIndexType FunctionIndex, TrustedFunctionParameterRefType FunctionParams);
+StatusType CallTrustedFunction(TrustedFunctionIndexType FunctionIndex, TrustedFunctionParameterRefType FunctionParams);
+
+
 FUNC(AccessType, OSEK_OS_CODE) CheckISRMemoryAccess(ISRType ISRID, MemoryStartAddressType Address, MemorySizeType Size);
 FUNC(AccessType, OSEK_OS_CODE) CheckTaskMemoryAccess(TaskType TaskID, MemoryStartAddressType Address, MemorySizeType Size);
 FUNC(ObjectAccessType, OSEK_OS_CODE) CheckObjectAccess(ApplicationType ApplID, ObjectTypeType ObjectType, ...);
@@ -179,7 +199,8 @@ FUNC(StatusType, OSEK_OS_CODE) NextScheduleTable(ScheduleTableType ScheduleTable
 FUNC(StatusType, OSEK_OS_CODE) StartScheduleTableSynchron(ScheduleTableType ScheduleTableID);
 FUNC(StatusType, OSEK_OS_CODE) SyncScheduleTable(ScheduleTableType ScheduleTableID, TickType Value);
 FUNC(StatusType, OSEK_OS_CODE) SetScheduleTableAsync(ScheduleTableType ScheduleID);
-FUNC(StatusType, OSEK_OS_CODE) GetScheduleTableStatus(ScheduleTableType ScheduleID, /*@out@*/ ScheduleTableStatusRefType ScheduleStatus);
+FUNC(StatusType, OSEK_OS_CODE) GetScheduleTableStatus(ScheduleTableType ScheduleID,
+                                                      /*@out@*/ ScheduleTableStatusRefType ScheduleStatus);
 
 FUNC(StatusType, OSEK_OS_CODE) TerminateApplication(RestartType RestartOption);
 FUNC(StatusType, OSEK_OS_CODE) DisableInterruptSource(ISRType DisableISR);
@@ -207,7 +228,11 @@ StatusType              TerminateApplication(RestartType RestartOption);
 StatusType              DisableInterruptSource(ISRType DisableISR);
 StatusType              EnableInterruptSource(ISRType EnableISR);
 ProtectionReturnType    ProtectionHook(StatusType FatalError);
+
+
 #endif /* KOS_MEMORY_MAPPING */
+
+#endif
 
 #endif /* __OS_API_H */
 

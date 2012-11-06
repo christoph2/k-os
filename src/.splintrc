@@ -19,15 +19,30 @@
 +struct-imp-only
 +ret-imp-only
 +read-only-strings
-
++trytorecover
+-nestedextern	## whats that???
 #-imp-outs
--I ..\inc
--I ..\..\common\inc
--I ..\..\common\drivers\include\cpu12
--I ..\..\common\InstallISR
--I c:\projekte\csProjects\trunk\common\include
 
--D__CSMC__
-#D__IAR_SYSTEMS_ICC__
-#D__ICCHCS12__
+##
+##  Include-files.
+##
+-I C:\projekte\csProjects\k-os\
+-I C:\projekte\csProjects\k-os\inc
+-I C:\projekte\csProjects\k-dk\
+-I C:\projekte\csProjects\k-ar\inc
+-I C:\projekte\csProjects\k-ar\inc\cpu12
+-I C:\projekte\csProjects\k-os\samples\first
+-I C:\projekte\csProjects\k-ar\examples\inc
+-I C:\projekte\csProjects\k-dk\InstallISR
+#-I C:\projekte\csProjects\k-dk\InstallISR\iar
+#-I "C:\Programme\IAR Systems\Embedded Workbench Evaluation 4.0\HCS12\inc"
+-I .
+#-D__CSMC__
+##
+##  We using IAR-ICC.
+##
+-D__IAR_SYSTEMS_ICC__
+-D__ICCHCS12__
+#-DKOS_MEMORY_MAPPING=1
+#-D__intrinsic extern
 

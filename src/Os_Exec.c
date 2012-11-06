@@ -23,11 +23,26 @@
  */
 
 #include "Osek.h"
+#include "Os_Mlq.h"
+#include "Os_Task.h"
+#include "Os_Evt.h"
+#include "Os_Res.h"
+#include "Os_Alm.h"
+//#include "Os_Ctr.h"
+#include "Utl.h"
+
+#define API_TRACE()     /* TODO: Nur zum Testen!!! */
+
+#include "common/inc/apitracer.h"
 
 #if KOS_MEMORY_MAPPING == STD_ON
 STATIC FUNC(void, OSEK_OS_CODE) OsExec_Init(void);
+
+
 #else
 static void OsExec_Init(void);
+
+
 #endif /* KOS_MEMORY_MAPPING */
 
 #if defined(OS_FEATURE_SAVE_STARTUP_CONTEXT)
@@ -35,7 +50,6 @@ static Utl_JumpBufType StartupContext;
 #endif  /* OS_FEATURE_SAVE_STARTUP_CONTEXT */
 
 OS_DEFINE_GLOBAL_IF_DEBUGGING(Os_AppMode, AppModeType);
-
 
 #if KOS_MEMORY_MAPPING == STD_ON
     #define OSEK_OS_START_SEC_CODE
@@ -54,6 +68,8 @@ void StartOS(AppModeType Mode)
     SAVE_SERVICE_CONTEXT(OSServiceId_StartOS, Mode, NULL, NULL);
 
     ASSERT_OS_NOT_RUNNING();
+
+//    API_TRACE("StartOS - Appmode: %u\n", Mode);
 
     if (Mode == OSDEFAULTAPPMODE) {
         Os_AppMode = OS_FEATURE_REAL_DEFAULT_APPMODE;
@@ -120,6 +136,10 @@ void ShutdownOS(StatusType Error)
     OS_SET_CALLEVEL(OS_CL_INVALID);
     CLEAR_SERVICE_CONTEXT();    /* ??? */
 
+#if defined(OS_FEATURE_SHUTDOWN_OSPORT) /* TODO: Automatisch setzen, wenn Port Shutdown erforderlich!!! */
+    OsPort_Shutdown();
+#endif
+
 #if defined(OS_FEATURE_SAVE_STARTUP_CONTEXT)
     Utl_LongJump(&StartupContext, -1);
 #endif  /* OS_FEATURE_SAVE_STARTUP_CONTEXT */
@@ -128,11 +148,14 @@ void ShutdownOS(StatusType Error)
 **  If ShutdownOS() is called and ShutdownHook() returns then the operating
 **  system shall disable all interrupts and enter an endless loop.
 */
+    /*lint -e716 */
     FOREVER {
 
     }
 }
 
+
+/*lint +e716 */
 
 #if KOS_MEMORY_MAPPING == STD_ON
 FUNC(AppModeType, OSEK_OS_CODE) GetActiveApplicationMode(void)
@@ -159,7 +182,7 @@ static void OsExec_Init(void)
 {
     OsCurrentTID   = INVALID_TASK;
     OsCurrentTCB   = (OsTCBType *)NULL;
-    OsFlags        = (uint8)0x00;
+    Os_Flags        = (uint8)0x00;
 
     OsMLQ_Init();
 
@@ -177,6 +200,7 @@ static void OsExec_Init(void)
 
 TASK(OsExec_IdleTask)
 {
+    /*lint -e716 */
     FOREVER {
         WAIT_FOR_READY_TASKS();
 #if defined(OS_SCHEDULE_NON) || defined(OS_SCHEDULE_MIX)
@@ -184,6 +208,7 @@ TASK(OsExec_IdleTask)
 #endif  /* OS_SCHEDULE_NON || OS_SCHEDULE_MIX */
     }
 }
+/*lint +e716 */
 
 #if KOS_MEMORY_MAPPING == STD_ON
 FUNC(void, OSEK_OS_CODE) OsExec_TaskReturnGuard(void)
@@ -204,11 +229,12 @@ void OsExec_ScheduleFromISR(void)
 {
 }
 
+
 #elif defined(OS_SCHED_POLICY_PRE) || defined(OS_SCHED_POLICY_MIX)
 #if KOS_MEMORY_MAPPING == STD_ON
 FUNC(void, OSEK_OS_CODE) OsExec_ScheduleFromISR(void)   /*  ISR-Level-Scheduling. */
 #else
-void OsExec_ScheduleFromISR(void)   /*  ISR-Level-Scheduling. */
+void OsExec_ScheduleFromISR(void)                       /*  ISR-Level-Scheduling. */
 #endif /* KOS_MEMORY_MAPPING */
 {
 #if defined(OS_SCHED_POLICY_MIX)
@@ -251,7 +277,7 @@ boolean OsExec_HigherPriorityThenCurrentReady(void)
     currentPriority = Utl_SetBitTab16[OS_TaskConf[OsCurrentTID].Priority];
 #endif
 
-    res = (OsMLQ_GetBitmap() & (~currentPriority)) > currentPriority;
+    res = (boolean)((OsMLQ_GetBitmap() & ((uint16) ~currentPriority)) > currentPriority);
 
     return res;
 
@@ -269,7 +295,7 @@ void OsExec_StartHighestReadyTask(void)
 }
 
 
-ISR1(SWI_Vector)
+ISR1(SWI_Vector)    /* TODO: Os_Port! */
 {
     OSEnterISR();
     OSLeaveISR();
@@ -279,3 +305,4 @@ ISR1(SWI_Vector)
     #define OSEK_OS_STOP_SEC_CODE
     #include "MemMap.h"
 #endif /* KOS_MEMORY_MAPPING */
+

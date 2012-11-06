@@ -22,42 +22,37 @@
    s. FLOSS-EXCEPTION.txt
  */
 #include "Os_Mlq.h"
-
-
-#if KOS_MEMORY_MAPPING == STD_ON
-FUNC(void, OSEK_OS_CODE)        OsMLQ_Init(void);
-FUNC(TaskType, OSEK_OS_CODE)    TaskType    OsMLQ_GetHighestPrio(void);
-FUNC(void, OSEK_OS_CODE)        OsMLQ_AddTaskFirst(TaskType TaskID, PriorityType prio);
-FUNC(void, OSEK_OS_CODE)        OsMLQ_AddTaskLast(TaskType TaskID, PriorityType prio);
-FUNC(void, OSEK_OS_CODE)        OsMLQ_RemoveTask(PriorityType prio);
-#else
-void        OsMLQ_Init(void);
-TaskType    OsMLQ_GetHighestPrio(void);
-void        OsMLQ_AddTaskFirst(TaskType TaskID, PriorityType prio);
-void        OsMLQ_AddTaskLast(TaskType TaskID, PriorityType prio);
-void        OsMLQ_RemoveTask(PriorityType prio);
-#endif /* KOS_MEMORY_MAPPING */
-
+#include "Utl.h"
 
 #if !defined(OS_SCHED_BM_ONLY)
 #if KOS_MEMORY_MAPPING == STD_ON
-STATIC FUNC(void, OSEK_OS_CODE)     OsMLQ_InitQueue(uint8 num);
-STATIC FUNC(void, OSEK_OS_CODE)     OsMLQ_PushFront(uint8 num, TaskType TaskID);
-STATIC FUNC(void, OSEK_OS_CODE)     OsMLQ_PushBack(uint8 num, TaskType TaskID);
-STATIC FUNC(void, OSEK_OS_CODE)     OsMLQ_PopFront(uint8 num);
+STATIC  FUNC(void, OSEK_OS_CODE)     OsMLQ_InitQueue(uint8 num);
+STATIC  FUNC(void, OSEK_OS_CODE)     OsMLQ_PushFront(uint8 num, TaskType TaskID);
+STATIC  FUNC(void, OSEK_OS_CODE)     OsMLQ_PushBack(uint8 num, TaskType TaskID);
+STATIC  FUNC(void, OSEK_OS_CODE)     OsMLQ_PopFront(uint8 num);
+
+
 /*  STATIC FUNC(void, OSEK_OS_CODE) OsMLQ_PopBack(uint8 num);  */
 static FUNC(boolean, OSEK_OS_CODE)  OsMLQ_IsEmpty(uint8 num);
 /* STATIC  FUNC(boolean, OSEK_OS_CODE) OsMLQ_IsFull(uint8 num); */
 STATIC FUNC(TaskType, OSEK_OS_CODE) OsMLQ_Front(uint8 num);
+
+
 #else
 static void OsMLQ_InitQueue(uint8 num);
 static void OsMLQ_PushFront(uint8 num, TaskType TaskID);
 static void OsMLQ_PushBack(uint8 num, TaskType TaskID);
 static void OsMLQ_PopFront(uint8 num);
+
+
 /*  static void OsMLQ_PopBack(uint8 num);  */
 static boolean OsMLQ_IsEmpty(uint8 num);
+
+
 /* static boolean OsMLQ_IsFull(uint8 num); */
 static TaskType OsMLQ_Front(uint8 num);
+
+
 #endif /* KOS_MEMORY_MAPPING */
 
 /* static TaskType OsMLQ_Back(uint8 num); */
@@ -75,7 +70,6 @@ static TaskType OsMLQ_Front(uint8 num);
 
 static OsMLQ_QueueType  MLQ_ReadyQueue[OS_MLQ_NUMBER_OF_PRIORITIES];
 static uint16           BM_NotEmpty; /* Bitmap for non-empty queues.  */
-
 
 #if KOS_MEMORY_MAPPING == STD_ON
     #define OSEK_OS_START_SEC_CODE
@@ -101,6 +95,7 @@ void OsMLQ_Init(void)
     for (idx = (uint8)0; idx < OS_MLQ_NUMBER_OF_PRIORITIES; ++idx) {
         OsMLQ_InitQueue(idx);
     }
+
 #else
     BM_NotEmpty = (uint16)0x0000U;
 #endif
@@ -120,9 +115,9 @@ TaskType OsMLQ_GetHighestPrio(void)
 
     if (BM_NotEmpty != (uint16)0x0000U) {
 #if defined(OS_SCHED_BM_ONLY)
-        TaskID = OsMLQ_GetLowestBitNumber((~BM_NotEmpty + (uint16)1) & BM_NotEmpty);
+        TaskID = OsMLQ_GetLowestBitNumber(((uint16) ~BM_NotEmpty + (uint16)1) & BM_NotEmpty);
 #else
-        queue_num  = OsMLQ_GetLowestBitNumber((~BM_NotEmpty + (uint16)1) & BM_NotEmpty) - ((uint8)1);
+        queue_num  = OsMLQ_GetLowestBitNumber(((uint16) ~BM_NotEmpty + (uint16)1) & BM_NotEmpty) - ((uint8)1);
         TaskID     = OsMLQ_Front(queue_num);
 #endif
     }
@@ -137,7 +132,7 @@ FUNC(boolean, OSEK_OS_CODE) OsMLQ_TasksAreReady(void)
 boolean OsMLQ_TasksAreReady(void)
 #endif /* KOS_MEMORY_MAPPING */
 {
-    return BM_NotEmpty != (uint16)0x0000U;
+    return (boolean)(BM_NotEmpty != (uint16)0x0000U);
 }
 
 
@@ -157,7 +152,7 @@ FUNC(void, OSEK_OS_CODE) OsMLQ_AddTaskFirst(TaskType TaskID, PriorityType prio)
 void OsMLQ_AddTaskFirst(TaskType TaskID, PriorityType prio)    /* stack. */
 #endif /* KOS_MEMORY_MAPPING */
 {
-    ASSERT((prio != PRIO_NONE) && (INVERT_NIBBLE(prio) <= OS_MLQ_NUMBER_OF_PRIORITIES));
+    ASSERT(((prio != PRIO_NONE) && (INVERT_NIBBLE(prio)) <= OS_MLQ_NUMBER_OF_PRIORITIES));
 
     /* BM_NotEmpty=Utl_BitSet(BM_NotEmpty,(uint8)prio); */
     UTL_BIT_SET16(BM_NotEmpty, (uint8)prio);
@@ -190,11 +185,10 @@ FUNC(void, OSEK_OS_CODE) OsMLQ_RemoveTask(TaskType TaskID)
 void OsMLQ_RemoveTask(TaskType TaskID)
 #endif /* KOS_MEMORY_MAPPING */
 {
-    uint8 prio;
+    uint8 prio = PRIORITY_FOR_TASK(TaskID);
 
     ASSERT((TaskID != INVALID_TASK) && (TaskID <= OS_NUMBER_OF_TASKS));
 
-    prio = PRIORITY_FOR_TASK(TaskID);
     ASSERT((prio != PRIO_NONE) && (INVERT_NIBBLE(prio) <= OS_MLQ_NUMBER_OF_PRIORITIES));
 #if !defined(OS_SCHED_BM_ONLY)
     OsMLQ_PopFront(INVERT_NIBBLE(prio));
@@ -333,6 +327,8 @@ static TaskType OsMLQ_Back(uint8 num)
 {
     return MLQ_QueueDef[num].data[MLQ_ReadyQueue[num].tail];
 }
+
+
 #endif
 #endif /* !OS_SCHED_BM_ONLY*/
 

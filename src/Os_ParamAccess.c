@@ -46,13 +46,13 @@ OS_DEFINE_GLOBAL_IF_DEBUGGING(OsLastError, StatusType);
 */
 #if defined(OS_USE_GETSERVICEID) && defined(OS_USE_PARAMETERACCESS)
 #if KOS_MEMORY_MAPPING == STD_ON
-FUNC(void, OSEK_OS_CODE) OSSaveServiceContext(Os_ServiceIdType id,
+FUNC(void, OSEK_OS_CODE) OS_SaveServiceContext(Os_ServiceIdType id,
                                               P2VAR(void, AUTOMATIC, OSEK_OS_APPL_DATA) param1,
                                               P2VAR(void, AUTOMATIC, OSEK_OS_APPL_DATA) param2,
                                               P2VAR(void, AUTOMATIC, OSEK_OS_APPL_DATA) param3
                                               )
 #else
-void OSSaveServiceContext(Os_ServiceIdType id, void * param1, void * param2, void * param3)
+void OS_SaveServiceContext(Os_ServiceIdType id, void * param1, void * param2, void * param3)
 #endif /* KOS_MEMORY_MAPPING */
 {
     Os_ServiceContext.id       = id;
@@ -65,9 +65,9 @@ void OSSaveServiceContext(Os_ServiceIdType id, void * param1, void * param2, voi
 
 #if defined(OS_USE_GETSERVICEID) && !defined(OS_USE_PARAMETERACCESS)
 #if KOS_MEMORY_MAPPING == STD_ON
-FUNC(void, OSEK_OS_CODE) void OSSaveServiceContext(Os_ServiceIdType id)
+FUNC(void, OSEK_OS_CODE) void OS_SaveServiceContext(Os_ServiceIdType id)
 #else
-void OSSaveServiceContext(Os_ServiceIdType id)
+void OS_SaveServiceContext(Os_ServiceIdType id)
 #endif /* KOS_MEMORY_MAPPING */
 {
     Os_ServiceContext.id = id;
@@ -77,12 +77,12 @@ void OSSaveServiceContext(Os_ServiceIdType id)
 
 #if !defined(OS_USE_GETSERVICEID) && defined(OS_USE_PARAMETERACCESS)
 #if KOS_MEMORY_MAPPING == STD_ON
-FUNC(void, OSEK_OS_CODE) void OSSaveServiceContext(P2VAR(void, AUTOMATIC, OSEK_OS_APPL_DATA)param1,
+FUNC(void, OSEK_OS_CODE) void OS_SaveServiceContext(P2VAR(void, AUTOMATIC, OSEK_OS_APPL_DATA)param1,
                                                    P2VAR(void, AUTOMATIC, OSEK_OS_APPL_DATA)param2,
                                                    P2VAR(void, AUTOMATIC, OSEK_OS_APPL_DATA)param3
                                                    )
 #else
-void OSSaveServiceContext(void * param1, void * param2, void * param3)
+void OS_SaveServiceContext(void * param1, void * param2, void * param3)
 #endif /* KOS_MEMORY_MAPPING */
 {
     Os_ServiceContext.param1   = param1;

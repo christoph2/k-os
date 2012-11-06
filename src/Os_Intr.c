@@ -30,16 +30,18 @@
 
 #include "Osek.h"
 
-
 /*
 **  Local function prototypes.
 */
 #if KOS_MEMORY_MAPPING == STD_ON
 STATIC FUNC(void, OSEK_OS_CODE) SuspendCPUInterrrupts(void), ResumeCPUInterrrupts(void);
+
+
 #else
 static void SuspendCPUInterrrupts(void), ResumeCPUInterrrupts(void);
-#endif /* KOS_MEMORY_MAPPING */
 
+
+#endif /* KOS_MEMORY_MAPPING */
 
 /*
 **  Local variables.
@@ -50,7 +52,6 @@ static void SuspendCPUInterrrupts(void), ResumeCPUInterrrupts(void);
 */
 static volatile uint8   InterruptDisableCounter = (uint8)0;
 static boolean          IStateSave;
-
 
 #if KOS_MEMORY_MAPPING == STD_ON
     #define OSEK_OS_START_SEC_CODE
@@ -116,7 +117,7 @@ STATIC FUNC(void, OSEK_OS_CODE) SuspendCPUInterrrupts(void)
 void SuspendCPUInterrrupts(void)
 #endif /* KOS_MEMORY_MAPPING */
 {
-    uint8 istate = CPU_INTERRUPTS_DISABLED();
+    const uint8 istate = CPU_INTERRUPTS_DISABLED();
 
     CPU_DISABLE_ALL_INTERRUPTS();
 
@@ -132,7 +133,7 @@ STATIC FUNC(void, OSEK_OS_CODE) ResumeCPUInterrrupts(void)
 void ResumeCPUInterrrupts(void) /* s. Autosar O92 !!!*/
 #endif /* KOS_MEMORY_MAPPING */
 {
-    uint8 istate = CPU_INTERRUPTS_DISABLED();
+    const uint8 istate = CPU_INTERRUPTS_DISABLED();
 
     ASSERT((istate == TRUE) && (InterruptDisableCounter != (uint8)0));
 
@@ -153,6 +154,8 @@ ISRType GetISRID(void)
 {
     return OsCurrentISRID;
 }
+
+
 #endif
 
 #if KOS_MEMORY_MAPPING == STD_ON
