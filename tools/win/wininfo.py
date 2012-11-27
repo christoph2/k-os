@@ -77,3 +77,17 @@ def main():
 
 if __name__ == '__main__':
     main()
+
+## Output looks like that:
+"""
+Architecture:           INTEL
+Processor-Type:         Pentium
+Processor-Level:        6
+Processor-Revision:     0X2A07
+Number of Processors:   2
+Active Processor Mask:  0X3
+Pagesize:               0X1000
+Allocation-Granularity: 0X10000
+Min. Load Address:      0X10000
+Max. Load Address:      0X7FFEFFFF
+"""
