@@ -1,7 +1,7 @@
 /*
    k_os (Konnex Operating-System based on the OSEK/VDX-Standard).
 
-   (C) 2007-2012 by Christoph Schueler <github.com/Christoph2,
+   (C) 2007-2013 by Christoph Schueler <github.com/Christoph2,
                                         cpu12.gems@googlemail.com>
 
    All Rights Reserved
@@ -98,9 +98,7 @@ StatusType StartCOM(COMApplicationModeType Mode)
         status code is supported:
         · This service returns E_COM_ID if the parameter <Mode> is out of range.
  */
-#if defined(COM_START_COM_EXTENSION)
     StatusType Status;
-#endif
     uint8                           idx;
     Com_MessageObjectType const *   MessageObject;
 
