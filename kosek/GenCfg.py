@@ -113,41 +113,19 @@ class ApplicationDefinition(object):
                 setattr(self, attr, appDef.values()[0x00])
 
 
-##
-##def writeTemplate(tmplFileName, outFileName, nameSpace, encodeAsUTF8 = True):
-##    if os.access(outFileName, os.F_OK):
-##        os.chmod(outFileName, stat.S_IWRITE or stat.S_IREAD)
-####      os.unlink(outFileName)
-##    tmpl = Template(pkgutil.get_data('kosek', 'config/templates/%s' % tmplFileName), searchList=[nameSpace])
-##    if encodeAsUTF8 == True:
-##        outFile = codecs.open(outFileName, mode='wt', encoding='utf-8', errors='xmlcharrefreplace')
-##        outFile.write(unicode(codecs.BOM_UTF8, 'utf-8'))
-##    else:
-##        outFile = open(outFileName, mode='wt')
-##
-##    outFile.write(unicode(tmpl))
-##    outFile.close()
-####  os.chmod(outFileName,os.O_RDONLY)
-##
-
-
 def writeTemplate(tmplFileName, outFileName, namespace = {}, encodeAsUTF8 = True):
-    package = 'kosek'
-    d= os.path.dirname(sys.modules[package].__file__)
-    data = open(os.path.join(d, 'config/templates/%s' % tmplFileName), 'rb').read()
-    #print "DATA: %s" % data
-
     if os.access(outFileName, os.F_OK):
         os.chmod(outFileName, stat.S_IWRITE or stat.S_IREAD)
         os.unlink(outFileName)
     buf = StringIO.StringIO()
     ctx=Context(buf, **namespace)
     try:
-        tobj = Template(filename = pkgutil.get_data('pySART.kosek', 'config/templates/%s' % tmplFileName), output_encoding = 'utf-8',
-                format_exceptions = True) #, imports ='re'
+	print tmplFileName.upper()
+        tobj = Template(text = pkgutil.get_data('kosek', 'config/templates/%s' % tmplFileName), output_encoding = 'utf-8', format_exceptions = True) #, imports ='re'
         tobj.render_context(ctx)
     except:
          print exceptions.text_error_template().render()
+	 raise
          #return None
     else:
         outFile = open(outFileName, mode='wt')
@@ -225,7 +203,7 @@ def Generate(fname, AppDef, Info):
 #    from pkg_resources import Requirement, resource_filename
 #    filename = resource_filename(Requirement.parse("MyProject"),"sample.conf")
 
-    writeTemplate(r'hfile.tmpl', 'Os_Cfg.h', namespace, encodeAsUTF8 = False)
+    writeTemplate('hfile.tmpl', 'Os_Cfg.h', namespace, encodeAsUTF8 = False)
     writeTemplate('cfile.tmpl', 'Os_Cfg.c', namespace, encodeAsUTF8 = False)
     writeTemplate('isrcfgfile.tmpl', 'ISR_Cfg.h', namespace, encodeAsUTF8 = False)
     if app.os.ORTI_DEBUG.value == True:
