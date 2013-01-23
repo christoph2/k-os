@@ -112,24 +112,56 @@ class ApplicationDefinition(object):
             elif len(appDef) > 0x00:
                 setattr(self, attr, appDef.values()[0x00])
 
+def HandleError(ctx, msg):
+    #print [x for x in dir(ctx) if not x.startswith('__')]
+    #print "KEYS: ", ctx.keys()
+    #print "KWARGS: ", ctx.kwargs
+    #print "ctx: '%s'." % str(ctx)
+    print "msg: '%s'." % msg
+    print
+    return True
 
-def writeTemplate(tmplFileName, outFileName, namespace = {}, encodeAsUTF8 = True):
+def writeTemplate(tmplFileName, outFileName, namespace = {}, encodeAsUTF8 = True, errorHandler = lambda ctx, msg: False):
     if os.access(outFileName, os.F_OK):
         os.chmod(outFileName, stat.S_IWRITE or stat.S_IREAD)
         os.unlink(outFileName)
     buf = StringIO.StringIO()
-    ctx=Context(buf, **namespace)
+    ctx = Context(buf, **namespace)
+    print tmplFileName.upper()
     try:
-	print tmplFileName.upper()
-        tobj = Template(text = pkgutil.get_data('kosek', 'config/templates/%s' % tmplFileName), output_encoding = 'utf-8', format_exceptions = True) #, imports ='re'
+        tobj = Template(text = pkgutil.get_data('kosek', 'config/templates/%s' % tmplFileName),
+                            output_encoding = 'utf-8', format_exceptions = True, error_handler = errorHandler
+                        )
         tobj.render_context(ctx)
-    except:
+    except Exception as e:
+         print str(e)
          print exceptions.text_error_template().render()
-	 raise
+         raise
          #return None
     else:
         outFile = open(outFileName, mode='wt')
         outFile.write(buf.getvalue())
+
+
+def alarmAction(alarm):
+    if alarm.ACTION.value == 'ACTIVATETASK':
+        action = 'ALM_ACTIVATETASK,\n       { (void*)GetTaskName(' + alarm.ACTION.TASK + ') }'
+    elif alarm.ACTION.value == 'SETEVENT':
+        action = 'ALM_SETEVENT,\n        { (void*)&alarmsEvents [' + str(alarm.pos) + '] }'
+    elif alarm.ACTION.value == 'ALARMCALLBACK':
+        ction = 'ALM_CALLBACK,\n        { (void*)GetAlarmCallbackName(' + alarm.ACTION.ALARMCALLBACKNAME + ') }'
+    else:
+        print "??? '%s'" % alarm
+    return action
+
+def mapNotification(n):
+    di = {'NONE' : 'COM_NOTIFY_NONE', 'ACTIVATETASK' : 'COM_ACTIVATETASK', 'SETEVENT' : 'COM_SETEVENT',
+    'COMCALLBACK' : 'COM_COMCALLBACK','FLAG' : 'COM_FLAG','INMCALLBACK' :'COM_COMINMCALLBACK'}
+    if n in di:
+        return di[n]
+    else:
+        print "Invalid Key: '%s'" % n
+        return None
 
 
 def getAlarmsForCounters():
@@ -189,6 +221,8 @@ def Generate(fname, AppDef, Info):
         'ORTICfg': ORTICfg,
         'alarmsForCounters': alarmsForCounters,
         'getApplicationModes': getApplicationModes,
+        'mapNotification': mapNotification,
+        'alarmAction': alarmAction,
         'time': time,
         }
 
@@ -203,9 +237,9 @@ def Generate(fname, AppDef, Info):
 #    from pkg_resources import Requirement, resource_filename
 #    filename = resource_filename(Requirement.parse("MyProject"),"sample.conf")
 
-    writeTemplate('hfile.tmpl', 'Os_Cfg.h', namespace, encodeAsUTF8 = False)
-    writeTemplate('cfile.tmpl', 'Os_Cfg.c', namespace, encodeAsUTF8 = False)
-    writeTemplate('isrcfgfile.tmpl', 'ISR_Cfg.h', namespace, encodeAsUTF8 = False)
+    writeTemplate('hfile.tmpl', 'Os_Cfg.h', namespace, encodeAsUTF8 = False, errorHandler = HandleError)
+    writeTemplate('cfile.tmpl', 'Os_Cfg.c', namespace, encodeAsUTF8 = False, errorHandler = HandleError)
+    writeTemplate('isrcfgfile.tmpl', 'ISR_Cfg.h', namespace, encodeAsUTF8 = False, errorHandler = HandleError)
     if app.os.ORTI_DEBUG.value == True:
         info.vendor = 'K_OS'
 
@@ -221,4 +255,4 @@ def Generate(fname, AppDef, Info):
             Register('B', 'uint8', 1),
             Register('CCR', 'uint8', 0x00),
         )
-        writeTemplate('ortifile.tmpl', 'App.ort', namespace, encodeAsUTF8 = False)
+        writeTemplate('ortifile.tmpl', 'App.ort', namespace, encodeAsUTF8 = False, errorHandler = HandleError)
