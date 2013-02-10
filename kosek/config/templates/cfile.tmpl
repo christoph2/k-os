@@ -1,7 +1,7 @@
 /*
 **  k_os (Konnex Operating-System based on the OSEK/VDX-Standard).
 **
-**  (C) 2007-2012 by Christoph Schueler <github.com/Christoph2,
+**  (C) 2007-2013 by Christoph Schueler <github.com/Christoph2,
 **                                       cpu12.gems@googlemail.com>
 **
 **  All Rights Reserved
@@ -21,51 +21,33 @@
 **
 **  s. FLOSS-EXCEPTION.txt
 */
-
+<% import sys %>
 /*
 **
 **  !!! AUTOMATICALLY GENERATED FILE - DO NOT EDIT !!!
 **
 **
 **  GENERATED WITH  : '${sys.argv[0]}', Part of k_os (Konnex Operating-System based on the OSEK/VDX-Standard).
-**  VERSION:        : ${$info.version}
+**  VERSION:        : ${info.version}
 **  DATE            : ${time.ctime()}
 **
 */
-\#include "Os_Cfg.h"
-#if $len($app.internalMessages) > 0 or $len($app.externalMessages) > 0
-\#include "Com.h"
-#end if
-#def alarmAction($alarm)
-#if $alarm.ACTION.value=='ACTIVATETASK'
-#set $action = 'ALM_ACTIVATETASK,\n       { (void*)GetTaskName('+$alarm.ACTION.TASK+')' }
-#elif $alarm.ACTION.value=='SETEVENT'
-#set $action = 'ALM_SETEVENT,\n        { (void*)&alarmsEvents['+str($alarm.pos)+']' }
-#elif $alarm.ACTION.value=='ALARMCALLBACK'
-#set $action = 'ALM_CALLBACK,\n        { (void*)GetAlarmCallbackName('+$alarm.ACTION.ALARMCALLBACKNAME+')' }
-#end if
-$action#slurp
-#end def
-#def realPrio($p)
-#set $prio = hex(~$p & 0x0f)
-((PriorityType)$prio)#slurp
-#end def
-#def mapNotification($n)
-#set $mapping = {'NONE' : 'COM_NOTIFY_NONE', 'ACTIVATETASK' : 'COM_ACTIVATETASK', 'SETEVENT' : 'COM_SETEVENT',
-    'COMCALLBACK' : 'COM_COMCALLBACK','FLAG' : 'COM_FLAG','INMCALLBACK' :'COM_COMINMCALLBACK'}
-$mapping[n]#slurp
-#end def
+#include "Os_Cfg.h"
+%if len(app.internalMessages) > 0 or len(app.externalMessages) > 0:
+#include "Com.h"
+%endif
+
 /*
 **
 **  Tasks.
 **
 */
-#*
-    Hinweis: ein reines Single-Stack-System benoetigt keinen seperaten Interrupt-Stack!!!
-*#
-#for $task in $app.tasks
-uint8 ${task.name}_Stack[${task.name.upper}_STACK_SIZE];
-#end for
+##
+##   Hinweis: ein reines Single-Stack-System benoetigt keinen seperaten Interrupt-Stack!!!
+##
+%for task in app.tasks:
+uint8 ${task.name}_Stack[${task.name.upper()}_STACK_SIZE];
+%endfor
 
 uint8 ISR_Stack[ISR_STACK_SIZE];
 uint8 IdleTask_Stack[IDLE_TASK_STACK_SIZE];
@@ -77,36 +59,37 @@ const OsTaskConfigurationType OS_TaskConf[OS_NUMBER_OF_TASKS] = {
     IDLE_TASK_STACK_SIZE,
     ((PriorityType)0),
     OS_TASK_ATTR_FULLPREEMPT,
-    #if $app.os.CC in ('BCC2','ECC2')
+    %if app.os.CC in ('BCC2','ECC2'):
     (uint8)1,
-    #end if
-#if $len($app.autostartedTasks)>0
+    %endif
+%if len(app.autostartedTasks)>0:
     OS_AUTOSTART_ALWAYS,
-#end if
-\#if defined(OS_USE_INTERNAL_RESOURCES)
+%endif
+#if defined(OS_USE_INTERNAL_RESOURCES)
     INTERNAL_RES_NONE,
-\#endif
+#endif
 },
-#for $task in $app.tasks
+%for task in app.tasks:
 {
-    GetTaskName($task.name),
+    GetTaskName(${task.name}),
     (uint8*)${task.name}_Stack,
-    ${task.name.upper}_STACK_SIZE,
-    $realPrio($task.PRIORITY - 1),
-    $task.flags
-#if $app.os.CC in ('BCC2','ECC2')
-    (uint8)$task.ACTIVATION,
-#end if
-#if $task.AUTOSTART == True
-    $getApplicationModes($task),
-#elif $len($app.autostartedTasks) > 0
+    ${task.name.upper()}_STACK_SIZE,
+##    ${realPrio(task.PRIORITY - 1)},
+    ((PriorityType)${hex(~(task.PRIORITY - 1) & 0x0f)}),
+    ${task.flags}
+%if app.os.CC in ('BCC2','ECC2'):
+    (uint8)${task.ACTIVATION},
+%endif
+%if task.AUTOSTART == True:
+    ${getApplicationModes(task)},
+%elif len(app.autostartedTasks) > 0:
     OS_AUTOSTART_NEVER,
-#end if
-\#if defined(OS_USE_INTERNAL_RESOURCES)
-    INTERNAL_RES_NONE /*INTERNAL_RES_SCHEDULER - besser: INTERNAL_NONPREEMPT_SCHEDULER*/,
-\#endif
+%endif
+#if defined(OS_USE_INTERNAL_RESOURCES)
+    INTERNAL_RES_NONE,
+#endif
 },
-#end for
+%endfor
 };
 
 OsTCBType OS_TCB[OS_NUMBER_OF_TASKS];
@@ -117,35 +100,35 @@ OsTCBType OS_TCB[OS_NUMBER_OF_TASKS];
 **  Resources.
 **
 */
-#if $len($app.standardResources)>0
+%if len(app.standardResources)>0:
 const OsResourceConfigurationType OS_ResourceConf[OS_NUMBER_OF_RESOURCES] = {
-#for $res in $app.standardResources
-    {$realPrio($res.ceilingPriority-1)},#slurp
-#if $res.description
-  /* $res.name [$res.description] */
-#else
-  /* $res.name */
-#end if
-#end for
+%for res in app.standardResources:
+     { ${hex(~(res.ceilingPriority - 1) & 0x0f)} },
+%if res.description:
+  /* ${res.name} [${res.description}] */
+%else:
+  /* ${res.name} */
+%endif
+%endfor
 };
 
 /* Dynamic parameters of Resources*/
 OsResourceType Os_Resources[OS_NUMBER_OF_RESOURCES];
-#end if
+%endif
 
-#if $len($app.internalResources)>0
+%if len(app.internalResources)>0:
 const OsResourceConfigurationType OS_IntResourceConf[OS_NUMBER_OF_INT_RESOURCES + 1] = {
-    {PRIO_SCHEDULER},    /* Index #0 ==> PRIO_SCHEDULER */
-#for $res in $app.internalResources
-    {$realPrio($res.ceilingPriority-1)},#slurp
-#if $res.description
-  /* $res.name [$res.description] */
-#else
-  /* $res.name */
-#end if
-#end for
+    { PRIO_SCHEDULER },    /* Index #0 ==> PRIO_SCHEDULER */
+%for res in app.internalResources:
+    { ${hex(~(res.ceilingPriority - 1) & 0x0f)} },
+%if res.description:
+  /* ${res.name} [${res.description}] */
+%else:
+  /* ${res.name} */
+%endif
+%endfor
 };
-#end if
+%endif
 
 
 /*
@@ -158,17 +141,17 @@ volatile TickType Os_CounterValues[OS_NUMBER_OF_COUNTERS];
 /*
 **  Counter <-> Alarm Associations.
 */
-#for $counter in $app.counters
-static const AlarmType AlarmsFor${counter.name}[$len($alarmsForCounters[$counter.name])] = {
-#for $alarm in $alarmsForCounters[$counter.name]
-    $alarm,
-#end for
+%for counter in app.counters:
+static const AlarmType AlarmsFor${counter.name}[${len(alarmsForCounters[counter.name])}] = {
+%for alarm in alarmsForCounters[counter.name]:
+    ${alarm},
+%endfor
 
 };
-#end for
+%endfor
 
 const CounterConfigurationType Os_CounterDefs[OS_NUMBER_OF_COUNTERS] = {
-#for $num, $counter in $enumerate($app.counters)
+%for num, counter in enumerate(app.counters):
     {
         &Os_CounterValues[$num],
         {
@@ -179,7 +162,7 @@ const CounterConfigurationType Os_CounterDefs[OS_NUMBER_OF_COUNTERS] = {
         (uint8)1,
         AlarmsFor${counter.name}
     },
-#end for
+%endfor
 
 };
 
@@ -190,47 +173,47 @@ const CounterConfigurationType Os_CounterDefs[OS_NUMBER_OF_COUNTERS] = {
 **
 */
 volatile OSAlarm OS_AlarmValue[OS_NUMBER_OF_ALARMS];
-#set $alarmsEvents = filter(lambda x: x.ACTION.value == 'SETEVENT', $app.alarms)
-#if $alarmsEvents
-static const AlarmSetEventType alarmsEvents[$len($alarmsEvents)] = {
-#for $num, $alarmsEvent in $enumerate($alarmsEvents)
-#set $alarmsEvent.pos = $num
-    {$alarmsEvent.ACTION.TASK, $alarmsEvent.ACTION.EVENT},
-#end for
+<% alarmsEvents = filter(lambda x: x.ACTION.value == 'SETEVENT', app.alarms) %>
+%if alarmsEvents:
+static const AlarmSetEventType alarmsEvents[${len(alarmsEvents)}] = {
+%for num, alarmsEvent in enumerate(alarmsEvents):
+<% alarmsEvent.pos = num %>
+    { ${alarmsEvent.ACTION.TASK}, ${alarmsEvent.ACTION.EVENT} },
+%endfor
 };
-#end if
+%endif
 
 const AlarmConfigurationType OS_AlarmConf[OS_NUMBER_OF_ALARMS] = {
-#for $num,$alarm in $enumerate($app.alarms)
+%for num, alarm in enumerate(app.alarms):
     {
-        $alarm.COUNTER,
-        $alarmAction($alarm),
-#if $alarm.AUTOSTART == True
-        $getApplicationModes($alarm),
-        (TickType)$alarm.AUTOSTART.ALARMTIME,
-        (TickType)$alarm.AUTOSTART.CYCLETIME
-#elif $len($app.autostartedAlarms) > 0
+        ${alarm.COUNTER},
+        ##${alarmAction(alarm)},        # STRANGE ERROR!!!
+%if alarm.AUTOSTART == True:
+        ${getApplicationModes(alarm)}0,
+        (TickType)${alarm.AUTOSTART.ALARMTIME},
+        (TickType)${alarm.AUTOSTART.CYCLETIME}
+%elif len(app.autostartedAlarms) > 0:
         OS_AUTOSTART_NEVER,
         (TickType)0,
         (TickType)0
-#end if
+%endif
     },
-#end for
+%endfor
 };
 
 
-#if $len($app.internalMessages) > 0 or $len($app.externalMessages) > 0
+%if len(app.internalMessages) > 0 or len(app.externalMessages) > 0:
 /*
 **
 **  COM.
 **
 */
-#for $msg in $app.internalMessages
-#if $hasattr($msg.MESSAGEPROPERTY, 'SENDINGMESSAGE')
-#set $sendingMessage = filter(lambda m: m.name == msg.MESSAGEPROPERTY.SENDINGMESSAGE, $app.internalMessages)[0]
-static $sendingMessage.MESSAGEPROPERTY.CDATATYPE.strip('"') Msg_Value_$msg.name /* SM: $sendingMessage.name  */;
-#end if
-#end for
+%for msg in app.internalMessages:
+%if hasattr(msg.MESSAGEPROPERTY, 'SENDINGMESSAGE'):
+<% sendingMessage = filter(lambda m: m.name == msg.MESSAGEPROPERTY.SENDINGMESSAGE, app.internalMessages)[0] %>
+static ${sendingMessage.MESSAGEPROPERTY.CDATATYPE.strip('"')} Msg_Value_${msg.name} /* SM: ${sendingMessage.name}  */;
+%endif
+%endfor
 
 const Com_MessageObjectType Com_MessageObjects[COM_NUMBER_OF_INTERNAL_MESSAGES + COM_NUMBER_OF_EXTERNAL_MESSAGES] = {
 ##    {SEND_STATIC_INTERNAL,COM_NOTIFY_NONE,(void*)NULL,4,(const ApplicationDataRef *)
@@ -239,29 +222,29 @@ const Com_MessageObjectType Com_MessageObjects[COM_NUMBER_OF_INTERNAL_MESSAGES +
 ##    {RECEIVE_UNQUEUED_INTERNAL,COM_SETEVENT,(void*)&Evt_Message_Receive,4,(const ApplicationDataRef *)
 ##        &MsgDataReceive,(uint8)0,(ComReceiverType*)NULL},
 ##
-#for $msg in $app.internalMessages
+%for msg in app.internalMessages:
     {   /* $msg.name */
-        $msg.MESSAGEPROPERTY
-        $mapNotification($msg.NOTIFICATION),
+        ${msg.MESSAGEPROPERTY}
+        ${mapNotification}(${msg.NOTIFICATION}),
         { (void *)NULL },
-#if $hasattr($msg.MESSAGEPROPERTY, 'CDATATYPE')
-        sizeof($msg.MESSAGEPROPERTY.CDATATYPE.strip('"')),
-#else
+%if hasattr(msg.MESSAGEPROPERTY, 'CDATATYPE'):
+        sizeof(${msg.MESSAGEPROPERTY.CDATATYPE.strip('"')}),
+%else:
         ((uint8)0), /* Received Message. */
-#end if
-#if $hasattr($msg.MESSAGEPROPERTY, 'SENDINGMESSAGE')
-#set $sendingMessage = filter(lambda m: m.name == msg.MESSAGEPROPERTY.SENDINGMESSAGE, $app.internalMessages)[0]
-        (const ApplicationDataRef *)&Msg_Value_$msg.name,
-#else
+%endif
+%if hasattr(msg.MESSAGEPROPERTY, 'SENDINGMESSAGE'):
+<% sendingMessage = filter(lambda m: m.name == msg.MESSAGEPROPERTY.SENDINGMESSAGE, app.internalMessages)[0] %>
+        (const ApplicationDataRef *)&Msg_Value_${msg.name},
+%else:
         (const ApplicationDataRef *)NULL,
-#end if
+%endif
         (uint8)0,
         (Com_ReceiverType *)NULL,
     },
-#end for
+%endfor
 };
 
-#end if
+%endif
 
 
 /*
@@ -272,28 +255,30 @@ const Com_MessageObjectType Com_MessageObjects[COM_NUMBER_OF_INTERNAL_MESSAGES +
 static TaskType MLQ_QueueData[OS_MLQ_QUEUE_SIZE];
 
 const OsMLQ_QueueConfigurationType MLQ_QueueDef[OS_MLQ_NUMBER_OF_PRIORITIES] = {
-#set $offset = 0
-#set $priorities = list($info.priorityMap.values())
-#for $num in $range($info.numberOfDistinctPriorities)
-#set $activations=$priorities[$num][1]
+<%
+offset = 0
+priorities = list(info.priorityMap.values())
+%>
+%for num in range(info.numberOfDistinctPriorities):
+<% activations = priorities[num][1] %>
 ##    *** $priorities[$num] ***
-    {(uint8)$activations,&MLQ_QueueData[$offset]},
-#set $offset=$offset+$activations
-#end for
+    { (uint8)${activations}, &MLQ_QueueData[${offset}] },
+<% offset = offset + activations %>
+%endfor
 };
 
 
 /*
 **  ISR2-Wrapper.
 */
-#for $counter in $app.counters
-#if $counter.TYPE == 'HARDWARE'
+%for counter in app.counters:
+%if counter.TYPE == 'HARDWARE':
 IMPLEMENT_ISR2_VECTOR(${counter.TYPE.DRIVER}Timer)
-#end if
-#end for
-#for $isr in $app.isrs
-#if $isr.CATEGORY == 2
+%endif
+%endfor
+%for isr in app.isrs:
+%if isr.CATEGORY == 2:
 IMPLEMENT_ISR2_VECTOR(${isr.name})
-#end if
-#end for
+%endif
+%endfor
 

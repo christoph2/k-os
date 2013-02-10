@@ -1,7 +1,7 @@
 /*
 **  k_os (Konnex Operating-System based on the OSEK/VDX-Standard).
 **
-**  (C) 2007-2012 by Christoph Schueler <github.com/Christoph2,
+**  (C) 2007-2013 by Christoph Schueler <github.com/Christoph2,
 **                                      cpu12.gems@googlemail.com>
 **
 **  All Rights Reserved
@@ -21,41 +21,40 @@
 **
 **  s. FLOSS-EXCEPTION.txt
 */
-
+<% import sys %>
 /*
 **
 **  !!! AUTOMATICALLY GENERATED FILE - DO NOT EDIT !!!
 **
 **
 **  GENERATED WITH  : '${sys.argv[0]}', Part of k_os (Konnex Operating-System based on the OSEK/VDX-Standard).
-**  VERSION:        : ${$info.version}
+**  VERSION:        : ${info.version}
 **  DATE            : ${time.ctime()}
 **
 */
-\#if !defined(__ISR_CFG_H)
-\#define __ISR_CFG_H
+#if !defined(__ISR_CFG_H)
+#define __ISR_CFG_H
 
 DECLARE_ISR1_VECTOR(SWI_Vector);
-\#define SWI_VECTOR SWI_Vector
 
-#for $counter in $app.counters
-#if $counter.TYPE == 'HARDWARE'
+%for counter in app.counters:
+%if counter.TYPE == 'HARDWARE':
 DECLARE_ISR1_VECTOR(${counter.TYPE.DRIVER}Timer);
 ##DECLARE_ISR2_VECTOR(${counter.TYPE.DRIVER}Timer);
 ##DECLARE_ISR2_USER_HANDLER(${counter.TYPE.DRIVER}Timer);
-\#define ${counter.TYPE.DRIVER}_VECTOR ${counter.TYPE.DRIVER}Timer
+#define ${counter.TYPE.DRIVER}_VECTOR ${counter.TYPE.DRIVER}Timer
 
-#end if
-#end for
-#for $isr in $app.isrs
-#if $isr.CATEGORY == 2
+%endif
+%endfor
+%for isr in app.isrs:
+%if isr.CATEGORY == 2:
 DECLARE_ISR2_VECTOR(${isr.name});
 DECLARE_ISR2_USER_HANDLER(${isr.name});
-#else
+%else:
 DECLARE_ISR1_VECTOR(${isr.name});
-#end if
-\#define ${isr.SOURCE}_VECTOR ${isr.name}
+%endif
+##define ${isr.SOURCE}_VECTOR ${isr.name}
 
-#end for
-\#endif /* __ISR_CFG_H */
+%endfor
+#endif /* __ISR_CFG_H */
 
