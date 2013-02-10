@@ -105,9 +105,9 @@ ${values}
             "WAITING"   = 3
         ] STATE, "Current Task State";
         ENUM "uint8 *" [
-%for num, task in enumerate(app.tasks,0):
-            "Stack${num}" : ${task.name}_Stack = "&(${task.name}_Stack[0])
-%if num < len(app.tasks) - 1:
+%for task in app.tasks:
+            "Stack${loop.index}" : ${task.name}_Stack = "&(${task.name}_Stack[0])\
+%if not loop.last:
 ,
 %else:
 
@@ -115,9 +115,9 @@ ${values}
 %endfor
         ] STACK, "Task Stack";
         ENUM "uint8 *" [
-%for num, task in enumerate(app.tasks, 0):
-            "CONTEXT_${task.name}" : CONTEXT_${task.name} = ${num}
-%if num < len(app.tasks) - 1:
+%for task in app.tasks:
+            "CONTEXT_${task.name}" : CONTEXT_${task.name} = ${loop.index}\
+%if not loop.last:
 ,
 %else:
 
@@ -158,9 +158,9 @@ ${values}
         ] STATE, "Resource State";
         ENUM "uint8" [
             "NONE" = 0,
-%for num, task in enumerate(app.tasks, 1):
-            "${task.name}" = ${num}
-%if num < len(app.tasks):
+%for task in app.tasks:
+            "${task.name}" = ${loop.index + 1}\
+%if not loop.last:
 ,
 %else:
 
@@ -200,22 +200,22 @@ OS ${info.vendor}_${info.version}_arch {
 ##    CURRENTAPPMODE      = "${osVars.appMode}";
 };
 
-%for num, task in enumerate(app.tasks, 1):
+%for task in app.tasks:
 TASK ${task.name} {
-    PRIORITY            = "(OS_TCB[${num}].CurrentPriority)";
-    STATE               = "(OS_TCB[${num}].State)";
+    PRIORITY            = "(OS_TCB[${loop.index + 1}].CurrentPriority)";
+    STATE               = "(OS_TCB[${loop.index + 1}].State)";
     STACK               = "&(${task.name}_Stack[0])";
-    CURRENTACTIVATIONS  = "(OS_TCB[${num}].Activations)";
-    CONTEXT             = "${num-1}";
+    CURRENTACTIVATIONS  = "(OS_TCB[${loop.index + 1}].Activations)";
+    CONTEXT             = "${loop.index}";
 ##    vs_Base_Priority    = "${task.RELATIVE_PRIORITY}";        # MISSING!!!
     vs_Schedule         = "${task.SCHEDULE}";
     vs_Task_Type        = "${task.taskType}";
-    vs_Events_WaitingFor= "(OS_TCB[${num}].EventsSet)";
-    vs_Events_Set       = "(OS_TCB[${num}].EventsWaitingFor)";
+    vs_Events_WaitingFor= "(OS_TCB[${loop.index + 1}].EventsSet)";
+    vs_Events_Set       = "(OS_TCB[${loop.index + 1}].EventsWaitingFor)";
 };
 
 STACK ${task.name}_Stack {
-    SIZE                = "(OS_TaskConf[${num}].StackSize)";
+    SIZE                = "(OS_TaskConf[${loop.index + 1}].StackSize)";
     STACKDIRECTION      = "${info.stack.direction}";
     BASEADDRESS         = "&(${task.name}_Stack[0])";
     FILLPATTERN         = "${info.stack.fillpattern}";
@@ -224,57 +224,49 @@ STACK ${task.name}_Stack {
 CONTEXT CONTEXT_${task.name} {
 %for name, type_, offs in info.context:
 %if name == 'D':
-    _CPU_${name} = "(${type_} ) ( (*(OS_TCB[${num}].Stackpointer + ${offs})) | (*(OS_TCB[${num}].Stackpointer + ${offs+1}) << 8 ) )";
+    _CPU_${name} = "(${type_} ) ( (*(OS_TCB[${loop.index + 1}].Stackpointer + ${offs})) | (*(OS_TCB[${loop.index + 1}].Stackpointer + ${offs+1}) << 8 ) )";
 %else:
-    _CPU_${name} = "*(${type_} *)((uint8*)(OS_TCB[${num}].Stackpointer + ${offs}))";
+    _CPU_${name} = "*(${type_} *)((uint8*)(OS_TCB[${loop.index + 1}].Stackpointer + ${offs}))";
 %endif
 %endfor
-    VALID = "((OS_TCB[${num}].State!=SUSPENDED) && (OS_TCB[${num}].State!=RUNNING))";
+    VALID = "((OS_TCB[${loop.index + 1}].State!=SUSPENDED) && (OS_TCB[${loop.index + 1}].State != RUNNING))";
 };
 
 %endfor
 
-%for num, counter in enumerate(app.counters):
+%for counter in app.counters:
 vs_COUNTER $(counter.name) {
     vs_MAXALLOWEDVALUE  = "${counter.MAXALLOWEDVALUE}";
     vs_MINCYCLE         = "${counter.MINCYCLE}";
     vs_TICKSPERBASE     = "${counter.TICKSPERBASE}";
-    vs_CURRENTVALUE     = "Os_CounterValues[${num}]";
-    vs_TYPE             = "${counter.TYPE}
+    vs_CURRENTVALUE     = "Os_CounterValues[${loop.index}]";
+    vs_TYPE             = "${counter.TYPE}\
 %if counter.TYPE == 'HARDWARE':
- [Driver: ${counter.TYPE.DRIVER}]#slurp
+ [Driver: ${counter.TYPE.DRIVER}]\
 %endif
 ";
 };
 
 %endfor
 
-%for num, alarm in enumerate(app.alarms, 0):
+%for alarm in app.alarms:
 ALARM ${alarm.name} {
-    ALARMTIME = "OS_AlarmValue[$num].ExpireCounter";
-    CYCLETIME = "OS_AlarmValue[$num].CycleCounter";
-    STATE     = "((OsAlm_ActiveAlarms & (1 << $num))!=0) ? 1 : 0";
+    ALARMTIME = "OS_AlarmValue[${loop.index}].ExpireCounter";
+    CYCLETIME = "OS_AlarmValue[${loop.index}].CycleCounter";
+    STATE     = "((OsAlm_ActiveAlarms & (1 << ${loop.index})) != 0) ? 1 : 0";
     ACTION    = "${alarmAction(alarm)}";
-    COUNTER   = "$alarm.COUNTER";
+    COUNTER   = "${alarm.COUNTER}";
 };
 
 %endfor
-#for $num, $res in $enumerate($app.standardResources, 0):
+
+%for res in app.standardResources:
 RESOURCE ${res.name} {
 ## todo: Priority of Locker!
     PRIORITY = "TASK: ${res.relativeCeilingPriority}";
-    LOCKER   = "Os_Resources[$num].Locker";
-    STATE    = "Os_Resources[$num].Locker != INVALID_TASK";
+    LOCKER   = "Os_Resources[${loop.index}].Locker";
+    STATE    = "Os_Resources[${loop.index}].Locker != INVALID_TASK";
 };
 
-#endfor
-#def alarmAction($alarm)
-#if $alarm.ACTION == 'ACTIVATETASK'
-#set $action = 'ActivateTask [' + $alarm.ACTION.TASK + ']'
-#elif $alarm.ACTION == 'SETEVENT'
-#set $action = 'SetEvent [' + $alarm.ACTION.TASK + ':' + $alarm.ACTION.EVENT + ']'
-#elif $alarm.ACTION == 'ALARMCALLBACK'
-#set $action = 'AlarmCallback [' + $alarm.ACTION.ALARMCALLBACKNAME + ']'
-#end if
-$action#slurp
-#end def
+%endfor
+

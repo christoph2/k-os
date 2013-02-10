@@ -151,9 +151,9 @@ static const AlarmType AlarmsFor${counter.name}[${len(alarmsForCounters[counter.
 %endfor
 
 const CounterConfigurationType Os_CounterDefs[OS_NUMBER_OF_COUNTERS] = {
-%for num, counter in enumerate(app.counters):
+%for counter in app.counters:
     {
-        &Os_CounterValues[$num],
+        &Os_CounterValues[${loop.index}],
         {
             OSMAXALLOWEDVALUE_${counter.name},
             OSTICKSPERBASE_${counter.name},
@@ -176,15 +176,15 @@ volatile OSAlarm OS_AlarmValue[OS_NUMBER_OF_ALARMS];
 <% alarmsEvents = filter(lambda x: x.ACTION.value == 'SETEVENT', app.alarms) %>
 %if alarmsEvents:
 static const AlarmSetEventType alarmsEvents[${len(alarmsEvents)}] = {
-%for num, alarmsEvent in enumerate(alarmsEvents):
-<% alarmsEvent.pos = num %>
+%for alarmsEvent in alarmsEvents:
+<% alarmsEvent.pos = loop.index %>
     { ${alarmsEvent.ACTION.TASK}, ${alarmsEvent.ACTION.EVENT} },
 %endfor
 };
 %endif
 
 const AlarmConfigurationType OS_AlarmConf[OS_NUMBER_OF_ALARMS] = {
-%for num, alarm in enumerate(app.alarms):
+%for alarm in app.alarms:
     {
         ${alarm.COUNTER},
         ##${alarmAction(alarm)},        # STRANGE ERROR!!!
@@ -223,7 +223,7 @@ const Com_MessageObjectType Com_MessageObjects[COM_NUMBER_OF_INTERNAL_MESSAGES +
 ##        &MsgDataReceive,(uint8)0,(ComReceiverType*)NULL},
 ##
 %for msg in app.internalMessages:
-    {   /* $msg.name */
+    {   /* ${msg.name} */
         ${msg.MESSAGEPROPERTY}
         ${mapNotification}(${msg.NOTIFICATION}),
         { (void *)NULL },

@@ -149,8 +149,8 @@ extern "C"
 #define LOCALMESSAGESONLY                  STD_OFF
 
 /* Timebase: ${app.com.COMTIMEBASE.value} Seconds */
-%for num, appmode in enumerate(app.com.COMAPPMODE):
-#define appmode.value.strip('"').ljust(30) ((COMApplicationModeType)$num)
+%for appmode in app.com.COMAPPMODE:
+#define appmode.value.strip('"').ljust(30) ((COMApplicationModeType)${loop.index})
 %endfor
 %endif
 %else:
@@ -198,8 +198,8 @@ extern const OsMLQ_QueueConfigurationType MLQ_QueueDef[];
 **
 */
     ## TODO: was ist mit der Wertberechnung??
-%for idx, appmode in enumerate(app.appmodes, 1):
-#define ${appmode.name}                     ((AppModeType)${idx})
+%for appmode in app.appmodes:
+#define ${appmode.name}                     ((AppModeType${loop.index + 1})
 %endfor
 %if len(app.appmodes) == 1:
 #define OS_FEATURE_REAL_DEFAULT_APPMODE    ((AppModeType)1)
@@ -225,9 +225,9 @@ extern uint8 IdleTask_Stack[IDLE_TASK_STACK_SIZE];
 extern OsTCBType OS_TCB[OS_NUMBER_OF_TASKS];
 extern const OsTaskConfigurationType OS_TaskConf[OS_NUMBER_OF_TASKS];
 
-%for num, task in enumerate(app.tasks, 1):
+%for task in app.tasks:
 DeclareTask(${task.name});
-#define ${task.name.ljust(27)}    ((TaskType)${num})
+#define ${task.name.ljust(27)}    ((TaskType)${loop.index + 1})
 
 %endfor
 
@@ -248,8 +248,8 @@ extern const OsResourceConfigurationType OS_IntResourceConf[];
 **  Resource handles.
 */
 %if len(app.standardResources) > 0:
-%for num, res in enumerate(app.standardResources, 1):
-#define ${res.name}                    ((uint8)${num})
+%for res in app.standardResources:
+#define ${res.name}                    ((uint8)${loop.index + 1})
 %endfor
 %endif
 
@@ -273,13 +273,13 @@ extern const CounterConfigurationType Os_CounterDefs[OS_NUMBER_OF_COUNTERS];
 ##of the Counter, e.g. OS_TICKS2MS_MyCounter()
 
 <% units =( 'NS', 'US', 'MS', 'SEC') %>
-%for num, counter in enumerate(app.counters):
+%for counter in app.counters:
 
 /* ${counter.name} */
-#define $counter.name                  ((CounterType)$num)
+#define ${counter.name}                  ((CounterType${loop.index})
 ## todo: only for Hardware-Counters!!!
-#set $conversionMacros = '\n'.join(map(lambda x: "#define OS_TICKS2%s_%s(ticks)" % (x, counter.name), units))
-$conversionMacros
+<% conversionMacros = '\n'.join(map(lambda x: "#define OS_TICKS2%s_%s(ticks)" % (x, counter.name), units)) %>
+${conversionMacros}
 
 #define OSMAXALLOWEDVALUE_${counter.name}  ((TickType)${counter.MAXALLOWEDVALUE})
 #define OSTICKSPERBASE_${counter.name}     ((TickType)${counter.TICKSPERBASE})
@@ -318,8 +318,8 @@ typedef uint16 Os_AlarmStateType;
 typedef uint8 Os_AlarmStateType;
 %endif
 
-%for num, alarm in enumerate(app.alarms):
-#define ${alarm.name}                  ((AlarmType)${num})
+%for alarm in app.alarms:
+#define ${alarm.name}                  ((AlarmType${loop.index})
 %endfor
 
 %if numAlarms > 0:
