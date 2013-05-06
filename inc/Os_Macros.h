@@ -1,7 +1,7 @@
 /*
  *  k_os (Konnex Operating-System based on the OSEK/VDX-Standard).
  *
- * (C) 2007-2012 by Christoph Schueler <github.com/Christoph2,
+ * (C) 2007-2013 by Christoph Schueler <github.com/Christoph2,
  *                                      cpu12.gems@googlemail.com>
  *
  * All Rights Reserved
@@ -34,6 +34,10 @@
 #endif
 
 #define OSEK_SUCCESS(code)          (((code) == E_OK) ? TRUE : FALSE)
+
+#if !defined(KDK_TOS)
+#define KDK_TOS(mem, size) ((uint8 *)(mem) + ((size) - (uint8)1))
+#endif /* KDK_TOS */
 
 #define OS_GET_HIGHEST_PRIO_READY() OsMLQ_GetHighestPrio()
 
