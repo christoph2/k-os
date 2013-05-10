@@ -47,18 +47,14 @@ class ApplicationDefinitionBuilder(object):
         self.info = Info()
 
     def postProcessing(self):
-        result = {}
-        self.standardResources = self.parser.standardResources  # TODO: in der Grammatik handeln!!!
+        self.standardResources = self.parser.standardResources  # TODO: in der Grammatik behandeln!!!
         self.internalResources = self.parser.internalResources
         self.linkedResources = self.parser.linkedResources
         self.internalMessages = self.parser.internalMessages
         self.externalMessages = self.parser.externalMessages
-
         self.autostartedTasks = self.getAutostartedObjects('TASK')
         self.autostartedAlarms = self.getAutostartedObjects('ALARM')
-
         self.setTaskFlags()
-
         self.calculatePriorities()
         self.calculateCeilingPriorities()
 
@@ -92,7 +88,7 @@ class ApplicationDefinitionBuilder(object):
         usedResources = {}
         resources = dict(self.getObjects('RESOURCE').items())
 
-        for name, task in self.getObjects('TASK').items():
+        for _, task in self.getObjects('TASK').items():
             if hasattr(task, 'RESOURCE'):
                 for resource in task.RESOURCE:
                     usedResources.setdefault(resource, []).append(task)
@@ -124,7 +120,7 @@ class ApplicationDefinitionBuilder(object):
         tasks = self.getObjects('TASK')
         self.info.numberOfPreemtiveTasks = 0
         self.info.numberOfNonPreemtiveTasks = 0
-        for name, task in tasks.items():
+        for _, task in tasks.items():
             #priority = task.PRIORITY
             #task.RELATIVE_PRIORITY = priority
             if task.SCHEDULE == 'FULL':
@@ -139,9 +135,9 @@ class ApplicationDefinitionBuilder(object):
                 xCC2 = True
             levelPriority = objects[0].PRIORITY
             activations = 0
-            for object in objects:
-                object.ABSOLUTE_PRIORITY = idx
-                activations += object.ACTIVATION
+            for obj in objects:
+                obj.ABSOLUTE_PRIORITY = idx
+                activations += obj.ACTIVATION
             priorityMap[levelPriority] = (idx, activations)
         self.info.priorityMap = priorityMap
 
