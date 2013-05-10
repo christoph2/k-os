@@ -1,7 +1,7 @@
 /*
  * k_os (Konnex Operating-System based on the OSEK/VDX-Standard).
  *
- * (C) 2007-2012 by Christoph Schueler <github.com/Christoph2,
+ * (C) 2007-2013 by Christoph Schueler <github.com/Christoph2,
  *                                      cpu12.gems@googlemail.com>
  *
  * All Rights Reserved
@@ -24,11 +24,13 @@
 
 #include "Osek.h"
 #include "Os_Mlq.h"
+#include "Os_Intr.h"
 #include "Os_Task.h"
 #include "Os_Evt.h"
+#include "Os_Exec.h"
 #include "Os_Res.h"
 #include "Os_Alm.h"
-/* #include "Os_Ctr.h" */
+/*/ #include "Os_Ctr.h" */
 #include "Utl.h"
 
 #define API_TRACE()     /* TODO: Nur zum Testen!!! */

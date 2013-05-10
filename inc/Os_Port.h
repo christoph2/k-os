@@ -66,7 +66,6 @@ void    OsPort_Shutdown(void);
 uint8 * OsPort_TaskStackInit(TaskType TaskID, TaskFunctionType * TaskFunc, uint8 * sp);
 uint32  OsPort_GetTimestamp(void);
 
-
 #endif /* KOS_MEMORY_MAPPING */
 
 #define OsPort_DisableAllOsInterrupts() CPU_SAVE_AND_DISABLE_INTERRUPTS(OsPort_InterruptState)

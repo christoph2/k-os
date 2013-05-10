@@ -29,6 +29,8 @@ extern "C"
 {
 #endif  /* __cplusplus */
 
+#include "Osek.h"
+
 /*
 **  Global Functions.
 */
