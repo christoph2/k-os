@@ -1,7 +1,7 @@
 /*
 **  k_os (Konnex Operating-System based on the OSEK/VDX-Standard).
 **
-**  (C) 2007-2012 by Christoph Schueler <github.com/Christoph2,
+**  (C) 2007-2013 by Christoph Schueler <github.com/Christoph2,
 **                                       cpu12.gems@googlemail.com>
 **
 **  All Rights Reserved
@@ -75,7 +75,7 @@ tokens {
    OBJECT;
    OBJECT_DEFINITION_LIST;
    OBJECT_REF_TYPE;
-   OBJECT_NAME; 
+   OBJECT_NAME;
    PARAMETER_LIST;
    ATTRIBUTE_VALUE;
    ID_VALUE;
@@ -109,16 +109,16 @@ tokens {
 
 
 file returns[value]
-   : oilVersion implementationDefinition applicationDefinition 
+   : oilVersion implementationDefinition applicationDefinition
    {
-	$value = ($implementationDefinition.value, $applicationDefinition.value)
+   $value = ($implementationDefinition.value, $applicationDefinition.value)
    }
    -> ^(FILE oilVersion implementationDefinition applicationDefinition)
    ;
 
 
 oilVersion
-   : 'OIL_VERSION' ASSIGN STRING description? SEMI 
+   : 'OIL_VERSION' ASSIGN STRING description? SEMI
    -> ^(OIL_VERSION STRING description?)
    ;
 
@@ -130,8 +130,8 @@ oilVersion
 implementationDefinition returns[value]
    :  'IMPLEMENTATION' ID '{' implementationSpecList '}' description? SEMI
    {
-	$value = ($implementationSpecList.value, $description.value)
-	self.implDefinition = $implementationSpecList.value
+   $value = ($implementationSpecList.value, $description.value)
+   self.implDefinition = $implementationSpecList.value
    }
    -> ^(IMPLEMENTATION_DEFINITION implementationSpecList description?)
    ;
@@ -145,7 +145,7 @@ implementationSpecList returns[value]
     builder = ImplementationDefinition.ImplementationDefinitionBuilder(self, myList)
     $value = builder.postProcessing()
 }
-   :  specs += (implementationSpec { myList.append($implementationSpec.value) } ) * 
+   :  specs += (implementationSpec { myList.append($implementationSpec.value) } ) *
    -> ^(IMPLEMENTATION_SPEC_LIST implementationSpec*)
    ;
 
@@ -195,14 +195,14 @@ implementationDef returns[values]
 @after {
 ###
 }
-   :  id = implAttrDef 
-   { 
-	$values = ImplementationDefinition.ImplAttrDef($id.dataType, $id.attrName, $id.auto, $id.mult, $id.deflt, $id.desc, $id.extra)
+   :  id = implAttrDef
+   {
+   $values = ImplementationDefinition.ImplAttrDef($id.dataType, $id.attrName, $id.auto, $id.mult, $id.deflt, $id.desc, $id.extra)
    }
-   -> ^(IMPLEMENTATION_DEF implAttrDef) 
+   -> ^(IMPLEMENTATION_DEF implAttrDef)
    | id2 = implRefDef
    {
-	$values = ImplementationDefinition.ImplRefDef($id2.objectType, $id2.name, $id2.mult, $id2.desc)
+   $values = ImplementationDefinition.ImplRefDef($id2.objectType, $id2.name, $id2.mult, $id2.desc)
    }
    -> ^(IMPLEMENTATION_DEF implRefDef)
    ;
@@ -224,145 +224,145 @@ scope {
 }
    :  'UINT32' autoSpecifier? numberRange? attributeName multipleSpecifier? defaultNumber? description? SEMI
       {
-	$dataType = ImplementationDefinition.ImplAttrType.UINT32
-	$attrName = $attributeName.text
+   $dataType = ImplementationDefinition.ImplAttrType.UINT32
+   $attrName = $attributeName.text
 
-	$implAttrDef::implAttrName = $attributeName.text
+   $implAttrDef::implAttrName = $attributeName.text
 
 
-	$extra = ImplementationDefinition.Extras(ImplementationDefinition.Extras.NUMBER_RANGE, {'range' : $numberRange.range, 'numberFrom': $numberRange.nfrom, 
-	    'numberTo': $numberRange.nto})
-	if $autoSpecifier.text: $auto = True
-	else: $auto = False
-	if $multipleSpecifier.text: $mult = True
-	else: $mult = False
-	$deflt = $defaultNumber.value
-	if $description.value: $desc = $description.value
-	else: $desc = ""
-      }	
+   $extra = ImplementationDefinition.Extras(ImplementationDefinition.Extras.NUMBER_RANGE, {'range' : $numberRange.range, 'numberFrom': $numberRange.nfrom,
+       'numberTo': $numberRange.nto})
+   if $autoSpecifier.text: $auto = True
+   else: $auto = False
+   if $multipleSpecifier.text: $mult = True
+   else: $mult = False
+   $deflt = $defaultNumber.value
+   if $description.value: $desc = $description.value
+   else: $desc = ""
+      }
       -> ^(IMPL_ATTR_DEF 'UINT32' attributeName autoSpecifier? numberRange? multipleSpecifier? defaultNumber? description?)
    |  'INT32'     autoSpecifier? numberRange? attributeName multipleSpecifier? defaultNumber? description? SEMI
       {
-	$dataType = ImplementationDefinition.ImplAttrType.INT32
-	$attrName = $attributeName.text
+   $dataType = ImplementationDefinition.ImplAttrType.INT32
+   $attrName = $attributeName.text
 
-	$implAttrDef::implAttrName = $attributeName.text
+   $implAttrDef::implAttrName = $attributeName.text
 
-	$extra = ImplementationDefinition.Extras(ImplementationDefinition.Extras.NUMBER_RANGE, {'range' : $numberRange.range, 'numberFrom': $numberRange.nfrom, 
-	    'numberTo': $numberRange.nto})
-	if $autoSpecifier.text: $auto = True
-	else: $auto = False
-	if $multipleSpecifier.text: $mult = True
-	else: $mult = False
-	$deflt = $defaultNumber.value
-	if $description.value: $desc = $description.value
-	else: $desc = ""
-      }	
+   $extra = ImplementationDefinition.Extras(ImplementationDefinition.Extras.NUMBER_RANGE, {'range' : $numberRange.range, 'numberFrom': $numberRange.nfrom,
+       'numberTo': $numberRange.nto})
+   if $autoSpecifier.text: $auto = True
+   else: $auto = False
+   if $multipleSpecifier.text: $mult = True
+   else: $mult = False
+   $deflt = $defaultNumber.value
+   if $description.value: $desc = $description.value
+   else: $desc = ""
+      }
       -> ^(IMPL_ATTR_DEF 'INT32' attributeName autoSpecifier? numberRange? multipleSpecifier? defaultNumber? description?)
    |  'UINT64' autoSpecifier? numberRange? attributeName multipleSpecifier? defaultNumber? description? SEMI
       {
-	$dataType = ImplementationDefinition.ImplAttrType.UINT64
-	$attrName = $attributeName.text
+   $dataType = ImplementationDefinition.ImplAttrType.UINT64
+   $attrName = $attributeName.text
 
-	$implAttrDef::implAttrName = $attributeName.text
+   $implAttrDef::implAttrName = $attributeName.text
 
-	$extra = ImplementationDefinition.Extras(ImplementationDefinition.Extras.NUMBER_RANGE, {'range' : $numberRange.range, 'numberFrom': $numberRange.nfrom, 
-	    'numberTo': $numberRange.nto})
-	if $autoSpecifier.text: $auto = True
-	else: $auto = False
-	if $multipleSpecifier.text: $mult = True
-	else: $mult = False
-	$deflt = $defaultNumber.value
-	if $description.value: $desc = $description.value
-	else: $desc = ""
-      }	
+   $extra = ImplementationDefinition.Extras(ImplementationDefinition.Extras.NUMBER_RANGE, {'range' : $numberRange.range, 'numberFrom': $numberRange.nfrom,
+       'numberTo': $numberRange.nto})
+   if $autoSpecifier.text: $auto = True
+   else: $auto = False
+   if $multipleSpecifier.text: $mult = True
+   else: $mult = False
+   $deflt = $defaultNumber.value
+   if $description.value: $desc = $description.value
+   else: $desc = ""
+      }
       -> ^(IMPL_ATTR_DEF 'UINT64' attributeName autoSpecifier? numberRange? multipleSpecifier? defaultNumber? description?)
    |  'INT64'     autoSpecifier? numberRange? attributeName multipleSpecifier? defaultNumber? description? SEMI
       {
-	$dataType = ImplementationDefinition.ImplAttrType.INT64
-	$attrName = $attributeName.text
-	$extra = ImplementationDefinition.Extras(ImplementationDefinition.Extras.NUMBER_RANGE, {'range' : $numberRange.range, 'numberFrom': $numberRange.nfrom, 
-	    'numberTo': $numberRange.nto})
+   $dataType = ImplementationDefinition.ImplAttrType.INT64
+   $attrName = $attributeName.text
+   $extra = ImplementationDefinition.Extras(ImplementationDefinition.Extras.NUMBER_RANGE, {'range' : $numberRange.range, 'numberFrom': $numberRange.nfrom,
+       'numberTo': $numberRange.nto})
 
-	$implAttrDef::implAttrName = $attributeName.text
+   $implAttrDef::implAttrName = $attributeName.text
 
-	if $autoSpecifier.text: $auto = True
-	else: $auto = False
-	if $multipleSpecifier.text: $mult = True
-	else: $mult = False
-	$deflt = $defaultNumber.value
-	if $description.value: $desc = $description.value
-	else: $desc = ""
-      }	
+   if $autoSpecifier.text: $auto = True
+   else: $auto = False
+   if $multipleSpecifier.text: $mult = True
+   else: $mult = False
+   $deflt = $defaultNumber.value
+   if $description.value: $desc = $description.value
+   else: $desc = ""
+      }
       -> ^(IMPL_ATTR_DEF 'INT64' attributeName autoSpecifier? numberRange? multipleSpecifier? defaultNumber? description?)
    |  'FLOAT'     autoSpecifier? floatRange? attributeName multipleSpecifier? defaultFloat? description? SEMI
       {
-	$dataType = ImplementationDefinition.ImplAttrType.FLOAT
-	$attrName = $attributeName.text
-	$extra = ImplementationDefinition.Extras(ImplementationDefinition.Extras.FLOAT_RANGE, {'numberFrom': $floatRange.nfrom, 'numberTo': $floatRange.nto})
+   $dataType = ImplementationDefinition.ImplAttrType.FLOAT
+   $attrName = $attributeName.text
+   $extra = ImplementationDefinition.Extras(ImplementationDefinition.Extras.FLOAT_RANGE, {'numberFrom': $floatRange.nfrom, 'numberTo': $floatRange.nto})
 
-	$implAttrDef::implAttrName = $attributeName.text
+   $implAttrDef::implAttrName = $attributeName.text
 
-	if $autoSpecifier.text: $auto = True
-	else: $auto = False
-	if $multipleSpecifier.text: $mult = True
-	else: $mult = False
-	$deflt = $defaultFloat.value
-	if $description.value: $desc = $description.value
-	else: $desc = ""
-      }	
+   if $autoSpecifier.text: $auto = True
+   else: $auto = False
+   if $multipleSpecifier.text: $mult = True
+   else: $mult = False
+   $deflt = $defaultFloat.value
+   if $description.value: $desc = $description.value
+   else: $desc = ""
+      }
       -> ^(IMPL_ATTR_DEF 'FLOAT' attributeName autoSpecifier? floatRange? multipleSpecifier? defaultFloat? description?)
    |  'ENUM'      autoSpecifier? enumeration attributeName multipleSpecifier? defaultName? description? SEMI
       {
-	$dataType = ImplementationDefinition.ImplAttrType.ENUM
-	$attrName = $attributeName.text
+   $dataType = ImplementationDefinition.ImplAttrType.ENUM
+   $attrName = $attributeName.text
 
-	$implAttrDef::implAttrName = $attributeName.text
+   $implAttrDef::implAttrName = $attributeName.text
 
-	$extra = ImplementationDefinition.Extras(ImplementationDefinition.Extras.ENUMERATION, {'enumeration': $enumeration.values})
-	if $autoSpecifier.text: $auto = True
-	else: $auto = False
-	if $multipleSpecifier.text: $mult = True
-	else: $mult = False
-	$deflt = $defaultName.value
-	if $description.value: $desc = $description.value
-	else: $desc = ""
-      }	
+   $extra = ImplementationDefinition.Extras(ImplementationDefinition.Extras.ENUMERATION, {'enumeration': $enumeration.values})
+   if $autoSpecifier.text: $auto = True
+   else: $auto = False
+   if $multipleSpecifier.text: $mult = True
+   else: $mult = False
+   $deflt = $defaultName.value
+   if $description.value: $desc = $description.value
+   else: $desc = ""
+      }
       -> ^(IMPL_ATTR_DEF 'ENUM' attributeName autoSpecifier? enumeration multipleSpecifier? defaultName? description?)
    |  'STRING' autoSpecifier? attributeName multipleSpecifier? defaultString? description? SEMI
       {
-	$dataType = ImplementationDefinition.ImplAttrType.STRING
-	$attrName = $attributeName.text
+   $dataType = ImplementationDefinition.ImplAttrType.STRING
+   $attrName = $attributeName.text
 
-	$implAttrDef::implAttrName = $attributeName.text
-	$extra = ImplementationDefinition.Extras(ImplementationDefinition.Extras.DUMMY)
+   $implAttrDef::implAttrName = $attributeName.text
+   $extra = ImplementationDefinition.Extras(ImplementationDefinition.Extras.DUMMY)
 
-	if $autoSpecifier.text: $auto = True
-	else: $auto = False
-	if $multipleSpecifier.text: $mult = True
-	else: $mult = False
-	$deflt = $defaultString.value
-	if $description.value: $desc = $description.value
-	else: $desc = ""
-      }	
+   if $autoSpecifier.text: $auto = True
+   else: $auto = False
+   if $multipleSpecifier.text: $mult = True
+   else: $mult = False
+   $deflt = $defaultString.value
+   if $description.value: $desc = $description.value
+   else: $desc = ""
+      }
       -> ^(IMPL_ATTR_DEF 'STRING' attributeName autoSpecifier? multipleSpecifier? defaultString? description?)
    |  'BOOLEAN'   autoSpecifier? boolValues? attributeName multipleSpecifier? defaultBool? description? SEMI
       {
-	$dataType = ImplementationDefinition.ImplAttrType.BOOLEAN
-	$attrName = $attributeName.text
+   $dataType = ImplementationDefinition.ImplAttrType.BOOLEAN
+   $attrName = $attributeName.text
 
-	$implAttrDef::implAttrName = $attributeName.text
+   $implAttrDef::implAttrName = $attributeName.text
 
-	$extra = ImplementationDefinition.Extras(ImplementationDefinition.Extras.BOOL_VALUES, {'boolValues': $boolValues.values})
+   $extra = ImplementationDefinition.Extras(ImplementationDefinition.Extras.BOOL_VALUES, {'boolValues': $boolValues.values})
 
-	if $autoSpecifier.text: $auto = True
-	else: $auto = False
-	if $multipleSpecifier.text: $mult = True
-	else: $mult = False
-	$deflt = $defaultBool.value
-	if $description.value: $desc = $description.value
-	else: $desc = ""
-      }	
+   if $autoSpecifier.text: $auto = True
+   else: $auto = False
+   if $multipleSpecifier.text: $mult = True
+   else: $mult = False
+   $deflt = $defaultBool.value
+   if $description.value: $desc = $description.value
+   else: $desc = ""
+      }
       -> ^(IMPL_ATTR_DEF 'BOOLEAN' attributeName autoSpecifier? boolValues? multipleSpecifier? defaultBool? description?)
    ;
 
@@ -372,19 +372,19 @@ attributeName
    ;
 
 numberRange returns[range, nfrom, nto]
-   :  ('[' (numberList 
-   { 
-	$nfrom = $numberList.values
-	$range = False 
+   :  ('[' (numberList
+   {
+   $nfrom = $numberList.values
+   $range = False
    }
    -> ^(NUMBER_RANGE numberList)
-   |  (numberFrom = number 
-   { 
-	$range = True
-	$nfrom = long($numberFrom.text) 
-   } range numberTo = number 
-   { $nto = long($numberTo.text) 
-   }	
+   |  (numberFrom = number
+   {
+   $range = True
+   $nfrom = long($numberFrom.text)
+   } range numberTo = number
+   { $nto = long($numberTo.text)
+   }
    -> ^(NUMBER_RANGE $numberFrom $numberTo)
    )) ']')
    ;
@@ -393,9 +393,9 @@ numberList returns[values]
 @init {
     values = []
 }
-   :  nums += number (',' nums += number)*  
-   { 
-	$values = [long(n.text) for n in $nums]
+   :  nums += number (',' nums += number)*
+   {
+   $values = [long(n.text) for n in $nums]
     }
    -> ^(NUMBER_LIST number+)
    ;
@@ -410,8 +410,8 @@ floatRange returns[nfrom, nto]
    ;
 
 enumeration returns[values]
-   :  '[' enumeratorList ']' 
-   { 
+   :  '[' enumeratorList ']'
+   {
     $values = ImplementationDefinition.Enumeration($enumeratorList.values)
    }
    -> ^(ENUMERATION enumeratorList)
@@ -437,7 +437,7 @@ enumerator returns[value]
 }
    :  ID implParameterList? description?
    {
-	$value = ImplementationDefinition.Enumerator($ID.text, $implParameterList.values, $description.value)
+   $value = ImplementationDefinition.Enumerator($ID.text, $implParameterList.values, $description.value)
 
    }
    -> ^(ENUMERATOR ID implParameterList? description?)
@@ -451,7 +451,7 @@ boolValues returns[values]
 
 }
    :  ('[' 'TRUE' tlist = implParameterList? tdesc = description? ',' 'FALSE' flist = implParameterList? fdesc = description? ']')
-   { 
+   {
     $values = ImplementationDefinition.BoolValues(tlist, tdesc, flist, fdesc)
    }
    -> ^(BOOL_VALUES ^('TRUE' $tlist? $tdesc?) ^('FALSE' $flist? $fdesc?))
@@ -473,7 +473,7 @@ defaultFloat returns[value]
    :  (ASSIGN (
    num = float  { $value = float($num.text) } -> ^(DEFAULT_FLOAT $num)
    | id = 'NO_DEFAULT'  { $value = $id.text } -> ^(DEFAULT_FLOAT $id)
-   | id = 'AUTO' { $value = $id.text }	      -> ^(DEFAULT_FLOAT $id)
+   | id = 'AUTO' { $value = $id.text }       -> ^(DEFAULT_FLOAT $id)
    ))
    ;
 
@@ -484,7 +484,7 @@ float
 
 defaultName returns[value]
    :  (ASSIGN (
-   id = ID 
+   id = ID
    | id = 'NO_DEFAULT'
    | id = 'AUTO'
    )
@@ -495,26 +495,26 @@ defaultName returns[value]
 
 defaultString returns[value]
    :  (ASSIGN (
-   id = STRING 
-   | id = 'NO_DEFAULT' 
+   id = STRING
+   | id = 'NO_DEFAULT'
    | id = 'AUTO'
    )
    -> ^(DEFAULT_STRING $id)
-   )  
+   )
    { $value = $id.text }
    ;
 
 defaultBool returns[value]
    :  (ASSIGN (
-   boolean	       -> ^(DEFAULT_BOOL boolean)
+   boolean         -> ^(DEFAULT_BOOL boolean)
    | id = 'NO_DEFAULT' -> ^(DEFAULT_BOOL $id)
    | id = 'AUTO'       -> ^(DEFAULT_BOOL $id)
    ))
    ;
 
 implParameterList returns[values]
-   :  ('{' implDefList 
-   { 
+   :  ('{' implDefList
+   {
     $values = ImplementationDefinition.ImplParameterList($implDefList.values)
    } '}')
    -> ^(IMPL_PARAMETER_LIST implDefList)
@@ -528,7 +528,7 @@ implDefList returns[values]
     $values = myList
 }
    :  defs += (implementationDef { myList.append($implementationDef.values), }) *
-   { 
+   {
 
    }
    -> ^(IMPL_DEF_LIST implementationDef*)
@@ -538,14 +538,14 @@ implDefList returns[values]
 implRefDef returns[objectType, name, mult, desc]
    :  objectRefType referenceName multipleSpecifier? description? SEMI
    {
-	$objectType = $objectRefType.text
-	$name = $referenceName.text 
-	if $multipleSpecifier.text: $mult = True
-	else: $mult = False
-	if $description.value: $desc = $description.value
-	else: $desc = ""
+   $objectType = $objectRefType.text
+   $name = $referenceName.text
+   if $multipleSpecifier.text: $mult = True
+   else: $mult = False
+   if $description.value: $desc = $description.value
+   else: $desc = ""
 
-   } 
+   }
       -> ^(IMPL_REF_DEF objectRefType referenceName multipleSpecifier? description?)
    ;
 
@@ -567,8 +567,8 @@ objectRefType
    ;
 
 referenceName
-   :  ID	-> ^(REFERENCE_NAME ID)
-   |  object	-> ^(REFERENCE_NAME object)
+   :  ID -> ^(REFERENCE_NAME ID)
+   |  object   -> ^(REFERENCE_NAME object)
    ;
 
 //
@@ -579,7 +579,7 @@ referenceName
 applicationDefinition returns[value]
    :  'CPU' ID '{' objectDefinitionList '}' description? SEMI
    {
-	$value = ApplicationDefinition.ApplicationDefinitionBuilder(self, $objectDefinitionList.value, $description.value)
+   $value = ApplicationDefinition.ApplicationDefinitionBuilder(self, $objectDefinitionList.value, $description.value)
    }
    ->  ^(APPLICATION_DEFINITION objectDefinitionList description?)
    ;
@@ -602,32 +602,32 @@ objectDefinition returns[value]
 scope {
     objectName
 }
-   :  objectName { $objectDefinition::objectName=$objectName.name } 
+   :  objectName { $objectDefinition::objectName=$objectName.name }
       ('{' parameterList '}')? description? SEMI
-   { 
-	obj = self.getObject($objectName.objectType, $objectName.name)
-	if obj:
-	    $value = obj.appendValues($objectName.objectType, $objectName.name, $parameterList.value, $description.value)
-	else:
-	   $value = ApplicationDefinition.ObjectDefinition(self, $objectName.objectType, $objectName.name, $parameterList.value, $description.value)
-	   self.appendObject($objectName.objectType, $objectName.name, $value)
+   {
+   obj = self.getObject($objectName.objectType, $objectName.name)
+   if obj:
+       $value = obj.appendValues($objectName.objectType, $objectName.name, $parameterList.value, $description.value)
+   else:
+      $value = ApplicationDefinition.ObjectDefinition(self, $objectName.objectType, $objectName.name, $parameterList.value, $description.value)
+      self.appendObject($objectName.objectType, $objectName.name, $value)
    }
       -> ^(OBJECT_DEFINITION objectName parameterList? description?)
    ;
 
 
 objectName returns[objectType, name]
-   :  object ID { 
+   :  object ID {
     # print $object.text, $ID.text
     $objectType = $object.text
-    $name = $ID.text  
+    $name = $ID.text
    }
    -> ^(OBJECT_NAME object ID)
    ;
 
 parameterList returns[value]
 @init {
-    myList = []    
+    myList = []
 }
 @after {
     $value = myList
@@ -640,7 +640,7 @@ parameter returns[value]
 scope {
     attrName
 }
-   :  attributeName ASSIGN attributeValue description? SEMI 
+   :  attributeName ASSIGN attributeValue description? SEMI
    {
     $parameter::attrName = $attributeName.text
     $value = ApplicationDefinition.Parameter($attributeName.text, $attributeValue.value, $description.value, $objectDefinition::objectName)
@@ -652,40 +652,40 @@ attributeValue returns[value]
 @after {
 
 }
-   :  ID ('{' parameterList '}')?	
+   :  ID ('{' parameterList '}')?
    {
-	$value = ApplicationDefinition.AttributeValueContainter(ApplicationDefinition.AttributeValueContainter.ID_VALUE,
-	    idValue = $ID.text, values = $parameterList.value or []
-	)
+   $value = ApplicationDefinition.AttributeValueContainter(ApplicationDefinition.AttributeValueContainter.ID_VALUE,
+       idValue = $ID.text, values = $parameterList.value or []
+   )
    } -> ^(ID_VALUE ID parameterList?)
-   |  boolean ('{' parameterList '}')?	
+   |  boolean ('{' parameterList '}')?
    {
-	$value = ApplicationDefinition.AttributeValueContainter(ApplicationDefinition.AttributeValueContainter.BOOL_VALUE,
-	    booleanValue = $boolean.value, values = $parameterList.value or []
-	)
+   $value = ApplicationDefinition.AttributeValueContainter(ApplicationDefinition.AttributeValueContainter.BOOL_VALUE,
+       booleanValue = $boolean.value, values = $parameterList.value or []
+   )
    } -> ^(BOOL_VALUE boolean parameterList?)
-   |  number				
+   |  number
    {
-	$value = ApplicationDefinition.AttributeValueContainter(ApplicationDefinition.AttributeValueContainter.NUMBER_VALUE,
-	    number = $number.value
-	)
+   $value = ApplicationDefinition.AttributeValueContainter(ApplicationDefinition.AttributeValueContainter.NUMBER_VALUE,
+       number = $number.value
+   )
    } -> ^(NUMBER_VALUE number)
-   |  FLOAT				
+   |  FLOAT
    {
-	$value = ApplicationDefinition.AttributeValueContainter(ApplicationDefinition.AttributeValueContainter.FLOAT_VALUE,
-	    number = float($FLOAT.text)
-	)
+   $value = ApplicationDefinition.AttributeValueContainter(ApplicationDefinition.AttributeValueContainter.FLOAT_VALUE,
+       number = float($FLOAT.text)
+   )
 
    } -> ^(FLOAT_VALUE FLOAT)
-   |  STRING				
+   |  STRING
    {
-	$value = ApplicationDefinition.AttributeValueContainter(ApplicationDefinition.AttributeValueContainter.STRING_VALUE,
-	    stringValue = $STRING.text.strip('"')
-	)
+   $value = ApplicationDefinition.AttributeValueContainter(ApplicationDefinition.AttributeValueContainter.STRING_VALUE,
+       stringValue = $STRING.text.strip('"')
+   )
    } -> ^(STRING_VALUE STRING)
-   |  'AUTO'				
+   |  'AUTO'
    {
-	$value = ApplicationDefinition.AttributeValueContainter(ApplicationDefinition.AttributeValueContainter.AUTO_VALUE)
+   $value = ApplicationDefinition.AttributeValueContainter(ApplicationDefinition.AttributeValueContainter.AUTO_VALUE)
    } -> ^(AUTO_VALUE)
    ;
 
@@ -785,12 +785,12 @@ COMMENT
     |   '/*' ( options {greedy=false;} : . )* '*/' {$channel=HIDDEN;}
     ;
 
-WS  :   
+WS  :
     ( ' '
     | '\t'
     | '\r'
     | '\n'
-    ) 
+    )
     { $channel=HIDDEN; }
     ;
 
