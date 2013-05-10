@@ -36,8 +36,8 @@ extern "C"
 void    ErrorHook(StatusType Error);
 void    COMErrorHook(StatusType Error);
 
-void    OsErrorCallErrorHook(StatusType Error);
-void    COMErrorCallErrorHook(StatusType Error);
+void    OsError_CallErrorHook(StatusType Error);
+void    COM_ErrorCallErrorHook(StatusType Error);
 
 
 #ifdef __cplusplus

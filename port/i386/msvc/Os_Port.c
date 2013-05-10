@@ -40,7 +40,7 @@
 #define FIBER_FLAG_FLOAT_SWITCH 0x1
 
 typedef void (*PFIBER_START_ROUTINE)(void *lpFiberParameter);
-typedef PFIBER_START_ROUTINE LPFIBER_START_ROUTINE;    
+typedef PFIBER_START_ROUTINE LPFIBER_START_ROUTINE;
 
 typedef void * HANDLE;
 typedef unsigned long DWORD;
@@ -70,6 +70,7 @@ DECLSPEC_IMPORT boolean WINAPI SetThreadPriority(HANDLE hThread, int nPriority);
 DECLSPEC_IMPORT boolean WINAPI SwitchToThread(void);
 
 DECLSPEC_IMPORT unsigned long WINAPI GetLastError(void);
+unsigned short SetErrorMode(unsigned short uMode);
 
 DECLSPEC_IMPORT unsigned short WINAPI SetTimer(void * hWnd, unsigned short nIDEvent, unsigned short uElapse, TIMERPROC lpTimerFunc);
 /*///////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -119,6 +120,8 @@ static uint16 timerNumber;
 static void * sf;
 static HANDLE schedThread;
 
+HANDLE OsPort_GetCurrentThreadHandle(void);
+
 #if KOS_MEMORY_MAPPING == STD_ON
 FUNC(void, OSEK_OS_CODE) OsPort_Init(void)
 #else
@@ -128,18 +131,26 @@ void OsPort_Init(void)
     int tm;
     uint8 idx;
     unsigned long error;
+    HANDLE curHandle;
+
+    curHandle = OsPort_GetCurrentThreadHandle();
 
     OsPort_InitializeCriticalSection();
     OsPort_BaseThreadId = GetCurrentThreadId();
     SetThreadPriority(OsPort_BaseThreadId, THREAD_PRIORITY_BELOW_NORMAL);
 
+#if 0
+    SetErrorMode(SEM_FAILCRITICALERRORS); // Controls whether the system will handle the specified types of serious errors or whether the process will handle them.
+    // besser (>= Windows 7): SetThreadErrorMode(SEM_FAILCRITICALERRORS, NULL /* &dwOldMode */);
+#endif
+
 /*
-**  You can call SwitchToFiber with the address of a fiber created by a different thread. 
-**  To do this, you must have the address returned to the other thread when it called 
+**  You can call SwitchToFiber with the address of a fiber created by a different thread.
+**  To do this, you must have the address returned to the other thread when it called
 **  CreateFiber and you must use proper synchronization.
 */
 
-    OsPort_BaseFiber = ConvertThreadToFiber(NULL);
+    OsPort_BaseFiber = ConvertThreadToFiber(NULL);  // FIBER_FLAG_FLOAT_SWITCH
 
     OsPort_TimerInit();
 
@@ -174,7 +185,7 @@ uint8 OsMLQ_GetLowestBitNumber(uint16 Bitmap)
     uint8 const * table = ReversedLog2Tab;
     uint8 res;
     uint8 hb, lb;
-    
+
     hb = (Bitmap & 0xff00u) >> 8;
     lb = Bitmap & 0x00ffu;
 
@@ -195,7 +206,7 @@ uint8 * OsPort_TaskStackInit(TaskType TaskID, TaskFunctionType * TaskFunc, uint8
         DeleteFiber(OsPort_Fibers[TaskID]);
     }
 
-    OsPort_Fibers[TaskID] = CreateFiber(OS_PORT_ADDITIONAL_STACK_SPACE + (uint32)OS_TaskConf[TaskID].StackSize, 
+    OsPort_Fibers[TaskID] = CreateFiber(OS_PORT_ADDITIONAL_STACK_SPACE + (uint32)OS_TaskConf[TaskID].StackSize,
         (LPFIBER_START_ROUTINE)*TaskFunc, NULL
     );
     return (uint8 *)NULL;
@@ -208,22 +219,22 @@ void TC2Timer_Handler(void)
 }
 
 
-void OS_START_CURRENT_TASK(void)
+void OsPort_StartCurrentTask(void)
 {
-    SwitchToFiber(OsPort_Fibers[OsCurrentTID]);
+    SwitchToFiber(OsPort_Fibers[Os_CurrentTID]);
 }
 
-void OS_SAVE_CONTEXT(void)
+void OsPort_SaveContext(void)
 {
 
 }
 
-void OS_RESTORE_CONTEXT(void)
+void OsPort_RestoreContext(void)
 {
-    SwitchToFiber(OsPort_Fibers[OsCurrentTID]);
+    SwitchToFiber(OsPort_Fibers[Os_CurrentTID]);
 }
 
-void OS_ISR_CONTEXT(void)
+void OsPort_SwitchToISRContext(void)
 {
 
 }
@@ -237,16 +248,20 @@ void OsPort_EnterPowerdownMode(void)
 }
 
 
+#if 0
 void OsPort_Dispatch(void)
 {
-    SetEvent(DispatchingTask, DispatchingEvent);
+// NUR VORRÜBERGEHEND!!!
+//    SetEvent(DispatchingTask, DispatchingEvent);
 }
 
 
 TASK(DispatchingTask)
 {
     FOREVER {
-        WaitEvent(DispatchingEvent);
-        (void)TerminateTask();
+                // NUR VORRÜBERGEHEND!!!
+        //WaitEvent(DispatchingEvent);
+        //(void)TerminateTask();
     }
 }
+#endif

@@ -1,7 +1,7 @@
 /*
    k_os (Konnex Operating-System based on the OSEK/VDX-Standard).
 
-   (C) 2007-2012 by Christoph Schueler <github.com/Christoph2,
+   (C) 2007-2013 by Christoph Schueler <github.com/Christoph2,
                                         cpu12.gems@googlemail.com>
 
    All Rights Reserved
@@ -93,21 +93,22 @@ STATIC FUNC(StatusType, OSEK_OS_CODE) OsTask_Activate(TaskType TaskID)
 StatusType OsTask_Activate(TaskType TaskID)
 #endif /* KOS_MEMORY_MAPPING */
 {
-    SAVE_SERVICE_CONTEXT(OSServiceId_ActivateTask, TaskID, NULL, NULL);
+    Os_SaveServiceContext(OSServiceId_ActivateTask, TaskID, NULL, NULL);
 
     ASSERT_VALID_TASKID(TaskID);
     ASSERT_INTERRUPTS_ENABLED_AT_TASK_LEVEL();
     ASSERT_VALID_CALLEVEL(OS_CL_TASK | OS_CL_ISR2);
     WARN_IF_TO_MANY_ACTIVATIONS(TaskID);
 
-    DISABLE_ALL_OS_INTERRUPTS();
-    OS_TASK_INCR_ACTIVATIONS(TaskID);
+    OsPort_DisableAllOsInterrupts();
+
+    OsTask_IncrActivations(TaskID);
 
 #if defined(OS_BCC2) || defined(OS_ECC2)
 
-    if (OS_IS_TASK_SUSPENDED(TaskID)) {
+    if (OsTask_IsSuspended(TaskID)) {
 #endif
-    OS_TASK_CLEAR_ALL_EVENTS(TaskID);
+    OsTask_ClearAllEvents(TaskID);
     OsTask_Init(TaskID, FALSE);
     OsTask_Ready(TaskID);
 #if     defined(OS_BCC2) || defined(OS_ECC2)
@@ -115,9 +116,9 @@ StatusType OsTask_Activate(TaskType TaskID)
 
 
 #endif
-    ENABLE_ALL_OS_INTERRUPTS();
+    OsPort_EnableAllOsInterrupts();
 
-    CLEAR_SERVICE_CONTEXT();
+    Os_ClearServiceContext();
     return E_OK;
 }
 
@@ -140,7 +141,7 @@ StatusType ActivateTask(TaskType TaskID)
     if (Status != E_OK) {
         return Status;
     } else {
-        OS_COND_SCHEDULE_FROM_TASK_LEVEL();
+        OsExec_CondScheduleFromTaskLevel();
         return E_OK;
     }
 }
@@ -159,31 +160,31 @@ StatusType TerminateTask(void)
 **              – E_OS_CALLEVEL – a call at the interrupt level.
 **
 */
-    SAVE_SERVICE_CONTEXT(OSServiceId_TerminateTask, NULL, NULL, NULL);
+    Os_SaveServiceContext(OSServiceId_TerminateTask, NULL, NULL, NULL);
     ASSERT_VALID_CALLEVEL(OS_CL_TASK);
     ASSERT_INTERRUPTS_ENABLED_AT_TASK_LEVEL();
     ASSERT_CURR_TASK_OCCUPIES_NO_RESOURCES();
 
-    DISABLE_ALL_OS_INTERRUPTS();
-    OS_TASK_DECR_ACTIVATIONS(OsCurrentTID);
-    OsTask_Suspend(OsCurrentTID);
+    OsPort_DisableAllOsInterrupts();
+    OsTask_DecrActivations(Os_CurrentTID);
+    OsTask_Suspend(Os_CurrentTID);
 
 #if defined(OS_BCC2) || defined(OS_ECC2)
 
-    if (OsCurrentTCB->Activations > 0) {  /* ???  */
-        OS_TASK_CLEAR_ALL_EVENTS(OsCurrentTID);
-        OsTask_Init(OsCurrentTID, TRUE);
-        OsTask_Ready(OsCurrentTID);
+    if (Os_CurrentTCB->Activations > 0) {  /* ???  */
+        OsTask_ClearAllEvents(Os_CurrentTID);
+        OsTask_Init(Os_CurrentTID, TRUE);
+        OsTask_Ready(Os_CurrentTID);
     }
 
 #endif
 
-    OS_UNLOCK_INTERNAL_RESOURCE();
-    ENABLE_ALL_OS_INTERRUPTS();
+    OsTask_UnlockInternalResource();
+    OsPort_EnableAllOsInterrupts();
 
     OsExec_StartHighestReadyTask();
 
-    CLEAR_SERVICE_CONTEXT();
+    Os_ClearServiceContext();
     return E_OK; /* never reached */
 }
 
@@ -205,34 +206,34 @@ StatusType ChainTask(TaskType TaskID)
 **              – E_OS_RESOURCE – the calling task still occupies resources.
 **              – E_OS_CALLEVEL – a call at the interrupt level.
 */
-    SAVE_SERVICE_CONTEXT(OSServiceId_ChainTask, TaskID, NULL, NULL);
+    Os_SaveServiceContext(OSServiceId_ChainTask, TaskID, NULL, NULL);
 
     ASSERT_VALID_TASKID(TaskID);
     ASSERT_VALID_CALLEVEL(OS_CL_TASK);
     ASSERT_INTERRUPTS_ENABLED_AT_TASK_LEVEL();
     ASSERT_CURR_TASK_OCCUPIES_NO_RESOURCES();
 
-    if (TaskID != OsCurrentTID) {
+    if (TaskID != Os_CurrentTID) {
         WARN_IF_TO_MANY_ACTIVATIONS(TaskID);
     }
 
-    DISABLE_ALL_OS_INTERRUPTS();
-    OS_UNLOCK_INTERNAL_RESOURCE();
-    OS_TASK_DECR_ACTIVATIONS(OsCurrentTID);
-    OsTask_Suspend(OsCurrentTID);
+    OsPort_DisableAllOsInterrupts();
+    OsTask_UnlockInternalResource();
+    OsTask_DecrActivations(Os_CurrentTID);
+    OsTask_Suspend(Os_CurrentTID);
 
-    OS_TASK_INCR_ACTIVATIONS(TaskID);
-    OS_TASK_CLEAR_ALL_EVENTS(TaskID);
-    OsTask_Init(TaskID, ((TaskID == OsCurrentTID) ? TRUE : FALSE));
+    OsTask_IncrActivations(TaskID);
+    OsTask_ClearAllEvents(TaskID);
+    OsTask_Init(TaskID, ((TaskID == Os_CurrentTID) ? TRUE : FALSE));
     OsTask_Ready(TaskID);
 
-    ASSERT(OS_TCB[OsCurrentTID].State == SUSPENDED);
+    ASSERT(OS_TCB[Os_CurrentTID].State == SUSPENDED);
 
-    ENABLE_ALL_OS_INTERRUPTS();
+    OsPort_EnableAllOsInterrupts();
 
     OsExec_StartHighestReadyTask();
 
-    CLEAR_SERVICE_CONTEXT();
+    Os_ClearServiceContext();
     return E_OK;
 }
 
@@ -251,17 +252,17 @@ StatusType GetTaskID(TaskRefType TaskID)
 
  */
     /* TaskID ist not known at this point!!! */
-    SAVE_SERVICE_CONTEXT(OSServiceId_GetTaskID, /*TaskID*/ NULL, NULL, NULL);
+    Os_SaveServiceContext(OSServiceId_GetTaskID, /*TaskID*/ NULL, NULL, NULL);
     ASSERT_VALID_CALLEVEL(OS_CL_TASK | OS_CL_ISR2 | OS_CL_ERROR_HOOK |
                           OS_CL_PRE_TASK_HOOK | OS_CL_POST_TASK_HOOK | OS_CL_PROTECTION_HOOK);
 
 /*    ASSERT_INTERRUPTS_ENABLED_AT_TASK_LEVEL(); */
 
-    DISABLE_ALL_OS_INTERRUPTS();
-    *TaskID = OsCurrentTID;
-    ENABLE_ALL_OS_INTERRUPTS();
+    OsPort_DisableAllOsInterrupts();
+    *TaskID = Os_CurrentTID;
+    OsPort_EnableAllOsInterrupts();
 
-    CLEAR_SERVICE_CONTEXT();
+    Os_ClearServiceContext();
     return E_OK;
 }
 
@@ -280,14 +281,14 @@ StatusType GetTaskState(TaskType TaskID, TaskStateRefType State)
 **      incorrect at the time of evaluation."
 */
     /* State is mot known @ this point!!! */
-    SAVE_SERVICE_CONTEXT(OSServiceId_GetTaskState, TaskID, /*State*/ NULL, NULL);
+    Os_SaveServiceContext(OSServiceId_GetTaskState, TaskID, /*State*/ NULL, NULL);
     ASSERT_VALID_TASKID(TaskID);
     ASSERT_VALID_CALLEVEL(OS_CL_TASK | OS_CL_ISR2 | OS_CL_ERROR_HOOK |
                           OS_CL_PRE_TASK_HOOK | OS_CL_POST_TASK_HOOK | OS_CL_PROTECTION_HOOK);
 
-    DISABLE_ALL_OS_INTERRUPTS();
+    OsPort_DisableAllOsInterrupts();
     *State = OS_TCB[TaskID].State;
-    ENABLE_ALL_OS_INTERRUPTS();
+    OsPort_EnableAllOsInterrupts();
 /*
 **      Standard-Status:
 **              – E_OK – no error.
@@ -295,7 +296,7 @@ StatusType GetTaskState(TaskType TaskID, TaskStateRefType State)
 **               – E_OS_ID – the task identifier is invalid.
 */
 
-    CLEAR_SERVICE_CONTEXT();
+    Os_ClearServiceContext();
     return E_OK;
 }
 
@@ -306,7 +307,7 @@ STATIC FUNC(StatusType, OSEK_OS_CODE) Schedule(void)
 StatusType Schedule(void)
 #endif /* KOS_MEMORY_MAPPING */
 {
-    SAVE_SERVICE_CONTEXT(OSServiceId_Schedule, NULL, NULL, NULL);
+    Os_SaveServiceContext(OSServiceId_Schedule, NULL, NULL, NULL);
     ASSERT_VALID_CALLEVEL(OS_CL_TASK);
     ASSERT_CURR_TASK_OCCUPIES_NO_RESOURCES();
     ASSERT_INTERRUPTS_ENABLED_AT_TASK_LEVEL();
@@ -321,15 +322,15 @@ StatusType Schedule(void)
 */
 #if defined(OS_USE_INTERNAL_RESOURCES)
 
-    if (OS_TaskConf[OsCurrentTID].InternalResource != INTERNAL_RES_NONE) {
+    if (OS_TaskConf[Os_CurrentTID].InternalResource != INTERNAL_RES_NONE) {
 #if defined(OS_SCHED_POLICY_NON) ||  defined(OS_SCHED_POLICY_MIX)
-        OS_UNLOCK_INTERNAL_RESOURCE();
+        OsTask_UnlockInternalResource();
 #endif
-        OS_FORCE_SCHEDULE_FROM_TASK_LEVEL();
+        OsExec_ForceScheduleFromTaskLevel();
     }
 
 #endif
-    CLEAR_SERVICE_CONTEXT();
+    Os_ClearServiceContext();
     return E_OK;
 }
 
@@ -353,7 +354,7 @@ void OsTask_InitTasks(void)
 
         if (OS_TaskConf[i].Autostart & GetActiveApplicationMode()) {
             OsTask_Ready(i);
-            OS_TASK_INCR_ACTIVATIONS(i);
+            OsTask_IncrActivations(i);
         }
     }
 
@@ -370,24 +371,21 @@ STATIC FUNC(void, OSEK_OS_CODE) OsTask_Init(TaskType TaskID, boolean Schedule)
 static void OsTask_Init(TaskType TaskID, boolean Schedule)
 #endif /* KOS_MEMORY_MAPPING */
 {
-    OsTaskConfigurationType *   task_def;
-    OsTCBType *                 tcb;
+    Os_TaskConfigurationType *   task_def;
+    Os_TCBType *                 tcb;
 
     if (TaskID > (OS_NUMBER_OF_TASKS - (uint8)1)) {
         return; /* todo: Only in EXTENDED-Status!!! */
     }
 
-    task_def   = (OsTaskConfigurationType *)&OS_TaskConf[TaskID];
+    task_def   = (Os_TaskConfigurationType *)&OS_TaskConf[TaskID];
     tcb        = &OS_TCB[TaskID];
 
 #if defined(OS_USE_STACKCHECKING)
     OsUtilMemSet((void *)task_def->stack_addr, (uint8)OSSTACKFILLCHAR, (uint16)task_def->stack_size);
 #endif
 
-    tcb->Stackpointer =
-        OsPort_TaskStackInit(TaskID, &task_def->TaskFunction,
-                             ((uint8 *)task_def->StackStart + (task_def->StackSize - (uint8)1))
-                             );
+    tcb->Stackpointer = OsPort_TaskStackInit(TaskID, &task_def->TaskFunction, KDK_TOS(task_def->StackStart, task_def->StackSize));
     tcb->State = SUSPENDED;
 #if defined(OS_BCC2) || defined(OS_ECC2)
     tcb->Activations = (uint8)0x00;

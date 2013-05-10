@@ -32,28 +32,28 @@ extern "C"
 /*
 **  Port-Macros.
 */
-#define OS_SAVE_CONTEXT()            \
+#define OsPort_SaveContext()            \
     _BEGIN_BLOCK                     \
-    _asm("ldy       _OsCurrentTCB"); \
+    _asm("ldy       _Os_CurrentTCB"); \
     _asm("sts       0,y");           \
     _END_BLOCK
 
-#define OS_RESTORE_CONTEXT()         \
+#define OsPort_RestoreContext()         \
     _BEGIN_BLOCK                     \
-    _asm("xref      _OsCurrentTCB"); \
-    _asm("ldy       _OsCurrentTCB"); \
+    _asm("xref      _Os_CurrentTCB"); \
+    _asm("ldy       _Os_CurrentTCB"); \
     _asm("lds       0,y");           \
     _END_BLOCK
 
-#define OS_START_CURRENT_TASK()      \
+#define OsPort_StartCurrentTask()      \
     _BEGIN_BLOCK                     \
-    _asm("xref      _OsCurrentTCB"); \
-    _asm("ldy       _OsCurrentTCB"); \
+    _asm("xref      _Os_CurrentTCB"); \
+    _asm("ldy       _Os_CurrentTCB"); \
     _asm("lds       0,y");           \
     CPU_RETURN_FROM_INTERRUPT();     \
     _END_BLOCK
 
-#define OS_ISR_CONTEXT()    _asm("xref _OS_TOS_ISR\nlds   _OS_TOS_ISR")
+#define OsPort_SwitchToISRContext()    _asm("xref _OS_TOS_ISR\nlds   _OS_TOS_ISR")
 
 #ifdef __cplusplus
 }

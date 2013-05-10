@@ -1,7 +1,7 @@
 /*
    k_os (Konnex Operating-System based on the OSEK/VDX-Standard).
 
- * (C) 2007-2012 by Christoph Schueler <github.com/Christoph2,
+ * (C) 2007-2013 by Christoph Schueler <github.com/Christoph2,
  *                                      cpu12.gems@googlemail.com>
 
    All Rights Reserved
@@ -31,9 +31,9 @@ OS_DEFINE_GLOBAL_IF_DEBUGGING(OsLastError, StatusType);
 #endif
 
 #if defined(OS_FEATURE_ORTI_DEBUG)
-#define OS_SAVE_LAST_ERROR(Error) (OsLastError = Error)
+#define OsError_SaveLastError(Error) (OsLastError = Error)
 #else
-#define OS_SAVE_LAST_ERROR(Error)
+#define OsError_SaveLastError(Error)
 #endif
 
 #if KOS_MEMORY_MAPPING == STD_ON

@@ -1,7 +1,7 @@
 /*
    k_os (Konnex Operating-System based on the OSEK/VDX-Standard).
 
-   (C) 2007-2012 by Christoph Schueler <github.com/Christoph2,
+   (C) 2007-2013 by Christoph Schueler <github.com/Christoph2,
                                        cpu12.gems@googlemail.com>
 
    All Rights Reserved
@@ -205,7 +205,7 @@ typedef struct tagCounterConfigurationType {
     const AlarmType *   AlarmsForCounter;
 } CounterConfigurationType;
 
-typedef struct tagOsTCBType {
+typedef struct tagOs_TCBType {
     /* OsPort_StackPointerType Stackpointer; */
     uint8 *         Stackpointer; /* todo: 'StackPointerType! */
     TaskStateType   State;
@@ -222,9 +222,9 @@ typedef struct tagOsTCBType {
 #if defined(OS_USE_RESOURCES) || defined(OS_USE_INTERNAL_RESOURCES) /* || defined(OS_FEATURE_ORTI_DEBUG) */
     PriorityType CurrentPriority;
 #endif
-} OsTCBType;
+} Os_TCBType;
 
-typedef struct tagOsTaskConfigurationType {
+typedef struct tagOs_TaskConfigurationType {
     TaskFunctionType    TaskFunction;
     uint8 *             StackStart;
     uint8               StackSize;
@@ -239,20 +239,20 @@ typedef struct tagOsTaskConfigurationType {
 #if defined(OS_USE_INTERNAL_RESOURCES)
     ResourceType InternalResource;
 #endif
-} OsTaskConfigurationType;
+} Os_TaskConfigurationType;
 
-typedef struct tagOsResourceConfigurationType {
+typedef struct tagOs_ResourceConfigurationType {
     PriorityType CeilingPriority;
-} OsResourceConfigurationType;
+} Os_ResourceConfigurationType;
 
-typedef struct tagOsResourceType {
+typedef struct tagOs_ResourceType {
 /* #if defined(OS_FEATURE_ORTI_DEBUG) */
     TaskType Locker;
 /* #endif */
     PriorityType PriorPriorityOfTask;
-} OsResourceType;
+} Os_ResourceType;
 
-typedef enum tagOsCallevelType {
+typedef enum tagOs_CallevelType {
     OS_CL_INVALID          =          ((uint16) 0x0000u),
     OS_CL_TASK             =             ((uint16) 0x0001u),
     OS_CL_ISR2             =             ((uint16) 0x0002u),
@@ -266,7 +266,7 @@ typedef enum tagOsCallevelType {
     OS_CL_ANY              =              OS_CL_TASK + OS_CL_ISR2 + OS_CL_ERROR_HOOK + OS_CL_PRE_TASK_HOOK + \
                              OS_CL_POST_TASK_HOOK + OS_CL_STARTUP_HOOK + OS_CL_SHUTDOWN_HOOK +               \
                              OS_CL_ALARM_CALLBACK + OS_CL_PROTECTION_HOOK
-} OsCallevelType;
+} Os_CallevelType;
 
 /*
 **

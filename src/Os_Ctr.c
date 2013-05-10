@@ -55,6 +55,7 @@ static void OsCtr_UpdateAttachedScheduleTables(CounterType CounterID);
     }                                                                                                 \
     _END_BLOCK
 
+
 /*
 **  Global functions.
 */
@@ -74,19 +75,17 @@ StatusType InitCounter(CounterType CounterID, TickType InitialValue)
         – E_OS_CALLEVEL – a call at interrupt level (not allowed).
  */
 /* todo: Callout-Funktion, um den Initialisierungs-Parameter abzufragen ... dann wird 'InitialValue' nicht benötigt!!! */
-
-    SAVE_SERVICE_CONTEXT(OSServiceId_InitCounter, CounterID, InitialValue, NULL);
+    Os_SaveServiceContext(OSServiceId_InitCounter, CounterID, InitialValue, NULL);
     ASSERT_VALID_COUNTERID(CounterID);
     ASSERT_VALID_COUNTER_VALUE(CounterID, InitialValue);
 #if 0
     ASSERT_VALID_CALLEVEL(CL_TASK | CL_ISR2);
 #endif
 
-    DISABLE_ALL_OS_INTERRUPTS();
+    OsPort_DisableAllOsInterrupts();
     Os_CounterValues[CounterID] = InitialValue;
-    ENABLE_ALL_OS_INTERRUPTS();
-
-    CLEAR_SERVICE_CONTEXT();
+    OsPort_EnableAllOsInterrupts();
+    Os_ClearServiceContext();
     return E_OK;
 }
 
@@ -98,24 +97,24 @@ StatusType IncrementCounter(CounterType CounterID)
 #endif /* KOS_MEMORY_MAPPING */
 {
 /*
-**	Standard-Status:
-**		– E_OK – no error.
-**	Extended-Status:
-**		– E_OS_ID – the counter identifier is invalid or
-**		  belongs to hardware counter.
+**      Standard-Status:
+**              – E_OK – no error.
+**      Extended-Status:
+**              – E_OS_ID – the counter identifier is invalid or
+**                belongs to hardware counter.
 */
 
 /*  CtrInfoRefType counter; */
 
-/*	"The CounterID was not valid or Counter is implemented in Hardware  */
-/*	and cannot be incremented in Software". */
-    SAVE_SERVICE_CONTEXT(OSServiceId_IncrementCounter, CounterID, NULL, NULL);
+/*      "The CounterID was not valid or Counter is implemented in Hardware  */
+/*      and cannot be incremented in Software". */
+    Os_SaveServiceContext(OSServiceId_IncrementCounter, CounterID, NULL, NULL);
     ASSERT_VALID_COUNTERID(CounterID);
     ASSERT_VALID_CALLEVEL(OS_CL_TASK | OS_CL_ISR2);
 
-    DISABLE_ALL_OS_INTERRUPTS();
+    OsPort_DisableAllOsInterrupts();
     OS_INCREMENT_COUNTER_VALUE(CounterID);
-    ENABLE_ALL_OS_INTERRUPTS();
+    OsPort_EnableAllOsInterrupts();
 
 #if defined(OS_USE_ALARMS)
     OsCtr_UpdateAttachedAlarms(CounterID);
@@ -125,9 +124,9 @@ StatusType IncrementCounter(CounterType CounterID)
     OsCtr_UpdateAttachedScheduleTables(CounterID);
 #endif
 
-    OS_COND_SCHEDULE_FROM_TASK_LEVEL();
+    OsExec_CondScheduleFromTaskLevel();
 
-    CLEAR_SERVICE_CONTEXT();
+    Os_ClearServiceContext();
     return E_OK;
 }
 
@@ -138,20 +137,20 @@ FUNC(StatusType, OSEK_OS_CODE) GetCounterInfo(CounterType CounterID, CtrInfoRefT
 StatusType GetCounterInfo(CounterType CounterID, CtrInfoRefType Info)
 #endif /* KOS_MEMORY_MAPPING */
 {
-/*	Standard-Status:
-**		– E_OK – no error.
-**	Extended-Status:
-**		– E_OS_ID – the counter identifier is invalid.
+/*      Standard-Status:
+**              – E_OK – no error.
+**      Extended-Status:
+**              – E_OS_ID – the counter identifier is invalid.
 */
 
 /* TODO: NULL pointer test!? */
-    SAVE_SERVICE_CONTEXT(OSServiceId_GetCounterInfo, CounterID, /*Info*/ NULL, NULL);
+    Os_SaveServiceContext(OSServiceId_GetCounterInfo, CounterID, /*Info*/ NULL, NULL);
     ASSERT_VALID_COUNTERID(CounterID);
     ASSERT_VALID_CALLEVEL(OS_CL_TASK | OS_CL_ISR2);
 
     *Info = Os_CounterDefs[CounterID].CounterParams;
 
-    CLEAR_SERVICE_CONTEXT();
+    Os_ClearServiceContext();
     return E_OK;
 }
 
@@ -163,20 +162,20 @@ StatusType GetCounterValue(CounterType CounterID, TickRefType Value)
 #endif /* KOS_MEMORY_MAPPING */
 {
 /*
-**	Standard-Status:
-**		– E_OK – no error.
-**	Extended-Status:
-**		– E_OS_ID – the counter identifier is invalid.
+**      Standard-Status:
+**              – E_OK – no error.
+**      Extended-Status:
+**              – E_OS_ID – the counter identifier is invalid.
 */
-    SAVE_SERVICE_CONTEXT(OSServiceId_GetCounterValue, CounterID, /*Value*/ NULL, NULL);
+    Os_SaveServiceContext(OSServiceId_GetCounterValue, CounterID, /*Value*/ NULL, NULL);
     ASSERT_VALID_COUNTERID(CounterID);
     ASSERT_VALID_CALLEVEL(OS_CL_TASK | OS_CL_ISR2);
 
-    DISABLE_ALL_OS_INTERRUPTS();
+    OsPort_DisableAllOsInterrupts();
     *Value = Os_CounterValues[CounterID];
-    ENABLE_ALL_OS_INTERRUPTS();
+    OsPort_EnableAllOsInterrupts();
 
-    CLEAR_SERVICE_CONTEXT();
+    Os_ClearServiceContext();
     return E_OK;
 }
 
@@ -187,12 +186,12 @@ FUNC(StatusType, OSEK_OS_CODE) GetElapsedCounterValue(CounterType CounterID, Tic
 StatusType GetElapsedCounterValue(CounterType CounterID, TickRefType Value, TickRefType ElapsedValue)
 #endif /* KOS_MEMORY_MAPPING */
 {
-    SAVE_SERVICE_CONTEXT(OSServiceId_GetElapsedCounterValue, CounterID, Value, /*ElapsedValue*/ NULL);
+    Os_SaveServiceContext(OSServiceId_GetElapsedCounterValue, CounterID, Value, /*ElapsedValue*/ NULL);
     ASSERT_VALID_COUNTERID(CounterID);
     ASSERT_VALID_CALLEVEL(OS_CL_TASK | OS_CL_ISR2);
     ASSERT_IS_NOT_NULL(Value);
 
-    DISABLE_ALL_OS_INTERRUPTS();
+    OsPort_DisableAllOsInterrupts();
 
     if (Os_CounterValues[CounterID] < (*Value)) {
         *ElapsedValue = Os_CounterDefs[CounterID].CounterParams.maxallowedvalue -
@@ -201,9 +200,9 @@ StatusType GetElapsedCounterValue(CounterType CounterID, TickRefType Value, Tick
         *ElapsedValue = Os_CounterValues[CounterID] - (*Value);
     }
 
-    ENABLE_ALL_OS_INTERRUPTS();
+    OsPort_EnableAllOsInterrupts();
 
-    CLEAR_SERVICE_CONTEXT();
+    Os_ClearServiceContext();
     return E_OK;
 }
 

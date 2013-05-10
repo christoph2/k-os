@@ -1,7 +1,7 @@
 /*
    k_os (Konnex Operating-System based on the OSEK/VDX-Standard).
 
- * (C) 2007-2012 by Christoph Schueler <github.com/Christoph2,
+ * (C) 2007-2013 by Christoph Schueler <github.com/Christoph2,
  *                                      cpu12.gems@googlemail.com>
 
    All Rights Reserved
@@ -91,13 +91,13 @@ FUNC(StatusType, OSEK_OS_CODE) StartScheduleTableRel(ScheduleTableType ScheduleT
 StatusType StartScheduleTableRel(ScheduleTableType ScheduleTableID, TickType Offset)
 #endif /* KOS_MEMORY_MAPPING */
 {
-    SAVE_SERVICE_CONTEXT(OSServiceId_StartScheduleTableRel, ScheduleTableID, Offset, NULL);
+    Os_SaveServiceContext(OSServiceId_StartScheduleTableRel, ScheduleTableID, Offset, NULL);
     ASSERT_VALID_CALLEVEL(OS_CL_TASK | OS_CL_ISR2);
 
-    DISABLE_ALL_OS_INTERRUPTS();
+    OsPort_DisableAllOsInterrupts();
 
-    ENABLE_ALL_OS_INTERRUPTS();
-    CLEAR_SERVICE_CONTEXT();
+    OsPort_EnableAllOsInterrupts();
+    Os_ClearServiceContext();
     return E_OK;
 
 }
@@ -109,13 +109,13 @@ FUNC(StatusType, OSEK_OS_CODE) StartScheduleTableAbs(ScheduleTableType ScheduleT
 StatusType StartScheduleTableAbs(ScheduleTableType ScheduleTableID, TickType Tickvalue)
 #endif /* KOS_MEMORY_MAPPING */
 {
-    SAVE_SERVICE_CONTEXT(OSServiceId_StartScheduleTableAbs, ScheduleTableID, Tickvalue, NULL);
+    Os_SaveServiceContext(OSServiceId_StartScheduleTableAbs, ScheduleTableID, Tickvalue, NULL);
     ASSERT_VALID_CALLEVEL(OS_CL_TASK | OS_CL_ISR2);
 
-    DISABLE_ALL_OS_INTERRUPTS();
+    OsPort_DisableAllOsInterrupts();
 
-    ENABLE_ALL_OS_INTERRUPTS();
-    CLEAR_SERVICE_CONTEXT();
+    OsPort_EnableAllOsInterrupts();
+    Os_ClearServiceContext();
     return E_OK;
 
 }
@@ -127,13 +127,13 @@ FUNC(StatusType, OSEK_OS_CODE) StopScheduleTable(ScheduleTableType ScheduleTable
 StatusType StopScheduleTable(ScheduleTableType ScheduleTableID)
 #endif /* KOS_MEMORY_MAPPING */
 {
-    SAVE_SERVICE_CONTEXT(OSServiceId_StopScheduleTable, ScheduleTableID, NULL, NULL);
+    Os_SaveServiceContext(OSServiceId_StopScheduleTable, ScheduleTableID, NULL, NULL);
     ASSERT_VALID_CALLEVEL(OS_CL_TASK | OS_CL_ISR2);
 
-    DISABLE_ALL_OS_INTERRUPTS();
+    OsPort_DisableAllOsInterrupts();
 
-    ENABLE_ALL_OS_INTERRUPTS();
-    CLEAR_SERVICE_CONTEXT();
+    OsPort_EnableAllOsInterrupts();
+    Os_ClearServiceContext();
     return E_OK;
 
 }
@@ -148,13 +148,13 @@ FUNC(StatusType, OSEK_OS_CODE) NextScheduleTable(ScheduleTableType ScheduleTable
 StatusType NextScheduleTable(ScheduleTableType ScheduleTableID_From, ScheduleTableType ScheduleTableID_To)
 #endif /* KOS_MEMORY_MAPPING */
 {
-    SAVE_SERVICE_CONTEXT(OSServiceId_NextScheduleTable, ScheduleTableID_From, ScheduleTableID_To, NULL);
+    Os_SaveServiceContext(OSServiceId_NextScheduleTable, ScheduleTableID_From, ScheduleTableID_To, NULL);
     ASSERT_VALID_CALLEVEL(OS_CL_TASK | OS_CL_ISR2);
 
-    DISABLE_ALL_OS_INTERRUPTS();
+    OsPort_DisableAllOsInterrupts();
 
-    ENABLE_ALL_OS_INTERRUPTS();
-    CLEAR_SERVICE_CONTEXT();
+    OsPort_EnableAllOsInterrupts();
+    Os_ClearServiceContext();
     return E_OK;
 
 }
@@ -166,13 +166,13 @@ FUNC(StatusType, OSEK_OS_CODE) StartScheduleTableSynchron(ScheduleTableType Sche
 StatusType StartScheduleTableSynchron(ScheduleTableType ScheduleTableID)
 #endif /* KOS_MEMORY_MAPPING */
 {
-    SAVE_SERVICE_CONTEXT(OSServiceId_StartScheduleTableSynchron, ScheduleTableID, NULL, NULL);
+    Os_SaveServiceContext(OSServiceId_StartScheduleTableSynchron, ScheduleTableID, NULL, NULL);
     ASSERT_VALID_CALLEVEL(OS_CL_TASK | OS_CL_ISR2);
 
-    DISABLE_ALL_OS_INTERRUPTS();
+    OsPort_DisableAllOsInterrupts();
 
-    ENABLE_ALL_OS_INTERRUPTS();
-    CLEAR_SERVICE_CONTEXT();
+    OsPort_EnableAllOsInterrupts();
+    Os_ClearServiceContext();
     return E_OK;
 }
 
@@ -183,13 +183,13 @@ FUNC(StatusType, OSEK_OS_CODE) SyncScheduleTable(ScheduleTableType ScheduleTable
 StatusType SyncScheduleTable(ScheduleTableType ScheduleTableID, TickType Value)
 #endif /* KOS_MEMORY_MAPPING */
 {
-    SAVE_SERVICE_CONTEXT(OSServiceId_SyncScheduleTable, ScheduleTableID, Value, NULL);
+    Os_SaveServiceContext(OSServiceId_SyncScheduleTable, ScheduleTableID, Value, NULL);
     ASSERT_VALID_CALLEVEL(OS_CL_TASK | OS_CL_ISR2);
 
-    DISABLE_ALL_OS_INTERRUPTS();
+    OsPort_DisableAllOsInterrupts();
 
-    ENABLE_ALL_OS_INTERRUPTS();
-    CLEAR_SERVICE_CONTEXT();
+    OsPort_EnableAllOsInterrupts();
+    Os_ClearServiceContext();
     return E_OK;
 
 }
@@ -201,13 +201,13 @@ FUNC(StatusType, OSEK_OS_CODE) SetScheduleTableAsync(ScheduleTableType ScheduleI
 StatusType SetScheduleTableAsync(ScheduleTableType ScheduleID)
 #endif /* KOS_MEMORY_MAPPING */
 {
-    SAVE_SERVICE_CONTEXT(OSServiceId_SetScheduleTableAsync, ScheduleID, NULL, NULL);
+    Os_SaveServiceContext(OSServiceId_SetScheduleTableAsync, ScheduleID, NULL, NULL);
     ASSERT_VALID_CALLEVEL(OS_CL_TASK | OS_CL_ISR2);
 
-    DISABLE_ALL_OS_INTERRUPTS();
+    OsPort_DisableAllOsInterrupts();
 
-    ENABLE_ALL_OS_INTERRUPTS();
-    CLEAR_SERVICE_CONTEXT();
+    OsPort_EnableAllOsInterrupts();
+    Os_ClearServiceContext();
     return E_OK;
 
 }
@@ -221,13 +221,13 @@ FUNC(StatusType, OSEK_OS_CODE) GetScheduleTableStatus(ScheduleTableType Schedule
 StatusType GetScheduleTableStatus(ScheduleTableType ScheduleID, ScheduleTableStatusRefType /*@out@*/ ScheduleStatus)
 #endif /* KOS_MEMORY_MAPPING */
 {
-    SAVE_SERVICE_CONTEXT(OSServiceId_GetScheduleTableStatus, ScheduleID, ScheduleStatus, NULL);
+    Os_SaveServiceContext(OSServiceId_GetScheduleTableStatus, ScheduleID, ScheduleStatus, NULL);
     ASSERT_VALID_CALLEVEL(OS_CL_TASK | OS_CL_ISR2);
 
-    DISABLE_ALL_OS_INTERRUPTS();
+    OsPort_DisableAllOsInterrupts();
 
-    ENABLE_ALL_OS_INTERRUPTS();
-    CLEAR_SERVICE_CONTEXT();
+    OsPort_EnableAllOsInterrupts();
+    Os_ClearServiceContext();
     return E_OK;
 
 }

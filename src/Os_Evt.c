@@ -1,7 +1,7 @@
 /*
    k_os (Konnex Operating-System based on the OSEK/VDX-Standard).
 
- * (C) 2007-2012 by Christoph Schueler <github.com/Christoph2,
+ * (C) 2007-2013 by Christoph Schueler <github.com/Christoph2,
  *                                      cpu12.gems@googlemail.com>
 
    All Rights Reserved
@@ -34,18 +34,18 @@
 **  Global functions.
 */
 #if KOS_MEMORY_MAPPING == STD_ON
-FUNC(StatusType, OSEK_OS_CODE) OsEvtSetEvent(TaskType TaskID, EventMaskType Mask)
+FUNC(StatusType, OSEK_OS_CODE) OsEvt_SetEvent(TaskType TaskID, EventMaskType Mask)
 #else
-StatusType OsEvtSetEvent(TaskType TaskID, EventMaskType Mask)
+StatusType OsEvt_SetEvent(TaskType TaskID, EventMaskType Mask)
 #endif /* KOS_MEMORY_MAPPING */
 {
 #if defined(OS_BCC1) || defined(OS_BCC2)
     UNREFERENCED_PARAMETER(TaskID);
     UNREFERENCED_PARAMETER(Mask);
 
-    OSCallErrorHookAndReturn(E_OS_ACCESS);    /* no extended tasks, always fail.  */
+    Os_CallErrorHookAndReturn(E_OS_ACCESS);    /* no extended tasks, always fail.  */
 #elif defined(OS_ECC1) || defined(OS_ECC2)
-    SAVE_SERVICE_CONTEXT(OSServiceId_SetEvent, TaskID, Mask, NULL);
+    Os_SaveServiceContext(OSServiceId_SetEvent, TaskID, Mask, NULL);
 
     ASSERT_VALID_TASKID(TaskID);
     ASSERT_TASK_IS_EXTENDED(TaskID);
@@ -53,17 +53,17 @@ StatusType OsEvtSetEvent(TaskType TaskID, EventMaskType Mask)
     ASSERT_VALID_CALLEVEL(OS_CL_TASK | OS_CL_ISR2);
     ASSERT_INTERRUPTS_ENABLED_AT_TASK_LEVEL();
 
-    DISABLE_ALL_OS_INTERRUPTS();
-    OS_TASK_SET_EVENT(TaskID, Mask);
+    OsPort_DisableAllOsInterrupts();
+    OsTask_SetEventMask(TaskID, Mask);
 
-    if (((OS_TASK_GET_EVENTS_SET(TaskID) &
-          OS_TASK_GET_EVENTS_WAITING_FOR(TaskID)) != (EventMaskType)0) && OS_IS_TASK_WAITING(TaskID))
-    {
+    if (((OsTask_GetEventsSet(TaskID) &
+          OsTask_GetEventsWaitingFor(TaskID)) != (EventMaskType)0) && OsTask_IsWaiting(TaskID)
+    ) {
         OsTask_Ready(TaskID);
     }
 
-    ENABLE_ALL_OS_INTERRUPTS();
-    CLEAR_SERVICE_CONTEXT();
+    OsPort_EnableAllOsInterrupts();
+    Os_ClearServiceContext();
     return E_OK;
 #endif
 }
@@ -89,18 +89,18 @@ StatusType SetEvent(TaskType TaskID, EventMaskType Mask)
     UNREFERENCED_PARAMETER(TaskID);
     UNREFERENCED_PARAMETER(Mask);
 
-    OSCallErrorHookAndReturn(E_OS_ACCESS);  /* no extended tasks, always fail.  */
+    Os_CallErrorHookAndReturn(E_OS_ACCESS);  /* no extended tasks, always fail.  */
 #elif defined(OS_ECC1) || defined(OS_ECC2)
-    StatusType Status = OsEvtSetEvent(TaskID, Mask);
+    StatusType Status = OsEvt_SetEvent(TaskID, Mask);
 
-    SAVE_SERVICE_CONTEXT(OSServiceId_SetEvent, TaskID, Mask, NULL);
+    Os_SaveServiceContext(OSServiceId_SetEvent, TaskID, Mask, NULL);
 
-    CLEAR_SERVICE_CONTEXT();
+    Os_ClearServiceContext();
 
     if (Status != E_OK) {
         return Status;
     } else {
-        OS_COND_SCHEDULE_FROM_TASK_LEVEL();
+        OsExec_CondScheduleFromTaskLevel();
     }
 
     return E_OK;
@@ -126,17 +126,19 @@ StatusType ClearEvent(EventMaskType Mask)
 #if defined(OS_BCC1) || defined(OS_BCC2)
     UNREFERENCED_PARAMETER(Mask);
 
-    OSCallErrorHookAndReturn(E_OS_ACCESS);    /* no extended tasks, always fail.  */
+    Os_CallErrorHookAndReturn(E_OS_ACCESS);    /* no extended tasks, always fail.  */
 #elif defined(OS_ECC1) || defined(OS_ECC2)
-    SAVE_SERVICE_CONTEXT(OSServiceId_ClearEvent, Mask, NULL, NULL);
-    ASSERT_TASK_IS_EXTENDED(OsCurrentTID);
+    Os_SaveServiceContext(OSServiceId_ClearEvent, Mask, NULL, NULL);
+
+    ASSERT_TASK_IS_EXTENDED(Os_CurrentTID);
     ASSERT_VALID_CALLEVEL(OS_CL_TASK);
     ASSERT_INTERRUPTS_ENABLED_AT_TASK_LEVEL();
 
-    DISABLE_ALL_OS_INTERRUPTS();
-    OS_TASK_CLR_EVENT(OsCurrentTID, Mask);
-    ENABLE_ALL_OS_INTERRUPTS();
-    CLEAR_SERVICE_CONTEXT();
+    OsPort_DisableAllOsInterrupts();
+    OsTask_ClearEventMask(Os_CurrentTID, Mask);
+    OsPort_EnableAllOsInterrupts();
+
+    Os_ClearServiceContext();
     return E_OK;
 #endif
 }
@@ -160,19 +162,21 @@ StatusType GetEvent(TaskType TaskID, EventMaskRefType Event)
     UNREFERENCED_PARAMETER(TaskID);
     UNREFERENCED_PARAMETER(Event);
 
-    OSCallErrorHookAndReturn(E_OS_ACCESS);      /* no extended tasks, always fail.  */
+    Os_CallErrorHookAndReturn(E_OS_ACCESS);      /* no extended tasks, always fail.  */
 #elif defined(OS_ECC1) || defined(OS_ECC2)
-    SAVE_SERVICE_CONTEXT(OSServiceId_GetEvent, TaskID, /*Event*/ NULL, NULL);
+    Os_SaveServiceContext(OSServiceId_GetEvent, TaskID, /*Event*/ NULL, NULL);
+
     ASSERT_VALID_TASKID(TaskID);
     ASSERT_TASK_IS_EXTENDED(TaskID);
     ASSERT_TASK_IS_NOT_SUSPENDED(TaskID);
     ASSERT_VALID_CALLEVEL(OS_CL_TASK | OS_CL_ISR2 | OS_CL_ERROR_HOOK | OS_CL_PRE_TASK_HOOK | OS_CL_POST_TASK_HOOK);
     ASSERT_INTERRUPTS_ENABLED_AT_TASK_LEVEL();
 
-    DISABLE_ALL_OS_INTERRUPTS();
-    *Event = OS_TASK_GET_EVENTS_SET(TaskID);
-    ENABLE_ALL_OS_INTERRUPTS();
-    CLEAR_SERVICE_CONTEXT();
+    OsPort_DisableAllOsInterrupts();
+    *Event = OsTask_GetEventsSet(TaskID);
+    OsPort_EnableAllOsInterrupts();
+
+    Os_ClearServiceContext();
     return E_OK;
 #endif
 }
@@ -198,33 +202,33 @@ StatusType WaitEvent(EventMaskType Mask)
 #if defined(OS_BCC1) || defined(OS_BCC2)
     UNREFERENCED_PARAMETER(Mask);
 
-    OSCallErrorHookAndReturn(E_OS_ACCESS);      /* no extended tasks, always fail.  */
+    Os_CallErrorHookAndReturn(E_OS_ACCESS);      /* no extended tasks, always fail.  */
 #elif defined(OS_ECC1) || defined(OS_ECC2)
     EventMaskType EventsSet;
 
-    SAVE_SERVICE_CONTEXT(OSServiceId_WaitEvent, Mask, NULL, NULL);
+    Os_SaveServiceContext(OSServiceId_WaitEvent, Mask, NULL, NULL);
 
-    ASSERT_TASK_IS_EXTENDED(OsCurrentTID);
+    ASSERT_TASK_IS_EXTENDED(Os_CurrentTID);
     ASSERT_CURR_TASK_OCCUPIES_NO_RESOURCES();
     ASSERT_VALID_CALLEVEL(OS_CL_TASK);
     ASSERT_INTERRUPTS_ENABLED_AT_TASK_LEVEL();
 
-    DISABLE_ALL_OS_INTERRUPTS();
-    EventsSet = OS_TASK_GET_EVENTS_SET(OsCurrentTID);
-    OS_TASK_WAIT_FOR_EVENTS(OsCurrentTID, Mask);
-    OS_UNLOCK_INTERNAL_RESOURCE();
+    OsPort_DisableAllOsInterrupts();
+    EventsSet = OsTask_GetEventsSet(Os_CurrentTID);
+    OsTask_WaitForEventMask(Os_CurrentTID, Mask);
+    OsTask_UnlockInternalResource();
 
     if ((EventsSet & Mask) == (EventMaskType)0) {
         /*  no events set, we have to wait...  */
-        OsTask_Wait(OsCurrentTID);
-        CLEAR_SERVICE_CONTEXT();
-        ENABLE_ALL_OS_INTERRUPTS();
-        OS_FORCE_SCHEDULE_FROM_TASK_LEVEL();
+        OsTask_Wait(Os_CurrentTID);
+        Os_ClearServiceContext();
+        OsPort_EnableAllOsInterrupts();
+        OsExec_ForceScheduleFromTaskLevel();
     } else {
-        ENABLE_ALL_OS_INTERRUPTS();
+        OsPort_EnableAllOsInterrupts();
     }
 
-    CLEAR_SERVICE_CONTEXT();
+    Os_ClearServiceContext();
     return E_OK;
 #endif
 }
@@ -234,3 +238,4 @@ StatusType WaitEvent(EventMaskType Mask)
     #define OSEK_OS_STOP_SEC_CODE
     #include "MemMap.h"
 #endif /* KOS_MEMORY_MAPPING */
+

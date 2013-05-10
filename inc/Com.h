@@ -112,6 +112,16 @@ typedef enum tagCom_MessagePropertyType {
     RECEIVE_DYNAMIC_EXTERNAL
 } Com_MessagePropertyType;
 
+typedef enum tagCom_TransmissionMode {
+    TRANSMISSION_MODE_DIRECT,
+    TRANSMISSION_MODE_PERIODIC,
+    TRANSMISSION_MODE_MIXED
+} Com_TransmissionMode;
+
+typedef enum tagCom_TransferProperty {
+    TRANSFER_PROPERTY_TRIGGERED,
+    TRANSFER_PROPERTY_PENDING
+} Com_TransferProperty;
 
 typedef union tagCom_MessageActionType {
     void *                      Dummy;

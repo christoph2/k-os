@@ -1,25 +1,25 @@
 /*
-   k_os (Konnex Operating-System based on the OSEK/VDX-Standard).
-
+ * k_os (Konnex Operating-System based on the OSEK/VDX-Standard).
+ *
  * (C) 2007-2012 by Christoph Schueler <github.com/Christoph2,
  *                                      cpu12.gems@googlemail.com>
-
-   All Rights Reserved
-
-   This program is free software; you can redistribute it and/or modify
-   it under the terms of the GNU General Public License as published by
-   the Free Software Foundation; version 2 of the License.
-
-   This program is distributed in the hope that it will be useful,
-   but WITHOUT ANY WARRANTY; without even the implied warranty of
-   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-   GNU General Public License for more details.
-
-   You should have received a copy of the GNU General Public License
-   along with this program; if not, write to the Free Software
-   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
-
-   s. FLOSS-EXCEPTION.txt
+ *
+ * All Rights Reserved
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; version 2 of the License.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ *
+ * s. FLOSS-EXCEPTION.txt
  */
 
 #include "Osek.h"
@@ -28,7 +28,7 @@
 #include "Os_Evt.h"
 #include "Os_Res.h"
 #include "Os_Alm.h"
-//#include "Os_Ctr.h"
+/* #include "Os_Ctr.h" */
 #include "Utl.h"
 
 #define API_TRACE()     /* TODO: Nur zum Testen!!! */
@@ -65,7 +65,7 @@ FUNC(void, OSEK_OS_CODE) StartOS(AppModeType Mode)
 void StartOS(AppModeType Mode)
 #endif /* KOS_MEMORY_MAPPING */
 {
-    SAVE_SERVICE_CONTEXT(OSServiceId_StartOS, Mode, NULL, NULL);
+    Os_SaveServiceContext(OSServiceId_StartOS, Mode, NULL, NULL);
 
     ASSERT_OS_NOT_RUNNING();
 
@@ -79,31 +79,31 @@ void StartOS(AppModeType Mode)
         Os_AppMode = Mode;
     }
 
-/*    DISABLE_ALL_OS_INTERRUPTS(); */
+/*    OsPort_DisableAllOsInterrupts(); */
 
     OsPort_Init();
 
     OsExec_Init();
 
 #if defined(OS_USE_STARTUPHOOK)
-    OS_SET_CALLEVEL(OS_CL_STARTUP_HOOK);
+    Os_SetCallLevel(OS_CL_STARTUP_HOOK);
     StartupHook();
 #endif  /* OS_USE_STARTUPHOOK */
-    OS_SET_CALLEVEL(OS_CL_TASK);
-    OS_SET_TASK_LEVEL();
+    Os_SetCallLevel(OS_CL_TASK);
+    Os_SetTaskLevel();
 
     /* check: das nächste zur Sicherheit???*/
-    OS_SET_HIGHEST_PRIO_RUNNING();
+    OsExec_SetHighestPrioRunning();
 
-    CLEAR_SERVICE_CONTEXT();
-/*    ENABLE_ALL_OS_INTERRUPTS(); */
+    Os_ClearServiceContext();
+/*    OsPort_EnableAllOsInterrupts(); */
 
 #if defined(OS_FEATURE_SAVE_STARTUP_CONTEXT)
 
     if (Utl_SetJump(&StartupContext) == 0) {
 #endif  /* OS_FEATURE_SAVE_STARTUP_CONTEXT */
 
-    OS_START_CURRENT_TASK();
+    OsPort_StartCurrentTask();
 
 #if defined(OS_FEATURE_SAVE_STARTUP_CONTEXT)
 }
@@ -120,7 +120,7 @@ void ShutdownOS(StatusType Error)
 {
     uint8_least i;
 
-    SAVE_SERVICE_CONTEXT(OSServiceId_ShutdownOS, Error, NULL, NULL);
+    Os_SaveServiceContext(OSServiceId_ShutdownOS, Error, NULL, NULL);
     CPU_DISABLE_ALL_INTERRUPTS();
 
     for (i = (uint8_least)0; i < OS_NUMBER_OF_TASKS; ++i) {
@@ -128,13 +128,13 @@ void ShutdownOS(StatusType Error)
     }
 
 #if defined(OS_USE_SHUTDOWNHOOK)
-    OS_SET_CALLEVEL(OS_CL_SHUTDOWN_HOOK);
+    Os_SetCallLevel(OS_CL_SHUTDOWN_HOOK);
     ShutdownHook(Error);
 #else   /* OS_USE_SHUTDOWNHOOK */
     UNREFERENCED_PARAMETER(Error);
 #endif
-    OS_SET_CALLEVEL(OS_CL_INVALID);
-    CLEAR_SERVICE_CONTEXT();    /* ??? */
+    Os_SetCallLevel(OS_CL_INVALID);
+    Os_ClearServiceContext();    /* ??? */
 
 #if defined(OS_FEATURE_SHUTDOWN_OSPORT) /* TODO: Automatisch setzen, wenn Port Shutdown erforderlich!!! */
     OsPort_Shutdown();
@@ -163,13 +163,13 @@ FUNC(AppModeType, OSEK_OS_CODE) GetActiveApplicationMode(void)
 AppModeType GetActiveApplicationMode(void)
 #endif /* KOS_MEMORY_MAPPING */
 {
-    SAVE_SERVICE_CONTEXT(OSServiceId_GetActiveApplicationMode, NULL, NULL, NULL);
+    Os_SaveServiceContext(OSServiceId_GetActiveApplicationMode, NULL, NULL, NULL);
 
 #if 0
     ASSERT_VALID_CALLEVEL(CL_TASK | CL_ISR2 | CL_ERROR_HOOK | CL_PRE_TASK_HOOK |
                           CL_POST_TASK_HOOK | CL_STARTUP_HOOK | CL_SHUTDOWN_HOOK);
 #endif
-    CLEAR_SERVICE_CONTEXT();
+    Os_ClearServiceContext();
     return Os_AppMode;
 }
 
@@ -180,8 +180,8 @@ STATIC FUNC(void, OSEK_OS_CODE) OsExec_Init(void)
 static void OsExec_Init(void)
 #endif /* KOS_MEMORY_MAPPING */
 {
-    OsCurrentTID   = INVALID_TASK;
-    OsCurrentTCB   = (OsTCBType *)NULL;
+    Os_CurrentTID   = INVALID_TASK;
+    Os_CurrentTCB   = (Os_TCBType *)NULL;
     Os_Flags        = (uint8)0x00;
 
     OsMLQ_Init();
@@ -202,7 +202,7 @@ TASK(OsExec_IdleTask)
 {
     /*lint -e716 */
     FOREVER {
-        WAIT_FOR_READY_TASKS();
+        OsExec_WaitForReadyTasks();
 #if defined(OS_SCHEDULE_NON) || defined(OS_SCHEDULE_MIX)
         (void)Schedule();
 #endif  /* OS_SCHEDULE_NON || OS_SCHEDULE_MIX */
@@ -239,22 +239,22 @@ void OsExec_ScheduleFromISR(void)                       /*  ISR-Level-Scheduling
 {
 #if defined(OS_SCHED_POLICY_MIX)
 
-    if (OS_IS_TASK_PREEMPTABLE(OsCurrentTID) && !OS_IS_SCHEDULER_LOCKED()) {
+    if (OsTask_IsPreemptable(Os_CurrentTID) && !OsExec_IsSchedulerLocked()) {
 #else
 
-    if (!OS_IS_SCHEDULER_LOCKED()) {
+    if (!OsExec_IsSchedulerLocked()) {
 #endif  /* OS_SCHED_POLICY_NON */
-        OS_CALL_POST_TASK_HOOK();
+        OsExec_CallPostTaskHook();
 
 #if defined(OS_ECC1) || defined(OS_ECC2)
 
         /* Poor workaround!!! */
-        if (!OS_IS_TASK_WAITING(OsCurrentTID)) {
-            OsCurrentTCB->State = READY;
+        if (!OsTask_IsWaiting(Os_CurrentTID)) {
+            Os_CurrentTCB->State = READY;
         }
 
 #endif
-        OS_SET_HIGHEST_PRIO_RUNNING();
+        OsExec_SetHighestPrioRunning();
     }
 }
 
@@ -272,9 +272,9 @@ boolean OsExec_HigherPriorityThenCurrentReady(void)
 
     /* TODO: Ändern!!! */
 #if defined(OS_USE_RESOURCES) || defined(OS_USE_INTERNAL_RESOURCES)
-    currentPriority = Utl_SetBitTab16[OsCurrentTCB->CurrentPriority];
+    currentPriority = Utl_SetBitTab16[Os_CurrentTCB->CurrentPriority];
 #else
-    currentPriority = Utl_SetBitTab16[OS_TaskConf[OsCurrentTID].Priority];
+    currentPriority = Utl_SetBitTab16[OS_TaskConf[Os_CurrentTID].Priority];
 #endif
 
     res = (boolean)((OsMLQ_GetBitmap() & ((uint16) ~currentPriority)) > currentPriority);
@@ -290,15 +290,15 @@ FUNC(void, OSEK_OS_CODE) OsExec_StartHighestReadyTask(void)
 void OsExec_StartHighestReadyTask(void)
 #endif /* KOS_MEMORY_MAPPING */
 {
-    OS_SET_HIGHEST_PRIO_RUNNING();
-    OS_START_CURRENT_TASK();
+    OsExec_SetHighestPrioRunning();
+    OsPort_StartCurrentTask();
 }
 
 
 ISR1(SWI_Vector)    /* TODO: Os_Port! */
 {
-    OSEnterISR();
-    OSLeaveISR();
+    Os_EnterISR();
+    Os_LeaveISR();
 }
 
 #if KOS_MEMORY_MAPPING == STD_ON

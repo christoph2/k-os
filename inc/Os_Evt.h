@@ -27,9 +27,9 @@
 #include "Osek.h"
 
 #if KOS_MEMORY_MAPPING == STD_ON
-FUNC(StatusType, OSEK_OS_CODE) OsEvtSetEvent(TaskType TaskID, EventMaskType Mask);
+FUNC(StatusType, OSEK_OS_CODE) OsEvt_SetEvent(TaskType TaskID, EventMaskType Mask);
 #else
-StatusType OsEvtSetEvent(TaskType TaskID, EventMaskType Mask);
+StatusType OsEvt_SetEvent(TaskType TaskID, EventMaskType Mask);
 
 
 #endif  /* KOS_MEMORY_MAPPING */

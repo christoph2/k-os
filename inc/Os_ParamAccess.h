@@ -288,10 +288,10 @@ OS_DECLARE_GLOBAL_IF_DEBUGGING(OsLastError, StatusType);
 
 #if defined(OS_USE_GETSERVICEID)
     #define OSErrorGetServiceId()   Os_ServiceContext.id
-    #define CLEAR_SERVICE_CONTEXT() Os_ServiceContext.id = OSServiceId_NoService
+    #define Os_ClearServiceContext() Os_ServiceContext.id = OSServiceId_NoService
 #else
     #define OSErrorGetServiceId()   ((OS_ServiceIdType)0)
-    #define CLEAR_SERVICE_CONTEXT()
+    #define Os_ClearServiceContext()
 #endif
 
 #if KOS_MEMORY_MAPPING == STD_ON
@@ -346,18 +346,18 @@ void OS_SaveServiceContext(
 #endif /* KOS_MEMORY_MAPPING */
 
 #if !defined(OS_USE_GETSERVICEID) && !defined(OS_USE_PARAMETERACCESS)
-#define SAVE_SERVICE_CONTEXT(id, param1, param2, param3)
+#define Os_SaveServiceContext(id, param1, param2, param3)
 #else
     #if defined(OS_USE_GETSERVICEID) && defined(OS_USE_PARAMETERACCESS)
-        #define SAVE_SERVICE_CONTEXT(id, param1, param2, param3) \
+        #define Os_SaveServiceContext(id, param1, param2, param3) \
     OS_SaveServiceContext(id, (void *)param1, (void *)param2, (void *)param3)
     #endif
     #if defined(OS_USE_GETSERVICEID) && !defined(OS_USE_PARAMETERACCESS)
-        #define SAVE_SERVICE_CONTEXT(id, param1, param2, param3) \
+        #define Os_SaveServiceContext(id, param1, param2, param3) \
     OS_SaveServiceContext(id)
     #endif
     #if !defined(OS_USE_GETSERVICEID) && defined(OS_USE_PARAMETERACCESS)
-        #define SAVE_SERVICE_CONTEXT(id, param1, param2, param3) \
+        #define Os_SaveServiceContext(id, param1, param2, param3) \
     OS_SaveServiceContext((void *)param1, (void *)param2, (void *)param3)
     #endif
 #endif

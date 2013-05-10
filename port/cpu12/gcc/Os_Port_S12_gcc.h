@@ -32,32 +32,32 @@ extern "C"
 /*
 **  Port-Macros.
 */
-#define OS_SAVE_CONTEXT()           \
+#define OsPort_SaveContext()           \
     _BEGIN_BLOCK                    \
     __asm__("movw   _.tmp,2,-sp");  \
     __asm__("movw   _.z,2,-sp");    \
     __asm__("movw   _.xy,2,-sp");   \
-    __asm__("ldy    OsCurrentTCB"); \
+    __asm__("ldy    Os_CurrentTCB"); \
     __asm__("sts    0,y");          \
     _END_BLOCK
 
-#define OS_RESTORE_CONTEXT()        \
+#define OsPort_RestoreContext()        \
     _BEGIN_BLOCK                    \
-    __asm__("ldy    OsCurrentTCB"); \
+    __asm__("ldy    Os_CurrentTCB"); \
     __asm__("movw   2,sp+,_.xy");   \
     __asm__("movw   2,sp+,_.z");    \
     __asm__("movw   2,sp+,_.tmp");  \
     __asm__("lds    0,y");          \
     _END_BLOCK
 
-#define OS_START_CURRENT_TASK()     \
+#define OsPort_StartCurrentTask()     \
     _BEGIN_BLOCK                    \
-    __asm__("ldy    OsCurrentTCB"); \
+    __asm__("ldy    Os_CurrentTCB"); \
     __asm__("lds    0,y");          \
     CPU_RETURN_FROM_INTERRUPT();    \
     _END_BLOCK
 
-#define OS_ISR_CONTEXT()    __asm__("lds    OS_TOS_ISR")
+#define OsPort_SwitchToISRContext()    __asm__("lds    OS_TOS_ISR")
 
 #ifdef __cplusplus
 }

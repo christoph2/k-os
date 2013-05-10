@@ -1,7 +1,7 @@
 /*
    k_os (Konnex Operating-System based on the OSEK/VDX-Standard).
 
- * (C) 2007-2012 by Christoph Schueler <github.com/Christoph2,
+ * (C) 2007-2013 by Christoph Schueler <github.com/Christoph2,
  *                                      cpu12.gems@googlemail.com>
 
    All Rights Reserved
@@ -60,3 +60,4 @@ uint8       OsMLQ_GetLowestBitNumber(uint16 Bitmap);
 #endif  /* __cplusplus */
 
 #endif  /*  __OS_MLQ_H */
+

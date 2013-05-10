@@ -34,10 +34,10 @@ extern "C"
 #include <intrinsics.h>
 #endif
 
-void    OS_START_CURRENT_TASK(void);
-void    OS_SAVE_CONTEXT(void);
-void    OS_RESTORE_CONTEXT(void);
-void    OS_ISR_CONTEXT(void);
+void    OsPort_StartCurrentTask(void);
+void    OsPort_SaveContext(void);
+void    OsPort_RestoreContext(void);
+void    OsPort_SwitchToISRContext(void);
 
 #ifdef __cplusplus
 }

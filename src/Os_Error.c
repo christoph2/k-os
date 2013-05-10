@@ -1,7 +1,7 @@
 /*
    k_os (Konnex Operating-System based on the OSEK/VDX-Standard).
 
- * (C) 2007-2012 by Christoph Schueler <github.com/Christoph2,
+ * (C) 2007-2013 by Christoph Schueler <github.com/Christoph2,
  *                                      cpu12.gems@googlemail.com>
 
    All Rights Reserved
@@ -31,9 +31,9 @@ OS_DEFINE_GLOBAL_IF_DEBUGGING(OsLastError, StatusType);
 #endif
 
 #if defined(OS_FEATURE_ORTI_DEBUG)
-#define OS_SAVE_LAST_ERROR(Error) (OsLastError = Error)
+#define OsError_SaveLastError(Error) (OsLastError = Error)
 #else
-#define OS_SAVE_LAST_ERROR(Error)
+#define OsError_SaveLastError(Error)
 #endif
 
 #if KOS_MEMORY_MAPPING == STD_ON
@@ -45,42 +45,42 @@ OS_DEFINE_GLOBAL_IF_DEBUGGING(OsLastError, StatusType);
 **  Global functions.
 */
 #if KOS_MEMORY_MAPPING == STD_ON
-FUNC(void, OSEK_OS_CODE) OsErrorCallErrorHook(StatusType Error)
+FUNC(void, OSEK_OS_CODE) OsError_CallErrorHook(StatusType Error)
 #else
-void OsErrorCallErrorHook(StatusType Error)
+void OsError_CallErrorHook(StatusType Error)
 #endif /* KOS_MEMORY_MAPPING */
 {
     if (((Os_Flags & OS_SYS_FLAG_IN_OS_ERROR_HOOK) != OS_SYS_FLAG_IN_OS_ERROR_HOOK)) {
-        DISABLE_ALL_OS_INTERRUPTS();
+        OsPort_DisableAllOsInterrupts();
         Os_Flags |= OS_SYS_FLAG_IN_OS_ERROR_HOOK;
-        OS_SAVE_CALLEVEL(); /* s. 'os_alm' !!! */
-        OS_SET_CALLEVEL(OS_CL_ERROR_HOOK);
-        OS_SAVE_LAST_ERROR(Error);
+        Os_SaveCallLevel(); /* s. 'os_alm' !!! */
+        Os_SetCallLevel(OS_CL_ERROR_HOOK);
+        OsError_SaveLastError(Error);
         ErrorHook(Error);
-        OS_RESTORE_CALLEVEL();
+        Os_RestoreCallLevel();
         Os_Flags &= (uint8)~OS_SYS_FLAG_IN_OS_ERROR_HOOK;
-        ENABLE_ALL_OS_INTERRUPTS();
+        OsPort_EnableAllOsInterrupts();
     }
 }
 
 
 #if OS_FEATURE_COM == STD_ON
 #if KOS_MEMORY_MAPPING == STD_ON
-FUNC(void, OSEK_OS_CODE) COMErrorCallErrorHook(StatusType Error)
+FUNC(void, OSEK_OS_CODE) COM_ErrorCallErrorHook(StatusType Error)
 #else
-void COMErrorCallErrorHook(StatusType Error)
+void COM_ErrorCallErrorHook(StatusType Error)
 #endif /* KOS_MEMORY_MAPPING */
 {
     if (((Os_Flags & OS_SYS_FLAG_IN_COM_ERROR_HOOK) != OS_SYS_FLAG_IN_COM_ERROR_HOOK)) {
-        DISABLE_ALL_OS_INTERRUPTS();
+        OsPort_DisableAllOsInterrupts();
         Os_Flags |= OS_SYS_FLAG_IN_COM_ERROR_HOOK;
-        OS_SAVE_CALLEVEL();
-        OS_SET_CALLEVEL(OS_CL_ERROR_HOOK);
-        OS_SAVE_LAST_ERROR(Error);
+        Os_SaveCallLevel();
+        Os_SetCallLevel(OS_CL_ERROR_HOOK);
+        OsError_SaveLastError(Error);
         COMErrorHook(Error);
-        OS_RESTORE_CALLEVEL();
+        Os_RestoreCallLevel();
         Os_Flags &= (uint8)~OS_SYS_FLAG_IN_COM_ERROR_HOOK;
-        ENABLE_ALL_OS_INTERRUPTS();
+        OsPort_EnableAllOsInterrupts();
     }
 }
 #endif /* OS_FEATURE_COM */

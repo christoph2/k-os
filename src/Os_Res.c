@@ -1,7 +1,7 @@
 /*
    k_os (Konnex Operating-System based on the OSEK/VDX-Standard).
 
- * (C) 2007-2012 by Christoph Schueler <github.com/Christoph2,
+ * (C) 2007-2013 by Christoph Schueler <github.com/Christoph2,
  *                                      cpu12.gems@googlemail.com>
 
    All Rights Reserved
@@ -33,11 +33,11 @@ static uint16 BM_InternalResources;
 #if KOS_MEMORY_MAPPING == STD_ON
     #define OSEK_OS_START_SEC_CODE
     #include "MemMap.h"
-#endif /* KOS_MEMORY_MAPPING
+#endif /* KOS_MEMORY_MAPPING */
 
-          /*
-        **  Global functions.
-        */
+/*
+**  Global functions.
+*/
 #if KOS_MEMORY_MAPPING == STD_ON
 FUNC(void, OSEK_OS_CODE) OsRes_InitResources(void)
 #else
@@ -81,40 +81,40 @@ StatusType GetResource(ResourceType ResID)
 **                priority of the calling task or interrupt routine is higher
 **                than the calculated ceiling priority.
 */
-    SAVE_SERVICE_CONTEXT(OSServiceId_GetResource, ResID, NULL, NULL);
+    Os_SaveServiceContext(OSServiceId_GetResource, ResID, NULL, NULL);
 #if defined(OS_USE_RESOURCES)
     ASSERT_VALID_RESOURCEID(ResID);
     ASSERT_VALID_GET_RESOURCE_ACCESS(ResID);
     ASSERT_VALID_CALLEVEL(OS_CL_TASK);    /* ISR-Level Resources not implemented yet.  */
     ASSERT_INTERRUPTS_ENABLED_AT_TASK_LEVEL();
 
-    DISABLE_ALL_OS_INTERRUPTS();
+    OsPort_DisableAllOsInterrupts();
 
     if (ResID == RES_SCHEDULER) {
-        OS_LOCK_SCHEDULER();
+        OsExec_LockScheduler();
     } else {
 #if defined(OS_USE_RESOURCES)
 #if defined(OS_FEATURE_ORTI_DEBUG)
-        Os_Resources[ResID].Locker = OsCurrentTID;      /* lock Resource. */
+        Os_Resources[ResID].Locker = Os_CurrentTID;      /* lock Resource. */
 #endif
         /* save current priority. */
-        Os_Resources[ResID].PriorPriorityOfTask = OsCurrentTCB->CurrentPriority;
-        OsCurrentTCB->ResourceCount++;
+        Os_Resources[ResID].PriorPriorityOfTask = Os_CurrentTCB->CurrentPriority;
+        Os_CurrentTCB->ResourceCount++;
 
-        if (OS_ResourceConf[ResID].CeilingPriority < OsCurrentTCB->CurrentPriority) {
+        if (OS_ResourceConf[ResID].CeilingPriority < Os_CurrentTCB->CurrentPriority) {
             /* Elevate Priority of running Task. */
-            OsCurrentTCB->CurrentPriority = OS_ResourceConf[ResID].CeilingPriority;
-            OsMLQ_ChangePrio(OsCurrentTID, OsCurrentTCB->CurrentPriority, OS_ResourceConf[ResID].CeilingPriority);
+            Os_CurrentTCB->CurrentPriority = OS_ResourceConf[ResID].CeilingPriority;
+            OsMLQ_ChangePrio(Os_CurrentTID, Os_CurrentTCB->CurrentPriority, OS_ResourceConf[ResID].CeilingPriority);
         }
 
 #endif
     }
 
-    ENABLE_ALL_OS_INTERRUPTS();
+    OsPort_EnableAllOsInterrupts();
 #else
     UNREFERENCED_PARAMETER(ResID);
 #endif /* OS_USE_RESOURCES */
-    CLEAR_SERVICE_CONTEXT();
+    Os_ClearServiceContext();
     return E_OK;
 }
 
@@ -138,7 +138,7 @@ StatusType ReleaseResource(ResourceType ResID)
 **                of the calling task or interrupt routine. This error code
 **                returned only if E_OS_NOFUNC was not returned.
 */
-    SAVE_SERVICE_CONTEXT(OSServiceId_ReleaseResource, ResID, NULL, NULL);
+    Os_SaveServiceContext(OSServiceId_ReleaseResource, ResID, NULL, NULL);
 #if defined(OS_USE_RESOURCES)
     ASSERT_VALID_RESOURCEID(ResID);
     ASSERT_RESOURCE_IS_OCCUPIED(ResID);
@@ -146,32 +146,32 @@ StatusType ReleaseResource(ResourceType ResID)
     ASSERT_VALID_CALLEVEL(OS_CL_TASK);     /* ISR-Level Resources not implemented yet.  */
     ASSERT_INTERRUPTS_ENABLED_AT_TASK_LEVEL();
 
-    DISABLE_ALL_OS_INTERRUPTS();
+    OsPort_DisableAllOsInterrupts();
 
     if (ResID == RES_SCHEDULER) {
-        OS_UNLOCK_SCHEDULER();
+        OsExec_UnlockScheduler();
     } else {
 #if defined(OS_USE_RESOURCES)
 #if defined(OS_FEATURE_ORTI_DEBUG)
         Os_Resources[ResID].Locker = INVALID_TASK;       /* unlock Resource. */
 #endif
-        OsCurrentTCB->ResourceCount--;
+        Os_CurrentTCB->ResourceCount--;
 
-        if (OsCurrentTCB->CurrentPriority != Os_Resources[ResID].PriorPriorityOfTask) {
+        if (Os_CurrentTCB->CurrentPriority != Os_Resources[ResID].PriorPriorityOfTask) {
             /* restore Priority. */
-            OsCurrentTCB->CurrentPriority = Os_Resources[ResID].PriorPriorityOfTask;
-            OsMLQ_ChangePrio(OsCurrentTID, OsCurrentTCB->CurrentPriority, Os_Resources[ResID].PriorPriorityOfTask);
+            Os_CurrentTCB->CurrentPriority = Os_Resources[ResID].PriorPriorityOfTask;
+            OsMLQ_ChangePrio(Os_CurrentTID, Os_CurrentTCB->CurrentPriority, Os_Resources[ResID].PriorPriorityOfTask);
         }
 
 #endif
     }
 
-    ENABLE_ALL_OS_INTERRUPTS();
-    OS_COND_SCHEDULE_FROM_TASK_LEVEL();
+    OsPort_EnableAllOsInterrupts();
+    OsExec_CondScheduleFromTaskLevel();
 #else
     UNREFERENCED_PARAMETER(ResID);
 #endif /* OS_USE_RESOURCES */
-    CLEAR_SERVICE_CONTEXT();
+    Os_ClearServiceContext();
     return E_OK;
 }
 
@@ -190,16 +190,16 @@ FUNC(void, OSEK_OS_CODE) OsRes_GetInternalResource(void)
 void OsRes_GetInternalResource(void)
 #endif /* KOS_MEMORY_MAPPING */
 {
-    ResourceType InternalResource = OS_TaskConf[OsCurrentTID].InternalResource;
+    ResourceType InternalResource = OS_TaskConf[Os_CurrentTID].InternalResource;
 
     if (InternalResource != INTERNAL_RES_NONE && !Utl_BitGet(BM_InternalResources, InternalResource)) {
-        OsCurrentTCB->CurrentPriority = OS_IntResourceConf[InternalResource].CeilingPriority;
+        Os_CurrentTCB->CurrentPriority = OS_IntResourceConf[InternalResource].CeilingPriority;
 
         BM_InternalResources = Utl_BitSet(BM_InternalResources, InternalResource);
 #if 0
-        (void)OSSysPQChangePrio(OsCurrentTID, OsCurrentTCB->CurrentPriority);
+        (void)OSSysPQChangePrio(Os_CurrentTID, Os_CurrentTCB->CurrentPriority);
 #endif
-        OsMLQ_ChangePrio(OsCurrentTID, OsCurrentTCB->CurrentPriority, OS_IntResourceConf[InternalResource].CeilingPriority);
+        OsMLQ_ChangePrio(Os_CurrentTID, Os_CurrentTCB->CurrentPriority, OS_IntResourceConf[InternalResource].CeilingPriority);
 
     }
 }
@@ -211,13 +211,13 @@ FUNC(void, OSEK_OS_CODE) OsRes_ReleaseInternalResource(void)
 void OsRes_ReleaseInternalResource(void)
 #endif /* KOS_MEMORY_MAPPING */
 {
-    if (OsCurrentTCB->CurrentPriority != OS_TaskConf[OsCurrentTID].Priority) {
-        OsCurrentTCB->CurrentPriority  = OS_TaskConf[OsCurrentTID].Priority;
-        BM_InternalResources           = Utl_BitReset(BM_InternalResources, OS_TaskConf[OsCurrentTID].InternalResource);
+    if (Os_CurrentTCB->CurrentPriority != OS_TaskConf[Os_CurrentTID].Priority) {
+        Os_CurrentTCB->CurrentPriority  = OS_TaskConf[Os_CurrentTID].Priority;
+        BM_InternalResources           = Utl_BitReset(BM_InternalResources, OS_TaskConf[Os_CurrentTID].InternalResource);
 #if 0
-        (void)OSSysPQChangePrio(OsCurrentTID, OS_TaskConf[OsCurrentTID].Priority, OsCurrentTCB->CurrentPriority);
+        (void)OSSysPQChangePrio(Os_CurrentTID, OS_TaskConf[Os_CurrentTID].Priority, Os_CurrentTCB->CurrentPriority);
 #endif
-        OsMLQ_ChangePrio(OsCurrentTID, OsCurrentTCB->CurrentPriority, OS_TaskConf[OsCurrentTID].Priority);
+        OsMLQ_ChangePrio(Os_CurrentTID, Os_CurrentTCB->CurrentPriority, OS_TaskConf[Os_CurrentTID].Priority);
     }
 }
 

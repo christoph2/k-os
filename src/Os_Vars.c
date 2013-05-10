@@ -1,7 +1,7 @@
 /*
    k_os (Konnex Operating-System based on the OSEK/VDX-Standard).
 
-   (C) 2007-2012 by Christoph Schueler <github.com/Christoph2,
+   (C) 2007-2013 by Christoph Schueler <github.com/Christoph2,
                                        cpu12.gems@googlemail.com>
 
    All Rights Reserved
@@ -23,13 +23,13 @@
  */
 #include "Osek.h"
 
-TaskType    OsCurrentTID;
-OsTCBType * OsCurrentTCB;
+TaskType    Os_CurrentTID;
+Os_TCBType * Os_CurrentTCB;
 uint8       Os_Flags;    /* TODO: Isolate these flags!!! */
 
 #if defined(OS_EXTENDED_STATUS) && defined(OS_FEATURE_CALLEVEL_CHECK)
-OsCallevelType  OsCallevel         = OS_CL_INVALID;
-OsCallevelType  OsCallevelSaved    = OS_CL_INVALID;
+Os_CallevelType  Os_Callevel         = OS_CL_INVALID;
+Os_CallevelType  Os_CallevelSaved    = OS_CL_INVALID;
 #endif
 
 OS_DEFINE_GLOBAL_IF_DEBUGGING(OsCurrentISRID, uint8);
