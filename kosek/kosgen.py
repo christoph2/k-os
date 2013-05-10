@@ -59,8 +59,8 @@ def SetIncludePaths(paths):
 
 
 def Parse(fname):
-    input = antlr3.StringStream(codecs.open(fname, encoding = 'UTF-8').read())
-    lexer = osekoilLexer(input)
+    inputFile = antlr3.StringStream(codecs.open(fname, encoding = 'UTF-8').read())
+    lexer = osekoilLexer(inputFile)
 
     tokens = antlr3.CommonTokenStream(lexer)
     parser = osekoilParser(tokens)

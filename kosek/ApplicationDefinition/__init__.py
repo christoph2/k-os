@@ -142,34 +142,6 @@ class ApplicationDefinitionBuilder(object):
         self.info.priorityMap = priorityMap
 
 
-class ObjectDefinitionList(object):
-    def __init__(self, parser, definitionList):
-        self.definitionList = definitionList
-        self.parser = parser
-
-    def run(self):
-        implDefinition = self.parser.implDefinition
-        result = {}
-        autos = {}
-        for definition in self.definitionList:
-            implObjectDefinition = implDefinition[definition.objectType]
-            if definition.objectType not in result:
-                result[definition.objectType] = {}
-            if definition.name not in result[definition.objectType]:
-                result[definition.objectType][definition.name ] = definition
-            #print "DEF: %s::%s" % (definition.objectType, definition.name)
-
-            for parameter in definition.parameterList:
-                if parameter.name == 'RESOURCE':
-                    pass
-                implParameterDefinition = implDefinition[definition.objectType][parameter.name ]
-                #parameter.implDefinition = implParameterDefinition
-                #print "DEF: %s::%s.%s" % (definition.objectType, definition.name, parameter.name)
-                if parameter.value == 'AUTO':
-                    autos[(definition.objectType, definition.name, parameter.name)] = (
-                        parameter, implParameterDefinition
-                    )
-        return result
 
 class ValueDescriptionPair(object):
     def __init__(self, value, description):
@@ -255,4 +227,28 @@ class ObjectDefinition(ParameterContainer):
         ## TODO: Warning/Error wenn vorhandene Werte �berschrieben werden sollen!!!
         self._setValues(objectType, name, parameterList, description)
         return self
+
+class ObjectDefinitionList(object):
+    def __init__(self, parser, definitionList):
+        self.definitionList = definitionList
+        self.parser = parser
+
+    def run(self):
+        implDefinition = self.parser.implDefinition
+        result = {}
+        autos = {}
+        for definition in self.definitionList:
+            result.setdefault(definition.objectType, {})[definition.name ] = definition
+            #print "DEF: %s::%s" % (definition.objectType, definition.name)
+            for parameter in definition.parameterList:
+                if parameter.name == 'RESOURCE':
+                    pass
+                implParameterDefinition = implDefinition[definition.objectType][parameter.name ]
+                #parameter.implDefinition = implParameterDefinition
+                #print "DEF: %s::%s.%s" % (definition.objectType, definition.name, parameter.name)
+                if parameter.value == 'AUTO':
+                    autos[(definition.objectType, definition.name, parameter.name)] = (
+                        parameter, implParameterDefinition
+                    )
+        return result
 
