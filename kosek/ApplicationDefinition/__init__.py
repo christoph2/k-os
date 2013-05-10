@@ -30,6 +30,9 @@ __copyright__ = """
 import unittest
 
 from kosek.Logger import Logger
+from kosek.ApplicationDefinition.Parameter import Parameter
+from kosek.ApplicationDefinition.AttributeValueContainter import AttributeValueContainter
+from kosek.ApplicationDefinition.ParameterContainer import ParameterContainer, NestedParameter
 
 logger = Logger()
 
@@ -64,7 +67,7 @@ class ApplicationDefinitionBuilder(object):
 
     def getAutostartedObjects(self, objectType):
         result = []
-        # Filter nur vorübergehend - AUTOSTART ist nicht optional!!!
+        # Filter nur vorï¿½bergehend - AUTOSTART ist nicht optional!!!
         objs = [v for _, v in self.getObjects(objectType).items() if hasattr(v, 'AUTOSTART')]
         for obj in objs:
             if obj.AUTOSTART == True:
@@ -172,7 +175,6 @@ class ObjectDefinitionList(object):
                     )
         return result
 
-
 class ValueDescriptionPair(object):
     def __init__(self, value, description):
         self._value = value
@@ -194,116 +196,6 @@ class ValueDescriptionPair(object):
     description = property(_getDescription)
 
 
-class AttributeValueContainter(object):
-    ID_VALUE        = 0
-    BOOL_VALUE      = 1
-    NUMBER_VALUE    = 2
-    FLOAT_VALUE     = 3
-    STRING_VALUE    = 4
-    AUTO_VALUE      = 5
-
-    def __init__(self, type_, **kwds):
-        self.type_ = type_
-        for k,v in kwds.items():
-            setattr(self, k, v)
-
-    def getValue(self):
-        if self.type_ == AttributeValueContainter.ID_VALUE:
-            return self.idValue
-        elif self.type_ == AttributeValueContainter.BOOL_VALUE:
-            return self.booleanValue
-        elif self.type_ == AttributeValueContainter.NUMBER_VALUE:
-            return self.number
-        elif self.type_ == AttributeValueContainter.FLOAT_VALUE:
-            raise self.number
-        elif self.type_ == AttributeValueContainter.STRING_VALUE:
-            return self.stringValue
-        elif self.type_ == AttributeValueContainter.AUTO_VALUE:
-            return 'AUTO'
-
-    def getTypeString(self):
-        if self.type_ == AttributeValueContainter.ID_VALUE:
-            return 'ID'
-        elif self.type_ == AttributeValueContainter.BOOL_VALUE:
-            return 'BOOL'
-        elif self.type_ == AttributeValueContainter.NUMBER_VALUE:
-            return 'NUMBER'
-        elif self.type_ == AttributeValueContainter.FLOAT_VALUE:
-            raise 'FLOAT'
-        elif self.type_ == AttributeValueContainter.STRING_VALUE:
-            return "STRING"
-        elif self.type_ == AttributeValueContainter.AUTO_VALUE:
-            return 'AUTO'
-
-
-class ParameterContainer(object):
-    def setAttribute(self, attr, value):
-        try:
-            mult = self.implDefinition[attr].mult
-        except KeyError:
-            pass
-        if mult:
-            if not hasattr(self, attr):
-                setattr(self, attr, [])
-            getattr(self, attr).append(value)
-        else:
-            setattr(self, attr, value)
-
-    def _decorate(self, param):
-        parameterValue = param.value.getValue()
-        print "{%s} - '%s': %s[%s]" % (hex(id(self)), param.name, param.value.getTypeString(), parameterValue)
-        if param.name in ('ACTION', 'AUTOSTART'):
-            pass
-        if param.value.type_ == AttributeValueContainter.ID_VALUE:
-            if param.value.values:
-                #print "\t*** ID: ", self.implDefinition
-                try:
-                    enum = [e for e in self.implDefinition[param.name].enumeration.values()]
-                except KeyError:
-                    enum = [e for e in self.parent.implDefinition[param.name].enumeration.values()]
-                    # TODO: kann ein Parent-Looup wirklich unser Problem lösen???
-                implDef = [e for e in enum if e.name == param.value.idValue][0]
-                ## TODO: Fehlerbehandlung
-
-                setattr(self, param.name, NestedParameter(self, param.name,
-                        parameterValue, param.value.values, implDef
-                    )
-                )
-            else:
-                self.setAttribute(param.name, parameterValue)
-        elif param.value.type_ == AttributeValueContainter.BOOL_VALUE:
-            if param.value.values:
-                setattr(self, param.name, NestedParameter(self, param.name,
-                        parameterValue, param.value.values,
-                        self.implDefinition[param.name][str(parameterValue).upper()]
-                    )
-                )
-            else:
-                    self.setAttribute(param.name, param.value.booleanValue)
-        elif param.value.type_ == AttributeValueContainter.NUMBER_VALUE:
-            self.setAttribute(param.name, parameterValue)
-        elif param.value.type_ == AttributeValueContainter.FLOAT_VALUE:
-            self.setAttribute(param.name, parameterValue)
-        elif param.value.type_ == AttributeValueContainter.STRING_VALUE:
-            self.setAttribute(param.name, parameterValue)
-        elif param.value.type_ == AttributeValueContainter.AUTO_VALUE:
-            if not self.implDefinition[param.name].autoSpec:
-                raise ValueError("AUTO not permitted for attribute '%s'." % param.name)
-            else:
-                pass
-
-
-class NestedParameter(ParameterContainer):
-    def __init__(self, parent, name, value, params, implDefinition):
-        self.name = name
-        self.value = value
-        self.implDefinition = implDefinition
-        self.params = params
-        self.parent = parent
-        for param in params:
-            self._decorate(param)
-
-
 class ObjectDefinition(ParameterContainer):
     def __init__(self, parser, objectType, name, parameterList, description):
         self.parser = parser
@@ -314,7 +206,6 @@ class ObjectDefinition(ParameterContainer):
     def _setValues(self, objectType, name, parameterList, description):
         if not hasattr(self, 'objectType'):
             self.objectType = objectType
-
 
         if not hasattr(self, 'implDefinition'):
             self.implDefinition = self.parser.implDefinition[objectType]
@@ -365,19 +256,7 @@ class ObjectDefinition(ParameterContainer):
                 setattr(self, k, v)
 
     def appendValues(self, objectType, name, parameterList, description):
-        ## TODO: Warning/Error wenn vorhandene Werte überschrieben werden sollen!!!
+        ## TODO: Warning/Error wenn vorhandene Werte ï¿½berschrieben werden sollen!!!
         self._setValues(objectType, name, parameterList, description)
         return self
 
-
-class Parameter(object):
-    def __init__(self, name, value, description, whereIAm):
-        self.name = name
-        self.value = value
-        self.description = description
-
-    def __repr__(self):
-        if self.description:
-            return "PARAMETER(%s = %s) : '%s'" % (self.name, self.value, self.description)
-        else:
-            return "PARAMETER(%s = %s)" % (self.name, self.value)
