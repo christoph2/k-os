@@ -63,7 +63,7 @@ FUNC(uint32, OSEK_OS_CODE) OsPort_GetTimestamp(void);
 #else
 void    OsPort_Init(void);
 void    OsPort_Shutdown(void);
-uint8 * OsPort_TaskStackInit(TaskType TaskID, TaskFunctionType * TaskFunc, uint8 * sp);
+uint8 * OsPort_TaskStackInit(TaskType TaskID, TaskFunctionType const * TaskFunc, uint8 * sp);
 uint32  OsPort_GetTimestamp(void);
 
 #endif /* KOS_MEMORY_MAPPING */

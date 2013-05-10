@@ -371,8 +371,8 @@ STATIC FUNC(void, OSEK_OS_CODE) OsTask_Init(TaskType TaskID, boolean Schedule)
 static void OsTask_Init(TaskType TaskID, boolean Schedule)
 #endif /* KOS_MEMORY_MAPPING */
 {
-    Os_TaskConfigurationType *   task_def;
-    Os_TCBType *                 tcb;
+    Os_TaskConfigurationType const * task_def;
+    Os_TCBType * tcb;
 
     if (TaskID > (OS_NUMBER_OF_TASKS - (uint8)1)) {
         return; /* todo: Only in EXTENDED-Status!!! */
@@ -382,10 +382,13 @@ static void OsTask_Init(TaskType TaskID, boolean Schedule)
     tcb        = &OS_TCB[TaskID];
 
 #if defined(OS_USE_STACKCHECKING)
-    OsUtilMemSet((void *)task_def->stack_addr, (uint8)OSSTACKFILLCHAR, (uint16)task_def->stack_size);
+    OsUtilMemSet((void *)task_def->stack_addr, (uint8)OSSTACKFILLCHAR,
+      (uint16)task_def->stack_size  * sizeof(StackType)
+    );
 #endif
-
-    tcb->Stackpointer = OsPort_TaskStackInit(TaskID, &task_def->TaskFunction, KDK_TOS(task_def->StackStart, task_def->StackSize * sizeof(StackType)));
+    tcb->Stackpointer = OsPort_TaskStackInit(TaskID, &task_def->TaskFunction,
+      KDK_TOS(task_def->StackStart, task_def->StackSize * sizeof(StackType))
+    );
     tcb->State = SUSPENDED;
 #if defined(OS_BCC2) || defined(OS_ECC2)
     tcb->Activations = (uint8)0x00;
