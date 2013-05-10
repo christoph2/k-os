@@ -241,7 +241,7 @@ StatusType  ComExt_SendMessage(MessageIdentifier Message, ApplicationDataRef Dat
     Com_MessageObjectType * MessageObject;
 
     MessageObject = (Com_MessageObjectType *)&OSEK_COM_GET_MESSAGE_OBJECT(Message);
-
+    Com_SetFlag(Message);
     PortCom_SendMessage(MessageObject->Address, DataRef);
 
     return E_OK;
@@ -261,3 +261,18 @@ StatusType  ComExt_ReceiveMessage(MessageIdentifier Message, ApplicationDataRef 
     return E_OK;
 }
 
+void Com_TransmitMessages(void)
+{
+    uint8 idx;
+    uint8 flag;
+    Com_MessageObjectType * MessageObject;
+
+    for (idx = (uint8)0x00; idx < COM_NUMBER_OF_MESSAGES; ++idx) {
+        flag = Com_GetFlag(idx);
+        if (flag == Std_High) {
+            MessageObject = (Com_MessageObjectType *)&OSEK_COM_GET_MESSAGE_OBJECT(idx);
+
+            Com_ResetFlag(idx);
+        }
+    }
+}

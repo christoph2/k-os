@@ -68,6 +68,7 @@ const Com_MessageObjectType Com_MessageObjects[COM_NUMBER_OF_MESSAGES] = {
 
 static Com_StatusType           Com_Status = COM_UNINIT;
 static COMApplicationModeType   Com_AppMode;
+static uint8 Com_Flags[(COM_NUMBER_OF_MESSAGES >> 3) + 1];
 
 #if KOS_MEMORY_MAPPING == STD_ON
 #define OSEK_STOP_SEC_VAR_UNSPECIFIED
@@ -102,7 +103,7 @@ StatusType StartCOM(COMApplicationModeType Mode)
     uint8                           idx;
     Com_MessageObjectType const *   MessageObject;
 
-    SAVE_SERVICE_CONTEXT(COMServiceId_StartCOM, Mode, NULL, NULL);
+    Os_SaveServiceContext(COMServiceId_StartCOM, Mode, NULL, NULL);
 
     Com_AppMode = Mode;
 
@@ -116,9 +117,9 @@ StatusType StartCOM(COMApplicationModeType Mode)
         {
 /* todo: use Initialisation-Value. */
 #if 0
-            DISABLE_ALL_OS_INTERRUPTS();
+            OsPort_DisableAllOsInterrupts();
             OsUtilMemCpy((void *)MessageObject->Data, (void *)DataRef, MessageObject->Size);
-            ENABLE_ALL_OS_INTERRUPTS();
+            OsPort_EnableAllOsInterrupts();
 #endif
         }
     }
@@ -132,7 +133,7 @@ StatusType StartCOM(COMApplicationModeType Mode)
         Com_Status = COM_INIT;
     }
 
-    CLEAR_SERVICE_CONTEXT();
+    Os_ClearServiceContext();
     return Status;
 }
 
@@ -157,13 +158,13 @@ StatusType StopCOM(COMShutdownModeType Mode)
         status code is supported:
         · This service returns E_COM_ID if the parameter <Mode> is out of range.
  */
-    SAVE_SERVICE_CONTEXT(COMServiceId_StopCOM, Mode, NULL, NULL);
+    Os_SaveServiceContext(COMServiceId_StopCOM, Mode, NULL, NULL);
 
     UNREFERENCED_PARAMETER(Mode);   /* Nur vorübergehend !!! */
 
     Com_Status = COM_UNINIT;
 
-    CLEAR_SERVICE_CONTEXT();
+    Os_ClearServiceContext();
     return E_OK;
 }
 
@@ -197,16 +198,16 @@ StatusType InitMessage(MessageIdentifier Message, ApplicationDataRef DataRef)
         · This service returns E_COM_ID if the parameter <Message> is
           out of range or refers to a zero-length message or to an internal transmit message.
  */
-    SAVE_SERVICE_CONTEXT(COMServiceId_InitMessage, Message, DataRef, NULL);
+    Os_SaveServiceContext(COMServiceId_InitMessage, Message, DataRef, NULL);
     ASSERT_VALID_MESSAGE_ID(Message);
     ASSERT_CAN_INITIALIZE_MESSAGE(Message);
 
-    DISABLE_ALL_OS_INTERRUPTS();
+    OsPort_DisableAllOsInterrupts();
     Utl_MemCopy((void *)OSEK_COM_GET_MESSAGE_OBJECT(Message).Data, (void *)DataRef, (SizeType)OSEK_COM_GET_MESSAGE_OBJECT(
                     Message).Size);
-    ENABLE_ALL_OS_INTERRUPTS();
+    OsPort_EnableAllOsInterrupts();
 
-    CLEAR_SERVICE_CONTEXT();
+    Os_ClearServiceContext();
     return E_OK;
 }
 
@@ -223,10 +224,10 @@ StatusType StartPeriodic(void)
     · This service returns an implementation-specific status code if starting of
       periodic transmission was not completed successfully.
  */
-    SAVE_SERVICE_CONTEXT(COMServiceId_StartPeriodic, NULL, NULL, NULL);
+    Os_SaveServiceContext(COMServiceId_StartPeriodic, NULL, NULL, NULL);
     ASSERT_COM_IS_INITIALIZED();
 
-    CLEAR_SERVICE_CONTEXT();
+    Os_ClearServiceContext();
     return E_OK;
 }
 
@@ -243,10 +244,10 @@ StatusType StopPeriodic(void)
         · This service returns an implementation-specific status code if
           stopping periodic transmission was not completed successfully.
  */
-    SAVE_SERVICE_CONTEXT(COMServiceId_StopPeriodic, NULL, NULL, NULL);
+    Os_SaveServiceContext(COMServiceId_StopPeriodic, NULL, NULL, NULL);
     ASSERT_COM_IS_INITIALIZED();
 
-    CLEAR_SERVICE_CONTEXT();
+    Os_ClearServiceContext();
     return E_OK;
 }
 
@@ -269,7 +270,7 @@ StatusType SendMessage(MessageIdentifier Message, ApplicationDataRef DataRef)
  */
     StatusType Status = E_OK;
 
-    SAVE_SERVICE_CONTEXT(COMServiceId_SendMessage, Message, DataRef, NULL);
+    Os_SaveServiceContext(COMServiceId_SendMessage, Message, DataRef, NULL);
     ASSERT_COM_IS_INITIALIZED();
     ASSERT_VALID_MESSAGE_ID(Message);
     ASSERT_IS_STATIC_SENDING_MESSAGE(Message);    /* TODO: Funktioniert das jetzt? */
@@ -281,8 +282,8 @@ StatusType SendMessage(MessageIdentifier Message, ApplicationDataRef DataRef)
         case SEND_STATIC_EXTERNAL:
             Status = ComExt_SendMessage(Message, DataRef);
             break;
-#if 0  
-/* Invalid Message Types. */       
+#if 0
+/* Invalid Message Types. */
         case SEND_ZERO_INTERNAL:
             break;
         case SEND_DYNAMIC_EXTERNAL:
@@ -294,7 +295,7 @@ StatusType SendMessage(MessageIdentifier Message, ApplicationDataRef DataRef)
             ASSERT(FALSE);
     }
 
-    CLEAR_SERVICE_CONTEXT();
+    Os_ClearServiceContext();
     return Status;
 }
 
@@ -328,7 +329,7 @@ StatusType ReceiveMessage(MessageIdentifier Message, ApplicationDataRef DataRef)
  */
     StatusType Status = E_OK;
 
-    SAVE_SERVICE_CONTEXT(COMServiceId_ReceiveMessage, Message, DataRef, NULL);
+    Os_SaveServiceContext(COMServiceId_ReceiveMessage, Message, DataRef, NULL);
     ASSERT_COM_IS_INITIALIZED();
     ASSERT_VALID_MESSAGE_ID(Message);
     ASSERT_IS_STATIC_RECEIVING_MESSAGE(Message);
@@ -352,7 +353,7 @@ StatusType ReceiveMessage(MessageIdentifier Message, ApplicationDataRef DataRef)
             ASSERT(FALSE);
     }
 
-    CLEAR_SERVICE_CONTEXT();
+    Os_ClearServiceContext();
     return Status;
 }
 
@@ -378,11 +379,11 @@ StatusType SendDynamicMessage(MessageIdentifier Message, ApplicationDataRef Data
           <LengthRef> points is not within the range 0 to the maximum
           length defined for <Message>.
  */
-    SAVE_SERVICE_CONTEXT(COMServiceId_SendDynamicMessage, Message, DataRef, LengthRef);
+    Os_SaveServiceContext(COMServiceId_SendDynamicMessage, Message, DataRef, LengthRef);
     ASSERT_COM_IS_INITIALIZED();
     ASSERT_VALID_MESSAGE_ID(Message);
 
-    CLEAR_SERVICE_CONTEXT();
+    Os_ClearServiceContext();
     return E_OK;
 }
 
@@ -406,11 +407,11 @@ StatusType ReceiveDynamicMessage(MessageIdentifier Message, ApplicationDataRef D
           out of range or if it refers to a message that is sent, a queued message,
           a static-length message or a zero-length message.
  */
-    SAVE_SERVICE_CONTEXT(COMServiceId_ReceiveDynamicMessage, Message, DataRef, LengthRef);
+    Os_SaveServiceContext(COMServiceId_ReceiveDynamicMessage, Message, DataRef, LengthRef);
     ASSERT_COM_IS_INITIALIZED();
     ASSERT_VALID_MESSAGE_ID(Message);
 
-    CLEAR_SERVICE_CONTEXT();
+    Os_ClearServiceContext();
     return E_OK;
 }
 
@@ -430,11 +431,11 @@ StatusType SendZeroMessage(MessageIdentifier Message)
         · This service returns E_COM_ID if the parameter <Message> is
           out of range or if it refers to a non-zero-length message.
  */
-    SAVE_SERVICE_CONTEXT(COMServiceId_SendZeroMessage, Message, NULL, NULL);
+    Os_SaveServiceContext(COMServiceId_SendZeroMessage, Message, NULL, NULL);
     ASSERT_COM_IS_INITIALIZED();
     ASSERT_VALID_MESSAGE_ID(Message);
 
-    CLEAR_SERVICE_CONTEXT();
+    Os_ClearServiceContext();
     return E_OK;
 }
 
@@ -460,11 +461,11 @@ StatusType GetMessageStatus(MessageIdentifier Message)
         · This service returns E_COM_ID if the parameter <Message> is
           out of range or if it does not refer to a queued message.
  */
-    SAVE_SERVICE_CONTEXT(COMServiceId_GetMessageStatus, Message, NULL, NULL);
+    Os_SaveServiceContext(COMServiceId_GetMessageStatus, Message, NULL, NULL);
     ASSERT_COM_IS_INITIALIZED();
     ASSERT_VALID_MESSAGE_ID(Message);
 
-    CLEAR_SERVICE_CONTEXT();
+    Os_ClearServiceContext();
     return E_OK;
 }
 
@@ -497,38 +498,38 @@ void ComIf_UpdateAndNotifyReceivers(Com_MessageObjectType const * const MessageS
     Com_MessageObjectType const *   MessageObject;
 
 #if defined(OS_EXTENDED_STATUS) && defined(OS_USE_CALLEVEL_CHECK)
-    OsCallevelType CallevelSaved;
+    Os_CallevelType CallevelSaved;
 #endif
 
     ASSERT(MessageSendObject->Receiver != (Com_ReceiverType *)NULL);
 
     for (idx = (uint8)0; idx < MessageSendObject->NumReceivers; ++idx) {
-        DISABLE_ALL_OS_INTERRUPTS();
+        OsPort_DisableAllOsInterrupts();
         MessageObject = (Com_MessageObjectType *)&OSEK_COM_GET_MESSAGE_OBJECT(MessageSendObject->Receiver[idx].Message);
         ASSERT(MessageSendObject->Size == MessageObject->Size);
         ASSERT(MessageObject->Property == RECEIVE_UNQUEUED_INTERNAL);    /* todo: CCCB */
         ASSERT(MessageObject->Action.Dummy != (void *)NULL);
         Utl_MemCopy((void *)MessageObject->Data, (void *)DataRef, (SizeType)MessageObject->Size);
-        ENABLE_ALL_OS_INTERRUPTS();
+        OsPort_EnableAllOsInterrupts();
 
         switch (MessageObject->Notification) {  /* NotificationType??? */
             case COM_ACTIVATETASK:
                 (void)OsTask_Activate(MessageObject->Action.TaskID);
                 break;
             case COM_SETEVENT:
-                (void)OsEvtSetEvent(MessageObject->Action.Event->TaskID, MessageObject->Action.Event->Mask);
+                (void)OsEvt_SetEvent(MessageObject->Action.Event->TaskID, MessageObject->Action.Event->Mask);
                 break;
             case COM_COMCALLBACK:
-                DISABLE_ALL_OS_INTERRUPTS();
+                OsPort_DisableAllOsInterrupts();
                 #if defined(OS_EXTENDED_STATUS) && defined(OS_USE_CALLEVEL_CHECK)
-                CallevelSaved = OS_GET_CALLEVEL();
+                CallevelSaved = Os_GetCallLevel();
                 #endif
-                OS_SET_CALLEVEL(OS_CL_ALARM_CALLBACK);
+                Os_SetCallLevel(OS_CL_ALARM_CALLBACK);
                 (MessageObject->Action.Callback)();
                 #if defined(OS_EXTENDED_STATUS) && defined(OS_USE_CALLEVEL_CHECK)
-                OS_SET_CALLEVEL(CallevelSaved);
+                Os_SetCallLevel(CallevelSaved);
                 #endif
-                ENABLE_ALL_OS_INTERRUPTS();
+                OsPort_EnableAllOsInterrupts();
                 break;
             case COM_FLAG:
                 /* todo: Implementieren (nicht CCCA) !!! */
@@ -542,6 +543,38 @@ void ComIf_UpdateAndNotifyReceivers(Com_MessageObjectType const * const MessageS
     }
 }
 
+
+void Com_SetFlag(uint8 message)
+{
+    uint8 idx;
+    uint8 bit;
+
+    idx = message % 8;
+    bit = message >> 3;
+    UTL_BIT_SET8(Com_Flags[idx], bit);
+}
+
+void Com_ResetFlag(uint8 message)
+{
+    uint8 idx;
+    uint8 bit;
+
+    idx = message % 8;
+    bit = message >> 3;
+    UTL_BIT_RESET8(Com_Flags[idx], bit);
+}
+
+
+Std_LevelType Com_GetFlag(uint8 message)
+{
+    uint8 idx;
+    uint8 bit;
+
+    idx = message % 8;
+    bit = message >> 3;
+
+    return UTL_BIT_GET8(Com_Flags[idx], bit);
+}
 
 #if KOS_MEMORY_MAPPING == STD_ON
     #define OSEK_COM_STOP_SEC_CODE

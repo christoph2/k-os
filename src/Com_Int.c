@@ -42,7 +42,7 @@ StatusType ComInt_SendMessage(MessageIdentifier Message, ApplicationDataRef Data
 
     if (MessageObject->NumReceivers != (uint8)0) {
         ComIf_UpdateAndNotifyReceivers(MessageObject, DataRef);
-        OS_COND_SCHEDULE_FROM_TASK_LEVEL();
+        OsExec_CondScheduleFromTaskLevel();
     }
 
     return E_OK;
@@ -57,9 +57,9 @@ StatusType ComInt_ReceiveMessage(MessageIdentifier Message, ApplicationDataRef D
 {
     Com_MessageObjectType const * const MessageObject = (Com_MessageObjectType *)&OSEK_COM_GET_MESSAGE_OBJECT(Message);
 
-    DISABLE_ALL_OS_INTERRUPTS();
+    OsPort_DisableAllOsInterrupts();
     Utl_MemCopy((void *)DataRef, (void *)MessageObject->Data, (SizeType)MessageObject->Size);
-    ENABLE_ALL_OS_INTERRUPTS();
+    OsPort_EnableAllOsInterrupts();
 
     return E_OK;
 }
