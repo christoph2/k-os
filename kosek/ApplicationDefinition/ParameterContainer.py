@@ -78,11 +78,8 @@ class ParameterContainer(object):
                 )
             else:
                     self.setAttribute(param.name, param.value.booleanValue)
-        elif param.value.type_ == AttributeValueContainter.NUMBER_VALUE:
-            self.setAttribute(param.name, parameterValue)
-        elif param.value.type_ == AttributeValueContainter.FLOAT_VALUE:
-            self.setAttribute(param.name, parameterValue)
-        elif param.value.type_ == AttributeValueContainter.STRING_VALUE:
+        elif param.value.type_ in (AttributeValueContainter.NUMBER_VALUE, AttributeValueContainter.FLOAT_VALUE, 
+          AttributeValueContainter.STRING_VALUE):
             self.setAttribute(param.name, parameterValue)
         elif param.value.type_ == AttributeValueContainter.AUTO_VALUE:
             if not self.implDefinition[param.name].autoSpec:
