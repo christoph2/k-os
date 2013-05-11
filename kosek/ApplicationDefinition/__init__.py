@@ -30,7 +30,7 @@ __copyright__ = """
 import unittest
 
 from kosek.Logger import Logger
-from kosek.ApplicationDefinition.Parameter import Parameter
+from kosek.ApplicationDefinition.Parameter import Parameter, ParameterList
 from kosek.ApplicationDefinition.AttributeValueContainter import AttributeValueContainter
 from kosek.ApplicationDefinition.ParameterContainer import ParameterContainer, NestedParameter
 
@@ -171,38 +171,24 @@ class ObjectDefinition(ParameterContainer):
         self._setValues(objectType, name, parameterList, description)
         #self.description = []
 
+    def setDefaultAttr(self, attr, value):
+        if not hasattr(self, attr):
+            setattr(self, attr, value)
+
     def _setValues(self, objectType, name, parameterList, description):
-        if not hasattr(self, 'objectType'):
-            self.objectType = objectType
-
-        if not hasattr(self, 'implDefinition'):
-            self.implDefinition = self.parser.implDefinition[objectType]
-
-        if not hasattr(self, 'name'):
-            self.name = name
-
+        self.setDefaultAttr('objectType', objectType)
+        self.setDefaultAttr('implDefinition', self.parser.implDefinition[objectType])
+        self.setDefaultAttr('name', name)
         self.description = description or ''
-
         self.parameterList = parameterList or []
 
         for param in self.parameterList:
             self._decorate(param)
 
         if objectType == 'TASK':
-            if [p for p in self.parameterList if p.parameterName == 'EVENT']: ## TODO: hasEvents
-                self.taskType = 'EXTENDED'
-            else:
-                self.taskType = 'BASIC'
-
-            if hasattr(self, 'RESOURCE'):
-                hasResources = True
-            else:
-                hasResources = False
-
-            if hasattr(self, 'Event'):
-                hasEvents = True
-            else:
-                hasEvents = False
+            self._taskType = 'EXTENDED' if self.parameterList.hasEvents() else 'BASIC'
+            self._hasResources = True if hasattr(self, 'RESOURCE') else False
+            self._hasEvents = True if hasattr(self, 'EVENT') else False
 
         elif objectType == 'RESOURCE':
             #ts = self.parameterList[0].value.getTypeString()
@@ -225,6 +211,19 @@ class ObjectDefinition(ParameterContainer):
         ## TODO: Warning/Error wenn vorhandene Werte �berschrieben werden sollen!!!
         self._setValues(objectType, name, parameterList, description)
         return self
+    
+    def _getTaskType(self):
+        return self._taskType
+    
+    def _getHasResources(self):
+        return self._hasResources
+    
+    def _getHasEvents(self):
+        return self._hasEvents
+    
+    taskType = property(_getTaskType)
+    hasResources = property(_getHasResources)
+    hasEvents = property(_getHasEvents)
 
 
 class ObjectDefinitionList(object):
@@ -240,7 +239,7 @@ class ObjectDefinitionList(object):
             result.setdefault(definition.objectType, {})[definition.name ] = definition
             #print "DEF: %s::%s" % (definition.objectType, definition.name)
             for parameter in definition.parameterList:
-                parameterValue, typeName = parameter.parameterValue.value
+                parameterValue, _ = parameter.parameterValue.value
                 parameterName = parameter.parameterName
                 if parameterName == 'RESOURCE':
                     pass
