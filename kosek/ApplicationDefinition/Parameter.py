@@ -54,7 +54,6 @@ class Parameter(object):
     def getObjectName(self):
         return self._objectName
 
-
     def __repr__(self):
         if self.description:
             return "PARAMETER(%s::%s = %s) : '%s'" % (self.objectName, self.parameterName, self.parameterValue, self.description)
@@ -65,4 +64,24 @@ class Parameter(object):
     parameterValue = property(getParameterValue, None, None, None)
     description = property(getDescription, None, None, None)
     objectName = property(getObjectName, None, None, None)
+
+
+class ParameterList(list):
+    def hasAttribute(self, name):
+        return any(p for p in self if p.parameterName == name)
+    
+    def hasEvents(self):
+        return self.hasAttribute('EVENT')
+
+    def hasResources(self):
+        return self.hasAttribute('RESOURCE')
+    
+    def hasAutostarts(self):
+        return self.hasAttribute('AUTOSTART')
+
+    def hasAlarms(self):
+        return self.hasAttribute('ALARM')
+    
+    def hasMessages(self):
+        return self.hasAttribute('MESSAGE')
 
