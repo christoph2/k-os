@@ -34,15 +34,35 @@ from kosek.Logger import Logger
 logger = Logger()
 
 class Parameter(object):
-    def __init__(self, name, value, description, objectName):
-        self.name = name
-        self.value = value
-        self.description = description
-        self.objectName = objectName
+    def __init__(self, parameterName, parameterValue, description, objectName):
+        self._parameterName = parameterName
+        self._parameterValue = parameterValue
+        self._description = description
+        self._objectName = objectName
+
+    def getParameterName(self):
+        return self._parameterName
+
+    def getParameterValue(self):
+        return self._parameterValue
+
+
+    def getDescription(self):
+        return self._description
+
+
+    def getObjectName(self):
+        return self._objectName
+
 
     def __repr__(self):
         if self.description:
-            return "PARAMETER(%s::%s = %s) : '%s'" % (self.objectName, self.name, self.value, self.description)
+            return "PARAMETER(%s::%s = %s) : '%s'" % (self.objectName, self.parameterName, self.parameterValue, self.description)
         else:
-            return "PARAMETER(%s::%s = %s)" % (self.objectName, self.name, self.value)
+            return "PARAMETER(%s::%s = %s)" % (self.objectName, self.parameterName, self.parameterValue)
+
+    parameterName = property(getParameterName, None, None, None)
+    parameterValue = property(getParameterValue, None, None, None)
+    description = property(getDescription, None, None, None)
+    objectName = property(getObjectName, None, None, None)
 
