@@ -181,20 +181,15 @@ class ObjectDefinition(ParameterContainer):
         if not hasattr(self, 'name'):
             self.name = name
 
-        if not description:
-            self.description = ''   # could be overritten!!!
-        else:
-            self.description = description
+        self.description = description or ''
 
-        if not parameterList:
-            parameterList = []
-        self.parameterList = parameterList
+        self.parameterList = parameterList or []
 
-        for param in parameterList:
+        for param in self.parameterList:
             self._decorate(param)
 
         if objectType == 'TASK':
-            if [p for p in parameterList if p.name == 'EVENT']:
+            if [p for p in self.parameterList if p.parameterName == 'EVENT']: ## TODO: hasEvents
                 self.taskType = 'EXTENDED'
             else:
                 self.taskType = 'BASIC'
@@ -208,8 +203,11 @@ class ObjectDefinition(ParameterContainer):
                 hasEvents = True
             else:
                 hasEvents = False
+
         elif objectType == 'RESOURCE':
-            resourceProperty = parameterList[0].value.idValue
+            #ts = self.parameterList[0].value.getTypeString()
+            resourceProperty, typeName = self.parameterList[0].parameterValue.value
+            #resourceProperty = self.parameterList[0].value.idValue  # TODO: Simplify!!!
             if resourceProperty == 'STANDARD':
                 self.parser.standardResources.append(self)
             elif resourceProperty == 'INTERNAL':
@@ -228,6 +226,7 @@ class ObjectDefinition(ParameterContainer):
         self._setValues(objectType, name, parameterList, description)
         return self
 
+
 class ObjectDefinitionList(object):
     def __init__(self, parser, definitionList):
         self.definitionList = definitionList
@@ -241,13 +240,15 @@ class ObjectDefinitionList(object):
             result.setdefault(definition.objectType, {})[definition.name ] = definition
             #print "DEF: %s::%s" % (definition.objectType, definition.name)
             for parameter in definition.parameterList:
-                if parameter.name == 'RESOURCE':
+                parameterValue, typeName = parameter.parameterValue.value
+                parameterName = parameter.parameterName
+                if parameterName == 'RESOURCE':
                     pass
-                implParameterDefinition = implDefinition[definition.objectType][parameter.name ]
+                implParameterDefinition = implDefinition[definition.objectType][parameterName]
                 #parameter.implDefinition = implParameterDefinition
-                #print "DEF: %s::%s.%s" % (definition.objectType, definition.name, parameter.name)
-                if parameter.value == 'AUTO':
-                    autos[(definition.objectType, definition.name, parameter.name)] = (
+                #print "DEF: %s::%s.%s" % (definition.objectType, definition.name, parameterName)
+                if parameterValue == 'AUTO':
+                    autos[(definition.objectType, definition.name, parameterName)] = (
                         parameter, implParameterDefinition
                     )
         return result

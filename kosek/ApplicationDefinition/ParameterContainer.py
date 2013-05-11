@@ -39,7 +39,7 @@ class ParameterContainer(object):
         try:
             mult = self.implDefinition[attr].mult
         except KeyError:
-            pass
+            logger.exception(KeyError)
         if mult:
             if not hasattr(self, attr):
                 setattr(self, attr, [])
@@ -48,42 +48,43 @@ class ParameterContainer(object):
             setattr(self, attr, value)
 
     def _decorate(self, param):
-        parameterValue = param.value.getValue()
-        print "{%s} - '%s': %s[%s]" % (hex(id(self)), param.name, param.value.getTypeString(), parameterValue)
-        if param.name in ('ACTION', 'AUTOSTART'):
+        parameterValue, typeName = param.parameterValue.value
+        parameterName = param.parameterName
+        print "{%s} - '%s': %s[%s]" % (hex(id(self)), parameterName, typeName, parameterValue)
+        if param.parameterName in ('ACTION', 'AUTOSTART'):
             pass
-        if param.value.type_ == AttributeValueContainter.ID_VALUE:
-            if param.value.values:
+        if param.parameterValue.typeCode == AttributeValueContainter.ID_VALUE:
+            if param.parameterValue.values:
                 #print "\t*** ID: ", self.implDefinition
                 try:
-                    enum = [e for e in self.implDefinition[param.name].enumeration.values()]
+                    enum = [e for e in self.implDefinition[parameterName].enumeration.values()]
                 except KeyError:
-                    enum = [e for e in self.parent.implDefinition[param.name].enumeration.values()]
+                    enum = [e for e in self.parent.implDefinition[parameterName].enumeration.values()]
                     # TODO: kann ein Parent-Looup wirklich unser Problem l�sen???
-                implDef = [e for e in enum if e.name == param.value.idValue][0]
+                implDef = [e for e in enum if e.name == parameterValue][0]
                 ## TODO: Fehlerbehandlung
 
-                setattr(self, param.name, NestedParameter(self, param.name,
-                        parameterValue, param.value.values, implDef
+                setattr(self, parameterName, NestedParameter(self, parameterName,
+                        parameterValue, param.parameterValue.values, implDef
                     )
                 )
             else:
-                self.setAttribute(param.name, parameterValue)
-        elif param.value.type_ == AttributeValueContainter.BOOL_VALUE:
-            if param.value.values:
-                setattr(self, param.name, NestedParameter(self, param.name,
-                        parameterValue, param.value.values,
-                        self.implDefinition[param.name][str(parameterValue).upper()]
+                self.setAttribute(parameterName, parameterValue)
+        elif param.parameterValue.typeCode == AttributeValueContainter.BOOL_VALUE:
+            if param.parameterValue.values:
+                setattr(self, parameterName, NestedParameter(self, parameterName,
+                        parameterValue, param.parameterValue.values,
+                        self.implDefinition[parameterName][str(parameterValue).upper()]
                     )
                 )
             else:
-                    self.setAttribute(param.name, param.value.booleanValue)
-        elif param.value.type_ in (AttributeValueContainter.NUMBER_VALUE, AttributeValueContainter.FLOAT_VALUE, 
+                    self.setAttribute(parameterName, parameterValue)
+        elif param.parameterValue.typeCode in (AttributeValueContainter.NUMBER_VALUE, AttributeValueContainter.FLOAT_VALUE, 
           AttributeValueContainter.STRING_VALUE):
-            self.setAttribute(param.name, parameterValue)
-        elif param.value.type_ == AttributeValueContainter.AUTO_VALUE:
-            if not self.implDefinition[param.name].autoSpec:
-                raise ValueError("AUTO not permitted for attribute '%s'." % param.name)
+            self.setAttribute(parameterName, parameterValue)
+        elif param.parameterValue.typeCode == AttributeValueContainter.AUTO_VALUE:
+            if not self.implDefinition[parameterName].autoSpec:
+                raise ValueError("AUTO not permitted for attribute '%s'." % parameterName)
             else:
                 pass
 
