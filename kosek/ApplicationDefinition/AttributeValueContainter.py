@@ -30,8 +30,11 @@ __copyright__ = """
 import unittest
 
 from kosek.Logger import Logger
+from collections import namedtuple
 
 logger = Logger()
+
+TypeValue = namedtuple('Typevalue', 'value typeName')
 
 class AttributeValueContainter(object):
     ID_VALUE        = 0
@@ -42,36 +45,35 @@ class AttributeValueContainter(object):
     AUTO_VALUE      = 5
 
     def __init__(self, type_, **kwds):
-        self.type_ = type_
-        for k,v in kwds.items():
-            setattr(self, k, v)
-
-    def getValue(self):
-        if self.type_ == AttributeValueContainter.ID_VALUE:
-            return self.idValue
-        elif self.type_ == AttributeValueContainter.BOOL_VALUE:
-            return self.booleanValue
-        elif self.type_ == AttributeValueContainter.NUMBER_VALUE:
-            return self.number
-        elif self.type_ == AttributeValueContainter.FLOAT_VALUE:
-            raise self.number
-        elif self.type_ == AttributeValueContainter.STRING_VALUE:
-            return self.stringValue
-        elif self.type_ == AttributeValueContainter.AUTO_VALUE:
-            return 'AUTO'
-
-    def getTypeString(self):
-        if self.type_ == AttributeValueContainter.ID_VALUE:
-            return 'ID'
-        elif self.type_ == AttributeValueContainter.BOOL_VALUE:
-            return 'BOOL'
-        elif self.type_ == AttributeValueContainter.NUMBER_VALUE:
-            return 'NUMBER'
-        elif self.type_ == AttributeValueContainter.FLOAT_VALUE:
-            raise 'FLOAT'
-        elif self.type_ == AttributeValueContainter.STRING_VALUE:
-            return "STRING"
-        elif self.type_ == AttributeValueContainter.AUTO_VALUE:
-            return 'AUTO'
-
-
+        self._idValue = None
+        self._booleanValue = None
+        self._number = None
+        self._stringValue = None
+        self._values = []
+        
+        self._type = type_
+        for k, v in kwds.items():
+            setattr(self, "_%s" % k, v)
+        
+    def _getValue(self):
+        _TYPE_DICT = {
+            AttributeValueContainter.ID_VALUE:      TypeValue(self._idValue, 'ID'),
+            AttributeValueContainter.BOOL_VALUE:    TypeValue(self._booleanValue, 'BOOL'),
+            AttributeValueContainter.NUMBER_VALUE:  TypeValue(self._number, 'NUMBER'),
+            AttributeValueContainter.FLOAT_VALUE:   TypeValue(self._number, 'FLOAT'),
+            AttributeValueContainter.STRING_VALUE:  TypeValue(self._stringValue, 'STRING'),
+            AttributeValueContainter.AUTO_VALUE:    TypeValue('AUTO', 'AUTO'),
+            
+        }
+        
+        return _TYPE_DICT.get(self._type)
+    
+    def _getType(self):
+        return self._type
+    
+    def _getValues(self):
+        return self._values
+    
+    typeCode = property(_getType)
+    value = property(_getValue)
+    values = property(_getValues)
