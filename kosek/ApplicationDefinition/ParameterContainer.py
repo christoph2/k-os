@@ -40,6 +40,8 @@ class ParameterContainer(object):
             mult = self.implDefinition[attr].mult
         except KeyError:
             logger.exception(KeyError)
+        except TypeError as e:
+            pass
         if mult:
             if not hasattr(self, attr):
                 setattr(self, attr, [])

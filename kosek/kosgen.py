@@ -43,11 +43,6 @@ import kosek.GenCfg as GenCfg
 import kosek.Preproc as Preproc
 
 
-##
-##  TODO: Package-Root: kosek
-##
-
-
 def SetIncludePaths(paths):
     inc_paths = os.getenv('KOS_INCLUDE')
     if inc_paths is not None:

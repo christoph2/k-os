@@ -46,10 +46,8 @@ class Parameter(object):
     def getParameterValue(self):
         return self._parameterValue
 
-
     def getDescription(self):
         return self._description
-
 
     def getObjectName(self):
         return self._objectName
