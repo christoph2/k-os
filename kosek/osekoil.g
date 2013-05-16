@@ -90,21 +90,22 @@ tokens {
 
 
 @parser::header {
-    from kosek.BaseParser import BaseParser
-    import kosek.ApplicationDefinition as ApplicationDefinition
-    import kosek.ImplementationDefinition as ImplementationDefinition
+   from kosek.BaseParser import BaseParser
+   import kosek.ApplicationDefinition as ApplicationDefinition
+   import kosek.ImplementationDefinition as ImplementationDefinition
+   from kosek.ImplementationDefinition.Extras import Extras
 }
 
 @parser::members {
-    implDefinition = dict()
-    standardResources = []
-    internalResources = []
-    linkedResources = []
+   implDefinition = dict()
+   standardResources = []
+   internalResources = []
+   linkedResources = []
 
 }
 
 @lexer::init {
-    pass
+   pass
 }
 
 
@@ -230,7 +231,7 @@ scope {
    $implAttrDef::implAttrName = $attributeName.text
 
 
-   $extra = ImplementationDefinition.Extras(ImplementationDefinition.Extras.NUMBER_RANGE, {'range' : $numberRange.range, 'numberFrom': $numberRange.nfrom,
+   $extra = Extras(Extras.NUMBER_RANGE, {'range' : $numberRange.range, 'numberFrom': $numberRange.nfrom,
        'numberTo': $numberRange.nto})
    if $autoSpecifier.text: $auto = True
    else: $auto = False
@@ -248,7 +249,7 @@ scope {
 
    $implAttrDef::implAttrName = $attributeName.text
 
-   $extra = ImplementationDefinition.Extras(ImplementationDefinition.Extras.NUMBER_RANGE, {'range' : $numberRange.range, 'numberFrom': $numberRange.nfrom,
+   $extra = Extras(Extras.NUMBER_RANGE, {'range' : $numberRange.range, 'numberFrom': $numberRange.nfrom,
        'numberTo': $numberRange.nto})
    if $autoSpecifier.text: $auto = True
    else: $auto = False
@@ -266,7 +267,7 @@ scope {
 
    $implAttrDef::implAttrName = $attributeName.text
 
-   $extra = ImplementationDefinition.Extras(ImplementationDefinition.Extras.NUMBER_RANGE, {'range' : $numberRange.range, 'numberFrom': $numberRange.nfrom,
+   $extra = Extras(Extras.NUMBER_RANGE, {'range' : $numberRange.range, 'numberFrom': $numberRange.nfrom,
        'numberTo': $numberRange.nto})
    if $autoSpecifier.text: $auto = True
    else: $auto = False
@@ -281,7 +282,7 @@ scope {
       {
    $dataType = ImplementationDefinition.ImplAttrType.INT64
    $attrName = $attributeName.text
-   $extra = ImplementationDefinition.Extras(ImplementationDefinition.Extras.NUMBER_RANGE, {'range' : $numberRange.range, 'numberFrom': $numberRange.nfrom,
+   $extra = Extras(Extras.NUMBER_RANGE, {'range' : $numberRange.range, 'numberFrom': $numberRange.nfrom,
        'numberTo': $numberRange.nto})
 
    $implAttrDef::implAttrName = $attributeName.text
@@ -299,7 +300,7 @@ scope {
       {
    $dataType = ImplementationDefinition.ImplAttrType.FLOAT
    $attrName = $attributeName.text
-   $extra = ImplementationDefinition.Extras(ImplementationDefinition.Extras.FLOAT_RANGE, {'numberFrom': $floatRange.nfrom, 'numberTo': $floatRange.nto})
+   $extra = Extras(Extras.FLOAT_RANGE, {'numberFrom': $floatRange.nfrom, 'numberTo': $floatRange.nto})
 
    $implAttrDef::implAttrName = $attributeName.text
 
@@ -319,7 +320,7 @@ scope {
 
    $implAttrDef::implAttrName = $attributeName.text
 
-   $extra = ImplementationDefinition.Extras(ImplementationDefinition.Extras.ENUMERATION, {'enumeration': $enumeration.values})
+   $extra = Extras(Extras.ENUMERATION, {'enumeration': $enumeration.values})
    if $autoSpecifier.text: $auto = True
    else: $auto = False
    if $multipleSpecifier.text: $mult = True
@@ -335,7 +336,7 @@ scope {
    $attrName = $attributeName.text
 
    $implAttrDef::implAttrName = $attributeName.text
-   $extra = ImplementationDefinition.Extras(ImplementationDefinition.Extras.DUMMY)
+   $extra = Extras(Extras.DUMMY)
 
    if $autoSpecifier.text: $auto = True
    else: $auto = False
@@ -353,7 +354,7 @@ scope {
 
    $implAttrDef::implAttrName = $attributeName.text
 
-   $extra = ImplementationDefinition.Extras(ImplementationDefinition.Extras.BOOL_VALUES, {'boolValues': $boolValues.values})
+   $extra = Extras(Extras.BOOL_VALUES, {'boolValues': $boolValues.values})
 
    if $autoSpecifier.text: $auto = True
    else: $auto = False
@@ -602,7 +603,7 @@ objectDefinition returns[value]
 scope {
     objectName
 }
-   :  objectName { $objectDefinition::objectName=$objectName.name }
+   :  objectName { $objectDefinition::objectName = $objectName.name }
       ('{' parameterList '}')? description? SEMI
    {
    obj = self.getObject($objectName.objectType, $objectName.name)
@@ -627,7 +628,7 @@ objectName returns[objectType, name]
 
 parameterList returns[value]
 @init {
-    myList = []
+    myList = ApplicationDefinition.ParameterList()
 }
 @after {
     $value = myList

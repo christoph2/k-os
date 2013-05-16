@@ -104,7 +104,7 @@ class ApplicationDefinition(object):
             attr = name.lower()
             for a in appDef.values():
                 for param in a.parameterList:
-                    if param.name in ('ORTI_DEBUG'):
+                    if param.parameterName in ('ORTI_DEBUG'):
                         pass
             if attr not in ('com', 'nm', 'os'):
                 attr += 's'

@@ -33,6 +33,7 @@ from kosek.Logger import Logger
 from kosek.ApplicationDefinition.Parameter import Parameter, ParameterList
 from kosek.ApplicationDefinition.AttributeValueContainter import AttributeValueContainter
 from kosek.ApplicationDefinition.ParameterContainer import ParameterContainer, NestedParameter
+from kosek.ImplementationDefinition import ImplAttrType, ImplAttrDef, ImplRefDef
 
 logger = Logger()
 
@@ -64,7 +65,7 @@ class ApplicationDefinitionBuilder(object):
     def getAutostartedObjects(self, objectType):
         result = []
         # Filter nur vor�bergehend - AUTOSTART ist nicht optional!!!
-        objs = [v for _, v in self.getObjects(objectType).items() if hasattr(v, 'AUTOSTART')]
+        objs = [v for _, v in self.getObjects(objectType).items() if v.hasAutostarts]
         for obj in objs:
             if obj.AUTOSTART == True:
                 result.append(obj)
@@ -169,6 +170,8 @@ class ObjectDefinition(ParameterContainer):
         self.parser = parser
         self.implDefinition = self.parser.implDefinition[objectType]
         self._setValues(objectType, name, parameterList, description)
+        
+        self._hasAutostarts = False # Vorrübergehend!!
         #self.description = []
 
     def setDefaultAttr(self, attr, value):
@@ -189,7 +192,9 @@ class ObjectDefinition(ParameterContainer):
             self._taskType = 'EXTENDED' if self.parameterList.hasEvents() else 'BASIC'
             self._hasResources = True if hasattr(self, 'RESOURCE') else False
             self._hasEvents = True if hasattr(self, 'EVENT') else False
-
+            self._hasAutostarts = True if hasattr(self, 'AUTOSTART') else False
+        elif objectType == 'ALARAM':
+            self._hasAutostarts = True if hasattr(self, 'AUTOSTART') else False
         elif objectType == 'RESOURCE':
             #ts = self.parameterList[0].value.getTypeString()
             resourceProperty, typeName = self.parameterList[0].parameterValue.value
@@ -221,9 +226,13 @@ class ObjectDefinition(ParameterContainer):
     def _getHasEvents(self):
         return self._hasEvents
     
+    def _getHasAutostarts(self):
+        return self._hasAutostarts
+    
     taskType = property(_getTaskType)
     hasResources = property(_getHasResources)
     hasEvents = property(_getHasEvents)
+    hasAutostarts = property(_getHasAutostarts) 
 
 
 class ObjectDefinitionList(object):
@@ -250,5 +259,52 @@ class ObjectDefinitionList(object):
                     autos[(definition.objectType, definition.name, parameterName)] = (
                         parameter, implParameterDefinition
                     )
+            path = []
+            self.validate(definition, implDefinition[definition.objectType],path)
         return result
+
+    def validate(self, definition, implDefinitionDict, path):
+        path.append("[%s]%s" % (definition.objectType, definition.name))
+        for parameter in definition.parameterList:
+            parameterValue, _ = parameter.parameterValue.value
+            parameterName = parameter.parameterName
+            implDefinition = implDefinitionDict[parameterName]
+            
+            if isinstance(implDefinition, ImplRefDef):
+                pass
+            elif isinstance(implDefinition, ImplAttrDef):
+                if implDefinition.dataType == ImplAttrType.ENUM:
+                    self.validateEnum(parameter, implDefinition, path)
+                elif implDefinition.dataType == ImplAttrType.BOOLEAN:
+                    self.validateBoolean(parameter, implDefinition, path)
+                elif implDefinition.dataType == ImplAttrType.UINT32:
+                    if not parameterValue in implDefinition:
+                        print "INVALID VALUE"
+                elif implDefinition.dataType == ImplAttrType.INT32:
+                    pass
+                elif implDefinition.dataType == ImplAttrType.UINT64:
+                    pass
+                elif implDefinition.dataType == ImplAttrType.INT64:
+                    pass
+                elif implDefinition.dataType == ImplAttrType.FLOAT:
+                    pass
+                elif implDefinition.dataType == ImplAttrType.STRING:
+                    pass
+    # '::'.join(path)
+    def validateEnum(self, definition, implDefinition, path):
+        parameterName = definition.parameterName
+        
+        #implDefinition = implDefinitionDict[parameterName]
+        path.append(parameterName)
+        value, _ = definition.parameterValue.value
+        
+        if not value in implDefinition:
+            pass
+        path.pop(-1)
+    
+    def validateBoolean(self, definition, implDefinition, path):
+        parameterName = definition.parameterName
+        path.append(definition.parameterName)
+        value, _ = definition.parameterValue.value
+        path.pop(-1)
 

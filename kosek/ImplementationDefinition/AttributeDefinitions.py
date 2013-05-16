@@ -38,8 +38,9 @@ from kosek.ImplementationDefinition.Enumeration import Enumeration, Enumerator
 
 logger = Logger()
 
+
 signedIntegerRange = lambda numberOfBits:   (-(2 ** (numberOfBits - 1)), (2 ** (numberOfBits - 1)) - 1)
-unsignedIntegerRange = lambda numberOfBits: (2 ** numberOfBits) - 1
+unsignedIntegerRange = lambda numberOfBits: (0, (2 ** numberOfBits) - 1)
 
 class ImplAttrType(object):
     UINT32  = 0
@@ -82,54 +83,131 @@ class ImplAttrType(object):
 class AttributeDefinition(NestableDefinition):
 
     def __init__(self, attrName, autoSpec, mult, default, description, extra):
+        super(AttributeDefinition, self).__init__(attrName = attrName, autoSpec = autoSpec,
+            mult = mult, default = default, desc = description, extra = extra
+        )
         self.attrName = attrName
         self.autoSpec = autoSpec
         self.mult = mult
         self.default = default
         self.description = description
         self._extra = extra
-        self._dict = {}
+        #self._dict = {}
         self._setupInstance()
-
-        super(AttributeDefinition, self).__init__(attrName = attrName, autoSpec = autoSpec,
-            mult = mult, default = default, desc = description, extra = extra
-        )
+        del self._extra
 
     def _setupInstance(self):
+        raise NotImplementedError()
+
+    def __contains__(self, value):
         raise NotImplementedError()
 
 
 class BooleanAttribute(AttributeDefinition):
 
     def _setupInstance(self):
+        self.falseParameters = None
+        self.trueParameters = None
         extra = self._extra
         if extra.type_ == Extras.BOOL_VALUES:
             if extra.boolValues:
                 if extra.boolValues.trueParameterList:
-                    self._dict['TRUE'] = extra.boolValues.trueParameterList.values.items()
+                    self.trueParameters = extra.boolValues.trueParameterList.values.items()
                 if extra.boolValues.falseParameterList:
-                    self._dict['FALSE'] = extra.boolValues.falseParameterList.values.items()
+                    self.falseParameter = extra.boolValues.falseParameterList.values.items()
 
             self.boolValues = extra.boolValues
+
+    def __contains__(self, value):
+        return True # Guaranteed by grammar.
 
 
 class EnumAttribute(AttributeDefinition):
 
     def _setupInstance(self):
+        self._enumeration = self._extra.enumeration
         if self.default:
             if self.default == u'AUTO':
                 pass    # TODO: autosToBeResolved
             else:
-                enum = [e.name for e in self.extra.enumeration.values()]
-                if not self.default in enum:
-                    logger.error("Default-Value '%s' for Attribute '%s' out of range."
-                         % (self.default, self.attrName))
+                #enum = [e.name for e in self.extra.enumeration.values()]
+                if not self.default in self:    # ._enumeration:
+                    logger.error("Default-Value '%s' for Attribute '%s' out of range." % (self.default, self.attrName))
                 else:
                     pass
-        extra = self._extra
-        self._enumeration = extra.enumeration
-        #if extra.enumeration:
-        #    self._dict.update(extra.enumeration.items())
+
+    def __contains__(self, value):
+        # TODO: AUTO handling!!!
+        res = value in self._enumeration
+        return res
+
+
+class IntegerAttribute(AttributeDefinition):
+
+    def __init__(self, dataType, attrName, autoSpec, mult, default, description, extra):
+        self._dataType = dataType
+        self.signedIntegerRange = signedIntegerRange
+        self.unsignedIntegerRange = unsignedIntegerRange
+        super(IntegerAttribute, self).__init__(attrName = attrName, autoSpec = autoSpec,
+            mult = mult, default = default, description = description, extra = extra
+        )
+
+    def _setupInstance(self):
+        self._range = self._extra.range
+        self._actualNumberFrom = self._extra.numberFrom
+        self._actualNumberTo = self._extra.numberTo
+
+        signed, bits = {
+            ImplAttrType.UINT32:    (False, 32),
+            ImplAttrType.UINT64:    (False, 64),
+            ImplAttrType.INT32:     (True,  32),
+            ImplAttrType.INT64:     (True,  64),
+        }.get(self._dataType)
+
+        if signed:
+            result = self.signedIntegerRange(bits)
+        else:
+            result = self.unsignedIntegerRange(bits)
+        self.naturalRangeFrom, self.naturalRangeTo = result
+
+    def __contains__(self, value):
+        if self._extra.range == True:
+            if (self.default < self._extra.numberFrom) or (self.default > self._extra.numberTo):
+                logger.error("Default-Value '%s' for Attribute '%s' out of range."
+                         % (self.default, self.attrName))
+        elif self._extra.range == False:
+            if not self.default in self._extra.extra.numberFrom:
+                if (self.default < self._extra.numberFrom) or (self.default > self._extra.numberTo):
+                    logger.error("Default-Value '%s' for Attribute '%s' out of range."
+                             % (self.default, self.attrName))
+
+    def _getDataType(self):
+        return self._dataType
+
+    dataType = property(_getDataType)
+
+
+class FloatAttribute(AttributeDefinition):
+
+    def _setupInstance(self):
+        self._range = self._extra.range
+        self._actualNumberFrom = self._extra.numberFrom
+        self._actualNumberTo = self._extra.numberTo
+
+        if (self._extra.numberFrom and self._extra.numberTo) and ((self.default < self._extra.numberFrom) or (self.default > self._extra.numberTo)):
+                    logger.error("Default-Value '%s' for Attribute '%s' out of range."
+                             % (self.default, self.attrName))
+
+    def __contains__(self,value):
+        return self._actualNumberFrom <= value <= self._actualNumberTo
+
+
+class StringAttribute(AttributeDefinition):
+    def _setupInstance(self):
+        pass
+
+    def __contains__(self, value):
+        return True
 
 
 def AttributeDefinitionFactory(dataType, attrName, autoSpec, mult, default, desc, extra):
@@ -137,7 +215,12 @@ def AttributeDefinitionFactory(dataType, attrName, autoSpec, mult, default, desc
         return BooleanAttribute(attrName, autoSpec, mult, default, desc, extra)
     elif dataType == ImplAttrType.ENUM:
         return EnumAttribute(attrName, autoSpec, mult, default, desc, extra)
-
+    elif dataType in (ImplAttrType.UINT32, ImplAttrType.UINT64, ImplAttrType.INT32, ImplAttrType.INT64):
+        return IntegerAttribute(dataType, attrName, autoSpec, mult, default, desc, extra)
+    elif dataType == ImplAttrType.FLOAT:
+        return FloatAttribute(attrName, autoSpec, mult, default, desc, extra)
+    elif dataType == ImplAttrType.STRING:
+        return StringAttribute(attrName, autoSpec, mult, default, desc, extra)
 
 class ImplAttrDef(NestableDefinition):  # TODO: factory method!!!
 
@@ -181,6 +264,8 @@ class ImplAttrDef(NestableDefinition):  # TODO: factory method!!!
                     logger.error("Default-Value '%s' for Attribute '%s' out of range."
                              % (default, attrName))
             elif dataType == ImplAttrType.BOOLEAN:
+                pass
+            elif dataType == ImplAttrType.STRING:
                 pass
         self.desc = desc
         if extra.type_ == Extras.NUMBER_RANGE:
@@ -393,7 +478,23 @@ class TestAttributeDefinitionFactory(BaseAttributeDefinition):
         values = (ImplAttrType.ENUM, 'CC', False, False, None, '', extras )
         self.assertIsInstance(AttributeDefinitionFactory(*values), EnumAttribute )
 
+    def testCreateUint32AttributeDefinition(self):
+        extra = Extras(Extras.NUMBER_RANGE, {'range': True, 'numberFrom': 32, 'numberTo': 128})
+        values = (ImplAttrType.UINT32, 'IDLE_TASK_STACK_SIZE', False, False, 48, None, extra)
+        self.assertIsInstance(AttributeDefinitionFactory(*values), IntegerAttribute )
+
+    ## TODO:Other integer types!!!
+    def testCreateFloatAttributeDefinition(self):
+        extra = Extras(Extras.FLOAT_RANGE, {'range': True, 'numberFrom': 32, 'numberTo': 128})
+        values = (ImplAttrType.FLOAT, 'IDLE_TASK_STACK_SIZE', False, False, 48.0, None, extra)
+        self.assertIsInstance(AttributeDefinitionFactory(*values), FloatAttribute )
+
         # TODO: enum Tests: default == AUTO, default != AUTO ( CALLSCHEDULE = UNKNOWN).
+
+    def testCreateStringAttributeDefinition(self):
+        extra = Extras(Extras.DUMMY)
+        values = (ImplAttrType.STRING, ' KOIL_VERSION', False, False, '2.2', None, extra)
+        self.assertIsInstance(AttributeDefinitionFactory(*values), StringAttribute )
 
 if __name__ == '__main__':
     unittest.main()
