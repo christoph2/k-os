@@ -1,4 +1,4 @@
-# $ANTLR 3.4 osekoil.g 2013-05-12 09:27:23
+# $ANTLR 3.4 osekoil.g 2013-05-16 18:39:24
 
 import sys
 from antlr3 import *
@@ -1509,7 +1509,7 @@ class osekoilParser(BaseParser):
                     if self._state.backtracking == 0:
                         pass
                            
-                        retval.values = ImplementationDefinition.ImplAttrDef(((id is not None) and [id.dataType] or [None])[0], ((id is not None) and [id.attrName] or [None])[0], ((id is not None) and [id.auto] or [None])[0], ((id is not None) and [id.mult] or [None])[0], ((id is not None) and [id.deflt] or [None])[0], ((id is not None) and [id.desc] or [None])[0], ((id is not None) and [id.extra] or [None])[0])
+                        retval.values = ImplementationDefinition.AttributeDefinitionFactory(((id is not None) and [id.dataType] or [None])[0], ((id is not None) and [id.attrName] or [None])[0], ((id is not None) and [id.auto] or [None])[0], ((id is not None) and [id.mult] or [None])[0], ((id is not None) and [id.deflt] or [None])[0], ((id is not None) and [id.desc] or [None])[0], ((id is not None) and [id.extra] or [None])[0])
                            
 
 

@@ -33,7 +33,7 @@ from kosek.Logger import Logger
 from kosek.ApplicationDefinition.Parameter import Parameter, ParameterList
 from kosek.ApplicationDefinition.AttributeValueContainter import AttributeValueContainter
 from kosek.ApplicationDefinition.ParameterContainer import ParameterContainer, NestedParameter
-from kosek.ImplementationDefinition import ImplAttrType, ImplAttrDef, ImplRefDef
+from kosek.ImplementationDefinition import ImplAttrType, AttributeDefinitionFactory, ImplRefDef
 
 logger = Logger()
 

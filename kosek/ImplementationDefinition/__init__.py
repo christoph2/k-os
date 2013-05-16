@@ -32,7 +32,7 @@ import unittest
 
 from kosek.Logger import Logger
 from kosek.ImplementationDefinition.NestableDefinition import NestableDefinition
-from kosek.ImplementationDefinition.AttributeDefinitions import ImplAttrDef, ImplAttrType
+from kosek.ImplementationDefinition.AttributeDefinitions import AttributeDefinitionFactory, ImplAttrType
 from kosek.ImplementationDefinition.Enumeration import Enumeration, Enumerator
 
 logger = Logger()

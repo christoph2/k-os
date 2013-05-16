@@ -198,7 +198,7 @@ implementationDef returns[values]
 }
    :  id = implAttrDef
    {
-   $values = ImplementationDefinition.ImplAttrDef($id.dataType, $id.attrName, $id.auto, $id.mult, $id.deflt, $id.desc, $id.extra)
+   $values = ImplementationDefinition.AttributeDefinitionFactory($id.dataType, $id.attrName, $id.auto, $id.mult, $id.deflt, $id.desc, $id.extra)
    }
    -> ^(IMPLEMENTATION_DEF implAttrDef)
    | id2 = implRefDef

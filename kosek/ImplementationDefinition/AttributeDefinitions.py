@@ -190,7 +190,7 @@ class IntegerAttribute(AttributeDefinition):
 class FloatAttribute(AttributeDefinition):
 
     def _setupInstance(self):
-        self._range = self._extra.range
+        #self._range = self._extra.range
         self._actualNumberFrom = self._extra.numberFrom
         self._actualNumberTo = self._extra.numberTo
 
@@ -222,6 +222,7 @@ def AttributeDefinitionFactory(dataType, attrName, autoSpec, mult, default, desc
     elif dataType == ImplAttrType.STRING:
         return StringAttribute(attrName, autoSpec, mult, default, desc, extra)
 
+"""
 class ImplAttrDef(NestableDefinition):  # TODO: factory method!!!
 
     def __init__(self, dataType, attrName, autoSpec, mult, default, desc, extra):
@@ -361,6 +362,7 @@ class ImplAttrDef(NestableDefinition):  # TODO: factory method!!!
 
     def __repr__(self):
         return "ATTR (%s - %s)" % (self.attrName, ImplAttrType.toString(self.dataType))
+"""
 
 
 ### ### ##  ###  #####  #######         ####### #######  #####  #######  #####
