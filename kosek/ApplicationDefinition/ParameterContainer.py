@@ -76,7 +76,7 @@ class ParameterContainer(object):
             if param.parameterValue.values:
                 setattr(self, parameterName, NestedParameter(self, parameterName,
                         parameterValue, param.parameterValue.values,
-                        self.implDefinition[parameterName][str(parameterValue).upper()]
+                        self.implDefinition[parameterName].getParameters(parameterValue) # [str(parameterValue).upper()]
                     )
                 )
             else:

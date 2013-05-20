@@ -37,4 +37,9 @@ class NestableDefinition(object):
     def __init__(self, *args, **kws):
         pass
 
+    def validate(self, parameter, path):
+        parameterName = parameter.parameterName
+        path.append(parameterName)
+        self._validate(parameter, path)
+        path.pop(-1)
 

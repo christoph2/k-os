@@ -102,6 +102,9 @@ class AttributeDefinition(NestableDefinition):
     def __contains__(self, value):
         raise NotImplementedError()
 
+    def _validate(self, parameter, path):
+        raise NotImplementedError()
+
 
 class BooleanAttribute(AttributeDefinition):
 
@@ -120,6 +123,30 @@ class BooleanAttribute(AttributeDefinition):
 
     def __contains__(self, value):
         return True # Guaranteed by grammar.
+
+    def getParameters(self, value):
+        if value == True:
+            return self.trueParameters
+        elif value == False:
+            return self.falseParameters
+        else:
+            raise ValueError(value)
+
+    def _validate(self, parameter, path):
+        parameterName = parameter.parameterName
+
+        if parameterName in ('ORTI_DEBUG', 'TYPE'):
+            pass
+        value, _ = parameter.parameterValue.value
+
+        p2 = self.getParameters(value)
+
+        for xy in parameter.parameterValue.values:
+            implDef2 = self.getParameters(value)[xy.parameterName]
+            implDef2.validate(xy, path)
+
+        if not value in self:
+            print "BOOLEAN paramter %s %s not in %s" (path, value, self, )
 
 
 class EnumAttribute(AttributeDefinition):
@@ -140,6 +167,22 @@ class EnumAttribute(AttributeDefinition):
         # TODO: AUTO handling!!!
         res = value in self._enumeration
         return res
+
+    def _getEnumerartion (self):
+        return self._enumeration
+
+    def _validate(self, parameter, path):
+        parameterName = parameter.parameterName
+        value, _ = parameter.parameterValue.value
+
+        #p2 = self.getParameters(value)
+
+        for xy in parameter.parameterValue.values:
+            pass
+        if not value in self:
+            pass
+
+    enumeration = property(_getEnumerartion)
 
 
 class IntegerAttribute(AttributeDefinition):
@@ -171,18 +214,24 @@ class IntegerAttribute(AttributeDefinition):
         self.naturalRangeFrom, self.naturalRangeTo = result
 
     def __contains__(self, value):
-        if self._extra.range == True:
-            if (self.default < self._extra.numberFrom) or (self.default > self._extra.numberTo):
-                logger.error("Default-Value '%s' for Attribute '%s' out of range."
-                         % (self.default, self.attrName))
-        elif self._extra.range == False:
-            if not self.default in self._extra.extra.numberFrom:
-                if (self.default < self._extra.numberFrom) or (self.default > self._extra.numberTo):
-                    logger.error("Default-Value '%s' for Attribute '%s' out of range."
-                             % (self.default, self.attrName))
+        result = False
+        if isinstance(self._actualNumberFrom, list):
+            result = value in self._actualNumberFrom    # Check against enumerated list.
+        elif self._actualNumberFrom and self._actualNumberTo:
+            result = self._actualNumberFrom <= value <= self._actualNumberTo
+        else:
+            result = self.naturalRangeFrom <= value <= self.naturalRangeTo
+        return result
 
     def _getDataType(self):
         return self._dataType
+
+    def _validate(self, parameter, path):
+        parameterName = parameter.parameterName
+        value, _ = parameter.parameterValue.value
+
+        if not value in self:
+            print "Invalid VALUE!!!"
 
     dataType = property(_getDataType)
 
@@ -199,7 +248,17 @@ class FloatAttribute(AttributeDefinition):
                              % (self.default, self.attrName))
 
     def __contains__(self,value):
-        return self._actualNumberFrom <= value <= self._actualNumberTo
+        if self._actualNumberFrom and self._actualNumberTo:
+            return self._actualNumberFrom <= value <= self._actualNumberTo
+        else:
+            return True
+
+    def _validate(self, parameter, path):
+        parameterName = parameter.parameterName
+        value, _ = parameter.parameterValue.value
+
+        if not value in self:
+            print "Invalid FLOAT VALUE!!!"
 
 
 class StringAttribute(AttributeDefinition):
@@ -208,6 +267,9 @@ class StringAttribute(AttributeDefinition):
 
     def __contains__(self, value):
         return True
+
+    def _validate(self, parameter, path):
+        pass
 
 
 def AttributeDefinitionFactory(dataType, attrName, autoSpec, mult, default, desc, extra):

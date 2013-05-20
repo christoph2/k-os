@@ -170,7 +170,7 @@ class ObjectDefinition(ParameterContainer):
         self.parser = parser
         self.implDefinition = self.parser.implDefinition[objectType]
         self._setValues(objectType, name, parameterList, description)
-        
+
         self._hasAutostarts = False # Vorrübergehend!!
         #self.description = []
 
@@ -216,23 +216,23 @@ class ObjectDefinition(ParameterContainer):
         ## TODO: Warning/Error wenn vorhandene Werte �berschrieben werden sollen!!!
         self._setValues(objectType, name, parameterList, description)
         return self
-    
+
     def _getTaskType(self):
         return self._taskType
-    
+
     def _getHasResources(self):
         return self._hasResources
-    
+
     def _getHasEvents(self):
         return self._hasEvents
-    
+
     def _getHasAutostarts(self):
         return self._hasAutostarts
-    
+
     taskType = property(_getTaskType)
     hasResources = property(_getHasResources)
     hasEvents = property(_getHasEvents)
-    hasAutostarts = property(_getHasAutostarts) 
+    hasAutostarts = property(_getHasAutostarts)
 
 
 class ObjectDefinitionList(object):
@@ -252,6 +252,9 @@ class ObjectDefinitionList(object):
                 parameterName = parameter.parameterName
                 if parameterName == 'RESOURCE':
                     pass
+                
+                if parameterName == 'ISR_STACK_SIZE':
+                    pass
                 implParameterDefinition = implDefinition[definition.objectType][parameterName]
                 #parameter.implDefinition = implParameterDefinition
                 #print "DEF: %s::%s.%s" % (definition.objectType, definition.name, parameterName)
@@ -269,42 +272,7 @@ class ObjectDefinitionList(object):
             parameterValue, _ = parameter.parameterValue.value
             parameterName = parameter.parameterName
             implDefinition = implDefinitionDict[parameterName]
-            
-            if isinstance(implDefinition, ImplRefDef):
-                pass
-            elif isinstance(implDefinition, ImplAttrDef):
-                if implDefinition.dataType == ImplAttrType.ENUM:
-                    self.validateEnum(parameter, implDefinition, path)
-                elif implDefinition.dataType == ImplAttrType.BOOLEAN:
-                    self.validateBoolean(parameter, implDefinition, path)
-                elif implDefinition.dataType == ImplAttrType.UINT32:
-                    if not parameterValue in implDefinition:
-                        print "INVALID VALUE"
-                elif implDefinition.dataType == ImplAttrType.INT32:
-                    pass
-                elif implDefinition.dataType == ImplAttrType.UINT64:
-                    pass
-                elif implDefinition.dataType == ImplAttrType.INT64:
-                    pass
-                elif implDefinition.dataType == ImplAttrType.FLOAT:
-                    pass
-                elif implDefinition.dataType == ImplAttrType.STRING:
-                    pass
-    # '::'.join(path)
-    def validateEnum(self, definition, implDefinition, path):
-        parameterName = definition.parameterName
-        
-        #implDefinition = implDefinitionDict[parameterName]
-        path.append(parameterName)
-        value, _ = definition.parameterValue.value
-        
-        if not value in implDefinition:
-            pass
-        path.pop(-1)
-    
-    def validateBoolean(self, definition, implDefinition, path):
-        parameterName = definition.parameterName
-        path.append(definition.parameterName)
-        value, _ = definition.parameterValue.value
-        path.pop(-1)
+
+            implDefinition.validate(parameter, path)
+
 

@@ -53,7 +53,7 @@ def SetIncludePaths(paths):
             Preproc.AddToPathList(p)
 
 
-def Parse(fname):
+def parse(fname):
     inputFile = antlr3.StringStream(codecs.open(fname, encoding = 'UTF-8').read())
     lexer = osekoilLexer(inputFile)
 
@@ -134,7 +134,7 @@ def main():
     except IOError:
         error.fatalError("Could not open file '%s'.\n" % outFilename)
     else:
-        (implDefMap, appDefMap, info) = Parse(outFilename)
+        (implDefMap, appDefMap, info) = parse(outFilename)
 
         info.version = __version__
 

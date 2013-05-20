@@ -63,6 +63,9 @@ class ImplRefDef(NestableDefinition):
         super(ImplRefDef, self).__init__(objectType = objectType, name = name,
             mult = mult, desc = desc
         )
+        
+    def validate(self, parameter, path):
+        pass
 
     def __repr__(self):
         return "REF (%s - %s)" % (self.attrName, self.objectType)
