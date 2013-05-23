@@ -49,47 +49,6 @@ class ParameterContainer(object):
         else:
             setattr(self, attr, value)
 
-    def _decorate(self, param):
-        parameterValue, typeName = param.parameterValue.value
-        parameterName = param.parameterName
-        print "{%s} - '%s': %s[%s]" % (hex(id(self)), parameterName, typeName, parameterValue)
-        if param.parameterName in ('ACTION', 'AUTOSTART'):
-            pass
-        if param.parameterValue.typeCode == AttributeValueContainter.ID_VALUE:
-            if param.parameterValue.values:
-                #print "\t*** ID: ", self.implDefinition
-                try:
-                    enum = [e for e in self.implDefinition[parameterName].enumeration.values()]
-                except KeyError:
-                    enum = [e for e in self.parent.implDefinition[parameterName].enumeration.values()]
-                    # TODO: kann ein Parent-Looup wirklich unser Problem l�sen???
-                implDef = [e for e in enum if e.name == parameterValue][0]
-                ## TODO: Fehlerbehandlung
-
-                setattr(self, parameterName, NestedParameter(self, parameterName,
-                        parameterValue, param.parameterValue.values, implDef
-                    )
-                )
-            else:
-                self.setAttribute(parameterName, parameterValue)
-        elif param.parameterValue.typeCode == AttributeValueContainter.BOOL_VALUE:
-            if param.parameterValue.values:
-                setattr(self, parameterName, NestedParameter(self, parameterName,
-                        parameterValue, param.parameterValue.values,
-                        self.implDefinition[parameterName].getParameters(parameterValue) # [str(parameterValue).upper()]
-                    )
-                )
-            else:
-                    self.setAttribute(parameterName, parameterValue)
-        elif param.parameterValue.typeCode in (AttributeValueContainter.NUMBER_VALUE, AttributeValueContainter.FLOAT_VALUE, 
-          AttributeValueContainter.STRING_VALUE):
-            self.setAttribute(parameterName, parameterValue)
-        elif param.parameterValue.typeCode == AttributeValueContainter.AUTO_VALUE:
-            if not self.implDefinition[parameterName].autoSpec:
-                raise ValueError("AUTO not permitted for attribute '%s'." % parameterName)
-            else:
-                pass
-
 
 class NestedParameter(ParameterContainer):
     def __init__(self, parent, name, value, params, implDefinition):
@@ -98,6 +57,5 @@ class NestedParameter(ParameterContainer):
         self.implDefinition = implDefinition
         self.params = params
         self.parent = parent
-        for param in params:
-            self._decorate(param)
+
 

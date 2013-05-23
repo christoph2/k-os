@@ -142,6 +142,8 @@ class BooleanAttribute(AttributeDefinition):
         p2 = self.getParameters(value)
 
         for xy in parameter.parameterValue.values:
+            if xy.parameterName == 'ACTION':
+                pass
             implDef2 = self.getParameters(value)[xy.parameterName]
             implDef2.validate(xy, path)
 
@@ -170,15 +172,21 @@ class EnumAttribute(AttributeDefinition):
 
     def _getEnumerartion (self):
         return self._enumeration
+    
+    def getParameters(self, value):
+        enumerator = self._getEnumerartion()[value]
+        parameters = enumerator.parameters  # TODO: getParamaters!?
+        return parameters
 
     def _validate(self, parameter, path):
         parameterName = parameter.parameterName
         value, _ = parameter.parameterValue.value
 
-        #p2 = self.getParameters(value)
+        implDefinitions = self.getParameters(value).items() if self.getParameters(value) else {}
 
         for xy in parameter.parameterValue.values:
-            pass
+            implDefinition = implDefinitions.get(xy.parameterName)
+            implDefinition.validate(xy, path)
         if not value in self:
             pass
 
@@ -283,148 +291,6 @@ def AttributeDefinitionFactory(dataType, attrName, autoSpec, mult, default, desc
         return FloatAttribute(attrName, autoSpec, mult, default, desc, extra)
     elif dataType == ImplAttrType.STRING:
         return StringAttribute(attrName, autoSpec, mult, default, desc, extra)
-
-"""
-class ImplAttrDef(NestableDefinition):  # TODO: factory method!!!
-
-    def __init__(self, dataType, attrName, autoSpec, mult, default, desc, extra):
-        self.dataType = dataType
-        self.attrName = attrName
-        self.autoSpec = autoSpec
-        self.mult = mult
-        self.extra = extra
-        self.default = default
-        self._dict = {}
-
-        if attrName == 'ORTI_DEBUG':
-            pass
-
-        if default:
-            if dataType == ImplAttrType.ENUM:
-                if default == u'AUTO':
-                    pass    # TODO: autosToBeResolved
-                else:
-                    pong = default in extra.enumeration
-                    enum = [e.name for e in extra.enumeration.values()]
-                    if not default in enum:
-                        logger.error("Default-Value '%s' for Attribute '%s' out of range."
-                             % (default, attrName))
-                    else:
-                        pass
-            elif dataType in (ImplAttrType.UINT32, ImplAttrType.UINT64,
-              ImplAttrType.INT32, ImplAttrType.INT64):
-                if extra.range == True:
-                    if (default < extra.numberFrom) or (default > extra.numberTo):
-                        logger.error("Default-Value '%s' for Attribute '%s' out of range."
-                                 % (default, attrName))
-                elif extra.range == False:
-                    if not default in extra.extra.numberFrom:
-                        if (default < extra.numberFrom) or (default > extra.numberTo):
-                            logger.error("Default-Value '%s' for Attribute '%s' out of range."
-                                     % (default, attrName))
-            elif  dataType == ImplAttrType.FLOAT:
-                if (extra.numberFrom and extra.numberTo) and ((default < extra.numberFrom) or (default > extra.numberTo)):
-                    logger.error("Default-Value '%s' for Attribute '%s' out of range."
-                             % (default, attrName))
-            elif dataType == ImplAttrType.BOOLEAN:
-                pass
-            elif dataType == ImplAttrType.STRING:
-                pass
-        self.desc = desc
-        if extra.type_ == Extras.NUMBER_RANGE:
-            self.range = extra.range
-            self.numberFrom = extra.numberFrom
-            self.numberTo = extra.numberTo
-        elif extra.type_ == Extras.FLOAT_RANGE:
-            self.numberFrom = extra.numberFrom
-            self.numberTo = extra.numberTo
-        elif extra.type_ == Extras.ENUMERATION:
-            self.enumeration = extra.enumeration
-            if extra.enumeration:
-                self._dict.update(extra.enumeration.items())
-            #for enum in extra.enumeration.values():
-            #    self._dict[enum.name] = enum
-        elif extra.type_ == Extras.ATTRIBUTE_NAME:
-            pass
-        elif extra.type_ == Extras.BOOL_VALUES:
-            ##extra.boolValues.trueParameterList.values._dict
-            if extra.boolValues:
-                if extra.boolValues.trueParameterList:
-                    self._dict['TRUE'] = extra.boolValues.trueParameterList.values.items()
-                if extra.boolValues.falseParameterList:
-                    self._dict['FALSE'] = extra.boolValues.falseParameterList.values.items()
-
-            self.boolValues = extra.boolValues
-        elif extra.type_ == Extras.DUMMY:
-            pass
-        #self.extra = extra
-        if default and default not in self:
-            print "Default value must be in %s" % self.defaultRangeRepr()
-
-        super(ImplAttrDef, self).__init__(dataType = dataType, attrName = attrName,
-            autoSpec = autoSpec, mult = mult, default = default,
-            desc = desc, extra = extra
-        )
-
-    def __contains__(self, value):
-        if value == 'AUTO':
-            return True
-        result = True
-        if self.dataType in (ImplAttrType.UINT32, ImplAttrType.INT32,
-                ImplAttrType.UINT64, ImplAttrType.INT64):
-            numberFrom, numberTo = self.numberFrom, self.numberTo
-            if numberFrom:
-                if numberTo:
-                    # Number range.
-                    result = numberFrom <= value <= numberTo
-                else:
-                    # Number list.
-                    result = value in numberFrom
-        elif self.dataType == ImplAttrType.FLOAT:
-            numberFrom, numberTo = self.numberFrom, self.numberTo
-            if numberFrom and numberTo:
-                result = numberFrom <= value <= numberTo
-        elif self.dataType == ImplAttrType.ENUM:
-            enumeration = self.enumeration
-            if enumeration:
-                result = value in [e.name for e in enumeration.values()]
-        elif self.dataType == ImplAttrType.STRING:
-            pass
-        elif self.dataType == ImplAttrType.BOOLEAN:
-            boolValues = self.boolValues
-            if boolValues:
-                pass
-        return result
-
-    def defaultRangeRepr(self):
-        if self.dataType in (ImplAttrType.UINT32, ImplAttrType.INT32,
-                ImplAttrType.UINT64, ImplAttrType.INT64):
-            numberFrom, numberTo = self.numberFrom, self.numberTo
-            if numberFrom:
-                if numberTo:
-                    # Number range.
-                    return "[%s .. %s]" % (numberFrom, numberTo)
-                else:
-                    # Number list.
-                    return str(numberFrom)
-        elif self.dataType == ImplAttrType.FLOAT:
-            numberFrom, numberTo = self.extra.numberFrom, self.extra.numberTo
-            if numberFrom and numberTo:
-                return "[%s .. %s]" % (numberFrom, numberTo)
-        elif self.dataType == ImplAttrType.ENUM:
-            enumeration = self.extra.enumeration
-            if enumeration:
-                return str([e.name for e in enumeration.values()])
-        elif self.dataType == ImplAttrType.BOOLEAN:
-            return ""
-
-    def __getitem__(self, item):
-        return self._dict[item]
-
-
-    def __repr__(self):
-        return "ATTR (%s - %s)" % (self.attrName, ImplAttrType.toString(self.dataType))
-"""
 
 
 ### ### ##  ###  #####  #######         ####### #######  #####  #######  #####
@@ -562,5 +428,4 @@ class TestAttributeDefinitionFactory(BaseAttributeDefinition):
 
 if __name__ == '__main__':
     unittest.main()
-
 

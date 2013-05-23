@@ -186,7 +186,7 @@ class ObjectDefinition(ParameterContainer):
         self.parameterList = parameterList or []
 
         for param in self.parameterList:
-            self._decorate(param)
+            pass
 
         if objectType == 'TASK':
             self._taskType = 'EXTENDED' if self.parameterList.hasEvents() else 'BASIC'
@@ -256,6 +256,7 @@ class ObjectDefinitionList(object):
                 if parameterName == 'ISR_STACK_SIZE':
                     pass
                 implParameterDefinition = implDefinition[definition.objectType][parameterName]
+                ## TODO: Handle invalid attributes!!!
                 #parameter.implDefinition = implParameterDefinition
                 #print "DEF: %s::%s.%s" % (definition.objectType, definition.name, parameterName)
                 if parameterValue == 'AUTO':

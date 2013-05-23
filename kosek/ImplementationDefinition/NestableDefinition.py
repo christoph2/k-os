@@ -40,6 +40,7 @@ class NestableDefinition(object):
     def validate(self, parameter, path):
         parameterName = parameter.parameterName
         path.append(parameterName)
+        print "Validating '%s'" % ('::'.join(path))
         self._validate(parameter, path)
         path.pop(-1)
 
