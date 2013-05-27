@@ -35,7 +35,7 @@
 
 #define API_TRACE()     /* TODO: Nur zum Testen!!! */
 
-#include "common/inc/apitracer.h"
+//#include "common/inc/apitracer.h"
 
 #if KOS_MEMORY_MAPPING == STD_ON
 STATIC FUNC(void, OSEK_OS_CODE) OsExec_Init(void);
@@ -170,6 +170,7 @@ AppModeType GetActiveApplicationMode(void)
 #if 0
     ASSERT_VALID_CALLEVEL(CL_TASK | CL_ISR2 | CL_ERROR_HOOK | CL_PRE_TASK_HOOK |
                           CL_POST_TASK_HOOK | CL_STARTUP_HOOK | CL_SHUTDOWN_HOOK);
+    /* Check: Always valid? */
 #endif
     Os_ClearServiceContext();
     return Os_AppMode;
@@ -297,11 +298,13 @@ void OsExec_StartHighestReadyTask(void)
 }
 
 
+#pragma CODE_SEG NON_BANKED
 ISR1(SWI_Vector)    /* TODO: Os_Port! */
 {
     Os_EnterISR();
     Os_LeaveISR();
 }
+#pragma CODE_SEG DEFAULT
 
 #if KOS_MEMORY_MAPPING == STD_ON
     #define OSEK_OS_STOP_SEC_CODE

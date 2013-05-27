@@ -371,22 +371,21 @@ STATIC FUNC(void, OSEK_OS_CODE) OsTask_Init(TaskType TaskID, boolean Schedule)
 static void OsTask_Init(TaskType TaskID, boolean Schedule)
 #endif /* KOS_MEMORY_MAPPING */
 {
-    Os_TaskConfigurationType const * task_def;
-    Os_TCBType * tcb;
+    Os_TaskConfigurationType const * task_def  = (Os_TaskConfigurationType *)&OS_TaskConf[TaskID];
+    Os_TCBType * tcb  = &OS_TCB[TaskID];
 
+#if defined(OS_EXTENDED_STATUS)
     if (TaskID > (OS_NUMBER_OF_TASKS - (uint8)1)) {
         return; /* todo: Only in EXTENDED-Status!!! */
     }
-
-    task_def   = (Os_TaskConfigurationType *)&OS_TaskConf[TaskID];
-    tcb        = &OS_TCB[TaskID];
+#endif
 
 #if defined(OS_USE_STACKCHECKING)
     OsUtilMemSet((void *)task_def->stack_addr, (uint8)OSSTACKFILLCHAR,
       (uint16)task_def->stack_size  * sizeof(StackType)
     );
 #endif
-    tcb->Stackpointer = OsPort_TaskStackInit(TaskID, &task_def->TaskFunction,
+    tcb->Stackpointer = OsPort_TaskStackInit(&task_def->TaskFunction,
       KDK_TOS(task_def->StackStart, task_def->StackSize * sizeof(StackType))
     );
     tcb->State = SUSPENDED;
