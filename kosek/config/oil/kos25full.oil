@@ -577,7 +577,7 @@ IMPLEMENTATION Standard {
     };
 
     COM {
-        FLOAT COMTIMEBASE = 0.001 : "Value multiplied by one Second.";  // Default is one Millisecond.
+        FLOAT COMTIMEBASE = 0.001 : "Value multiplied by one second -- Default is one millisecond.";
         BOOLEAN COMERRORHOOK = FALSE;
         BOOLEAN COMUSEGETSERVICEID = FALSE;
         BOOLEAN COMUSEPARAMETERACCESS = FALSE;
