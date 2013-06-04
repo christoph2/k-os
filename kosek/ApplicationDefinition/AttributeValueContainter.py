@@ -56,6 +56,12 @@ class AttributeValueContainter(object):
         for k, v in kwds.items():
             setattr(self, "_%s" % k, v)
         
+    def __getattr__(self, attr):
+        if self.values.hasAttribute(attr):
+            return self.values.get(attr)
+        else:
+            raise AttributeError(attr)
+        
     def _getTypeAndValue(self):
         _TYPE_DICT = {
             AttributeValueContainter.ID_VALUE:      TypeValue(self._idValue, 'ID'),
