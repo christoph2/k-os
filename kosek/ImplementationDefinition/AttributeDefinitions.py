@@ -94,7 +94,7 @@ class AttributeDefinition(NestableDefinition):
         self._extra = extra
         #self._dict = {}
         self._setupInstance()
-        del self._extra
+        delattr(self, '_extra')
 
     def _setupInstance(self):
         raise NotImplementedError()
@@ -105,10 +105,16 @@ class AttributeDefinition(NestableDefinition):
     def _validate(self, parameter, path):
         raise NotImplementedError()
 
+    def _getDataType(self):
+        return self._dataType
+
+    dataType = property(_getDataType)
+
 
 class BooleanAttribute(AttributeDefinition):
 
     def _setupInstance(self):
+        self._dataType = ImplAttrType.BOOLEAN 
         self.falseParameters = None
         self.trueParameters = None
         extra = self._extra
@@ -117,7 +123,7 @@ class BooleanAttribute(AttributeDefinition):
                 if extra.boolValues.trueParameterList:
                     self.trueParameters = extra.boolValues.trueParameterList.values.items()
                 if extra.boolValues.falseParameterList:
-                    self.falseParameter = extra.boolValues.falseParameterList.values.items()
+                    self.falseParameters = extra.boolValues.falseParameterList.values.items()
 
             self.boolValues = extra.boolValues
 
@@ -144,8 +150,11 @@ class BooleanAttribute(AttributeDefinition):
         for xy in parameter.parameterValue.values:
             if xy.parameterName == 'ACTION':
                 pass
-            implDef2 = self.getParameters(value)[xy.parameterName]
-            implDef2.validate(xy, path)
+            try:
+                implDef2 = self.getParameters(value)[xy.parameterName]
+                implDef2.validate(xy, path)
+            except TypeError as e:
+                pass
 
         if not value in self:
             print "BOOLEAN paramter %s %s not in %s" (path, value, self, )
@@ -154,6 +163,7 @@ class BooleanAttribute(AttributeDefinition):
 class EnumAttribute(AttributeDefinition):
 
     def _setupInstance(self):
+        self._dataType = ImplAttrType.ENUM        
         self._enumeration = self._extra.enumeration
         if self.default:
             if self.default == u'AUTO':
@@ -182,7 +192,10 @@ class EnumAttribute(AttributeDefinition):
         parameterName = parameter.parameterName
         value, _ = parameter.parameterValue.value
 
-        implDefinitions = self.getParameters(value).items() if self.getParameters(value) else {}
+        try:
+            implDefinitions = self.getParameters(value).items() if self.getParameters(value) else {}
+        except KeyError as e:
+            pass    ## TODO: Errorhandling!!!
 
         for xy in parameter.parameterValue.values:
             implDefinition = implDefinitions.get(xy.parameterName)
@@ -231,9 +244,6 @@ class IntegerAttribute(AttributeDefinition):
             result = self.naturalRangeFrom <= value <= self.naturalRangeTo
         return result
 
-    def _getDataType(self):
-        return self._dataType
-
     def _validate(self, parameter, path):
         parameterName = parameter.parameterName
         value, _ = parameter.parameterValue.value
@@ -241,13 +251,12 @@ class IntegerAttribute(AttributeDefinition):
         if not value in self:
             print "Invalid VALUE!!!"
 
-    dataType = property(_getDataType)
-
 
 class FloatAttribute(AttributeDefinition):
 
     def _setupInstance(self):
         #self._range = self._extra.range
+        self._dataType = ImplAttrType.FLOAT
         self._actualNumberFrom = self._extra.numberFrom
         self._actualNumberTo = self._extra.numberTo
 
@@ -271,7 +280,7 @@ class FloatAttribute(AttributeDefinition):
 
 class StringAttribute(AttributeDefinition):
     def _setupInstance(self):
-        pass
+        self._dataType = ImplAttrType.STRING
 
     def __contains__(self, value):
         return True
