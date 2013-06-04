@@ -143,7 +143,7 @@ class BooleanAttribute(AttributeDefinition):
 
         if parameterName in ('ORTI_DEBUG', 'TYPE'):
             pass
-        value, _ = parameter.parameterValue.value
+        value = parameter.parameterValue.value
 
         p2 = self.getParameters(value)
 
@@ -190,7 +190,7 @@ class EnumAttribute(AttributeDefinition):
 
     def _validate(self, parameter, path):
         parameterName = parameter.parameterName
-        value, _ = parameter.parameterValue.value
+        value = parameter.parameterValue.value
 
         try:
             implDefinitions = self.getParameters(value).items() if self.getParameters(value) else {}
@@ -246,7 +246,7 @@ class IntegerAttribute(AttributeDefinition):
 
     def _validate(self, parameter, path):
         parameterName = parameter.parameterName
-        value, _ = parameter.parameterValue.value
+        value = parameter.parameterValue.value
 
         if not value in self:
             print "Invalid VALUE!!!"
@@ -272,7 +272,7 @@ class FloatAttribute(AttributeDefinition):
 
     def _validate(self, parameter, path):
         parameterName = parameter.parameterName
-        value, _ = parameter.parameterValue.value
+        value = parameter.parameterValue.value
 
         if not value in self:
             print "Invalid FLOAT VALUE!!!"

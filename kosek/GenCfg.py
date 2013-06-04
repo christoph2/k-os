@@ -130,14 +130,14 @@ def writeTemplate(tmplFileName, outFileName, namespace = {}, encodeAsUTF8 = True
     print tmplFileName.upper()
     try:
         tobj = Template(text = pkgutil.get_data('kosek', 'config/templates/%s' % tmplFileName),
-                            output_encoding = 'utf-8', format_exceptions = True, error_handler = errorHandler
+                            output_encoding = 'utf-8', format_exceptions = False, error_handler = errorHandler
                         )
         tobj.render_context(ctx)
     except Exception as e:
-         print str(e)
-         print exceptions.text_error_template().render()
-         raise
-         #return None
+        print str(e)
+        print exceptions.text_error_template().render()
+        raise
+        #return None
     else:
         outFile = open(outFileName, mode='wt')
         outFile.write(buf.getvalue())
@@ -243,8 +243,8 @@ def Generate(fname, AppDef, Info):
     if app.os.ORTI_DEBUG.value == True:
         info.vendor = 'K_OS'
 
-        info.koilVersion = app.os.ORTI_DEBUG.KOIL_VERSION
-        info.osekVersion = app.os.ORTI_DEBUG.OSEK_VERSION
+        info.koilVersion = app.os.ORTI_DEBUG.KOIL_VERSION.parameterValue.value
+        info.osekVersion = app.os.ORTI_DEBUG.OSEK_VERSION.parameterValue.value
 
         info.context = (
             Register('PC', 'uint16', 7),
