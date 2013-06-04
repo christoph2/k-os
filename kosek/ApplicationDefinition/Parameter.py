@@ -83,3 +83,6 @@ class ParameterList(list):
     def hasMessages(self):
         return self.hasAttribute('MESSAGE')
 
+    def get(self, name):
+        return [item for item in self if item.getParameterName() == name][0]
+
