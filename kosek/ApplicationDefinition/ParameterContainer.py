@@ -30,7 +30,7 @@ __copyright__ = """
 import unittest
 
 from kosek.Logger import Logger
-from kosek.ApplicationDefinition.AttributeValueContainter import AttributeValueContainter
+#from kosek.ApplicationDefinition.AttributeValueContainter import AttributeValueContainter
 
 logger = Logger()
 

@@ -31,6 +31,7 @@ import unittest
 
 from kosek.Logger import Logger
 from collections import namedtuple
+from ImplementationDefinition.AttributeDefinitions import ImplAttrType
 
 logger = Logger()
 
@@ -55,7 +56,7 @@ class AttributeValueContainter(object):
         for k, v in kwds.items():
             setattr(self, "_%s" % k, v)
         
-    def _getValue(self):
+    def _getTypeAndValue(self):
         _TYPE_DICT = {
             AttributeValueContainter.ID_VALUE:      TypeValue(self._idValue, 'ID'),
             AttributeValueContainter.BOOL_VALUE:    TypeValue(self._booleanValue, 'BOOL'),
@@ -65,9 +66,21 @@ class AttributeValueContainter(object):
             AttributeValueContainter.AUTO_VALUE:    TypeValue('AUTO', 'AUTO'),
             
         }
-        
         return _TYPE_DICT.get(self._type)
-    
+
+    def _getValue(self):
+        if self._type == AttributeValueContainter.AUTO_VALUE:
+            return "AUTO"
+        else:
+            value = {
+                AttributeValueContainter.ID_VALUE:      self._idValue,
+                AttributeValueContainter.BOOL_VALUE:    self._booleanValue,
+                AttributeValueContainter.NUMBER_VALUE:  self._number,
+                AttributeValueContainter.FLOAT_VALUE:   self._number,
+                AttributeValueContainter.STRING_VALUE:  self._stringValue,
+            } [self._type]
+            return value
+
     def _getType(self):
         return self._type
     
@@ -76,4 +89,19 @@ class AttributeValueContainter(object):
     
     typeCode = property(_getType)
     value = property(_getValue)
+    typeAndValue = property(_getTypeAndValue)
     values = property(_getValues)
+
+
+def typeFromImplementationAttribute(type_):
+    return {
+      ImplAttrType.BOOLEAN: AttributeValueContainter.BOOL_VALUE,
+      ImplAttrType.ENUM:    AttributeValueContainter.ID_VALUE,
+      ImplAttrType.FLOAT:   AttributeValueContainter.FLOAT_VALUE,
+      ImplAttrType.INT32:   AttributeValueContainter.NUMBER_VALUE,
+      ImplAttrType.INT64:   AttributeValueContainter.NUMBER_VALUE,
+      ImplAttrType.UINT32:  AttributeValueContainter.NUMBER_VALUE,
+      ImplAttrType.UINT32:  AttributeValueContainter.NUMBER_VALUE,
+      ImplAttrType.STRING:  AttributeValueContainter.STRING_VALUE
+    } [type_]
+
