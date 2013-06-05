@@ -52,6 +52,9 @@ class AttributeValueContainter(object):
         self._stringValue = None
         self._values = []
         
+        self.multiValues = []
+        self.nestedValues = []
+        
         self._type = type_
         for k, v in kwds.items():
             setattr(self, "_%s" % k, v)
@@ -61,18 +64,6 @@ class AttributeValueContainter(object):
             return self.values.get(attr)
         else:
             raise AttributeError(attr)
-        
-    def _getTypeAndValue(self):
-        _TYPE_DICT = {
-            AttributeValueContainter.ID_VALUE:      TypeValue(self._idValue, 'ID'),
-            AttributeValueContainter.BOOL_VALUE:    TypeValue(self._booleanValue, 'BOOL'),
-            AttributeValueContainter.NUMBER_VALUE:  TypeValue(self._number, 'NUMBER'),
-            AttributeValueContainter.FLOAT_VALUE:   TypeValue(self._number, 'FLOAT'),
-            AttributeValueContainter.STRING_VALUE:  TypeValue(self._stringValue, 'STRING'),
-            AttributeValueContainter.AUTO_VALUE:    TypeValue('AUTO', 'AUTO'),
-            
-        }
-        return _TYPE_DICT.get(self._type)
 
     def _getValue(self):
         if self._type == AttributeValueContainter.AUTO_VALUE:
@@ -95,7 +86,6 @@ class AttributeValueContainter(object):
     
     typeCode = property(_getType)
     value = property(_getValue)
-    typeAndValue = property(_getTypeAndValue)
     values = property(_getValues)
 
 
