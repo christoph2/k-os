@@ -94,6 +94,7 @@ tokens {
    import kosek.ApplicationDefinition as ApplicationDefinition
    import kosek.ImplementationDefinition as ImplementationDefinition
    from kosek.ImplementationDefinition.Extras import Extras
+   from kosek.ApplicationDefinition.Parameter import ParameterList
 }
 
 @parser::members {
@@ -657,13 +658,13 @@ attributeValue returns[value]
    :  ID ('{' parameterList '}')?
    {
    $value = ApplicationDefinition.AttributeValueContainter(ApplicationDefinition.AttributeValueContainter.ID_VALUE,
-       idValue = $ID.text, values = $parameterList.value or []
+       idValue = $ID.text, values = $parameterList.value or ParameterList()
    )
    } -> ^(ID_VALUE ID parameterList?)
    |  boolean ('{' parameterList '}')?
    {
    $value = ApplicationDefinition.AttributeValueContainter(ApplicationDefinition.AttributeValueContainter.BOOL_VALUE,
-       booleanValue = $boolean.value, values = $parameterList.value or []
+       booleanValue = $boolean.value, values = $parameterList.value or ParameterList()
    )
    } -> ^(BOOL_VALUE boolean parameterList?)
    |  number
