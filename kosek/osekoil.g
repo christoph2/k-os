@@ -631,6 +631,7 @@ parameterList returns[value]
     myList = ApplicationDefinition.ParameterList()
 }
 @after {
+    myList = myList.sort()
     $value = myList
 }
    :  (parameter { myList.append($parameter.value) } )*
