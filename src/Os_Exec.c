@@ -1,7 +1,7 @@
 /*
  * k_os (Konnex Operating-System based on the OSEK/VDX-Standard).
  *
- * (C) 2007-2013 by Christoph Schueler <github.com/Christoph2,
+ * (C) 2007-2014 by Christoph Schueler <github.com/Christoph2,
  *                                      cpu12.gems@googlemail.com>
  *
  * All Rights Reserved
@@ -31,7 +31,7 @@
 #include "Os_Res.h"
 #include "Os_Alm.h"
 /*/ #include "Os_Ctr.h" */
-#include "Utl.h"
+#include "kdk/common/Utl.h"
 
 #define API_TRACE()     /* TODO: Nur zum Testen!!! */
 
@@ -310,4 +310,3 @@ ISR1(SWI_Vector)    /* TODO: Os_Port! */
     #define OSEK_OS_STOP_SEC_CODE
     #include "MemMap.h"
 #endif /* KOS_MEMORY_MAPPING */
-

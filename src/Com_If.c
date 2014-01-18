@@ -32,7 +32,7 @@
 #include "Com_Ext.h"
 #include "Os_Task.h"
 #include "Os_Evt.h"
-#include "Utl.h"
+#include "kdk/common/Utl.h"
 
 #if OS_FEATURE_COM == STD_ON
 

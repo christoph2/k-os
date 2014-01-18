@@ -1,7 +1,7 @@
 /*
  * k_os (Konnex Operating-System based on the OSEK/VDX-Standard).
  *
- * (C) 2007-2013 by Christoph Schueler <github.com/Christoph2,
+ * (C) 2007-2014 by Christoph Schueler <github.com/Christoph2,
  *                                     cpu12.gems@googlemail.com>
  *
  * All Rights Reserved
@@ -42,7 +42,7 @@
 #define __RTOS_K_OS__
 #endif /* __RTOS_K_OS__ */
 
-#include "Std_Types.h"
+#include "kdk/common/Std_Types.h"
 
 #define E_AS        ((uint8)16)
 #define E_COM       ((uint8)32)

@@ -22,7 +22,7 @@
  * s. FLOSS-EXCEPTION.txt
  */
 #include "Os_Mlq.h"
-#include "Utl.h"
+#include "kdk/common/Utl.h"
 
 #if !defined(OS_SCHED_BM_ONLY)
 #if KOS_MEMORY_MAPPING == STD_ON
