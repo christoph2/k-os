@@ -1,7 +1,7 @@
 /*
 ** k_os (Konnex Operating-System based on the OSEK/VDX-Standard).
 **
-** (C) 2007-2013 by Christoph Schueler <github.com/Christoph2,
+** (C) 2007-2014 by Christoph Schueler <github.com/Christoph2,
 **                                      cpu12.gems@googlemail.com>
 **
 ** All Rights Reserved
@@ -32,7 +32,7 @@ extern "C"
 #include "InstallISR/ISR.h"
 #include "Os_Cfg.h"
 #include "Os_Macros.h"
-#include "CPU_Primitives.h"
+#include "kdk/common/CPU_Primitives.h"
 
 /*
 **  Global Types.
@@ -55,7 +55,6 @@ extern InterruptStateType OsPort_InterruptState;
 FUNC(void, OSEK_OS_CODE) OsPort_Init(void);
 FUNC(void, OSEK_OS_CODE) OsPort_Shutdown(void);
 FUNC(uint8 *, OSEK_OS_CODE) OsPort_TaskStackInit(
-    TaskType TaskID,
     P2VAR(TaskFunctionType, AUTOMATIC, OSEK_OS_APPL_DATA) TaskFunc,
     P2VAR(uint8, AUTOMATIC, OSEK_OS_APPL_DATA) sp
     );
