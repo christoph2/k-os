@@ -29,7 +29,7 @@ extern "C"
 {
 #endif  /* __cplusplus */
 
-#include "InstallISR/ISR.h"
+#include "kdk/installisr/ISR.h"
 #include "Os_Cfg.h"
 #include "Os_Macros.h"
 #include "kdk/common/CPU_Primitives.h"
