@@ -136,7 +136,7 @@ def main():
     else:
         (implDefMap, appDefMap, info) = parse(outFilename)
 
-        info.version = __version__
+        info.version = __version__.replace('.', '_').replace('-', '_')
 
         if options.test == False:
             if error.errorCounter > 0:
