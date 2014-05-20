@@ -145,11 +145,12 @@ def writeTemplate(tmplFileName, outFileName, namespace = {}, encodeAsUTF8 = True
 
 def alarmAction(alarm):
     if alarm.ACTION.value == 'ACTIVATETASK':
-        action = 'ALM_ACTIVATETASK,\n       { (void*)GetTaskName(' + alarm.ACTION.TASK + ') }'
+        action = 'ALM_ACTIVATETASK,\n       { (void*)GetTaskName(' + alarm.ACTION.TASK.parameterValue.value + ') }'
     elif alarm.ACTION.value == 'SETEVENT':
         action = 'ALM_SETEVENT,\n        { (void*)&alarmsEvents [' + str(alarm.pos) + '] }'
     elif alarm.ACTION.value == 'ALARMCALLBACK':
-        ction = 'ALM_CALLBACK,\n        { (void*)GetAlarmCallbackName(' + alarm.ACTION.ALARMCALLBACKNAME + ') }'
+        action = 'ALM_CALLBACK,\n        { (void*)GetAlarmCallbackName(' + \
+            alarm.ACTION.ALARMCALLBACKNAME.parameterValue.value + ') }'
     else:
         print "??? '%s'" % alarm
     return action
