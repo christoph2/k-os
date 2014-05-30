@@ -21,6 +21,13 @@
  *
  * s. FLOSS-EXCEPTION.txt
  */
+/** @file Os_Types.h
+ *  @brief Types used by OSEK/k_os.
+ *
+ *  
+ *
+ *  @author Christoph Schueler (cpu12.gems@googlemail.com)
+ */
 #if !defined(__OS_TYPES_H)
 #define __OS_TYPES_H
 

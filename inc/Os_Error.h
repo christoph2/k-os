@@ -21,6 +21,13 @@
  *
  * s. FLOSS-EXCEPTION.txt
  */
+/** @file Os_Error.h
+ *  @brief Functions related to error-handling/hooks.
+ *
+ *  
+ *
+ *  @author Christoph Schueler (cpu12.gems@googlemail.com)
+ */
 #if !defined(__OSERROR_H)
 #define __OSERROR_H
 

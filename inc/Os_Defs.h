@@ -1,7 +1,7 @@
 /*
  * k_os (Konnex Operating-System based on the OSEK/VDX-Standard).
  *
- * (C) 2007-2012 by Christoph Schueler <github.com/Christoph2,
+ * (C) 2007-2014 by Christoph Schueler <github.com/Christoph2,
  *                                      cpu12.gems@googlemail.com>
  *
  * All Rights Reserved
@@ -21,6 +21,14 @@
  *
  * s. FLOSS-EXCEPTION.txt
  */
+/** @file Os_Defs.h
+ *  @brief OSEK Preprocessor defines.
+ *  Internal
+ *  
+ *
+ *  @author Christoph Schueler (cpu12.gems@googlemail.com)
+ */
+
 #if !defined(__OSEKDEFS_H)
 #define __OSEKDEFS_H
 

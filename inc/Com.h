@@ -2,7 +2,7 @@
  * k_dk - Driver Kit for k_os (Konnex Operating-System based on the
  * OSEK/VDX-Standard).
  *
- * (C) 2007-2012 by Christoph Schueler <github.com/Christoph2,
+ * (C) 2007-2014 by Christoph Schueler <github.com/Christoph2,
  *                                      cpu12.gems@googlemail.com>
  *
  * All Rights Reserved
@@ -22,12 +22,50 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  */
+
+/** @file Com.h
+ *  @brief Function, types, and definitions related to OSEK COM v3.0.3
+ *
+ *  
+ *
+ *  @author Christoph Schueler (cpu12.gems@googlemail.com)
+ */
+
+/** @page callbacks Callbacks
+ *
+ *  A callback is one of the notification mechanisms that can be invoked in response to an event in the IL. 
+ *  No parameters are passed to a callback routine and they do not have a return value.
+ *  A callback routine runs either on interrupt level or on task level. Thus, the OS restrictions of
+ *  usage of system functions for interrupt service routines as well as for tasks apply.
+ */
+
+
+#if 0
+COMCallback(CallbackRoutineName)
+{
+}
+#endif
+
 #if !defined(__COM_H)
 #define __COM_H
 
 #include "Os_Types.h"
 
+/**
+ *  @def DeclareComCallback(ComCb)
+ *  Declares a @ref callbacks callback function.
+*/
 #define DeclareComCallback(ComCb)   extern void ComCallback ## ComCb(void)
+
+/**
+ *  @def COMCallback(ComCb)
+ *  Use COMCallback to implement a @ref callbacks callback function.
+ *
+ *  e.g. 
+ *  COMCallback(CallbackRoutineName)
+ *  {
+ *  }
+*/
 #define COMCallback(ComCb)          void ComCallback ## ComCb(void)
 #define GetComCallbackName(ComCb)   ComCallback ## ComCb
 
@@ -38,39 +76,105 @@
 /*
 **      Datatypes.
 */
+
+/** @enum The boolean datatype used by OSEK COM.
+ *  
+ */
 typedef enum tagCOMBool {COM_FALSE, COM_TRUE} COMBool;
 
+
+/** @typedef
+ *  
+ */
+
+/** @typedef MessageIdentifier
+ *  OSEK COM message object identifier.
+ */
 typedef uint16                                                  MessageIdentifier;
+
+/** @typedef ApplicationDataRef
+ *  Reference to a data field in the application.
+ *
+ *  Pointer to the data field of an application message.
+ */
 typedef void *                                                  ApplicationDataRef;
+
+/** @typedef COMLengthType
+ *  Data length.
+ */
 typedef uint8                                                   COMLengthType;
+
+/** @typedef LengthRef
+ *  Pointer to a data field containing length information.
+ */
 typedef COMLengthType *                                         LengthRef;
+
+/** @typedef FlagValue
+ *  Current state of a message flag.
+ */
 typedef COMBool                                                 FlagValue;
+
+/** @typedef COMApplicationModeType
+ *  Identifier for selected COM application mode.
+ */
 typedef uint8                                                   COMApplicationModeType;
+
+/** @enum COMShutdownModeType
+ *  Identifier for selected COM shutdown mode.
+ */
 typedef enum tagCOMShutdownModeType {COM_SHUTDOWN_IMMEDIATE}    COMShutdownModeType;
+
+/** @typedef CalloutReturnType
+ *  Indicates at the exit of a callout whether the IL shall continue or abandon further
+ *  processing of the current message or I-PDU.
+ */
 typedef COMBool                                                 CalloutReturnType;
 /*  typedef enum {COMServiceId_SendMessage,COMServiceId_xx} COMServiceIdType; */
+
+/** @typedef COMFlagType
+ *  
+ */
 typedef uint8 COMFlagType;
+
+/** @typedef COMServiceIdType
+ *  Unique identifier of an OSEK COM service. 
+ *  Example: COMServiceId_SendMessage.
+ */
 typedef void COMServiceIdType;
+
+/** @typedef COMCallbackType
+ *  Function pointer to @ref callbacks callback.
+ */
 typedef void (*COMCallbackType)(void);
+
+/** @typedef COMCalloutType
+ *  Function pointer to callout.
+ */
 typedef void (*COMCalloutType)(void);
 
-
+/** @enum Com_FilterAlgorithm
+ *  Filters define conditions wheter or not to discard messages.
+ */
 typedef enum tagCom_FilterAlgorithm {
-    COM_FILTER_ALWAYS,
-    COM_FILTER_NEVER,
-    COM_FILTER_MASKEDNEWEQUALSX,
-    COM_FILTER_MASKEDNEWDIFFERSX,
-    COM_FILTER_NEWISEQUAL,
-    COM_FILTER_NEWISDIFFERENT,
-    COM_FILTER_MASKEDNEWEQUALSMASKEDOLD,
-    COM_FILTER_MASKEDNEWDIFFERSMASKEDOLD,
-    COM_FILTER_NEWISWITHIN,
-    COM_FILTER_NEWISOUTSIDE,
-    COM_FILTER_NEWISGREATER,
-    COM_FILTER_NEWISLESSOREQUAL,
-    COM_FILTER_NEWISLESS,
-    COM_FILTER_NEWISGREATEROREQUAL,
-    COM_FILTER_ONEEVERYN
+    COM_FILTER_ALWAYS,                      /**< No filtering is performed so that the message always passes */
+    COM_FILTER_NEVER,                       /**< The filter removes all messages */
+    COM_FILTER_MASKEDNEWEQUALSX,            /**< Pass messages whose masked value is equal to a specific value */
+    COM_FILTER_MASKEDNEWDIFFERSX,           /**< Pass messages whose masked value is not equal to a specific value */
+    COM_FILTER_NEWISEQUAL,                  /**< Pass messages which have not changed */
+    COM_FILTER_NEWISDIFFERENT,              /**< Pass messages which have changed */
+    COM_FILTER_MASKEDNEWEQUALSMASKEDOLD,    /**< Pass messages where the masked value has not changed */
+    COM_FILTER_MASKEDNEWDIFFERSMASKEDOLD,   /**< Pass messages where the masked value has changed */
+    COM_FILTER_NEWISWITHIN,                 /**< Pass a message if its value is within a predefined boundary */
+    COM_FILTER_NEWISOUTSIDE,                /**< Pass a message if its value is outside a predefined boundary */
+    COM_FILTER_NEWISGREATER,                /**< Pass a message if its value has increased */
+    COM_FILTER_NEWISLESSOREQUAL,            /**< Pass a message if its value has not increased */
+    COM_FILTER_NEWISLESS,                   /**< Pass a message if its value has decreased */
+    COM_FILTER_NEWISGREATEROREQUAL,         /**< Pass a message if its value has not decreased */
+    COM_FILTER_ONEEVERYN                    /**< Start: occurrence = 0.
+                                                Each time the message is received or
+                                                transmitted, occurrence is incremented by 1
+                                                after filtering.
+                                                Length of occurrence is 8 bit (minimum). */
 } Com_FilterAlgorithm;
 
 

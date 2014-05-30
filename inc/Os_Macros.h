@@ -1,7 +1,7 @@
 /*
  *  k_os (Konnex Operating-System based on the OSEK/VDX-Standard).
  *
- * (C) 2007-2013 by Christoph Schueler <github.com/Christoph2,
+ * (C) 2007-2014 by Christoph Schueler <github.com/Christoph2,
  *                                      cpu12.gems@googlemail.com>
  *
  * All Rights Reserved
@@ -20,6 +20,13 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
  * s. FLOSS-EXCEPTION.txt
+ */
+/** @file Os_Macros.h
+ *  @brief Collections of preprocessor defines to get the job done.
+ *
+ *  
+ *
+ *  @author Christoph Schueler (cpu12.gems@googlemail.com)
  */
 #if !defined(__OSMACROS_H)
 #define __OSMACROS_H

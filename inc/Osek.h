@@ -1,7 +1,7 @@
 /*
  * k_os (Konnex Operating-System based on the OSEK/VDX-Standard).
  *
- * (C) 2007-2032 by Christoph Schueler <github.com/Christoph2,
+ * (C) 2007-2034 by Christoph Schueler <github.com/Christoph2,
  *                                      cpu12.gems@googlemail.com>
  *
  * All Rights Reserved

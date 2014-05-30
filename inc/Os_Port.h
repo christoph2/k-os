@@ -21,6 +21,13 @@
 **
 ** s. FLOSS-EXCEPTION.txt
 **/
+/** @file Os_Port.h
+ *  @brief Interface function to the actual microcontroller port.
+ *
+ *  
+ *
+ *  @author Christoph Schueler (cpu12.gems@googlemail.com)
+ */
 #if !defined(__OS_PORT_H)
 #define __OS_PORT_H
 

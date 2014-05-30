@@ -1,7 +1,7 @@
 /*
    k_os (Konnex Operating-System based on the OSEK/VDX-Standard).
 
-   (C) 2007-2012 by Christoph Schueler <github.com/Christoph2,
+   (C) 2007-2014 by Christoph Schueler <github.com/Christoph2,
                                         cpu12.gems@googlemail.com>
 
 
@@ -22,6 +22,14 @@
 
    s. FLOSS-EXCEPTION.txt
  */
+/** @file Os.h
+ *  @brief Main include file.
+ *
+ *  This is the only file an user of OSEK OS shall include.
+ *
+ *  @author Christoph Schueler (cpu12.gems@googlemail.com)
+ */
+
 #if !defined(__OS_H)
 #define __OS_H
 

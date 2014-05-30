@@ -1,7 +1,7 @@
 /*
  * k_os (Konnex Operating-System based on the OSEK/VDX-Standard).
  *
- * (C) 2007-2013 by Christoph Schueler <github.com/Christoph2,
+ * (C) 2007-2014 by Christoph Schueler <github.com/Christoph2,
  *                                      cpu12.gems@googlemail.com>
  *
  * All Rights Reserved
@@ -23,6 +23,14 @@
  */
 #if !defined(__OS_API_H)
 #define __OS_API_H
+/** @file Os_Api.h
+ *  @brief OSEK OS API as defined in specification v2.2.3
+ *  Internal
+ *  
+ *
+ *  @author Christoph Schueler (cpu12.gems@googlemail.com)
+ */
+
 
 /*
 **
