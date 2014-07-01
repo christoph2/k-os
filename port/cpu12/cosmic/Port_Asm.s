@@ -27,6 +27,7 @@
 	xdef _Utl_Divrem
 	xdef _OsMLQ_GetLowestBitNumber	
 	xdef _Mem_GetStackBOS
+	xdef _OsPort_TaskStackInit 
 
 	xref __stack
 	xref __stack_size
@@ -103,10 +104,13 @@ _Utl_Divrem:
     pulx
     rts
 
-_Mem_GetStackBOS:
-    ldd #__stack
-    subd #__stack_size
+_OsPort_TaskStackInit:
     rts
+
+;_Mem_GetStackBOS:
+;    ldd #__stack
+;    subd #__stack_size
+;    rts
 
     end
 
