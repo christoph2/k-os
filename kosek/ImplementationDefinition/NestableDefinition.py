@@ -40,7 +40,21 @@ class NestableDefinition(object):
     def validate(self, parameter, path):
         parameterName = parameter.parameterName
         path.append(parameterName)
+        self.setDefaults(parameter)
         print "Validating '%s'" % ('::'.join(path))
         self._validate(parameter, path)
         path.pop(-1)
 
+
+    def setDefaults(self, parameter):
+        ImplRefDef = {}
+        """
+        actualParameters = set([p.parameterName for p in parameter.parameterList])
+        if isinstance(parameter, ImplRefDef):
+            defaultParameters = set()
+        else:
+            defaultParameters = set([key for key, value in parameter.implDefinition.items() if not isinstance(value, ImplRefDef) and value.default])
+            
+        defaultsNeeded = defaultParameters - actualParameters
+        """
+        

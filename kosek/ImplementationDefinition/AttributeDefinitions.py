@@ -92,6 +92,8 @@ class AttributeDefinition(NestableDefinition):
         self.default = default
         self.description = description
         self._extra = extra
+        if mult == True:
+            pass
         #self._dict = {}
         self._setupInstance()
         delattr(self, '_extra')
@@ -114,7 +116,7 @@ class AttributeDefinition(NestableDefinition):
 class BooleanAttribute(AttributeDefinition):
 
     def _setupInstance(self):
-        self._dataType = ImplAttrType.BOOLEAN 
+        self._dataType = ImplAttrType.BOOLEAN
         self.falseParameters = None
         self.trueParameters = None
         extra = self._extra
@@ -163,7 +165,7 @@ class BooleanAttribute(AttributeDefinition):
 class EnumAttribute(AttributeDefinition):
 
     def _setupInstance(self):
-        self._dataType = ImplAttrType.ENUM        
+        self._dataType = ImplAttrType.ENUM
         self._enumeration = self._extra.enumeration
         if self.default:
             if self.default == u'AUTO':
@@ -180,11 +182,11 @@ class EnumAttribute(AttributeDefinition):
         res = value in self._enumeration
         return res
 
-    def _getEnumerartion (self):
+    def _getEnumeration (self):
         return self._enumeration
-    
+
     def getParameters(self, value):
-        enumerator = self._getEnumerartion()[value]
+        enumerator = self._getEnumeration()[value]
         parameters = enumerator.parameters  # TODO: getParamaters!?
         return parameters
 
@@ -203,7 +205,7 @@ class EnumAttribute(AttributeDefinition):
         if not value in self:
             pass
 
-    enumeration = property(_getEnumerartion)
+    enumeration = property(_getEnumeration)
 
 
 class IntegerAttribute(AttributeDefinition):

@@ -60,6 +60,8 @@ class ImplRefDef(NestableDefinition):
         self.attrName = name
         self.mult = mult
         self.desc = desc
+        if mult == True:
+            pass
         super(ImplRefDef, self).__init__(objectType = objectType, name = name,
             mult = mult, desc = desc
         )
