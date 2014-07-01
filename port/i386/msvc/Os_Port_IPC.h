@@ -38,6 +38,9 @@ typedef void * FAKE_HANDLE;
 
 unsigned OsPort_NamedPipeOpen(FAKE_HANDLE * hServer, char * const name, char * const  path, char * const  host);
 unsigned __int8 OsPort_NamedPipeWrite(FAKE_HANDLE hPipe, const unsigned __int8 * message, unsigned __int16 len);
+unsigned __int8 OsPort_NamedPipeRead(FAKE_HANDLE hPipe, const unsigned __int8 * message, unsigned __int16 len, unsigned __int32 * numBytesRead);
+unsigned __int8 OsPort_TransactNamedPipe(FAKE_HANDLE hPipe, unsigned __int8 const * InBuffer, unsigned __int8 InBufferSize, 
+    unsigned __int8 const * OutBuffer, unsigned __int8 OutBufferSize, unsigned __int32  * BytesRead);
 
 #if defined(__cplusplus)
 }

@@ -1,7 +1,7 @@
 /*
  *   k_os (Konnex Operating-System based on the OSEK/VDX-Standard).
  *
- * (C) 2007-2012 by Christoph Schueler <github.com/Christoph2,
+ * (C) 2007-2013 by Christoph Schueler <github.com/Christoph2,
  *                                      cpu12.gems@googlemail.com>
  *
  * All Rights Reserved
@@ -26,16 +26,42 @@
 #include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <malloc.h>
 #include "Os_Port_Win32.h"
 #include "Os_Port_IPC.h"
 
-#define NODE_ADDRESS    ((NodeType)0x55)
+#if 0
+    Protocol Structure:
+    ===================
+    Offset  Field       Len
+    0       Length      2
+    2       Command     1
+    3       SubCommand  1
+    4       Data bytes  Length - 2
+    ===================
+    Commands:
+    ===================
+    REGISTER
+    UNREGISTER
+#endif
 
-#define DISABLING_MESSAGE   "\nDisabling COM, Tracing and Remote-Coontrol.\n"
+#define NODE_ADDRESS    ((NodeType)0x742)
+
+#define DISABLING_MESSAGE   "\nDisabling COM, Tracing and Remote-Control.\n"
 #define SERVER_ENDPOINT     "KOS\\SERVER"
 
 #define E_OK            ((int)0x00)
 #define E_NOT_OK        ((int)0xff)
+
+#define MSCAN_8_8_FILTERS(a, b, c, d, e, f, g, h)   {(unsigned __int8)(a), (unsigned __int8)(b), (unsigned __int8)(c), (unsigned __int8)(d), \
+                                                     (unsigned __int8)(e), (unsigned __int8)(f), (unsigned __int8)(g), (unsigned __int8)(h)}
+
+#define MSCAN_4_16_FILTERS(a, b, c, d)              {HIBYTE(a), LOBYTE(a), HIBYTE(b), LOBYTE(b), HIBYTE(c), \
+                                                     LOBYTE(c), HIBYTE(d), LOBYTE(d)}
+
+#define MSCAN_2_32_FILTERS(a, b)                    {HIBYTE(HIWORD(a)), LOBYTE(HIWORD(a)), HIBYTE(LOWORD(a)),                    \
+                                                     LOBYTE(LOWORD(a)), HIBYTE(HIWORD(b)), LOBYTE(HIWORD(b)), HIBYTE(LOWORD(b)), \
+                                                     LOBYTE(LOWORD(b))
 
 typedef unsigned int NodeType;
 typedef void * MessageType;
@@ -58,10 +84,12 @@ typedef struct tagOs_Port_IPC_SimCANFrame {
 static HANDLE slot;
 static HANDLE rcThread;
 
-void RemoteControlThread(void);
-void OsPort_StartRemoteControlThread(void);
+HANDLE OsPort_CreateCRThread(void(__cdecl *  fun)(void *), void * params);
+void OsPort_ExitCRThread(unsigned retval);
 
-unsigned __int8 OsPort_NamedPipeWrite(HANDLE hPipe, const unsigned __int8 * message, unsigned __int16 len);
+void __cdecl RemoteControlThread(void * param);
+
+void OsPort_StartRemoteControlThread(void);
 
 static void getCanoicalName(const char * prefix,size_t len, char * const host,char * const path,char * const  name,char * canonicalName);
 
@@ -75,10 +103,10 @@ unsigned OsPort_NamedPipeOpen(FAKE_HANDLE * hServer, char * const name, char * c
 {
    char canonicalName[256];
    DWORD error;
-
+   
    getCanoicalName("pipe", sizeof(canonicalName) - 1, host, path, name, canonicalName);
 
-   *hServer = CreateFileA(&canonicalName, GENERIC_READ | GENERIC_WRITE, 0, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+   *hServer = CreateFileA(&canonicalName, GENERIC_READ | GENERIC_WRITE, 0, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL | FILE_FLAG_WRITE_THROUGH, NULL);
 
    if (*hServer == INVALID_HANDLE_VALUE) {
         error = GetLastError();
@@ -94,31 +122,84 @@ unsigned OsPort_NamedPipeOpen(FAKE_HANDLE * hServer, char * const name, char * c
 }
 
 
-unsigned __int8 OsPort_NamedPipeWrite(HANDLE hPipe, const unsigned __int8 * data, unsigned __int16 len)
+unsigned __int8 OsPort_NamedPipeWrite(FAKE_HANDLE hPipe, const unsigned __int8 * message, unsigned __int16 len)
 {
     BOOL result;
     DWORD numBytesWritten;
 
-    result = WriteFile(hPipe, (LPCVOID)data, (DWORD)len, &numBytesWritten, (LPOVERLAPPED)NULL); 
+    result = WriteFile(hPipe, (LPCVOID)message, (DWORD)len, &numBytesWritten, (LPOVERLAPPED)NULL); 
  
     if (!result)  {
-        PrintErrorMsg("OsPort_MailslotCreate");
+        PrintErrorMsg("OsPort_NamedPipeWrite");
         return FALSE; 
     }  else {
         return TRUE;
     }
 }
 
+unsigned __int8 OsPort_NamedPipeRead(FAKE_HANDLE hPipe, const unsigned __int8 * message, unsigned __int16 len, DWORD * numBytesRead)
+{
+    BOOL result;
+
+    result = ReadFile(hPipe, (LPCVOID)message, len, numBytesRead, (OVERLAPPED *)NULL);
+
+    if (!result)  {
+        PrintErrorMsg("OsPort_NamedPipeRead");
+        return FALSE; 
+    }  else {
+        return TRUE;
+    }
+}
+
+unsigned __int8 OsPort_TransactNamedPipe(FAKE_HANDLE hPipe, unsigned __int8 const * InBuffer, BYTE InBufferSize, unsigned __int8 const * OutBuffer, unsigned __int8 OutBufferSize, DWORD * BytesRead)
+{
+    BOOL success;
+#if 0
+    DWORD State, CurInstances, MaxCollectionCount, CollectDataTimeout;
+    wchar_t UserName[16];
+
+    State = PIPE_READMODE_MESSAGE | PIPE_WAIT;
+
+    success = GetNamedPipeHandleState(hPipe, &State, &CurInstances, &MaxCollectionCount, &CollectDataTimeout, (LPWSTR)&UserName, 15);
+    success = SetNamedPipeHandleState(hPipe, &State,  NULL, NULL);
+    if (!success) {
+        PrintErrorMsg("SetNamedPipeHandleState");
+    }
+
+    success = TransactNamedPipe(hPipe, (void*)InBuffer, (DWORD) InBufferSize, (void*)OutBuffer, (DWORD)OutBufferSize, BytesRead, (OVERLAPPED*)NULL);
+#endif
+
+    success = OsPort_NamedPipeWrite(hPipe, (const unsigned __int8 * )InBuffer, InBufferSize);
+    if (!success) {
+        PrintErrorMsg("OsPort_TransactNamedPipe [write]");
+        return FALSE;
+    }
+    success = OsPort_NamedPipeRead(hPipe, (const unsigned __int8 * )OutBuffer, OutBufferSize, BytesRead);
+    if (!success) {
+        PrintErrorMsg("OsPort_TransactNamedPipe [read]");
+        return FALSE;
+    } else {
+        return TRUE;
+    }
+}
+
+HANDLE OsPort_GetCurrentThreadHandle(void)
+{
+    HANDLE resultHandle;  
+ 
+    DuplicateHandle(GetCurrentProcess(), GetCurrentThread(), GetCurrentProcess(), &resultHandle, 0, FALSE, DUPLICATE_SAME_ACCESS);
+    return resultHandle;
+}
 
 void OsPort_StartRemoteControlThread(void)
 {
     DWORD ThreadId;
 
-    rcThread = CreateThread((LPSECURITY_ATTRIBUTES)NULL, 0, (LPTHREAD_START_ROUTINE)RemoteControlThread, (LPVOID)NULL, 0UL, &ThreadId);
+    rcThread = OsPort_CreateCRThread(RemoteControlThread, NULL);
 }
 
 
-void RemoteControlThread(void)
+void __cdecl RemoteControlThread(void * param)
 {
     while (TRUE) {
         Sleep(250);
@@ -127,19 +208,14 @@ void RemoteControlThread(void)
 }
 
 
-static void getCanoicalName(const char * prefix, size_t len, char * const host,char * const path, char * const  name,char * canonicalName)
+static void getCanoicalName(const char * prefix, size_t len, char * const host, char * const path, char * const  name, char * canonicalName)
 {
-    sprintf_s(canonicalName, len, "\\\\%s\\%s\\%s%s",host, prefix, path, name);
+    sprintf_s(canonicalName, len, "\\\\%s\\%s\\%s%s", host, prefix, path, name);
 }
 
 
 void PrintErrorMsg(char *lpszFunction)
 { 
-    /*
-    **
-    **  Quick n' dirty implementation - MUST BE SANITIZED!!!
-    **
-    */
     char * szBuf;
     LPWSTR  lpMsgBuf;
     WORD len, idx;
@@ -148,15 +224,15 @@ void PrintErrorMsg(char *lpszFunction)
     FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM, NULL, err,
         MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), (LPTSTR) &lpMsgBuf, 0, NULL );
    
-    len = lstrlen(lpMsgBuf);
-    szBuf = (char *)LocalAlloc(LHND, (len >> 1) + 1);
-    for (idx = 0; idx < len * 2; ++idx) {
+    len = lstrlen(lpMsgBuf) + 1;
+    szBuf = (char *)_alloca((len * sizeof(lpMsgBuf[0])));
+    for (idx = 0; idx < len; ++idx) {
         szBuf[idx] = lpMsgBuf[idx];
     }
 //_tprintf(szBuf, "%s failed with error %d: %s",  lpszFunction, err, szBuf); 
     printf("%s failed with error %d: %s",  lpszFunction, err, szBuf); 
- 
-    LocalFree(szBuf);
+
+    _freea(szBuf);
     LocalFree(lpMsgBuf);
 }
 
@@ -164,6 +240,10 @@ void PrintErrorMsg(char *lpszFunction)
 int StartCOMExtension(void)
 {
     int Status = E_NOT_OK;
+
+    return E_OK;
+
+#if 0
     HANDLE pipeHandle;
 
     if (OsPort_NamedPipeOpen(&pipeHandle, SERVER_ENDPOINT, "", ".")) {
@@ -176,6 +256,7 @@ int StartCOMExtension(void)
 
     }
     return Status;
+#endif
 }
 
 
@@ -242,7 +323,16 @@ typedef struct tagRegisterInformation {
     unsigned __int8 Command;       
     unsigned __int8 SubCommand;
     unsigned __int32 NodeAddress;
+    unsigned char BusName[16];
 } RegisterInformation;
+
+typedef struct tagFilterInformation {
+    unsigned __int8 Command;       
+    unsigned __int8 SubCommand;
+    
+    unsigned __int8 FltMsk[8 * 8];
+    unsigned __int8 FltAcc[8 * 8];
+} FilterInformation;
 
 typedef struct tagQueryInformation {
     SYSTEMTIME Timestamp;
@@ -284,7 +374,6 @@ boolean WIPC_Register(HANDLE hPipe, NodeType Node)
 
     GetSystemTime(&tim);
 
-
     if (!parseCommandLine(cmdLine, &NodeAddress)) {
         printf("Uups, could not parse NodeAddress!!!\n");
     } else {
@@ -293,7 +382,8 @@ boolean WIPC_Register(HANDLE hPipe, NodeType Node)
 
     ri.Command = REGISTER;
     ri.SubCommand = UNUSED;
-    ri.NodeAddress = NodeAddress;
+    ri.NodeAddress = NODE_ADDRESS;  // TODO: Fix parsing logic.
+    strncpy(ri.BusName, "CAN", 16);
 
     if (!OsPort_NamedPipeWrite(hPipe, (unsigned __int8 *)&ri, sizeof(RegisterInformation))) {
         return FALSE;
