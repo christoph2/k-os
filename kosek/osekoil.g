@@ -30,7 +30,7 @@ grammar osekoil;
 ///
 
 options {
-// debug = true;
+   //debug = true;
    language = Python;
    output = AST;
    ASTLabelType = CommonTree;

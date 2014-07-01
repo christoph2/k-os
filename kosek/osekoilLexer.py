@@ -1,4 +1,4 @@
-# $ANTLR 3.4 osekoil.g 2013-05-16 18:39:25
+# $ANTLR 3.5-rc-2 osekoil.g 2014-04-10 12:58:03
 
 import sys
 from antlr3 import *
@@ -1211,8 +1211,8 @@ class osekoilLexer(Lexer):
             _type = ID
             _channel = DEFAULT_CHANNEL
 
-            # osekoil.g:719:5: ( ( 'a' .. 'z' | 'A' .. 'Z' | '_' ) ( 'a' .. 'z' | 'A' .. 'Z' | '0' .. '9' | '_' )* )
-            # osekoil.g:719:7: ( 'a' .. 'z' | 'A' .. 'Z' | '_' ) ( 'a' .. 'z' | 'A' .. 'Z' | '0' .. '9' | '_' )*
+            # osekoil.g:721:5: ( ( 'a' .. 'z' | 'A' .. 'Z' | '_' ) ( 'a' .. 'z' | 'A' .. 'Z' | '0' .. '9' | '_' )* )
+            # osekoil.g:721:7: ( 'a' .. 'z' | 'A' .. 'Z' | '_' ) ( 'a' .. 'z' | 'A' .. 'Z' | '0' .. '9' | '_' )*
             pass 
             if (65 <= self.input.LA(1) <= 90) or self.input.LA(1) == 95 or (97 <= self.input.LA(1) <= 122):
                 self.input.consume()
@@ -1223,7 +1223,7 @@ class osekoilLexer(Lexer):
 
 
 
-            # osekoil.g:719:31: ( 'a' .. 'z' | 'A' .. 'Z' | '0' .. '9' | '_' )*
+            # osekoil.g:721:31: ( 'a' .. 'z' | 'A' .. 'Z' | '0' .. '9' | '_' )*
             while True: #loop1
                 alt1 = 2
                 LA1_0 = self.input.LA(1)
@@ -1266,10 +1266,10 @@ class osekoilLexer(Lexer):
             _type = INT
             _channel = DEFAULT_CHANNEL
 
-            # osekoil.g:722:5: ( ( '0' .. '9' )+ )
-            # osekoil.g:722:7: ( '0' .. '9' )+
+            # osekoil.g:724:5: ( ( '0' .. '9' )+ )
+            # osekoil.g:724:7: ( '0' .. '9' )+
             pass 
-            # osekoil.g:722:7: ( '0' .. '9' )+
+            # osekoil.g:724:7: ( '0' .. '9' )+
             cnt2 = 0
             while True: #loop2
                 alt2 = 2
@@ -1319,13 +1319,13 @@ class osekoilLexer(Lexer):
             _type = FLOAT
             _channel = DEFAULT_CHANNEL
 
-            # osekoil.g:726:5: ( ( '0' .. '9' )+ '.' ( '0' .. '9' )* ( EXPONENT )? | '.' ( '0' .. '9' )+ ( EXPONENT )? | ( '0' .. '9' )+ EXPONENT )
+            # osekoil.g:728:5: ( ( '0' .. '9' )+ '.' ( '0' .. '9' )* ( EXPONENT )? | '.' ( '0' .. '9' )+ ( EXPONENT )? | ( '0' .. '9' )+ EXPONENT )
             alt9 = 3
             alt9 = self.dfa9.predict(self.input)
             if alt9 == 1:
-                # osekoil.g:726:9: ( '0' .. '9' )+ '.' ( '0' .. '9' )* ( EXPONENT )?
+                # osekoil.g:728:9: ( '0' .. '9' )+ '.' ( '0' .. '9' )* ( EXPONENT )?
                 pass 
-                # osekoil.g:726:9: ( '0' .. '9' )+
+                # osekoil.g:728:9: ( '0' .. '9' )+
                 cnt3 = 0
                 while True: #loop3
                     alt3 = 2
@@ -1360,7 +1360,7 @@ class osekoilLexer(Lexer):
 
                 self.match(46)
 
-                # osekoil.g:726:25: ( '0' .. '9' )*
+                # osekoil.g:728:25: ( '0' .. '9' )*
                 while True: #loop4
                     alt4 = 2
                     LA4_0 = self.input.LA(1)
@@ -1386,14 +1386,14 @@ class osekoilLexer(Lexer):
                         break #loop4
 
 
-                # osekoil.g:726:37: ( EXPONENT )?
+                # osekoil.g:728:37: ( EXPONENT )?
                 alt5 = 2
                 LA5_0 = self.input.LA(1)
 
                 if (LA5_0 == 69 or LA5_0 == 101) :
                     alt5 = 1
                 if alt5 == 1:
-                    # osekoil.g:726:37: EXPONENT
+                    # osekoil.g:728:37: EXPONENT
                     pass 
                     self.mEXPONENT()
 
@@ -1403,11 +1403,11 @@ class osekoilLexer(Lexer):
 
 
             elif alt9 == 2:
-                # osekoil.g:727:9: '.' ( '0' .. '9' )+ ( EXPONENT )?
+                # osekoil.g:729:9: '.' ( '0' .. '9' )+ ( EXPONENT )?
                 pass 
                 self.match(46)
 
-                # osekoil.g:727:13: ( '0' .. '9' )+
+                # osekoil.g:729:13: ( '0' .. '9' )+
                 cnt6 = 0
                 while True: #loop6
                     alt6 = 2
@@ -1440,14 +1440,14 @@ class osekoilLexer(Lexer):
                     cnt6 += 1
 
 
-                # osekoil.g:727:25: ( EXPONENT )?
+                # osekoil.g:729:25: ( EXPONENT )?
                 alt7 = 2
                 LA7_0 = self.input.LA(1)
 
                 if (LA7_0 == 69 or LA7_0 == 101) :
                     alt7 = 1
                 if alt7 == 1:
-                    # osekoil.g:727:25: EXPONENT
+                    # osekoil.g:729:25: EXPONENT
                     pass 
                     self.mEXPONENT()
 
@@ -1457,9 +1457,9 @@ class osekoilLexer(Lexer):
 
 
             elif alt9 == 3:
-                # osekoil.g:728:9: ( '0' .. '9' )+ EXPONENT
+                # osekoil.g:730:9: ( '0' .. '9' )+ EXPONENT
                 pass 
-                # osekoil.g:728:9: ( '0' .. '9' )+
+                # osekoil.g:730:9: ( '0' .. '9' )+
                 cnt8 = 0
                 while True: #loop8
                     alt8 = 2
@@ -1513,8 +1513,8 @@ class osekoilLexer(Lexer):
 
             STRING1 = None
 
-            # osekoil.g:731:12: ( '#line ' INT ' ' STRING )
-            # osekoil.g:732:5: '#line ' INT ' ' STRING
+            # osekoil.g:733:12: ( '#line ' INT ' ' STRING )
+            # osekoil.g:734:5: '#line ' INT ' ' STRING
             pass 
             self.match("#line ")
 
@@ -1562,7 +1562,7 @@ class osekoilLexer(Lexer):
     # $ANTLR start "SIGN"
     def mSIGN(self, ):
         try:
-            # osekoil.g:739:5: ( () | '+' | '-' )
+            # osekoil.g:741:5: ( () | '+' | '-' )
             alt10 = 3
             LA10 = self.input.LA(1)
             if LA10 == 43:
@@ -1573,23 +1573,23 @@ class osekoilLexer(Lexer):
                 alt10 = 1
 
             if alt10 == 1:
-                # osekoil.g:739:7: ()
+                # osekoil.g:741:7: ()
                 pass 
-                # osekoil.g:739:7: ()
-                # osekoil.g:739:8: 
+                # osekoil.g:741:7: ()
+                # osekoil.g:741:8: 
                 pass 
 
 
 
 
             elif alt10 == 2:
-                # osekoil.g:739:13: '+'
+                # osekoil.g:741:13: '+'
                 pass 
                 self.match(43)
 
 
             elif alt10 == 3:
-                # osekoil.g:739:19: '-'
+                # osekoil.g:741:19: '-'
                 pass 
                 self.match(45)
 
@@ -1605,8 +1605,8 @@ class osekoilLexer(Lexer):
     # $ANTLR start "DECDIGITS"
     def mDECDIGITS(self, ):
         try:
-            # osekoil.g:743:4: ( ZERODIGIT POSDIGIT )
-            # osekoil.g:743:7: ZERODIGIT POSDIGIT
+            # osekoil.g:745:4: ( ZERODIGIT POSDIGIT )
+            # osekoil.g:745:7: ZERODIGIT POSDIGIT
             pass 
             self.mZERODIGIT()
 
@@ -1630,8 +1630,8 @@ class osekoilLexer(Lexer):
             _type = SEMI
             _channel = DEFAULT_CHANNEL
 
-            # osekoil.g:746:4: ( ';' )
-            # osekoil.g:746:7: ';'
+            # osekoil.g:748:4: ( ';' )
+            # osekoil.g:748:7: ';'
             pass 
             self.match(59)
 
@@ -1652,8 +1652,8 @@ class osekoilLexer(Lexer):
             _type = ASSIGN
             _channel = DEFAULT_CHANNEL
 
-            # osekoil.g:749:4: ( '=' )
-            # osekoil.g:749:7: '='
+            # osekoil.g:751:4: ( '=' )
+            # osekoil.g:751:7: '='
             pass 
             self.match(61)
 
@@ -1674,8 +1674,8 @@ class osekoilLexer(Lexer):
             _type = LCURLY
             _channel = DEFAULT_CHANNEL
 
-            # osekoil.g:752:4: ( '{' )
-            # osekoil.g:752:7: '{'
+            # osekoil.g:754:4: ( '{' )
+            # osekoil.g:754:7: '{'
             pass 
             self.match(123)
 
@@ -1696,8 +1696,8 @@ class osekoilLexer(Lexer):
             _type = RCURLY
             _channel = DEFAULT_CHANNEL
 
-            # osekoil.g:755:4: ( '}' )
-            # osekoil.g:755:7: '}'
+            # osekoil.g:757:4: ( '}' )
+            # osekoil.g:757:7: '}'
             pass 
             self.match(125)
 
@@ -1718,8 +1718,8 @@ class osekoilLexer(Lexer):
             _type = LPAREN
             _channel = DEFAULT_CHANNEL
 
-            # osekoil.g:758:4: ( '(' )
-            # osekoil.g:758:7: '('
+            # osekoil.g:760:4: ( '(' )
+            # osekoil.g:760:7: '('
             pass 
             self.match(40)
 
@@ -1740,8 +1740,8 @@ class osekoilLexer(Lexer):
             _type = RRAREN
             _channel = DEFAULT_CHANNEL
 
-            # osekoil.g:761:4: ( ')' )
-            # osekoil.g:761:7: ')'
+            # osekoil.g:763:4: ( ')' )
+            # osekoil.g:763:7: ')'
             pass 
             self.match(41)
 
@@ -1762,8 +1762,8 @@ class osekoilLexer(Lexer):
             _type = LBRACK
             _channel = DEFAULT_CHANNEL
 
-            # osekoil.g:764:4: ( '[' )
-            # osekoil.g:764:7: '['
+            # osekoil.g:766:4: ( '[' )
+            # osekoil.g:766:7: '['
             pass 
             self.match(91)
 
@@ -1784,8 +1784,8 @@ class osekoilLexer(Lexer):
             _type = RBRACK
             _channel = DEFAULT_CHANNEL
 
-            # osekoil.g:768:4: ( ']' )
-            # osekoil.g:768:7: ']'
+            # osekoil.g:770:4: ( ']' )
+            # osekoil.g:770:7: ']'
             pass 
             self.match(93)
 
@@ -1803,8 +1803,8 @@ class osekoilLexer(Lexer):
     # $ANTLR start "ZERODIGIT"
     def mZERODIGIT(self, ):
         try:
-            # osekoil.g:773:4: ( '0' )
-            # osekoil.g:773:6: '0'
+            # osekoil.g:775:4: ( '0' )
+            # osekoil.g:775:6: '0'
             pass 
             self.match(48)
 
@@ -1821,7 +1821,7 @@ class osekoilLexer(Lexer):
     # $ANTLR start "POSDIGIT"
     def mPOSDIGIT(self, ):
         try:
-            # osekoil.g:778:4: ( '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9' )
+            # osekoil.g:780:4: ( '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9' )
             # osekoil.g:
             pass 
             if (49 <= self.input.LA(1) <= 57):
@@ -1849,8 +1849,8 @@ class osekoilLexer(Lexer):
             _type = HEX
             _channel = DEFAULT_CHANNEL
 
-            # osekoil.g:781:5: ( '0' ( 'x' | 'X' ) ( HEX_DIGIT )+ )
-            # osekoil.g:781:8: '0' ( 'x' | 'X' ) ( HEX_DIGIT )+
+            # osekoil.g:783:5: ( '0' ( 'x' | 'X' ) ( HEX_DIGIT )+ )
+            # osekoil.g:783:8: '0' ( 'x' | 'X' ) ( HEX_DIGIT )+
             pass 
             self.match(48)
 
@@ -1863,7 +1863,7 @@ class osekoilLexer(Lexer):
 
 
 
-            # osekoil.g:781:23: ( HEX_DIGIT )+
+            # osekoil.g:783:23: ( HEX_DIGIT )+
             cnt11 = 0
             while True: #loop11
                 alt11 = 2
@@ -1913,7 +1913,7 @@ class osekoilLexer(Lexer):
             _type = COMMENT
             _channel = DEFAULT_CHANNEL
 
-            # osekoil.g:785:5: ( '//' (~ ( '\\n' | '\\r' ) )* ( '\\r' )? '\\n' | '/*' ( options {greedy=false; } : . )* '*/' )
+            # osekoil.g:787:5: ( '//' (~ ( '\\n' | '\\r' ) )* ( '\\r' )? '\\n' | '/*' ( options {greedy=false; } : . )* '*/' )
             alt15 = 2
             LA15_0 = self.input.LA(1)
 
@@ -1937,12 +1937,12 @@ class osekoilLexer(Lexer):
 
 
             if alt15 == 1:
-                # osekoil.g:785:9: '//' (~ ( '\\n' | '\\r' ) )* ( '\\r' )? '\\n'
+                # osekoil.g:787:9: '//' (~ ( '\\n' | '\\r' ) )* ( '\\r' )? '\\n'
                 pass 
                 self.match("//")
 
 
-                # osekoil.g:785:14: (~ ( '\\n' | '\\r' ) )*
+                # osekoil.g:787:14: (~ ( '\\n' | '\\r' ) )*
                 while True: #loop12
                     alt12 = 2
                     LA12_0 = self.input.LA(1)
@@ -1968,14 +1968,14 @@ class osekoilLexer(Lexer):
                         break #loop12
 
 
-                # osekoil.g:785:28: ( '\\r' )?
+                # osekoil.g:787:28: ( '\\r' )?
                 alt13 = 2
                 LA13_0 = self.input.LA(1)
 
                 if (LA13_0 == 13) :
                     alt13 = 1
                 if alt13 == 1:
-                    # osekoil.g:785:28: '\\r'
+                    # osekoil.g:787:28: '\\r'
                     pass 
                     self.match(13)
 
@@ -1991,12 +1991,12 @@ class osekoilLexer(Lexer):
 
 
             elif alt15 == 2:
-                # osekoil.g:786:9: '/*' ( options {greedy=false; } : . )* '*/'
+                # osekoil.g:788:9: '/*' ( options {greedy=false; } : . )* '*/'
                 pass 
                 self.match("/*")
 
 
-                # osekoil.g:786:14: ( options {greedy=false; } : . )*
+                # osekoil.g:788:14: ( options {greedy=false; } : . )*
                 while True: #loop14
                     alt14 = 2
                     LA14_0 = self.input.LA(1)
@@ -2015,7 +2015,7 @@ class osekoilLexer(Lexer):
 
 
                     if alt14 == 1:
-                        # osekoil.g:786:42: .
+                        # osekoil.g:788:42: .
                         pass 
                         self.matchAny()
 
@@ -2048,8 +2048,8 @@ class osekoilLexer(Lexer):
             _type = WS
             _channel = DEFAULT_CHANNEL
 
-            # osekoil.g:789:5: ( ( ' ' | '\\t' | '\\r' | '\\n' ) )
-            # osekoil.g:790:5: ( ' ' | '\\t' | '\\r' | '\\n' )
+            # osekoil.g:791:5: ( ( ' ' | '\\t' | '\\r' | '\\n' ) )
+            # osekoil.g:792:5: ( ' ' | '\\t' | '\\r' | '\\n' )
             pass 
             if (9 <= self.input.LA(1) <= 10) or self.input.LA(1) == 13 or self.input.LA(1) == 32:
                 self.input.consume()
@@ -2082,12 +2082,12 @@ class osekoilLexer(Lexer):
             _type = STRING
             _channel = DEFAULT_CHANNEL
 
-            # osekoil.g:799:5: ( '\"' ( ESC_SEQ |~ ( '\\\\' | '\"' ) )* '\"' )
-            # osekoil.g:799:8: '\"' ( ESC_SEQ |~ ( '\\\\' | '\"' ) )* '\"'
+            # osekoil.g:801:5: ( '\"' ( ESC_SEQ |~ ( '\\\\' | '\"' ) )* '\"' )
+            # osekoil.g:801:8: '\"' ( ESC_SEQ |~ ( '\\\\' | '\"' ) )* '\"'
             pass 
             self.match(34)
 
-            # osekoil.g:799:12: ( ESC_SEQ |~ ( '\\\\' | '\"' ) )*
+            # osekoil.g:801:12: ( ESC_SEQ |~ ( '\\\\' | '\"' ) )*
             while True: #loop16
                 alt16 = 3
                 LA16_0 = self.input.LA(1)
@@ -2099,14 +2099,14 @@ class osekoilLexer(Lexer):
 
 
                 if alt16 == 1:
-                    # osekoil.g:799:14: ESC_SEQ
+                    # osekoil.g:801:14: ESC_SEQ
                     pass 
                     self.mESC_SEQ()
 
 
 
                 elif alt16 == 2:
-                    # osekoil.g:799:24: ~ ( '\\\\' | '\"' )
+                    # osekoil.g:801:24: ~ ( '\\\\' | '\"' )
                     pass 
                     if (0 <= self.input.LA(1) <= 33) or (35 <= self.input.LA(1) <= 91) or (93 <= self.input.LA(1) <= 65535):
                         self.input.consume()
@@ -2138,8 +2138,8 @@ class osekoilLexer(Lexer):
     # $ANTLR start "EXPONENT"
     def mEXPONENT(self, ):
         try:
-            # osekoil.g:804:10: ( ( 'e' | 'E' ) ( '+' | '-' )? ( '0' .. '9' )+ )
-            # osekoil.g:804:12: ( 'e' | 'E' ) ( '+' | '-' )? ( '0' .. '9' )+
+            # osekoil.g:806:10: ( ( 'e' | 'E' ) ( '+' | '-' )? ( '0' .. '9' )+ )
+            # osekoil.g:806:12: ( 'e' | 'E' ) ( '+' | '-' )? ( '0' .. '9' )+
             pass 
             if self.input.LA(1) == 69 or self.input.LA(1) == 101:
                 self.input.consume()
@@ -2150,7 +2150,7 @@ class osekoilLexer(Lexer):
 
 
 
-            # osekoil.g:804:22: ( '+' | '-' )?
+            # osekoil.g:806:22: ( '+' | '-' )?
             alt17 = 2
             LA17_0 = self.input.LA(1)
 
@@ -2171,7 +2171,7 @@ class osekoilLexer(Lexer):
 
 
 
-            # osekoil.g:804:33: ( '0' .. '9' )+
+            # osekoil.g:806:33: ( '0' .. '9' )+
             cnt18 = 0
             while True: #loop18
                 alt18 = 2
@@ -2217,7 +2217,7 @@ class osekoilLexer(Lexer):
     # $ANTLR start "HEX_DIGIT"
     def mHEX_DIGIT(self, ):
         try:
-            # osekoil.g:808:11: ( ( '0' .. '9' | 'a' .. 'f' | 'A' .. 'F' ) )
+            # osekoil.g:810:11: ( ( '0' .. '9' | 'a' .. 'f' | 'A' .. 'F' ) )
             # osekoil.g:
             pass 
             if (48 <= self.input.LA(1) <= 57) or (65 <= self.input.LA(1) <= 70) or (97 <= self.input.LA(1) <= 102):
@@ -2242,7 +2242,7 @@ class osekoilLexer(Lexer):
     # $ANTLR start "ESC_SEQ"
     def mESC_SEQ(self, ):
         try:
-            # osekoil.g:813:5: ( '\\\\' ( 'b' | 't' | 'n' | 'f' | 'r' | '\\\"' | '\\'' | '\\\\' ) | UNICODE_ESC | OCTAL_ESC )
+            # osekoil.g:815:5: ( '\\\\' ( 'b' | 't' | 'n' | 'f' | 'r' | '\\\"' | '\\'' | '\\\\' ) | UNICODE_ESC | OCTAL_ESC )
             alt19 = 3
             LA19_0 = self.input.LA(1)
 
@@ -2267,7 +2267,7 @@ class osekoilLexer(Lexer):
 
 
             if alt19 == 1:
-                # osekoil.g:813:9: '\\\\' ( 'b' | 't' | 'n' | 'f' | 'r' | '\\\"' | '\\'' | '\\\\' )
+                # osekoil.g:815:9: '\\\\' ( 'b' | 't' | 'n' | 'f' | 'r' | '\\\"' | '\\'' | '\\\\' )
                 pass 
                 self.match(92)
 
@@ -2282,14 +2282,14 @@ class osekoilLexer(Lexer):
 
 
             elif alt19 == 2:
-                # osekoil.g:814:9: UNICODE_ESC
+                # osekoil.g:816:9: UNICODE_ESC
                 pass 
                 self.mUNICODE_ESC()
 
 
 
             elif alt19 == 3:
-                # osekoil.g:815:9: OCTAL_ESC
+                # osekoil.g:817:9: OCTAL_ESC
                 pass 
                 self.mOCTAL_ESC()
 
@@ -2306,7 +2306,7 @@ class osekoilLexer(Lexer):
     # $ANTLR start "OCTAL_ESC"
     def mOCTAL_ESC(self, ):
         try:
-            # osekoil.g:820:5: ( '\\\\' ( '0' .. '3' ) ( '0' .. '7' ) ( '0' .. '7' ) | '\\\\' ( '0' .. '7' ) ( '0' .. '7' ) | '\\\\' ( '0' .. '7' ) )
+            # osekoil.g:822:5: ( '\\\\' ( '0' .. '3' ) ( '0' .. '7' ) ( '0' .. '7' ) | '\\\\' ( '0' .. '7' ) ( '0' .. '7' ) | '\\\\' ( '0' .. '7' ) )
             alt20 = 3
             LA20_0 = self.input.LA(1)
 
@@ -2348,7 +2348,7 @@ class osekoilLexer(Lexer):
 
 
             if alt20 == 1:
-                # osekoil.g:820:9: '\\\\' ( '0' .. '3' ) ( '0' .. '7' ) ( '0' .. '7' )
+                # osekoil.g:822:9: '\\\\' ( '0' .. '3' ) ( '0' .. '7' ) ( '0' .. '7' )
                 pass 
                 self.match(92)
 
@@ -2381,7 +2381,7 @@ class osekoilLexer(Lexer):
 
 
             elif alt20 == 2:
-                # osekoil.g:821:9: '\\\\' ( '0' .. '7' ) ( '0' .. '7' )
+                # osekoil.g:823:9: '\\\\' ( '0' .. '7' ) ( '0' .. '7' )
                 pass 
                 self.match(92)
 
@@ -2405,7 +2405,7 @@ class osekoilLexer(Lexer):
 
 
             elif alt20 == 3:
-                # osekoil.g:822:9: '\\\\' ( '0' .. '7' )
+                # osekoil.g:824:9: '\\\\' ( '0' .. '7' )
                 pass 
                 self.match(92)
 
@@ -2430,8 +2430,8 @@ class osekoilLexer(Lexer):
     # $ANTLR start "UNICODE_ESC"
     def mUNICODE_ESC(self, ):
         try:
-            # osekoil.g:827:5: ( '\\\\' 'u' HEX_DIGIT HEX_DIGIT HEX_DIGIT HEX_DIGIT )
-            # osekoil.g:827:9: '\\\\' 'u' HEX_DIGIT HEX_DIGIT HEX_DIGIT HEX_DIGIT
+            # osekoil.g:829:5: ( '\\\\' 'u' HEX_DIGIT HEX_DIGIT HEX_DIGIT HEX_DIGIT )
+            # osekoil.g:829:9: '\\\\' 'u' HEX_DIGIT HEX_DIGIT HEX_DIGIT HEX_DIGIT
             pass 
             self.match(92)
 

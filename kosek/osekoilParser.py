@@ -1,4 +1,4 @@
-# $ANTLR 3.4 osekoil.g 2013-05-16 18:39:24
+# $ANTLR 3.5-rc-2 osekoil.g 2014-04-10 12:58:02
 
 import sys
 from antlr3 import *
@@ -12,6 +12,7 @@ from kosek.BaseParser import BaseParser
 import kosek.ApplicationDefinition as ApplicationDefinition
 import kosek.ImplementationDefinition as ImplementationDefinition
 from kosek.ImplementationDefinition.Extras import Extras
+from kosek.ApplicationDefinition.Parameter import ParameterList
 
 
 
@@ -250,7 +251,7 @@ class osekoilParser(BaseParser):
 
 
     # $ANTLR start "file"
-    # osekoil.g:112:1: file returns [value] : oilVersion implementationDefinition applicationDefinition -> ^( FILE oilVersion implementationDefinition applicationDefinition ) ;
+    # osekoil.g:113:1: file returns [value] : oilVersion implementationDefinition applicationDefinition -> ^( FILE oilVersion implementationDefinition applicationDefinition ) ;
     def file(self, ):
         retval = self.file_return()
         retval.start = self.input.LT(1)
@@ -259,21 +260,18 @@ class osekoilParser(BaseParser):
         root_0 = None
 
         oilVersion1 = None
-
         implementationDefinition2 = None
-
         applicationDefinition3 = None
-
 
         stream_oilVersion = RewriteRuleSubtreeStream(self._adaptor, "rule oilVersion")
         stream_implementationDefinition = RewriteRuleSubtreeStream(self._adaptor, "rule implementationDefinition")
         stream_applicationDefinition = RewriteRuleSubtreeStream(self._adaptor, "rule applicationDefinition")
         try:
             try:
-                # osekoil.g:113:4: ( oilVersion implementationDefinition applicationDefinition -> ^( FILE oilVersion implementationDefinition applicationDefinition ) )
-                # osekoil.g:113:6: oilVersion implementationDefinition applicationDefinition
+                # osekoil.g:114:4: ( oilVersion implementationDefinition applicationDefinition -> ^( FILE oilVersion implementationDefinition applicationDefinition ) )
+                # osekoil.g:114:6: oilVersion implementationDefinition applicationDefinition
                 pass 
-                self._state.following.append(self.FOLLOW_oilVersion_in_file387)
+                self._state.following.append(self.FOLLOW_oilVersion_in_file390)
                 oilVersion1 = self.oilVersion()
 
                 self._state.following.pop()
@@ -281,7 +279,7 @@ class osekoilParser(BaseParser):
                     stream_oilVersion.add(oilVersion1.tree)
 
 
-                self._state.following.append(self.FOLLOW_implementationDefinition_in_file389)
+                self._state.following.append(self.FOLLOW_implementationDefinition_in_file392)
                 implementationDefinition2 = self.implementationDefinition()
 
                 self._state.following.pop()
@@ -289,7 +287,7 @@ class osekoilParser(BaseParser):
                     stream_implementationDefinition.add(implementationDefinition2.tree)
 
 
-                self._state.following.append(self.FOLLOW_applicationDefinition_in_file391)
+                self._state.following.append(self.FOLLOW_applicationDefinition_in_file394)
                 applicationDefinition3 = self.applicationDefinition()
 
                 self._state.following.pop()
@@ -321,8 +319,8 @@ class osekoilParser(BaseParser):
 
 
                     root_0 = self._adaptor.nil()
-                    # 117:4: -> ^( FILE oilVersion implementationDefinition applicationDefinition )
-                    # osekoil.g:117:7: ^( FILE oilVersion implementationDefinition applicationDefinition )
+                    # 118:4: -> ^( FILE oilVersion implementationDefinition applicationDefinition )
+                    # osekoil.g:118:7: ^( FILE oilVersion implementationDefinition applicationDefinition )
                     root_1 = self._adaptor.nil()
                     root_1 = self._adaptor.becomeRoot(
                     self._adaptor.createFromType(FILE, "FILE")
@@ -377,7 +375,7 @@ class osekoilParser(BaseParser):
 
 
     # $ANTLR start "oilVersion"
-    # osekoil.g:121:1: oilVersion : 'OIL_VERSION' ASSIGN STRING ( description )? SEMI -> ^( OIL_VERSION STRING ( description )? ) ;
+    # osekoil.g:122:1: oilVersion : 'OIL_VERSION' ASSIGN STRING ( description )? SEMI -> ^( OIL_VERSION STRING ( description )? ) ;
     def oilVersion(self, ):
         retval = self.oilVersion_return()
         retval.start = self.input.LT(1)
@@ -391,7 +389,6 @@ class osekoilParser(BaseParser):
         SEMI8 = None
         description7 = None
 
-
         string_literal4_tree = None
         ASSIGN5_tree = None
         STRING6_tree = None
@@ -403,34 +400,34 @@ class osekoilParser(BaseParser):
         stream_description = RewriteRuleSubtreeStream(self._adaptor, "rule description")
         try:
             try:
-                # osekoil.g:122:4: ( 'OIL_VERSION' ASSIGN STRING ( description )? SEMI -> ^( OIL_VERSION STRING ( description )? ) )
-                # osekoil.g:122:6: 'OIL_VERSION' ASSIGN STRING ( description )? SEMI
+                # osekoil.g:123:4: ( 'OIL_VERSION' ASSIGN STRING ( description )? SEMI -> ^( OIL_VERSION STRING ( description )? ) )
+                # osekoil.g:123:6: 'OIL_VERSION' ASSIGN STRING ( description )? SEMI
                 pass 
-                string_literal4 = self.match(self.input, 109, self.FOLLOW_109_in_oilVersion427) 
+                string_literal4 = self.match(self.input, 109, self.FOLLOW_109_in_oilVersion430) 
                 if self._state.backtracking == 0:
                     stream_109.add(string_literal4)
 
 
-                ASSIGN5 = self.match(self.input, ASSIGN, self.FOLLOW_ASSIGN_in_oilVersion429) 
+                ASSIGN5 = self.match(self.input, ASSIGN, self.FOLLOW_ASSIGN_in_oilVersion432) 
                 if self._state.backtracking == 0:
                     stream_ASSIGN.add(ASSIGN5)
 
 
-                STRING6 = self.match(self.input, STRING, self.FOLLOW_STRING_in_oilVersion431) 
+                STRING6 = self.match(self.input, STRING, self.FOLLOW_STRING_in_oilVersion434) 
                 if self._state.backtracking == 0:
                     stream_STRING.add(STRING6)
 
 
-                # osekoil.g:122:34: ( description )?
+                # osekoil.g:123:34: ( description )?
                 alt1 = 2
                 LA1_0 = self.input.LA(1)
 
                 if (LA1_0 == 78) :
                     alt1 = 1
                 if alt1 == 1:
-                    # osekoil.g:122:34: description
+                    # osekoil.g:123:34: description
                     pass 
-                    self._state.following.append(self.FOLLOW_description_in_oilVersion433)
+                    self._state.following.append(self.FOLLOW_description_in_oilVersion436)
                     description7 = self.description()
 
                     self._state.following.pop()
@@ -441,13 +438,13 @@ class osekoilParser(BaseParser):
 
 
 
-                SEMI8 = self.match(self.input, SEMI, self.FOLLOW_SEMI_in_oilVersion436) 
+                SEMI8 = self.match(self.input, SEMI, self.FOLLOW_SEMI_in_oilVersion439) 
                 if self._state.backtracking == 0:
                     stream_SEMI.add(SEMI8)
 
 
                 # AST Rewrite
-                # elements: STRING, description
+                # elements: description, STRING
                 # token labels: 
                 # rule labels: retval
                 # token list labels: 
@@ -462,8 +459,8 @@ class osekoilParser(BaseParser):
 
 
                     root_0 = self._adaptor.nil()
-                    # 123:4: -> ^( OIL_VERSION STRING ( description )? )
-                    # osekoil.g:123:7: ^( OIL_VERSION STRING ( description )? )
+                    # 124:4: -> ^( OIL_VERSION STRING ( description )? )
+                    # osekoil.g:124:7: ^( OIL_VERSION STRING ( description )? )
                     root_1 = self._adaptor.nil()
                     root_1 = self._adaptor.becomeRoot(
                     self._adaptor.createFromType(OIL_VERSION, "OIL_VERSION")
@@ -473,7 +470,7 @@ class osekoilParser(BaseParser):
                     stream_STRING.nextNode()
                     )
 
-                    # osekoil.g:123:28: ( description )?
+                    # osekoil.g:124:28: ( description )?
                     if stream_description.hasNext():
                         self._adaptor.addChild(root_1, stream_description.nextTree())
 
@@ -524,7 +521,7 @@ class osekoilParser(BaseParser):
 
 
     # $ANTLR start "implementationDefinition"
-    # osekoil.g:131:1: implementationDefinition returns [value] : 'IMPLEMENTATION' ID '{' implementationSpecList '}' ( description )? SEMI -> ^( IMPLEMENTATION_DEFINITION implementationSpecList ( description )? ) ;
+    # osekoil.g:132:1: implementationDefinition returns [value] : 'IMPLEMENTATION' ID '{' implementationSpecList '}' ( description )? SEMI -> ^( IMPLEMENTATION_DEFINITION implementationSpecList ( description )? ) ;
     def implementationDefinition(self, ):
         retval = self.implementationDefinition_return()
         retval.start = self.input.LT(1)
@@ -538,9 +535,7 @@ class osekoilParser(BaseParser):
         char_literal13 = None
         SEMI15 = None
         implementationSpecList12 = None
-
         description14 = None
-
 
         string_literal9_tree = None
         ID10_tree = None
@@ -556,25 +551,25 @@ class osekoilParser(BaseParser):
         stream_implementationSpecList = RewriteRuleSubtreeStream(self._adaptor, "rule implementationSpecList")
         try:
             try:
-                # osekoil.g:132:4: ( 'IMPLEMENTATION' ID '{' implementationSpecList '}' ( description )? SEMI -> ^( IMPLEMENTATION_DEFINITION implementationSpecList ( description )? ) )
-                # osekoil.g:132:7: 'IMPLEMENTATION' ID '{' implementationSpecList '}' ( description )? SEMI
+                # osekoil.g:133:4: ( 'IMPLEMENTATION' ID '{' implementationSpecList '}' ( description )? SEMI -> ^( IMPLEMENTATION_DEFINITION implementationSpecList ( description )? ) )
+                # osekoil.g:133:7: 'IMPLEMENTATION' ID '{' implementationSpecList '}' ( description )? SEMI
                 pass 
-                string_literal9 = self.match(self.input, 95, self.FOLLOW_95_in_implementationDefinition474) 
+                string_literal9 = self.match(self.input, 95, self.FOLLOW_95_in_implementationDefinition477) 
                 if self._state.backtracking == 0:
                     stream_95.add(string_literal9)
 
 
-                ID10 = self.match(self.input, ID, self.FOLLOW_ID_in_implementationDefinition476) 
+                ID10 = self.match(self.input, ID, self.FOLLOW_ID_in_implementationDefinition479) 
                 if self._state.backtracking == 0:
                     stream_ID.add(ID10)
 
 
-                char_literal11 = self.match(self.input, LCURLY, self.FOLLOW_LCURLY_in_implementationDefinition478) 
+                char_literal11 = self.match(self.input, LCURLY, self.FOLLOW_LCURLY_in_implementationDefinition481) 
                 if self._state.backtracking == 0:
                     stream_LCURLY.add(char_literal11)
 
 
-                self._state.following.append(self.FOLLOW_implementationSpecList_in_implementationDefinition480)
+                self._state.following.append(self.FOLLOW_implementationSpecList_in_implementationDefinition483)
                 implementationSpecList12 = self.implementationSpecList()
 
                 self._state.following.pop()
@@ -582,21 +577,21 @@ class osekoilParser(BaseParser):
                     stream_implementationSpecList.add(implementationSpecList12.tree)
 
 
-                char_literal13 = self.match(self.input, RCURLY, self.FOLLOW_RCURLY_in_implementationDefinition482) 
+                char_literal13 = self.match(self.input, RCURLY, self.FOLLOW_RCURLY_in_implementationDefinition485) 
                 if self._state.backtracking == 0:
                     stream_RCURLY.add(char_literal13)
 
 
-                # osekoil.g:132:58: ( description )?
+                # osekoil.g:133:58: ( description )?
                 alt2 = 2
                 LA2_0 = self.input.LA(1)
 
                 if (LA2_0 == 78) :
                     alt2 = 1
                 if alt2 == 1:
-                    # osekoil.g:132:58: description
+                    # osekoil.g:133:58: description
                     pass 
-                    self._state.following.append(self.FOLLOW_description_in_implementationDefinition484)
+                    self._state.following.append(self.FOLLOW_description_in_implementationDefinition487)
                     description14 = self.description()
 
                     self._state.following.pop()
@@ -607,7 +602,7 @@ class osekoilParser(BaseParser):
 
 
 
-                SEMI15 = self.match(self.input, SEMI, self.FOLLOW_SEMI_in_implementationDefinition487) 
+                SEMI15 = self.match(self.input, SEMI, self.FOLLOW_SEMI_in_implementationDefinition490) 
                 if self._state.backtracking == 0:
                     stream_SEMI.add(SEMI15)
 
@@ -622,7 +617,7 @@ class osekoilParser(BaseParser):
 
 
                 # AST Rewrite
-                # elements: description, implementationSpecList
+                # elements: implementationSpecList, description
                 # token labels: 
                 # rule labels: retval
                 # token list labels: 
@@ -637,8 +632,8 @@ class osekoilParser(BaseParser):
 
 
                     root_0 = self._adaptor.nil()
-                    # 137:4: -> ^( IMPLEMENTATION_DEFINITION implementationSpecList ( description )? )
-                    # osekoil.g:137:7: ^( IMPLEMENTATION_DEFINITION implementationSpecList ( description )? )
+                    # 138:4: -> ^( IMPLEMENTATION_DEFINITION implementationSpecList ( description )? )
+                    # osekoil.g:138:7: ^( IMPLEMENTATION_DEFINITION implementationSpecList ( description )? )
                     root_1 = self._adaptor.nil()
                     root_1 = self._adaptor.becomeRoot(
                     self._adaptor.createFromType(IMPLEMENTATION_DEFINITION, "IMPLEMENTATION_DEFINITION")
@@ -646,7 +641,7 @@ class osekoilParser(BaseParser):
 
                     self._adaptor.addChild(root_1, stream_implementationSpecList.nextTree())
 
-                    # osekoil.g:137:58: ( description )?
+                    # osekoil.g:138:58: ( description )?
                     if stream_description.hasNext():
                         self._adaptor.addChild(root_1, stream_description.nextTree())
 
@@ -697,7 +692,7 @@ class osekoilParser(BaseParser):
 
 
     # $ANTLR start "implementationSpecList"
-    # osekoil.g:141:1: implementationSpecList returns [value] : (specs+= ( implementationSpec ) )* -> ^( IMPLEMENTATION_SPEC_LIST ( implementationSpec )* ) ;
+    # osekoil.g:142:1: implementationSpecList returns [value] : (specs+= ( implementationSpec ) )* -> ^( IMPLEMENTATION_SPEC_LIST ( implementationSpec )* ) ;
     def implementationSpecList(self, ):
         retval = self.implementationSpecList_return()
         retval.start = self.input.LT(1)
@@ -709,7 +704,6 @@ class osekoilParser(BaseParser):
         list_specs = None
         implementationSpec16 = None
 
-
         specs_tree = None
         stream_implementationSpec = RewriteRuleSubtreeStream(self._adaptor, "rule implementationSpec")
               
@@ -717,10 +711,10 @@ class osekoilParser(BaseParser):
 
         try:
             try:
-                # osekoil.g:149:4: ( (specs+= ( implementationSpec ) )* -> ^( IMPLEMENTATION_SPEC_LIST ( implementationSpec )* ) )
-                # osekoil.g:149:7: (specs+= ( implementationSpec ) )*
+                # osekoil.g:150:4: ( (specs+= ( implementationSpec ) )* -> ^( IMPLEMENTATION_SPEC_LIST ( implementationSpec )* ) )
+                # osekoil.g:150:7: (specs+= ( implementationSpec ) )*
                 pass 
-                # osekoil.g:149:13: (specs+= ( implementationSpec ) )*
+                # osekoil.g:150:13: (specs+= ( implementationSpec ) )*
                 while True: #loop3
                     alt3 = 2
                     LA3_0 = self.input.LA(1)
@@ -730,12 +724,12 @@ class osekoilParser(BaseParser):
 
 
                     if alt3 == 1:
-                        # osekoil.g:149:13: specs+= ( implementationSpec )
+                        # osekoil.g:150:13: specs+= ( implementationSpec )
                         pass 
-                        # osekoil.g:149:16: ( implementationSpec )
-                        # osekoil.g:149:17: implementationSpec
+                        # osekoil.g:150:16: ( implementationSpec )
+                        # osekoil.g:150:17: implementationSpec
                         pass 
-                        self._state.following.append(self.FOLLOW_implementationSpec_in_implementationSpecList541)
+                        self._state.following.append(self.FOLLOW_implementationSpec_in_implementationSpecList544)
                         implementationSpec16 = self.implementationSpec()
 
                         self._state.following.pop()
@@ -773,14 +767,14 @@ class osekoilParser(BaseParser):
 
 
                     root_0 = self._adaptor.nil()
-                    # 150:4: -> ^( IMPLEMENTATION_SPEC_LIST ( implementationSpec )* )
-                    # osekoil.g:150:7: ^( IMPLEMENTATION_SPEC_LIST ( implementationSpec )* )
+                    # 151:4: -> ^( IMPLEMENTATION_SPEC_LIST ( implementationSpec )* )
+                    # osekoil.g:151:7: ^( IMPLEMENTATION_SPEC_LIST ( implementationSpec )* )
                     root_1 = self._adaptor.nil()
                     root_1 = self._adaptor.becomeRoot(
                     self._adaptor.createFromType(IMPLEMENTATION_SPEC_LIST, "IMPLEMENTATION_SPEC_LIST")
                     , root_1)
 
-                    # osekoil.g:150:34: ( implementationSpec )*
+                    # osekoil.g:151:34: ( implementationSpec )*
                     while stream_implementationSpec.hasNext():
                         self._adaptor.addChild(root_1, stream_implementationSpec.nextTree())
 
@@ -840,7 +834,7 @@ class osekoilParser(BaseParser):
 
 
     # $ANTLR start "implementationSpec"
-    # osekoil.g:153:1: implementationSpec returns [value] : object '{' implementationList '}' ( description )? SEMI -> ^( IMPLEMENTATION_SPEC object implementationList ( description )? ) ;
+    # osekoil.g:154:1: implementationSpec returns [value] : object '{' implementationList '}' ( description )? SEMI -> ^( IMPLEMENTATION_SPEC object implementationList ( description )? ) ;
     def implementationSpec(self, ):
         self.implementationSpec_stack.append(implementationSpec_scope())
         retval = self.implementationSpec_return()
@@ -853,11 +847,8 @@ class osekoilParser(BaseParser):
         char_literal20 = None
         SEMI22 = None
         object17 = None
-
         implementationList19 = None
-
         description21 = None
-
 
         char_literal18_tree = None
         char_literal20_tree = None
@@ -873,10 +864,10 @@ class osekoilParser(BaseParser):
 
         try:
             try:
-                # osekoil.g:160:4: ( object '{' implementationList '}' ( description )? SEMI -> ^( IMPLEMENTATION_SPEC object implementationList ( description )? ) )
-                # osekoil.g:160:7: object '{' implementationList '}' ( description )? SEMI
+                # osekoil.g:161:4: ( object '{' implementationList '}' ( description )? SEMI -> ^( IMPLEMENTATION_SPEC object implementationList ( description )? ) )
+                # osekoil.g:161:7: object '{' implementationList '}' ( description )? SEMI
                 pass 
-                self._state.following.append(self.FOLLOW_object_in_implementationSpec587)
+                self._state.following.append(self.FOLLOW_object_in_implementationSpec590)
                 object17 = self.object()
 
                 self._state.following.pop()
@@ -890,12 +881,12 @@ class osekoilParser(BaseParser):
 
 
 
-                char_literal18 = self.match(self.input, LCURLY, self.FOLLOW_LCURLY_in_implementationSpec591) 
+                char_literal18 = self.match(self.input, LCURLY, self.FOLLOW_LCURLY_in_implementationSpec594) 
                 if self._state.backtracking == 0:
                     stream_LCURLY.add(char_literal18)
 
 
-                self._state.following.append(self.FOLLOW_implementationList_in_implementationSpec593)
+                self._state.following.append(self.FOLLOW_implementationList_in_implementationSpec596)
                 implementationList19 = self.implementationList()
 
                 self._state.following.pop()
@@ -903,21 +894,21 @@ class osekoilParser(BaseParser):
                     stream_implementationList.add(implementationList19.tree)
 
 
-                char_literal20 = self.match(self.input, RCURLY, self.FOLLOW_RCURLY_in_implementationSpec595) 
+                char_literal20 = self.match(self.input, RCURLY, self.FOLLOW_RCURLY_in_implementationSpec598) 
                 if self._state.backtracking == 0:
                     stream_RCURLY.add(char_literal20)
 
 
-                # osekoil.g:160:92: ( description )?
+                # osekoil.g:161:92: ( description )?
                 alt4 = 2
                 LA4_0 = self.input.LA(1)
 
                 if (LA4_0 == 78) :
                     alt4 = 1
                 if alt4 == 1:
-                    # osekoil.g:160:92: description
+                    # osekoil.g:161:92: description
                     pass 
-                    self._state.following.append(self.FOLLOW_description_in_implementationSpec597)
+                    self._state.following.append(self.FOLLOW_description_in_implementationSpec600)
                     description21 = self.description()
 
                     self._state.following.pop()
@@ -928,7 +919,7 @@ class osekoilParser(BaseParser):
 
 
 
-                SEMI22 = self.match(self.input, SEMI, self.FOLLOW_SEMI_in_implementationSpec600) 
+                SEMI22 = self.match(self.input, SEMI, self.FOLLOW_SEMI_in_implementationSpec603) 
                 if self._state.backtracking == 0:
                     stream_SEMI.add(SEMI22)
 
@@ -942,7 +933,7 @@ class osekoilParser(BaseParser):
 
 
                 # AST Rewrite
-                # elements: implementationList, object, description
+                # elements: object, description, implementationList
                 # token labels: 
                 # rule labels: retval
                 # token list labels: 
@@ -957,8 +948,8 @@ class osekoilParser(BaseParser):
 
 
                     root_0 = self._adaptor.nil()
-                    # 164:7: -> ^( IMPLEMENTATION_SPEC object implementationList ( description )? )
-                    # osekoil.g:164:10: ^( IMPLEMENTATION_SPEC object implementationList ( description )? )
+                    # 165:7: -> ^( IMPLEMENTATION_SPEC object implementationList ( description )? )
+                    # osekoil.g:165:10: ^( IMPLEMENTATION_SPEC object implementationList ( description )? )
                     root_1 = self._adaptor.nil()
                     root_1 = self._adaptor.becomeRoot(
                     self._adaptor.createFromType(IMPLEMENTATION_SPEC, "IMPLEMENTATION_SPEC")
@@ -968,7 +959,7 @@ class osekoilParser(BaseParser):
 
                     self._adaptor.addChild(root_1, stream_implementationList.nextTree())
 
-                    # osekoil.g:164:58: ( description )?
+                    # osekoil.g:165:58: ( description )?
                     if stream_description.hasNext():
                         self._adaptor.addChild(root_1, stream_description.nextTree())
 
@@ -1019,7 +1010,7 @@ class osekoilParser(BaseParser):
 
 
     # $ANTLR start "object"
-    # osekoil.g:167:1: object : (id= 'OS' |id= 'TASK' |id= 'COUNTER' |id= 'ALARM' |id= 'RESOURCE' |id= 'EVENT' |id= 'ISR' |id= 'MESSAGE' |id= 'COM' |id= 'NM' |id= 'APPMODE' |id= 'IPDU' |id= 'NETWORKMESSAGE' -> ^( OBJECT $id) );
+    # osekoil.g:168:1: object : (id= 'OS' |id= 'TASK' |id= 'COUNTER' |id= 'ALARM' |id= 'RESOURCE' |id= 'EVENT' |id= 'ISR' |id= 'MESSAGE' |id= 'COM' |id= 'NM' |id= 'APPMODE' |id= 'IPDU' |id= 'NETWORKMESSAGE' -> ^( OBJECT $id) );
     def object(self, ):
         retval = self.object_return()
         retval.start = self.input.LT(1)
@@ -1034,7 +1025,7 @@ class osekoilParser(BaseParser):
 
         try:
             try:
-                # osekoil.g:168:4: (id= 'OS' |id= 'TASK' |id= 'COUNTER' |id= 'ALARM' |id= 'RESOURCE' |id= 'EVENT' |id= 'ISR' |id= 'MESSAGE' |id= 'COM' |id= 'NM' |id= 'APPMODE' |id= 'IPDU' |id= 'NETWORKMESSAGE' -> ^( OBJECT $id) )
+                # osekoil.g:169:4: (id= 'OS' |id= 'TASK' |id= 'COUNTER' |id= 'ALARM' |id= 'RESOURCE' |id= 'EVENT' |id= 'ISR' |id= 'MESSAGE' |id= 'COM' |id= 'NM' |id= 'APPMODE' |id= 'IPDU' |id= 'NETWORKMESSAGE' -> ^( OBJECT $id) )
                 alt5 = 13
                 LA5 = self.input.LA(1)
                 if LA5 == 110:
@@ -1074,12 +1065,12 @@ class osekoilParser(BaseParser):
 
 
                 if alt5 == 1:
-                    # osekoil.g:168:7: id= 'OS'
+                    # osekoil.g:169:7: id= 'OS'
                     pass 
                     root_0 = self._adaptor.nil()
 
 
-                    id = self.match(self.input, 110, self.FOLLOW_110_in_object644)
+                    id = self.match(self.input, 110, self.FOLLOW_110_in_object647)
                     if self._state.backtracking == 0:
                         id_tree = self._adaptor.createWithPayload(id)
                         self._adaptor.addChild(root_0, id_tree)
@@ -1088,12 +1079,12 @@ class osekoilParser(BaseParser):
 
 
                 elif alt5 == 2:
-                    # osekoil.g:169:7: id= 'TASK'
+                    # osekoil.g:170:7: id= 'TASK'
                     pass 
                     root_0 = self._adaptor.nil()
 
 
-                    id = self.match(self.input, 115, self.FOLLOW_115_in_object656)
+                    id = self.match(self.input, 115, self.FOLLOW_115_in_object659)
                     if self._state.backtracking == 0:
                         id_tree = self._adaptor.createWithPayload(id)
                         self._adaptor.addChild(root_0, id_tree)
@@ -1102,12 +1093,12 @@ class osekoilParser(BaseParser):
 
 
                 elif alt5 == 3:
-                    # osekoil.g:170:7: id= 'COUNTER'
+                    # osekoil.g:171:7: id= 'COUNTER'
                     pass 
                     root_0 = self._adaptor.nil()
 
 
-                    id = self.match(self.input, 87, self.FOLLOW_87_in_object668)
+                    id = self.match(self.input, 87, self.FOLLOW_87_in_object671)
                     if self._state.backtracking == 0:
                         id_tree = self._adaptor.createWithPayload(id)
                         self._adaptor.addChild(root_0, id_tree)
@@ -1116,12 +1107,12 @@ class osekoilParser(BaseParser):
 
 
                 elif alt5 == 4:
-                    # osekoil.g:171:7: id= 'ALARM'
+                    # osekoil.g:172:7: id= 'ALARM'
                     pass 
                     root_0 = self._adaptor.nil()
 
 
-                    id = self.match(self.input, 79, self.FOLLOW_79_in_object680)
+                    id = self.match(self.input, 79, self.FOLLOW_79_in_object683)
                     if self._state.backtracking == 0:
                         id_tree = self._adaptor.createWithPayload(id)
                         self._adaptor.addChild(root_0, id_tree)
@@ -1130,12 +1121,12 @@ class osekoilParser(BaseParser):
 
 
                 elif alt5 == 5:
-                    # osekoil.g:172:7: id= 'RESOURCE'
+                    # osekoil.g:173:7: id= 'RESOURCE'
                     pass 
                     root_0 = self._adaptor.nil()
 
 
-                    id = self.match(self.input, 112, self.FOLLOW_112_in_object692)
+                    id = self.match(self.input, 112, self.FOLLOW_112_in_object695)
                     if self._state.backtracking == 0:
                         id_tree = self._adaptor.createWithPayload(id)
                         self._adaptor.addChild(root_0, id_tree)
@@ -1144,12 +1135,12 @@ class osekoilParser(BaseParser):
 
 
                 elif alt5 == 6:
-                    # osekoil.g:173:7: id= 'EVENT'
+                    # osekoil.g:174:7: id= 'EVENT'
                     pass 
                     root_0 = self._adaptor.nil()
 
 
-                    id = self.match(self.input, 91, self.FOLLOW_91_in_object704)
+                    id = self.match(self.input, 91, self.FOLLOW_91_in_object707)
                     if self._state.backtracking == 0:
                         id_tree = self._adaptor.createWithPayload(id)
                         self._adaptor.addChild(root_0, id_tree)
@@ -1158,12 +1149,12 @@ class osekoilParser(BaseParser):
 
 
                 elif alt5 == 7:
-                    # osekoil.g:174:7: id= 'ISR'
+                    # osekoil.g:175:7: id= 'ISR'
                     pass 
                     root_0 = self._adaptor.nil()
 
 
-                    id = self.match(self.input, 100, self.FOLLOW_100_in_object716)
+                    id = self.match(self.input, 100, self.FOLLOW_100_in_object719)
                     if self._state.backtracking == 0:
                         id_tree = self._adaptor.createWithPayload(id)
                         self._adaptor.addChild(root_0, id_tree)
@@ -1172,12 +1163,12 @@ class osekoilParser(BaseParser):
 
 
                 elif alt5 == 8:
-                    # osekoil.g:175:7: id= 'MESSAGE'
+                    # osekoil.g:176:7: id= 'MESSAGE'
                     pass 
                     root_0 = self._adaptor.nil()
 
 
-                    id = self.match(self.input, 102, self.FOLLOW_102_in_object728)
+                    id = self.match(self.input, 102, self.FOLLOW_102_in_object731)
                     if self._state.backtracking == 0:
                         id_tree = self._adaptor.createWithPayload(id)
                         self._adaptor.addChild(root_0, id_tree)
@@ -1186,12 +1177,12 @@ class osekoilParser(BaseParser):
 
 
                 elif alt5 == 9:
-                    # osekoil.g:176:7: id= 'COM'
+                    # osekoil.g:177:7: id= 'COM'
                     pass 
                     root_0 = self._adaptor.nil()
 
 
-                    id = self.match(self.input, 85, self.FOLLOW_85_in_object740)
+                    id = self.match(self.input, 85, self.FOLLOW_85_in_object743)
                     if self._state.backtracking == 0:
                         id_tree = self._adaptor.createWithPayload(id)
                         self._adaptor.addChild(root_0, id_tree)
@@ -1200,12 +1191,12 @@ class osekoilParser(BaseParser):
 
 
                 elif alt5 == 10:
-                    # osekoil.g:177:7: id= 'NM'
+                    # osekoil.g:178:7: id= 'NM'
                     pass 
                     root_0 = self._adaptor.nil()
 
 
-                    id = self.match(self.input, 106, self.FOLLOW_106_in_object752)
+                    id = self.match(self.input, 106, self.FOLLOW_106_in_object755)
                     if self._state.backtracking == 0:
                         id_tree = self._adaptor.createWithPayload(id)
                         self._adaptor.addChild(root_0, id_tree)
@@ -1214,12 +1205,12 @@ class osekoilParser(BaseParser):
 
 
                 elif alt5 == 11:
-                    # osekoil.g:178:7: id= 'APPMODE'
+                    # osekoil.g:179:7: id= 'APPMODE'
                     pass 
                     root_0 = self._adaptor.nil()
 
 
-                    id = self.match(self.input, 81, self.FOLLOW_81_in_object764)
+                    id = self.match(self.input, 81, self.FOLLOW_81_in_object767)
                     if self._state.backtracking == 0:
                         id_tree = self._adaptor.createWithPayload(id)
                         self._adaptor.addChild(root_0, id_tree)
@@ -1228,12 +1219,12 @@ class osekoilParser(BaseParser):
 
 
                 elif alt5 == 12:
-                    # osekoil.g:179:7: id= 'IPDU'
+                    # osekoil.g:180:7: id= 'IPDU'
                     pass 
                     root_0 = self._adaptor.nil()
 
 
-                    id = self.match(self.input, 98, self.FOLLOW_98_in_object776)
+                    id = self.match(self.input, 98, self.FOLLOW_98_in_object779)
                     if self._state.backtracking == 0:
                         id_tree = self._adaptor.createWithPayload(id)
                         self._adaptor.addChild(root_0, id_tree)
@@ -1242,9 +1233,9 @@ class osekoilParser(BaseParser):
 
 
                 elif alt5 == 13:
-                    # osekoil.g:180:7: id= 'NETWORKMESSAGE'
+                    # osekoil.g:181:7: id= 'NETWORKMESSAGE'
                     pass 
-                    id = self.match(self.input, 104, self.FOLLOW_104_in_object788) 
+                    id = self.match(self.input, 104, self.FOLLOW_104_in_object791) 
                     if self._state.backtracking == 0:
                         stream_104.add(id)
 
@@ -1266,8 +1257,8 @@ class osekoilParser(BaseParser):
 
 
                         root_0 = self._adaptor.nil()
-                        # 181:4: -> ^( OBJECT $id)
-                        # osekoil.g:181:7: ^( OBJECT $id)
+                        # 182:4: -> ^( OBJECT $id)
+                        # osekoil.g:182:7: ^( OBJECT $id)
                         root_1 = self._adaptor.nil()
                         root_1 = self._adaptor.becomeRoot(
                         self._adaptor.createFromType(OBJECT, "OBJECT")
@@ -1318,7 +1309,7 @@ class osekoilParser(BaseParser):
 
 
     # $ANTLR start "implementationList"
-    # osekoil.g:184:1: implementationList returns [value] : (ids+= ( implementationDef ) )* -> ^( IMPLEMENTATION_LIST ( implementationDef )* ) ;
+    # osekoil.g:185:1: implementationList returns [value] : (ids+= ( implementationDef ) )* -> ^( IMPLEMENTATION_LIST ( implementationDef )* ) ;
     def implementationList(self, ):
         retval = self.implementationList_return()
         retval.start = self.input.LT(1)
@@ -1330,7 +1321,6 @@ class osekoilParser(BaseParser):
         list_ids = None
         implementationDef23 = None
 
-
         ids_tree = None
         stream_implementationDef = RewriteRuleSubtreeStream(self._adaptor, "rule implementationDef")
               
@@ -1338,10 +1328,10 @@ class osekoilParser(BaseParser):
 
         try:
             try:
-                # osekoil.g:191:4: ( (ids+= ( implementationDef ) )* -> ^( IMPLEMENTATION_LIST ( implementationDef )* ) )
-                # osekoil.g:191:7: (ids+= ( implementationDef ) )*
+                # osekoil.g:192:4: ( (ids+= ( implementationDef ) )* -> ^( IMPLEMENTATION_LIST ( implementationDef )* ) )
+                # osekoil.g:192:7: (ids+= ( implementationDef ) )*
                 pass 
-                # osekoil.g:191:11: (ids+= ( implementationDef ) )*
+                # osekoil.g:192:11: (ids+= ( implementationDef ) )*
                 while True: #loop6
                     alt6 = 2
                     LA6_0 = self.input.LA(1)
@@ -1351,12 +1341,12 @@ class osekoilParser(BaseParser):
 
 
                     if alt6 == 1:
-                        # osekoil.g:191:11: ids+= ( implementationDef )
+                        # osekoil.g:192:11: ids+= ( implementationDef )
                         pass 
-                        # osekoil.g:191:14: ( implementationDef )
-                        # osekoil.g:191:15: implementationDef
+                        # osekoil.g:192:14: ( implementationDef )
+                        # osekoil.g:192:15: implementationDef
                         pass 
-                        self._state.following.append(self.FOLLOW_implementationDef_in_implementationList834)
+                        self._state.following.append(self.FOLLOW_implementationDef_in_implementationList837)
                         implementationDef23 = self.implementationDef()
 
                         self._state.following.pop()
@@ -1394,14 +1384,14 @@ class osekoilParser(BaseParser):
 
 
                     root_0 = self._adaptor.nil()
-                    # 192:4: -> ^( IMPLEMENTATION_LIST ( implementationDef )* )
-                    # osekoil.g:192:7: ^( IMPLEMENTATION_LIST ( implementationDef )* )
+                    # 193:4: -> ^( IMPLEMENTATION_LIST ( implementationDef )* )
+                    # osekoil.g:193:7: ^( IMPLEMENTATION_LIST ( implementationDef )* )
                     root_1 = self._adaptor.nil()
                     root_1 = self._adaptor.becomeRoot(
                     self._adaptor.createFromType(IMPLEMENTATION_LIST, "IMPLEMENTATION_LIST")
                     , root_1)
 
-                    # osekoil.g:192:29: ( implementationDef )*
+                    # osekoil.g:193:29: ( implementationDef )*
                     while stream_implementationDef.hasNext():
                         self._adaptor.addChild(root_1, stream_implementationDef.nextTree())
 
@@ -1460,7 +1450,7 @@ class osekoilParser(BaseParser):
 
 
     # $ANTLR start "implementationDef"
-    # osekoil.g:195:1: implementationDef returns [values] : (id= implAttrDef -> ^( IMPLEMENTATION_DEF implAttrDef ) |id2= implRefDef -> ^( IMPLEMENTATION_DEF implRefDef ) );
+    # osekoil.g:196:1: implementationDef returns [values] : (id= implAttrDef -> ^( IMPLEMENTATION_DEF implAttrDef ) |id2= implRefDef -> ^( IMPLEMENTATION_DEF implRefDef ) );
     def implementationDef(self, ):
         retval = self.implementationDef_return()
         retval.start = self.input.LT(1)
@@ -1469,15 +1459,13 @@ class osekoilParser(BaseParser):
         root_0 = None
 
         id = None
-
         id2 = None
-
 
         stream_implRefDef = RewriteRuleSubtreeStream(self._adaptor, "rule implRefDef")
         stream_implAttrDef = RewriteRuleSubtreeStream(self._adaptor, "rule implAttrDef")
         try:
             try:
-                # osekoil.g:199:4: (id= implAttrDef -> ^( IMPLEMENTATION_DEF implAttrDef ) |id2= implRefDef -> ^( IMPLEMENTATION_DEF implRefDef ) )
+                # osekoil.g:200:4: (id= implAttrDef -> ^( IMPLEMENTATION_DEF implAttrDef ) |id2= implRefDef -> ^( IMPLEMENTATION_DEF implRefDef ) )
                 alt7 = 2
                 LA7_0 = self.input.LA(1)
 
@@ -1496,9 +1484,9 @@ class osekoilParser(BaseParser):
 
 
                 if alt7 == 1:
-                    # osekoil.g:199:7: id= implAttrDef
+                    # osekoil.g:200:7: id= implAttrDef
                     pass 
-                    self._state.following.append(self.FOLLOW_implAttrDef_in_implementationDef879)
+                    self._state.following.append(self.FOLLOW_implAttrDef_in_implementationDef882)
                     id = self.implAttrDef()
 
                     self._state.following.pop()
@@ -1530,8 +1518,8 @@ class osekoilParser(BaseParser):
 
 
                         root_0 = self._adaptor.nil()
-                        # 203:4: -> ^( IMPLEMENTATION_DEF implAttrDef )
-                        # osekoil.g:203:7: ^( IMPLEMENTATION_DEF implAttrDef )
+                        # 204:4: -> ^( IMPLEMENTATION_DEF implAttrDef )
+                        # osekoil.g:204:7: ^( IMPLEMENTATION_DEF implAttrDef )
                         root_1 = self._adaptor.nil()
                         root_1 = self._adaptor.becomeRoot(
                         self._adaptor.createFromType(IMPLEMENTATION_DEF, "IMPLEMENTATION_DEF")
@@ -1550,9 +1538,9 @@ class osekoilParser(BaseParser):
 
 
                 elif alt7 == 2:
-                    # osekoil.g:204:6: id2= implRefDef
+                    # osekoil.g:205:6: id2= implRefDef
                     pass 
-                    self._state.following.append(self.FOLLOW_implRefDef_in_implementationDef906)
+                    self._state.following.append(self.FOLLOW_implRefDef_in_implementationDef909)
                     id2 = self.implRefDef()
 
                     self._state.following.pop()
@@ -1584,8 +1572,8 @@ class osekoilParser(BaseParser):
 
 
                         root_0 = self._adaptor.nil()
-                        # 208:4: -> ^( IMPLEMENTATION_DEF implRefDef )
-                        # osekoil.g:208:7: ^( IMPLEMENTATION_DEF implRefDef )
+                        # 209:4: -> ^( IMPLEMENTATION_DEF implRefDef )
+                        # osekoil.g:209:7: ^( IMPLEMENTATION_DEF implRefDef )
                         root_1 = self._adaptor.nil()
                         root_1 = self._adaptor.becomeRoot(
                         self._adaptor.createFromType(IMPLEMENTATION_DEF, "IMPLEMENTATION_DEF")
@@ -1649,7 +1637,7 @@ class osekoilParser(BaseParser):
 
 
     # $ANTLR start "implAttrDef"
-    # osekoil.g:211:1: implAttrDef returns [dataType, attrName, auto, mult, deflt, desc, extra] : ( 'UINT32' ( autoSpecifier )? ( numberRange )? attributeName ( multipleSpecifier )? ( defaultNumber )? ( description )? SEMI -> ^( IMPL_ATTR_DEF 'UINT32' attributeName ( autoSpecifier )? ( numberRange )? ( multipleSpecifier )? ( defaultNumber )? ( description )? ) | 'INT32' ( autoSpecifier )? ( numberRange )? attributeName ( multipleSpecifier )? ( defaultNumber )? ( description )? SEMI -> ^( IMPL_ATTR_DEF 'INT32' attributeName ( autoSpecifier )? ( numberRange )? ( multipleSpecifier )? ( defaultNumber )? ( description )? ) | 'UINT64' ( autoSpecifier )? ( numberRange )? attributeName ( multipleSpecifier )? ( defaultNumber )? ( description )? SEMI -> ^( IMPL_ATTR_DEF 'UINT64' attributeName ( autoSpecifier )? ( numberRange )? ( multipleSpecifier )? ( defaultNumber )? ( description )? ) | 'INT64' ( autoSpecifier )? ( numberRange )? attributeName ( multipleSpecifier )? ( defaultNumber )? ( description )? SEMI -> ^( IMPL_ATTR_DEF 'INT64' attributeName ( autoSpecifier )? ( numberRange )? ( multipleSpecifier )? ( defaultNumber )? ( description )? ) | 'FLOAT' ( autoSpecifier )? ( floatRange )? attributeName ( multipleSpecifier )? ( defaultFloat )? ( description )? SEMI -> ^( IMPL_ATTR_DEF 'FLOAT' attributeName ( autoSpecifier )? ( floatRange )? ( multipleSpecifier )? ( defaultFloat )? ( description )? ) | 'ENUM' ( autoSpecifier )? enumeration attributeName ( multipleSpecifier )? ( defaultName )? ( description )? SEMI -> ^( IMPL_ATTR_DEF 'ENUM' attributeName ( autoSpecifier )? enumeration ( multipleSpecifier )? ( defaultName )? ( description )? ) | 'STRING' ( autoSpecifier )? attributeName ( multipleSpecifier )? ( defaultString )? ( description )? SEMI -> ^( IMPL_ATTR_DEF 'STRING' attributeName ( autoSpecifier )? ( multipleSpecifier )? ( defaultString )? ( description )? ) | 'BOOLEAN' ( autoSpecifier )? ( boolValues )? attributeName ( multipleSpecifier )? ( defaultBool )? ( description )? SEMI -> ^( IMPL_ATTR_DEF 'BOOLEAN' attributeName ( autoSpecifier )? ( boolValues )? ( multipleSpecifier )? ( defaultBool )? ( description )? ) );
+    # osekoil.g:212:1: implAttrDef returns [dataType, attrName, auto, mult, deflt, desc, extra] : ( 'UINT32' ( autoSpecifier )? ( numberRange )? attributeName ( multipleSpecifier )? ( defaultNumber )? ( description )? SEMI -> ^( IMPL_ATTR_DEF 'UINT32' attributeName ( autoSpecifier )? ( numberRange )? ( multipleSpecifier )? ( defaultNumber )? ( description )? ) | 'INT32' ( autoSpecifier )? ( numberRange )? attributeName ( multipleSpecifier )? ( defaultNumber )? ( description )? SEMI -> ^( IMPL_ATTR_DEF 'INT32' attributeName ( autoSpecifier )? ( numberRange )? ( multipleSpecifier )? ( defaultNumber )? ( description )? ) | 'UINT64' ( autoSpecifier )? ( numberRange )? attributeName ( multipleSpecifier )? ( defaultNumber )? ( description )? SEMI -> ^( IMPL_ATTR_DEF 'UINT64' attributeName ( autoSpecifier )? ( numberRange )? ( multipleSpecifier )? ( defaultNumber )? ( description )? ) | 'INT64' ( autoSpecifier )? ( numberRange )? attributeName ( multipleSpecifier )? ( defaultNumber )? ( description )? SEMI -> ^( IMPL_ATTR_DEF 'INT64' attributeName ( autoSpecifier )? ( numberRange )? ( multipleSpecifier )? ( defaultNumber )? ( description )? ) | 'FLOAT' ( autoSpecifier )? ( floatRange )? attributeName ( multipleSpecifier )? ( defaultFloat )? ( description )? SEMI -> ^( IMPL_ATTR_DEF 'FLOAT' attributeName ( autoSpecifier )? ( floatRange )? ( multipleSpecifier )? ( defaultFloat )? ( description )? ) | 'ENUM' ( autoSpecifier )? enumeration attributeName ( multipleSpecifier )? ( defaultName )? ( description )? SEMI -> ^( IMPL_ATTR_DEF 'ENUM' attributeName ( autoSpecifier )? enumeration ( multipleSpecifier )? ( defaultName )? ( description )? ) | 'STRING' ( autoSpecifier )? attributeName ( multipleSpecifier )? ( defaultString )? ( description )? SEMI -> ^( IMPL_ATTR_DEF 'STRING' attributeName ( autoSpecifier )? ( multipleSpecifier )? ( defaultString )? ( description )? ) | 'BOOLEAN' ( autoSpecifier )? ( boolValues )? attributeName ( multipleSpecifier )? ( defaultBool )? ( description )? SEMI -> ^( IMPL_ATTR_DEF 'BOOLEAN' attributeName ( autoSpecifier )? ( boolValues )? ( multipleSpecifier )? ( defaultBool )? ( description )? ) );
     def implAttrDef(self, ):
         self.implAttrDef_stack.append(implAttrDef_scope())
         retval = self.implAttrDef_return()
@@ -1675,99 +1663,52 @@ class osekoilParser(BaseParser):
         string_literal79 = None
         SEMI86 = None
         autoSpecifier25 = None
-
         numberRange26 = None
-
         attributeName27 = None
-
         multipleSpecifier28 = None
-
         defaultNumber29 = None
-
         description30 = None
-
         autoSpecifier33 = None
-
         numberRange34 = None
-
         attributeName35 = None
-
         multipleSpecifier36 = None
-
         defaultNumber37 = None
-
         description38 = None
-
         autoSpecifier41 = None
-
         numberRange42 = None
-
         attributeName43 = None
-
         multipleSpecifier44 = None
-
         defaultNumber45 = None
-
         description46 = None
-
         autoSpecifier49 = None
-
         numberRange50 = None
-
         attributeName51 = None
-
         multipleSpecifier52 = None
-
         defaultNumber53 = None
-
         description54 = None
-
         autoSpecifier57 = None
-
         floatRange58 = None
-
         attributeName59 = None
-
         multipleSpecifier60 = None
-
         defaultFloat61 = None
-
         description62 = None
-
         autoSpecifier65 = None
-
         enumeration66 = None
-
         attributeName67 = None
-
         multipleSpecifier68 = None
-
         defaultName69 = None
-
         description70 = None
-
         autoSpecifier73 = None
-
         attributeName74 = None
-
         multipleSpecifier75 = None
-
         defaultString76 = None
-
         description77 = None
-
         autoSpecifier80 = None
-
         boolValues81 = None
-
         attributeName82 = None
-
         multipleSpecifier83 = None
-
         defaultBool84 = None
-
         description85 = None
-
 
         string_literal24_tree = None
         SEMI31_tree = None
@@ -1812,7 +1753,7 @@ class osekoilParser(BaseParser):
 
         try:
             try:
-                # osekoil.g:226:4: ( 'UINT32' ( autoSpecifier )? ( numberRange )? attributeName ( multipleSpecifier )? ( defaultNumber )? ( description )? SEMI -> ^( IMPL_ATTR_DEF 'UINT32' attributeName ( autoSpecifier )? ( numberRange )? ( multipleSpecifier )? ( defaultNumber )? ( description )? ) | 'INT32' ( autoSpecifier )? ( numberRange )? attributeName ( multipleSpecifier )? ( defaultNumber )? ( description )? SEMI -> ^( IMPL_ATTR_DEF 'INT32' attributeName ( autoSpecifier )? ( numberRange )? ( multipleSpecifier )? ( defaultNumber )? ( description )? ) | 'UINT64' ( autoSpecifier )? ( numberRange )? attributeName ( multipleSpecifier )? ( defaultNumber )? ( description )? SEMI -> ^( IMPL_ATTR_DEF 'UINT64' attributeName ( autoSpecifier )? ( numberRange )? ( multipleSpecifier )? ( defaultNumber )? ( description )? ) | 'INT64' ( autoSpecifier )? ( numberRange )? attributeName ( multipleSpecifier )? ( defaultNumber )? ( description )? SEMI -> ^( IMPL_ATTR_DEF 'INT64' attributeName ( autoSpecifier )? ( numberRange )? ( multipleSpecifier )? ( defaultNumber )? ( description )? ) | 'FLOAT' ( autoSpecifier )? ( floatRange )? attributeName ( multipleSpecifier )? ( defaultFloat )? ( description )? SEMI -> ^( IMPL_ATTR_DEF 'FLOAT' attributeName ( autoSpecifier )? ( floatRange )? ( multipleSpecifier )? ( defaultFloat )? ( description )? ) | 'ENUM' ( autoSpecifier )? enumeration attributeName ( multipleSpecifier )? ( defaultName )? ( description )? SEMI -> ^( IMPL_ATTR_DEF 'ENUM' attributeName ( autoSpecifier )? enumeration ( multipleSpecifier )? ( defaultName )? ( description )? ) | 'STRING' ( autoSpecifier )? attributeName ( multipleSpecifier )? ( defaultString )? ( description )? SEMI -> ^( IMPL_ATTR_DEF 'STRING' attributeName ( autoSpecifier )? ( multipleSpecifier )? ( defaultString )? ( description )? ) | 'BOOLEAN' ( autoSpecifier )? ( boolValues )? attributeName ( multipleSpecifier )? ( defaultBool )? ( description )? SEMI -> ^( IMPL_ATTR_DEF 'BOOLEAN' attributeName ( autoSpecifier )? ( boolValues )? ( multipleSpecifier )? ( defaultBool )? ( description )? ) )
+                # osekoil.g:227:4: ( 'UINT32' ( autoSpecifier )? ( numberRange )? attributeName ( multipleSpecifier )? ( defaultNumber )? ( description )? SEMI -> ^( IMPL_ATTR_DEF 'UINT32' attributeName ( autoSpecifier )? ( numberRange )? ( multipleSpecifier )? ( defaultNumber )? ( description )? ) | 'INT32' ( autoSpecifier )? ( numberRange )? attributeName ( multipleSpecifier )? ( defaultNumber )? ( description )? SEMI -> ^( IMPL_ATTR_DEF 'INT32' attributeName ( autoSpecifier )? ( numberRange )? ( multipleSpecifier )? ( defaultNumber )? ( description )? ) | 'UINT64' ( autoSpecifier )? ( numberRange )? attributeName ( multipleSpecifier )? ( defaultNumber )? ( description )? SEMI -> ^( IMPL_ATTR_DEF 'UINT64' attributeName ( autoSpecifier )? ( numberRange )? ( multipleSpecifier )? ( defaultNumber )? ( description )? ) | 'INT64' ( autoSpecifier )? ( numberRange )? attributeName ( multipleSpecifier )? ( defaultNumber )? ( description )? SEMI -> ^( IMPL_ATTR_DEF 'INT64' attributeName ( autoSpecifier )? ( numberRange )? ( multipleSpecifier )? ( defaultNumber )? ( description )? ) | 'FLOAT' ( autoSpecifier )? ( floatRange )? attributeName ( multipleSpecifier )? ( defaultFloat )? ( description )? SEMI -> ^( IMPL_ATTR_DEF 'FLOAT' attributeName ( autoSpecifier )? ( floatRange )? ( multipleSpecifier )? ( defaultFloat )? ( description )? ) | 'ENUM' ( autoSpecifier )? enumeration attributeName ( multipleSpecifier )? ( defaultName )? ( description )? SEMI -> ^( IMPL_ATTR_DEF 'ENUM' attributeName ( autoSpecifier )? enumeration ( multipleSpecifier )? ( defaultName )? ( description )? ) | 'STRING' ( autoSpecifier )? attributeName ( multipleSpecifier )? ( defaultString )? ( description )? SEMI -> ^( IMPL_ATTR_DEF 'STRING' attributeName ( autoSpecifier )? ( multipleSpecifier )? ( defaultString )? ( description )? ) | 'BOOLEAN' ( autoSpecifier )? ( boolValues )? attributeName ( multipleSpecifier )? ( defaultBool )? ( description )? SEMI -> ^( IMPL_ATTR_DEF 'BOOLEAN' attributeName ( autoSpecifier )? ( boolValues )? ( multipleSpecifier )? ( defaultBool )? ( description )? ) )
                 alt46 = 8
                 LA46 = self.input.LA(1)
                 if LA46 == 118:
@@ -1842,23 +1783,23 @@ class osekoilParser(BaseParser):
 
 
                 if alt46 == 1:
-                    # osekoil.g:226:7: 'UINT32' ( autoSpecifier )? ( numberRange )? attributeName ( multipleSpecifier )? ( defaultNumber )? ( description )? SEMI
+                    # osekoil.g:227:7: 'UINT32' ( autoSpecifier )? ( numberRange )? attributeName ( multipleSpecifier )? ( defaultNumber )? ( description )? SEMI
                     pass 
-                    string_literal24 = self.match(self.input, 118, self.FOLLOW_118_in_implAttrDef957) 
+                    string_literal24 = self.match(self.input, 118, self.FOLLOW_118_in_implAttrDef960) 
                     if self._state.backtracking == 0:
                         stream_118.add(string_literal24)
 
 
-                    # osekoil.g:226:16: ( autoSpecifier )?
+                    # osekoil.g:227:16: ( autoSpecifier )?
                     alt8 = 2
                     LA8_0 = self.input.LA(1)
 
                     if (LA8_0 == 120) :
                         alt8 = 1
                     if alt8 == 1:
-                        # osekoil.g:226:16: autoSpecifier
+                        # osekoil.g:227:16: autoSpecifier
                         pass 
-                        self._state.following.append(self.FOLLOW_autoSpecifier_in_implAttrDef959)
+                        self._state.following.append(self.FOLLOW_autoSpecifier_in_implAttrDef962)
                         autoSpecifier25 = self.autoSpecifier()
 
                         self._state.following.pop()
@@ -1869,16 +1810,16 @@ class osekoilParser(BaseParser):
 
 
 
-                    # osekoil.g:226:31: ( numberRange )?
+                    # osekoil.g:227:31: ( numberRange )?
                     alt9 = 2
                     LA9_0 = self.input.LA(1)
 
                     if (LA9_0 == LBRACK) :
                         alt9 = 1
                     if alt9 == 1:
-                        # osekoil.g:226:31: numberRange
+                        # osekoil.g:227:31: numberRange
                         pass 
-                        self._state.following.append(self.FOLLOW_numberRange_in_implAttrDef962)
+                        self._state.following.append(self.FOLLOW_numberRange_in_implAttrDef965)
                         numberRange26 = self.numberRange()
 
                         self._state.following.pop()
@@ -1889,7 +1830,7 @@ class osekoilParser(BaseParser):
 
 
 
-                    self._state.following.append(self.FOLLOW_attributeName_in_implAttrDef965)
+                    self._state.following.append(self.FOLLOW_attributeName_in_implAttrDef968)
                     attributeName27 = self.attributeName()
 
                     self._state.following.pop()
@@ -1897,16 +1838,16 @@ class osekoilParser(BaseParser):
                         stream_attributeName.add(attributeName27.tree)
 
 
-                    # osekoil.g:226:58: ( multipleSpecifier )?
+                    # osekoil.g:227:58: ( multipleSpecifier )?
                     alt10 = 2
                     LA10_0 = self.input.LA(1)
 
                     if (LA10_0 == LBRACK) :
                         alt10 = 1
                     if alt10 == 1:
-                        # osekoil.g:226:58: multipleSpecifier
+                        # osekoil.g:227:58: multipleSpecifier
                         pass 
-                        self._state.following.append(self.FOLLOW_multipleSpecifier_in_implAttrDef967)
+                        self._state.following.append(self.FOLLOW_multipleSpecifier_in_implAttrDef970)
                         multipleSpecifier28 = self.multipleSpecifier()
 
                         self._state.following.pop()
@@ -1917,16 +1858,16 @@ class osekoilParser(BaseParser):
 
 
 
-                    # osekoil.g:226:77: ( defaultNumber )?
+                    # osekoil.g:227:77: ( defaultNumber )?
                     alt11 = 2
                     LA11_0 = self.input.LA(1)
 
                     if (LA11_0 == ASSIGN) :
                         alt11 = 1
                     if alt11 == 1:
-                        # osekoil.g:226:77: defaultNumber
+                        # osekoil.g:227:77: defaultNumber
                         pass 
-                        self._state.following.append(self.FOLLOW_defaultNumber_in_implAttrDef970)
+                        self._state.following.append(self.FOLLOW_defaultNumber_in_implAttrDef973)
                         defaultNumber29 = self.defaultNumber()
 
                         self._state.following.pop()
@@ -1937,16 +1878,16 @@ class osekoilParser(BaseParser):
 
 
 
-                    # osekoil.g:226:92: ( description )?
+                    # osekoil.g:227:92: ( description )?
                     alt12 = 2
                     LA12_0 = self.input.LA(1)
 
                     if (LA12_0 == 78) :
                         alt12 = 1
                     if alt12 == 1:
-                        # osekoil.g:226:92: description
+                        # osekoil.g:227:92: description
                         pass 
-                        self._state.following.append(self.FOLLOW_description_in_implAttrDef973)
+                        self._state.following.append(self.FOLLOW_description_in_implAttrDef976)
                         description30 = self.description()
 
                         self._state.following.pop()
@@ -1957,7 +1898,7 @@ class osekoilParser(BaseParser):
 
 
 
-                    SEMI31 = self.match(self.input, SEMI, self.FOLLOW_SEMI_in_implAttrDef976) 
+                    SEMI31 = self.match(self.input, SEMI, self.FOLLOW_SEMI_in_implAttrDef979) 
                     if self._state.backtracking == 0:
                         stream_SEMI.add(SEMI31)
 
@@ -1985,7 +1926,7 @@ class osekoilParser(BaseParser):
 
 
                     # AST Rewrite
-                    # elements: defaultNumber, autoSpecifier, 118, description, multipleSpecifier, attributeName, numberRange
+                    # elements: autoSpecifier, 118, attributeName, defaultNumber, multipleSpecifier, description, numberRange
                     # token labels: 
                     # rule labels: retval
                     # token list labels: 
@@ -2000,8 +1941,8 @@ class osekoilParser(BaseParser):
 
 
                         root_0 = self._adaptor.nil()
-                        # 244:7: -> ^( IMPL_ATTR_DEF 'UINT32' attributeName ( autoSpecifier )? ( numberRange )? ( multipleSpecifier )? ( defaultNumber )? ( description )? )
-                        # osekoil.g:244:10: ^( IMPL_ATTR_DEF 'UINT32' attributeName ( autoSpecifier )? ( numberRange )? ( multipleSpecifier )? ( defaultNumber )? ( description )? )
+                        # 245:7: -> ^( IMPL_ATTR_DEF 'UINT32' attributeName ( autoSpecifier )? ( numberRange )? ( multipleSpecifier )? ( defaultNumber )? ( description )? )
+                        # osekoil.g:245:10: ^( IMPL_ATTR_DEF 'UINT32' attributeName ( autoSpecifier )? ( numberRange )? ( multipleSpecifier )? ( defaultNumber )? ( description )? )
                         root_1 = self._adaptor.nil()
                         root_1 = self._adaptor.becomeRoot(
                         self._adaptor.createFromType(IMPL_ATTR_DEF, "IMPL_ATTR_DEF")
@@ -2013,35 +1954,35 @@ class osekoilParser(BaseParser):
 
                         self._adaptor.addChild(root_1, stream_attributeName.nextTree())
 
-                        # osekoil.g:244:49: ( autoSpecifier )?
+                        # osekoil.g:245:49: ( autoSpecifier )?
                         if stream_autoSpecifier.hasNext():
                             self._adaptor.addChild(root_1, stream_autoSpecifier.nextTree())
 
 
                         stream_autoSpecifier.reset();
 
-                        # osekoil.g:244:64: ( numberRange )?
+                        # osekoil.g:245:64: ( numberRange )?
                         if stream_numberRange.hasNext():
                             self._adaptor.addChild(root_1, stream_numberRange.nextTree())
 
 
                         stream_numberRange.reset();
 
-                        # osekoil.g:244:77: ( multipleSpecifier )?
+                        # osekoil.g:245:77: ( multipleSpecifier )?
                         if stream_multipleSpecifier.hasNext():
                             self._adaptor.addChild(root_1, stream_multipleSpecifier.nextTree())
 
 
                         stream_multipleSpecifier.reset();
 
-                        # osekoil.g:244:96: ( defaultNumber )?
+                        # osekoil.g:245:96: ( defaultNumber )?
                         if stream_defaultNumber.hasNext():
                             self._adaptor.addChild(root_1, stream_defaultNumber.nextTree())
 
 
                         stream_defaultNumber.reset();
 
-                        # osekoil.g:244:111: ( description )?
+                        # osekoil.g:245:111: ( description )?
                         if stream_description.hasNext():
                             self._adaptor.addChild(root_1, stream_description.nextTree())
 
@@ -2059,23 +2000,23 @@ class osekoilParser(BaseParser):
 
 
                 elif alt46 == 2:
-                    # osekoil.g:245:7: 'INT32' ( autoSpecifier )? ( numberRange )? attributeName ( multipleSpecifier )? ( defaultNumber )? ( description )? SEMI
+                    # osekoil.g:246:7: 'INT32' ( autoSpecifier )? ( numberRange )? attributeName ( multipleSpecifier )? ( defaultNumber )? ( description )? SEMI
                     pass 
-                    string_literal32 = self.match(self.input, 96, self.FOLLOW_96_in_implAttrDef1023) 
+                    string_literal32 = self.match(self.input, 96, self.FOLLOW_96_in_implAttrDef1026) 
                     if self._state.backtracking == 0:
                         stream_96.add(string_literal32)
 
 
-                    # osekoil.g:245:19: ( autoSpecifier )?
+                    # osekoil.g:246:19: ( autoSpecifier )?
                     alt13 = 2
                     LA13_0 = self.input.LA(1)
 
                     if (LA13_0 == 120) :
                         alt13 = 1
                     if alt13 == 1:
-                        # osekoil.g:245:19: autoSpecifier
+                        # osekoil.g:246:19: autoSpecifier
                         pass 
-                        self._state.following.append(self.FOLLOW_autoSpecifier_in_implAttrDef1029)
+                        self._state.following.append(self.FOLLOW_autoSpecifier_in_implAttrDef1032)
                         autoSpecifier33 = self.autoSpecifier()
 
                         self._state.following.pop()
@@ -2086,16 +2027,16 @@ class osekoilParser(BaseParser):
 
 
 
-                    # osekoil.g:245:34: ( numberRange )?
+                    # osekoil.g:246:34: ( numberRange )?
                     alt14 = 2
                     LA14_0 = self.input.LA(1)
 
                     if (LA14_0 == LBRACK) :
                         alt14 = 1
                     if alt14 == 1:
-                        # osekoil.g:245:34: numberRange
+                        # osekoil.g:246:34: numberRange
                         pass 
-                        self._state.following.append(self.FOLLOW_numberRange_in_implAttrDef1032)
+                        self._state.following.append(self.FOLLOW_numberRange_in_implAttrDef1035)
                         numberRange34 = self.numberRange()
 
                         self._state.following.pop()
@@ -2106,7 +2047,7 @@ class osekoilParser(BaseParser):
 
 
 
-                    self._state.following.append(self.FOLLOW_attributeName_in_implAttrDef1035)
+                    self._state.following.append(self.FOLLOW_attributeName_in_implAttrDef1038)
                     attributeName35 = self.attributeName()
 
                     self._state.following.pop()
@@ -2114,16 +2055,16 @@ class osekoilParser(BaseParser):
                         stream_attributeName.add(attributeName35.tree)
 
 
-                    # osekoil.g:245:61: ( multipleSpecifier )?
+                    # osekoil.g:246:61: ( multipleSpecifier )?
                     alt15 = 2
                     LA15_0 = self.input.LA(1)
 
                     if (LA15_0 == LBRACK) :
                         alt15 = 1
                     if alt15 == 1:
-                        # osekoil.g:245:61: multipleSpecifier
+                        # osekoil.g:246:61: multipleSpecifier
                         pass 
-                        self._state.following.append(self.FOLLOW_multipleSpecifier_in_implAttrDef1037)
+                        self._state.following.append(self.FOLLOW_multipleSpecifier_in_implAttrDef1040)
                         multipleSpecifier36 = self.multipleSpecifier()
 
                         self._state.following.pop()
@@ -2134,16 +2075,16 @@ class osekoilParser(BaseParser):
 
 
 
-                    # osekoil.g:245:80: ( defaultNumber )?
+                    # osekoil.g:246:80: ( defaultNumber )?
                     alt16 = 2
                     LA16_0 = self.input.LA(1)
 
                     if (LA16_0 == ASSIGN) :
                         alt16 = 1
                     if alt16 == 1:
-                        # osekoil.g:245:80: defaultNumber
+                        # osekoil.g:246:80: defaultNumber
                         pass 
-                        self._state.following.append(self.FOLLOW_defaultNumber_in_implAttrDef1040)
+                        self._state.following.append(self.FOLLOW_defaultNumber_in_implAttrDef1043)
                         defaultNumber37 = self.defaultNumber()
 
                         self._state.following.pop()
@@ -2154,16 +2095,16 @@ class osekoilParser(BaseParser):
 
 
 
-                    # osekoil.g:245:95: ( description )?
+                    # osekoil.g:246:95: ( description )?
                     alt17 = 2
                     LA17_0 = self.input.LA(1)
 
                     if (LA17_0 == 78) :
                         alt17 = 1
                     if alt17 == 1:
-                        # osekoil.g:245:95: description
+                        # osekoil.g:246:95: description
                         pass 
-                        self._state.following.append(self.FOLLOW_description_in_implAttrDef1043)
+                        self._state.following.append(self.FOLLOW_description_in_implAttrDef1046)
                         description38 = self.description()
 
                         self._state.following.pop()
@@ -2174,7 +2115,7 @@ class osekoilParser(BaseParser):
 
 
 
-                    SEMI39 = self.match(self.input, SEMI, self.FOLLOW_SEMI_in_implAttrDef1046) 
+                    SEMI39 = self.match(self.input, SEMI, self.FOLLOW_SEMI_in_implAttrDef1049) 
                     if self._state.backtracking == 0:
                         stream_SEMI.add(SEMI39)
 
@@ -2201,7 +2142,7 @@ class osekoilParser(BaseParser):
 
 
                     # AST Rewrite
-                    # elements: defaultNumber, attributeName, numberRange, multipleSpecifier, description, 96, autoSpecifier
+                    # elements: defaultNumber, autoSpecifier, 96, description, multipleSpecifier, attributeName, numberRange
                     # token labels: 
                     # rule labels: retval
                     # token list labels: 
@@ -2216,8 +2157,8 @@ class osekoilParser(BaseParser):
 
 
                         root_0 = self._adaptor.nil()
-                        # 262:7: -> ^( IMPL_ATTR_DEF 'INT32' attributeName ( autoSpecifier )? ( numberRange )? ( multipleSpecifier )? ( defaultNumber )? ( description )? )
-                        # osekoil.g:262:10: ^( IMPL_ATTR_DEF 'INT32' attributeName ( autoSpecifier )? ( numberRange )? ( multipleSpecifier )? ( defaultNumber )? ( description )? )
+                        # 263:7: -> ^( IMPL_ATTR_DEF 'INT32' attributeName ( autoSpecifier )? ( numberRange )? ( multipleSpecifier )? ( defaultNumber )? ( description )? )
+                        # osekoil.g:263:10: ^( IMPL_ATTR_DEF 'INT32' attributeName ( autoSpecifier )? ( numberRange )? ( multipleSpecifier )? ( defaultNumber )? ( description )? )
                         root_1 = self._adaptor.nil()
                         root_1 = self._adaptor.becomeRoot(
                         self._adaptor.createFromType(IMPL_ATTR_DEF, "IMPL_ATTR_DEF")
@@ -2229,35 +2170,35 @@ class osekoilParser(BaseParser):
 
                         self._adaptor.addChild(root_1, stream_attributeName.nextTree())
 
-                        # osekoil.g:262:48: ( autoSpecifier )?
+                        # osekoil.g:263:48: ( autoSpecifier )?
                         if stream_autoSpecifier.hasNext():
                             self._adaptor.addChild(root_1, stream_autoSpecifier.nextTree())
 
 
                         stream_autoSpecifier.reset();
 
-                        # osekoil.g:262:63: ( numberRange )?
+                        # osekoil.g:263:63: ( numberRange )?
                         if stream_numberRange.hasNext():
                             self._adaptor.addChild(root_1, stream_numberRange.nextTree())
 
 
                         stream_numberRange.reset();
 
-                        # osekoil.g:262:76: ( multipleSpecifier )?
+                        # osekoil.g:263:76: ( multipleSpecifier )?
                         if stream_multipleSpecifier.hasNext():
                             self._adaptor.addChild(root_1, stream_multipleSpecifier.nextTree())
 
 
                         stream_multipleSpecifier.reset();
 
-                        # osekoil.g:262:95: ( defaultNumber )?
+                        # osekoil.g:263:95: ( defaultNumber )?
                         if stream_defaultNumber.hasNext():
                             self._adaptor.addChild(root_1, stream_defaultNumber.nextTree())
 
 
                         stream_defaultNumber.reset();
 
-                        # osekoil.g:262:110: ( description )?
+                        # osekoil.g:263:110: ( description )?
                         if stream_description.hasNext():
                             self._adaptor.addChild(root_1, stream_description.nextTree())
 
@@ -2275,23 +2216,23 @@ class osekoilParser(BaseParser):
 
 
                 elif alt46 == 3:
-                    # osekoil.g:263:7: 'UINT64' ( autoSpecifier )? ( numberRange )? attributeName ( multipleSpecifier )? ( defaultNumber )? ( description )? SEMI
+                    # osekoil.g:264:7: 'UINT64' ( autoSpecifier )? ( numberRange )? attributeName ( multipleSpecifier )? ( defaultNumber )? ( description )? SEMI
                     pass 
-                    string_literal40 = self.match(self.input, 119, self.FOLLOW_119_in_implAttrDef1093) 
+                    string_literal40 = self.match(self.input, 119, self.FOLLOW_119_in_implAttrDef1096) 
                     if self._state.backtracking == 0:
                         stream_119.add(string_literal40)
 
 
-                    # osekoil.g:263:16: ( autoSpecifier )?
+                    # osekoil.g:264:16: ( autoSpecifier )?
                     alt18 = 2
                     LA18_0 = self.input.LA(1)
 
                     if (LA18_0 == 120) :
                         alt18 = 1
                     if alt18 == 1:
-                        # osekoil.g:263:16: autoSpecifier
+                        # osekoil.g:264:16: autoSpecifier
                         pass 
-                        self._state.following.append(self.FOLLOW_autoSpecifier_in_implAttrDef1095)
+                        self._state.following.append(self.FOLLOW_autoSpecifier_in_implAttrDef1098)
                         autoSpecifier41 = self.autoSpecifier()
 
                         self._state.following.pop()
@@ -2302,16 +2243,16 @@ class osekoilParser(BaseParser):
 
 
 
-                    # osekoil.g:263:31: ( numberRange )?
+                    # osekoil.g:264:31: ( numberRange )?
                     alt19 = 2
                     LA19_0 = self.input.LA(1)
 
                     if (LA19_0 == LBRACK) :
                         alt19 = 1
                     if alt19 == 1:
-                        # osekoil.g:263:31: numberRange
+                        # osekoil.g:264:31: numberRange
                         pass 
-                        self._state.following.append(self.FOLLOW_numberRange_in_implAttrDef1098)
+                        self._state.following.append(self.FOLLOW_numberRange_in_implAttrDef1101)
                         numberRange42 = self.numberRange()
 
                         self._state.following.pop()
@@ -2322,7 +2263,7 @@ class osekoilParser(BaseParser):
 
 
 
-                    self._state.following.append(self.FOLLOW_attributeName_in_implAttrDef1101)
+                    self._state.following.append(self.FOLLOW_attributeName_in_implAttrDef1104)
                     attributeName43 = self.attributeName()
 
                     self._state.following.pop()
@@ -2330,16 +2271,16 @@ class osekoilParser(BaseParser):
                         stream_attributeName.add(attributeName43.tree)
 
 
-                    # osekoil.g:263:58: ( multipleSpecifier )?
+                    # osekoil.g:264:58: ( multipleSpecifier )?
                     alt20 = 2
                     LA20_0 = self.input.LA(1)
 
                     if (LA20_0 == LBRACK) :
                         alt20 = 1
                     if alt20 == 1:
-                        # osekoil.g:263:58: multipleSpecifier
+                        # osekoil.g:264:58: multipleSpecifier
                         pass 
-                        self._state.following.append(self.FOLLOW_multipleSpecifier_in_implAttrDef1103)
+                        self._state.following.append(self.FOLLOW_multipleSpecifier_in_implAttrDef1106)
                         multipleSpecifier44 = self.multipleSpecifier()
 
                         self._state.following.pop()
@@ -2350,16 +2291,16 @@ class osekoilParser(BaseParser):
 
 
 
-                    # osekoil.g:263:77: ( defaultNumber )?
+                    # osekoil.g:264:77: ( defaultNumber )?
                     alt21 = 2
                     LA21_0 = self.input.LA(1)
 
                     if (LA21_0 == ASSIGN) :
                         alt21 = 1
                     if alt21 == 1:
-                        # osekoil.g:263:77: defaultNumber
+                        # osekoil.g:264:77: defaultNumber
                         pass 
-                        self._state.following.append(self.FOLLOW_defaultNumber_in_implAttrDef1106)
+                        self._state.following.append(self.FOLLOW_defaultNumber_in_implAttrDef1109)
                         defaultNumber45 = self.defaultNumber()
 
                         self._state.following.pop()
@@ -2370,16 +2311,16 @@ class osekoilParser(BaseParser):
 
 
 
-                    # osekoil.g:263:92: ( description )?
+                    # osekoil.g:264:92: ( description )?
                     alt22 = 2
                     LA22_0 = self.input.LA(1)
 
                     if (LA22_0 == 78) :
                         alt22 = 1
                     if alt22 == 1:
-                        # osekoil.g:263:92: description
+                        # osekoil.g:264:92: description
                         pass 
-                        self._state.following.append(self.FOLLOW_description_in_implAttrDef1109)
+                        self._state.following.append(self.FOLLOW_description_in_implAttrDef1112)
                         description46 = self.description()
 
                         self._state.following.pop()
@@ -2390,7 +2331,7 @@ class osekoilParser(BaseParser):
 
 
 
-                    SEMI47 = self.match(self.input, SEMI, self.FOLLOW_SEMI_in_implAttrDef1112) 
+                    SEMI47 = self.match(self.input, SEMI, self.FOLLOW_SEMI_in_implAttrDef1115) 
                     if self._state.backtracking == 0:
                         stream_SEMI.add(SEMI47)
 
@@ -2417,7 +2358,7 @@ class osekoilParser(BaseParser):
 
 
                     # AST Rewrite
-                    # elements: description, 119, defaultNumber, autoSpecifier, multipleSpecifier, numberRange, attributeName
+                    # elements: defaultNumber, attributeName, numberRange, multipleSpecifier, description, 119, autoSpecifier
                     # token labels: 
                     # rule labels: retval
                     # token list labels: 
@@ -2432,8 +2373,8 @@ class osekoilParser(BaseParser):
 
 
                         root_0 = self._adaptor.nil()
-                        # 280:7: -> ^( IMPL_ATTR_DEF 'UINT64' attributeName ( autoSpecifier )? ( numberRange )? ( multipleSpecifier )? ( defaultNumber )? ( description )? )
-                        # osekoil.g:280:10: ^( IMPL_ATTR_DEF 'UINT64' attributeName ( autoSpecifier )? ( numberRange )? ( multipleSpecifier )? ( defaultNumber )? ( description )? )
+                        # 281:7: -> ^( IMPL_ATTR_DEF 'UINT64' attributeName ( autoSpecifier )? ( numberRange )? ( multipleSpecifier )? ( defaultNumber )? ( description )? )
+                        # osekoil.g:281:10: ^( IMPL_ATTR_DEF 'UINT64' attributeName ( autoSpecifier )? ( numberRange )? ( multipleSpecifier )? ( defaultNumber )? ( description )? )
                         root_1 = self._adaptor.nil()
                         root_1 = self._adaptor.becomeRoot(
                         self._adaptor.createFromType(IMPL_ATTR_DEF, "IMPL_ATTR_DEF")
@@ -2445,35 +2386,35 @@ class osekoilParser(BaseParser):
 
                         self._adaptor.addChild(root_1, stream_attributeName.nextTree())
 
-                        # osekoil.g:280:49: ( autoSpecifier )?
+                        # osekoil.g:281:49: ( autoSpecifier )?
                         if stream_autoSpecifier.hasNext():
                             self._adaptor.addChild(root_1, stream_autoSpecifier.nextTree())
 
 
                         stream_autoSpecifier.reset();
 
-                        # osekoil.g:280:64: ( numberRange )?
+                        # osekoil.g:281:64: ( numberRange )?
                         if stream_numberRange.hasNext():
                             self._adaptor.addChild(root_1, stream_numberRange.nextTree())
 
 
                         stream_numberRange.reset();
 
-                        # osekoil.g:280:77: ( multipleSpecifier )?
+                        # osekoil.g:281:77: ( multipleSpecifier )?
                         if stream_multipleSpecifier.hasNext():
                             self._adaptor.addChild(root_1, stream_multipleSpecifier.nextTree())
 
 
                         stream_multipleSpecifier.reset();
 
-                        # osekoil.g:280:96: ( defaultNumber )?
+                        # osekoil.g:281:96: ( defaultNumber )?
                         if stream_defaultNumber.hasNext():
                             self._adaptor.addChild(root_1, stream_defaultNumber.nextTree())
 
 
                         stream_defaultNumber.reset();
 
-                        # osekoil.g:280:111: ( description )?
+                        # osekoil.g:281:111: ( description )?
                         if stream_description.hasNext():
                             self._adaptor.addChild(root_1, stream_description.nextTree())
 
@@ -2491,23 +2432,23 @@ class osekoilParser(BaseParser):
 
 
                 elif alt46 == 4:
-                    # osekoil.g:281:7: 'INT64' ( autoSpecifier )? ( numberRange )? attributeName ( multipleSpecifier )? ( defaultNumber )? ( description )? SEMI
+                    # osekoil.g:282:7: 'INT64' ( autoSpecifier )? ( numberRange )? attributeName ( multipleSpecifier )? ( defaultNumber )? ( description )? SEMI
                     pass 
-                    string_literal48 = self.match(self.input, 97, self.FOLLOW_97_in_implAttrDef1159) 
+                    string_literal48 = self.match(self.input, 97, self.FOLLOW_97_in_implAttrDef1162) 
                     if self._state.backtracking == 0:
                         stream_97.add(string_literal48)
 
 
-                    # osekoil.g:281:19: ( autoSpecifier )?
+                    # osekoil.g:282:19: ( autoSpecifier )?
                     alt23 = 2
                     LA23_0 = self.input.LA(1)
 
                     if (LA23_0 == 120) :
                         alt23 = 1
                     if alt23 == 1:
-                        # osekoil.g:281:19: autoSpecifier
+                        # osekoil.g:282:19: autoSpecifier
                         pass 
-                        self._state.following.append(self.FOLLOW_autoSpecifier_in_implAttrDef1165)
+                        self._state.following.append(self.FOLLOW_autoSpecifier_in_implAttrDef1168)
                         autoSpecifier49 = self.autoSpecifier()
 
                         self._state.following.pop()
@@ -2518,16 +2459,16 @@ class osekoilParser(BaseParser):
 
 
 
-                    # osekoil.g:281:34: ( numberRange )?
+                    # osekoil.g:282:34: ( numberRange )?
                     alt24 = 2
                     LA24_0 = self.input.LA(1)
 
                     if (LA24_0 == LBRACK) :
                         alt24 = 1
                     if alt24 == 1:
-                        # osekoil.g:281:34: numberRange
+                        # osekoil.g:282:34: numberRange
                         pass 
-                        self._state.following.append(self.FOLLOW_numberRange_in_implAttrDef1168)
+                        self._state.following.append(self.FOLLOW_numberRange_in_implAttrDef1171)
                         numberRange50 = self.numberRange()
 
                         self._state.following.pop()
@@ -2538,7 +2479,7 @@ class osekoilParser(BaseParser):
 
 
 
-                    self._state.following.append(self.FOLLOW_attributeName_in_implAttrDef1171)
+                    self._state.following.append(self.FOLLOW_attributeName_in_implAttrDef1174)
                     attributeName51 = self.attributeName()
 
                     self._state.following.pop()
@@ -2546,16 +2487,16 @@ class osekoilParser(BaseParser):
                         stream_attributeName.add(attributeName51.tree)
 
 
-                    # osekoil.g:281:61: ( multipleSpecifier )?
+                    # osekoil.g:282:61: ( multipleSpecifier )?
                     alt25 = 2
                     LA25_0 = self.input.LA(1)
 
                     if (LA25_0 == LBRACK) :
                         alt25 = 1
                     if alt25 == 1:
-                        # osekoil.g:281:61: multipleSpecifier
+                        # osekoil.g:282:61: multipleSpecifier
                         pass 
-                        self._state.following.append(self.FOLLOW_multipleSpecifier_in_implAttrDef1173)
+                        self._state.following.append(self.FOLLOW_multipleSpecifier_in_implAttrDef1176)
                         multipleSpecifier52 = self.multipleSpecifier()
 
                         self._state.following.pop()
@@ -2566,16 +2507,16 @@ class osekoilParser(BaseParser):
 
 
 
-                    # osekoil.g:281:80: ( defaultNumber )?
+                    # osekoil.g:282:80: ( defaultNumber )?
                     alt26 = 2
                     LA26_0 = self.input.LA(1)
 
                     if (LA26_0 == ASSIGN) :
                         alt26 = 1
                     if alt26 == 1:
-                        # osekoil.g:281:80: defaultNumber
+                        # osekoil.g:282:80: defaultNumber
                         pass 
-                        self._state.following.append(self.FOLLOW_defaultNumber_in_implAttrDef1176)
+                        self._state.following.append(self.FOLLOW_defaultNumber_in_implAttrDef1179)
                         defaultNumber53 = self.defaultNumber()
 
                         self._state.following.pop()
@@ -2586,16 +2527,16 @@ class osekoilParser(BaseParser):
 
 
 
-                    # osekoil.g:281:95: ( description )?
+                    # osekoil.g:282:95: ( description )?
                     alt27 = 2
                     LA27_0 = self.input.LA(1)
 
                     if (LA27_0 == 78) :
                         alt27 = 1
                     if alt27 == 1:
-                        # osekoil.g:281:95: description
+                        # osekoil.g:282:95: description
                         pass 
-                        self._state.following.append(self.FOLLOW_description_in_implAttrDef1179)
+                        self._state.following.append(self.FOLLOW_description_in_implAttrDef1182)
                         description54 = self.description()
 
                         self._state.following.pop()
@@ -2606,7 +2547,7 @@ class osekoilParser(BaseParser):
 
 
 
-                    SEMI55 = self.match(self.input, SEMI, self.FOLLOW_SEMI_in_implAttrDef1182) 
+                    SEMI55 = self.match(self.input, SEMI, self.FOLLOW_SEMI_in_implAttrDef1185) 
                     if self._state.backtracking == 0:
                         stream_SEMI.add(SEMI55)
 
@@ -2633,7 +2574,7 @@ class osekoilParser(BaseParser):
 
 
                     # AST Rewrite
-                    # elements: autoSpecifier, 97, description, defaultNumber, multipleSpecifier, attributeName, numberRange
+                    # elements: description, 97, defaultNumber, autoSpecifier, multipleSpecifier, numberRange, attributeName
                     # token labels: 
                     # rule labels: retval
                     # token list labels: 
@@ -2648,8 +2589,8 @@ class osekoilParser(BaseParser):
 
 
                         root_0 = self._adaptor.nil()
-                        # 298:7: -> ^( IMPL_ATTR_DEF 'INT64' attributeName ( autoSpecifier )? ( numberRange )? ( multipleSpecifier )? ( defaultNumber )? ( description )? )
-                        # osekoil.g:298:10: ^( IMPL_ATTR_DEF 'INT64' attributeName ( autoSpecifier )? ( numberRange )? ( multipleSpecifier )? ( defaultNumber )? ( description )? )
+                        # 299:7: -> ^( IMPL_ATTR_DEF 'INT64' attributeName ( autoSpecifier )? ( numberRange )? ( multipleSpecifier )? ( defaultNumber )? ( description )? )
+                        # osekoil.g:299:10: ^( IMPL_ATTR_DEF 'INT64' attributeName ( autoSpecifier )? ( numberRange )? ( multipleSpecifier )? ( defaultNumber )? ( description )? )
                         root_1 = self._adaptor.nil()
                         root_1 = self._adaptor.becomeRoot(
                         self._adaptor.createFromType(IMPL_ATTR_DEF, "IMPL_ATTR_DEF")
@@ -2661,35 +2602,35 @@ class osekoilParser(BaseParser):
 
                         self._adaptor.addChild(root_1, stream_attributeName.nextTree())
 
-                        # osekoil.g:298:48: ( autoSpecifier )?
+                        # osekoil.g:299:48: ( autoSpecifier )?
                         if stream_autoSpecifier.hasNext():
                             self._adaptor.addChild(root_1, stream_autoSpecifier.nextTree())
 
 
                         stream_autoSpecifier.reset();
 
-                        # osekoil.g:298:63: ( numberRange )?
+                        # osekoil.g:299:63: ( numberRange )?
                         if stream_numberRange.hasNext():
                             self._adaptor.addChild(root_1, stream_numberRange.nextTree())
 
 
                         stream_numberRange.reset();
 
-                        # osekoil.g:298:76: ( multipleSpecifier )?
+                        # osekoil.g:299:76: ( multipleSpecifier )?
                         if stream_multipleSpecifier.hasNext():
                             self._adaptor.addChild(root_1, stream_multipleSpecifier.nextTree())
 
 
                         stream_multipleSpecifier.reset();
 
-                        # osekoil.g:298:95: ( defaultNumber )?
+                        # osekoil.g:299:95: ( defaultNumber )?
                         if stream_defaultNumber.hasNext():
                             self._adaptor.addChild(root_1, stream_defaultNumber.nextTree())
 
 
                         stream_defaultNumber.reset();
 
-                        # osekoil.g:298:110: ( description )?
+                        # osekoil.g:299:110: ( description )?
                         if stream_description.hasNext():
                             self._adaptor.addChild(root_1, stream_description.nextTree())
 
@@ -2707,23 +2648,23 @@ class osekoilParser(BaseParser):
 
 
                 elif alt46 == 5:
-                    # osekoil.g:299:7: 'FLOAT' ( autoSpecifier )? ( floatRange )? attributeName ( multipleSpecifier )? ( defaultFloat )? ( description )? SEMI
+                    # osekoil.g:300:7: 'FLOAT' ( autoSpecifier )? ( floatRange )? attributeName ( multipleSpecifier )? ( defaultFloat )? ( description )? SEMI
                     pass 
-                    string_literal56 = self.match(self.input, 94, self.FOLLOW_94_in_implAttrDef1229) 
+                    string_literal56 = self.match(self.input, 94, self.FOLLOW_94_in_implAttrDef1232) 
                     if self._state.backtracking == 0:
                         stream_94.add(string_literal56)
 
 
-                    # osekoil.g:299:19: ( autoSpecifier )?
+                    # osekoil.g:300:19: ( autoSpecifier )?
                     alt28 = 2
                     LA28_0 = self.input.LA(1)
 
                     if (LA28_0 == 120) :
                         alt28 = 1
                     if alt28 == 1:
-                        # osekoil.g:299:19: autoSpecifier
+                        # osekoil.g:300:19: autoSpecifier
                         pass 
-                        self._state.following.append(self.FOLLOW_autoSpecifier_in_implAttrDef1235)
+                        self._state.following.append(self.FOLLOW_autoSpecifier_in_implAttrDef1238)
                         autoSpecifier57 = self.autoSpecifier()
 
                         self._state.following.pop()
@@ -2734,16 +2675,16 @@ class osekoilParser(BaseParser):
 
 
 
-                    # osekoil.g:299:34: ( floatRange )?
+                    # osekoil.g:300:34: ( floatRange )?
                     alt29 = 2
                     LA29_0 = self.input.LA(1)
 
                     if (LA29_0 == LBRACK) :
                         alt29 = 1
                     if alt29 == 1:
-                        # osekoil.g:299:34: floatRange
+                        # osekoil.g:300:34: floatRange
                         pass 
-                        self._state.following.append(self.FOLLOW_floatRange_in_implAttrDef1238)
+                        self._state.following.append(self.FOLLOW_floatRange_in_implAttrDef1241)
                         floatRange58 = self.floatRange()
 
                         self._state.following.pop()
@@ -2754,7 +2695,7 @@ class osekoilParser(BaseParser):
 
 
 
-                    self._state.following.append(self.FOLLOW_attributeName_in_implAttrDef1241)
+                    self._state.following.append(self.FOLLOW_attributeName_in_implAttrDef1244)
                     attributeName59 = self.attributeName()
 
                     self._state.following.pop()
@@ -2762,16 +2703,16 @@ class osekoilParser(BaseParser):
                         stream_attributeName.add(attributeName59.tree)
 
 
-                    # osekoil.g:299:60: ( multipleSpecifier )?
+                    # osekoil.g:300:60: ( multipleSpecifier )?
                     alt30 = 2
                     LA30_0 = self.input.LA(1)
 
                     if (LA30_0 == LBRACK) :
                         alt30 = 1
                     if alt30 == 1:
-                        # osekoil.g:299:60: multipleSpecifier
+                        # osekoil.g:300:60: multipleSpecifier
                         pass 
-                        self._state.following.append(self.FOLLOW_multipleSpecifier_in_implAttrDef1243)
+                        self._state.following.append(self.FOLLOW_multipleSpecifier_in_implAttrDef1246)
                         multipleSpecifier60 = self.multipleSpecifier()
 
                         self._state.following.pop()
@@ -2782,16 +2723,16 @@ class osekoilParser(BaseParser):
 
 
 
-                    # osekoil.g:299:79: ( defaultFloat )?
+                    # osekoil.g:300:79: ( defaultFloat )?
                     alt31 = 2
                     LA31_0 = self.input.LA(1)
 
                     if (LA31_0 == ASSIGN) :
                         alt31 = 1
                     if alt31 == 1:
-                        # osekoil.g:299:79: defaultFloat
+                        # osekoil.g:300:79: defaultFloat
                         pass 
-                        self._state.following.append(self.FOLLOW_defaultFloat_in_implAttrDef1246)
+                        self._state.following.append(self.FOLLOW_defaultFloat_in_implAttrDef1249)
                         defaultFloat61 = self.defaultFloat()
 
                         self._state.following.pop()
@@ -2802,16 +2743,16 @@ class osekoilParser(BaseParser):
 
 
 
-                    # osekoil.g:299:93: ( description )?
+                    # osekoil.g:300:93: ( description )?
                     alt32 = 2
                     LA32_0 = self.input.LA(1)
 
                     if (LA32_0 == 78) :
                         alt32 = 1
                     if alt32 == 1:
-                        # osekoil.g:299:93: description
+                        # osekoil.g:300:93: description
                         pass 
-                        self._state.following.append(self.FOLLOW_description_in_implAttrDef1249)
+                        self._state.following.append(self.FOLLOW_description_in_implAttrDef1252)
                         description62 = self.description()
 
                         self._state.following.pop()
@@ -2822,7 +2763,7 @@ class osekoilParser(BaseParser):
 
 
 
-                    SEMI63 = self.match(self.input, SEMI, self.FOLLOW_SEMI_in_implAttrDef1252) 
+                    SEMI63 = self.match(self.input, SEMI, self.FOLLOW_SEMI_in_implAttrDef1255) 
                     if self._state.backtracking == 0:
                         stream_SEMI.add(SEMI63)
 
@@ -2848,7 +2789,7 @@ class osekoilParser(BaseParser):
 
 
                     # AST Rewrite
-                    # elements: 94, defaultFloat, description, multipleSpecifier, floatRange, autoSpecifier, attributeName
+                    # elements: autoSpecifier, 94, description, defaultFloat, multipleSpecifier, attributeName, floatRange
                     # token labels: 
                     # rule labels: retval
                     # token list labels: 
@@ -2863,8 +2804,8 @@ class osekoilParser(BaseParser):
 
 
                         root_0 = self._adaptor.nil()
-                        # 315:7: -> ^( IMPL_ATTR_DEF 'FLOAT' attributeName ( autoSpecifier )? ( floatRange )? ( multipleSpecifier )? ( defaultFloat )? ( description )? )
-                        # osekoil.g:315:10: ^( IMPL_ATTR_DEF 'FLOAT' attributeName ( autoSpecifier )? ( floatRange )? ( multipleSpecifier )? ( defaultFloat )? ( description )? )
+                        # 316:7: -> ^( IMPL_ATTR_DEF 'FLOAT' attributeName ( autoSpecifier )? ( floatRange )? ( multipleSpecifier )? ( defaultFloat )? ( description )? )
+                        # osekoil.g:316:10: ^( IMPL_ATTR_DEF 'FLOAT' attributeName ( autoSpecifier )? ( floatRange )? ( multipleSpecifier )? ( defaultFloat )? ( description )? )
                         root_1 = self._adaptor.nil()
                         root_1 = self._adaptor.becomeRoot(
                         self._adaptor.createFromType(IMPL_ATTR_DEF, "IMPL_ATTR_DEF")
@@ -2876,35 +2817,35 @@ class osekoilParser(BaseParser):
 
                         self._adaptor.addChild(root_1, stream_attributeName.nextTree())
 
-                        # osekoil.g:315:48: ( autoSpecifier )?
+                        # osekoil.g:316:48: ( autoSpecifier )?
                         if stream_autoSpecifier.hasNext():
                             self._adaptor.addChild(root_1, stream_autoSpecifier.nextTree())
 
 
                         stream_autoSpecifier.reset();
 
-                        # osekoil.g:315:63: ( floatRange )?
+                        # osekoil.g:316:63: ( floatRange )?
                         if stream_floatRange.hasNext():
                             self._adaptor.addChild(root_1, stream_floatRange.nextTree())
 
 
                         stream_floatRange.reset();
 
-                        # osekoil.g:315:75: ( multipleSpecifier )?
+                        # osekoil.g:316:75: ( multipleSpecifier )?
                         if stream_multipleSpecifier.hasNext():
                             self._adaptor.addChild(root_1, stream_multipleSpecifier.nextTree())
 
 
                         stream_multipleSpecifier.reset();
 
-                        # osekoil.g:315:94: ( defaultFloat )?
+                        # osekoil.g:316:94: ( defaultFloat )?
                         if stream_defaultFloat.hasNext():
                             self._adaptor.addChild(root_1, stream_defaultFloat.nextTree())
 
 
                         stream_defaultFloat.reset();
 
-                        # osekoil.g:315:108: ( description )?
+                        # osekoil.g:316:108: ( description )?
                         if stream_description.hasNext():
                             self._adaptor.addChild(root_1, stream_description.nextTree())
 
@@ -2922,23 +2863,23 @@ class osekoilParser(BaseParser):
 
 
                 elif alt46 == 6:
-                    # osekoil.g:316:7: 'ENUM' ( autoSpecifier )? enumeration attributeName ( multipleSpecifier )? ( defaultName )? ( description )? SEMI
+                    # osekoil.g:317:7: 'ENUM' ( autoSpecifier )? enumeration attributeName ( multipleSpecifier )? ( defaultName )? ( description )? SEMI
                     pass 
-                    string_literal64 = self.match(self.input, 90, self.FOLLOW_90_in_implAttrDef1299) 
+                    string_literal64 = self.match(self.input, 90, self.FOLLOW_90_in_implAttrDef1302) 
                     if self._state.backtracking == 0:
                         stream_90.add(string_literal64)
 
 
-                    # osekoil.g:316:19: ( autoSpecifier )?
+                    # osekoil.g:317:19: ( autoSpecifier )?
                     alt33 = 2
                     LA33_0 = self.input.LA(1)
 
                     if (LA33_0 == 120) :
                         alt33 = 1
                     if alt33 == 1:
-                        # osekoil.g:316:19: autoSpecifier
+                        # osekoil.g:317:19: autoSpecifier
                         pass 
-                        self._state.following.append(self.FOLLOW_autoSpecifier_in_implAttrDef1306)
+                        self._state.following.append(self.FOLLOW_autoSpecifier_in_implAttrDef1309)
                         autoSpecifier65 = self.autoSpecifier()
 
                         self._state.following.pop()
@@ -2949,7 +2890,7 @@ class osekoilParser(BaseParser):
 
 
 
-                    self._state.following.append(self.FOLLOW_enumeration_in_implAttrDef1309)
+                    self._state.following.append(self.FOLLOW_enumeration_in_implAttrDef1312)
                     enumeration66 = self.enumeration()
 
                     self._state.following.pop()
@@ -2957,7 +2898,7 @@ class osekoilParser(BaseParser):
                         stream_enumeration.add(enumeration66.tree)
 
 
-                    self._state.following.append(self.FOLLOW_attributeName_in_implAttrDef1311)
+                    self._state.following.append(self.FOLLOW_attributeName_in_implAttrDef1314)
                     attributeName67 = self.attributeName()
 
                     self._state.following.pop()
@@ -2965,16 +2906,16 @@ class osekoilParser(BaseParser):
                         stream_attributeName.add(attributeName67.tree)
 
 
-                    # osekoil.g:316:60: ( multipleSpecifier )?
+                    # osekoil.g:317:60: ( multipleSpecifier )?
                     alt34 = 2
                     LA34_0 = self.input.LA(1)
 
                     if (LA34_0 == LBRACK) :
                         alt34 = 1
                     if alt34 == 1:
-                        # osekoil.g:316:60: multipleSpecifier
+                        # osekoil.g:317:60: multipleSpecifier
                         pass 
-                        self._state.following.append(self.FOLLOW_multipleSpecifier_in_implAttrDef1313)
+                        self._state.following.append(self.FOLLOW_multipleSpecifier_in_implAttrDef1316)
                         multipleSpecifier68 = self.multipleSpecifier()
 
                         self._state.following.pop()
@@ -2985,16 +2926,16 @@ class osekoilParser(BaseParser):
 
 
 
-                    # osekoil.g:316:79: ( defaultName )?
+                    # osekoil.g:317:79: ( defaultName )?
                     alt35 = 2
                     LA35_0 = self.input.LA(1)
 
                     if (LA35_0 == ASSIGN) :
                         alt35 = 1
                     if alt35 == 1:
-                        # osekoil.g:316:79: defaultName
+                        # osekoil.g:317:79: defaultName
                         pass 
-                        self._state.following.append(self.FOLLOW_defaultName_in_implAttrDef1316)
+                        self._state.following.append(self.FOLLOW_defaultName_in_implAttrDef1319)
                         defaultName69 = self.defaultName()
 
                         self._state.following.pop()
@@ -3005,16 +2946,16 @@ class osekoilParser(BaseParser):
 
 
 
-                    # osekoil.g:316:92: ( description )?
+                    # osekoil.g:317:92: ( description )?
                     alt36 = 2
                     LA36_0 = self.input.LA(1)
 
                     if (LA36_0 == 78) :
                         alt36 = 1
                     if alt36 == 1:
-                        # osekoil.g:316:92: description
+                        # osekoil.g:317:92: description
                         pass 
-                        self._state.following.append(self.FOLLOW_description_in_implAttrDef1319)
+                        self._state.following.append(self.FOLLOW_description_in_implAttrDef1322)
                         description70 = self.description()
 
                         self._state.following.pop()
@@ -3025,7 +2966,7 @@ class osekoilParser(BaseParser):
 
 
 
-                    SEMI71 = self.match(self.input, SEMI, self.FOLLOW_SEMI_in_implAttrDef1322) 
+                    SEMI71 = self.match(self.input, SEMI, self.FOLLOW_SEMI_in_implAttrDef1325) 
                     if self._state.backtracking == 0:
                         stream_SEMI.add(SEMI71)
 
@@ -3051,7 +2992,7 @@ class osekoilParser(BaseParser):
 
 
                     # AST Rewrite
-                    # elements: description, attributeName, enumeration, autoSpecifier, multipleSpecifier, defaultName, 90
+                    # elements: 90, defaultName, description, multipleSpecifier, enumeration, autoSpecifier, attributeName
                     # token labels: 
                     # rule labels: retval
                     # token list labels: 
@@ -3066,8 +3007,8 @@ class osekoilParser(BaseParser):
 
 
                         root_0 = self._adaptor.nil()
-                        # 332:7: -> ^( IMPL_ATTR_DEF 'ENUM' attributeName ( autoSpecifier )? enumeration ( multipleSpecifier )? ( defaultName )? ( description )? )
-                        # osekoil.g:332:10: ^( IMPL_ATTR_DEF 'ENUM' attributeName ( autoSpecifier )? enumeration ( multipleSpecifier )? ( defaultName )? ( description )? )
+                        # 333:7: -> ^( IMPL_ATTR_DEF 'ENUM' attributeName ( autoSpecifier )? enumeration ( multipleSpecifier )? ( defaultName )? ( description )? )
+                        # osekoil.g:333:10: ^( IMPL_ATTR_DEF 'ENUM' attributeName ( autoSpecifier )? enumeration ( multipleSpecifier )? ( defaultName )? ( description )? )
                         root_1 = self._adaptor.nil()
                         root_1 = self._adaptor.becomeRoot(
                         self._adaptor.createFromType(IMPL_ATTR_DEF, "IMPL_ATTR_DEF")
@@ -3079,7 +3020,7 @@ class osekoilParser(BaseParser):
 
                         self._adaptor.addChild(root_1, stream_attributeName.nextTree())
 
-                        # osekoil.g:332:47: ( autoSpecifier )?
+                        # osekoil.g:333:47: ( autoSpecifier )?
                         if stream_autoSpecifier.hasNext():
                             self._adaptor.addChild(root_1, stream_autoSpecifier.nextTree())
 
@@ -3088,21 +3029,21 @@ class osekoilParser(BaseParser):
 
                         self._adaptor.addChild(root_1, stream_enumeration.nextTree())
 
-                        # osekoil.g:332:74: ( multipleSpecifier )?
+                        # osekoil.g:333:74: ( multipleSpecifier )?
                         if stream_multipleSpecifier.hasNext():
                             self._adaptor.addChild(root_1, stream_multipleSpecifier.nextTree())
 
 
                         stream_multipleSpecifier.reset();
 
-                        # osekoil.g:332:93: ( defaultName )?
+                        # osekoil.g:333:93: ( defaultName )?
                         if stream_defaultName.hasNext():
                             self._adaptor.addChild(root_1, stream_defaultName.nextTree())
 
 
                         stream_defaultName.reset();
 
-                        # osekoil.g:332:106: ( description )?
+                        # osekoil.g:333:106: ( description )?
                         if stream_description.hasNext():
                             self._adaptor.addChild(root_1, stream_description.nextTree())
 
@@ -3120,23 +3061,23 @@ class osekoilParser(BaseParser):
 
 
                 elif alt46 == 7:
-                    # osekoil.g:333:7: 'STRING' ( autoSpecifier )? attributeName ( multipleSpecifier )? ( defaultString )? ( description )? SEMI
+                    # osekoil.g:334:7: 'STRING' ( autoSpecifier )? attributeName ( multipleSpecifier )? ( defaultString )? ( description )? SEMI
                     pass 
-                    string_literal72 = self.match(self.input, 114, self.FOLLOW_114_in_implAttrDef1368) 
+                    string_literal72 = self.match(self.input, 114, self.FOLLOW_114_in_implAttrDef1371) 
                     if self._state.backtracking == 0:
                         stream_114.add(string_literal72)
 
 
-                    # osekoil.g:333:16: ( autoSpecifier )?
+                    # osekoil.g:334:16: ( autoSpecifier )?
                     alt37 = 2
                     LA37_0 = self.input.LA(1)
 
                     if (LA37_0 == 120) :
                         alt37 = 1
                     if alt37 == 1:
-                        # osekoil.g:333:16: autoSpecifier
+                        # osekoil.g:334:16: autoSpecifier
                         pass 
-                        self._state.following.append(self.FOLLOW_autoSpecifier_in_implAttrDef1370)
+                        self._state.following.append(self.FOLLOW_autoSpecifier_in_implAttrDef1373)
                         autoSpecifier73 = self.autoSpecifier()
 
                         self._state.following.pop()
@@ -3147,7 +3088,7 @@ class osekoilParser(BaseParser):
 
 
 
-                    self._state.following.append(self.FOLLOW_attributeName_in_implAttrDef1373)
+                    self._state.following.append(self.FOLLOW_attributeName_in_implAttrDef1376)
                     attributeName74 = self.attributeName()
 
                     self._state.following.pop()
@@ -3155,16 +3096,16 @@ class osekoilParser(BaseParser):
                         stream_attributeName.add(attributeName74.tree)
 
 
-                    # osekoil.g:333:45: ( multipleSpecifier )?
+                    # osekoil.g:334:45: ( multipleSpecifier )?
                     alt38 = 2
                     LA38_0 = self.input.LA(1)
 
                     if (LA38_0 == LBRACK) :
                         alt38 = 1
                     if alt38 == 1:
-                        # osekoil.g:333:45: multipleSpecifier
+                        # osekoil.g:334:45: multipleSpecifier
                         pass 
-                        self._state.following.append(self.FOLLOW_multipleSpecifier_in_implAttrDef1375)
+                        self._state.following.append(self.FOLLOW_multipleSpecifier_in_implAttrDef1378)
                         multipleSpecifier75 = self.multipleSpecifier()
 
                         self._state.following.pop()
@@ -3175,16 +3116,16 @@ class osekoilParser(BaseParser):
 
 
 
-                    # osekoil.g:333:64: ( defaultString )?
+                    # osekoil.g:334:64: ( defaultString )?
                     alt39 = 2
                     LA39_0 = self.input.LA(1)
 
                     if (LA39_0 == ASSIGN) :
                         alt39 = 1
                     if alt39 == 1:
-                        # osekoil.g:333:64: defaultString
+                        # osekoil.g:334:64: defaultString
                         pass 
-                        self._state.following.append(self.FOLLOW_defaultString_in_implAttrDef1378)
+                        self._state.following.append(self.FOLLOW_defaultString_in_implAttrDef1381)
                         defaultString76 = self.defaultString()
 
                         self._state.following.pop()
@@ -3195,16 +3136,16 @@ class osekoilParser(BaseParser):
 
 
 
-                    # osekoil.g:333:79: ( description )?
+                    # osekoil.g:334:79: ( description )?
                     alt40 = 2
                     LA40_0 = self.input.LA(1)
 
                     if (LA40_0 == 78) :
                         alt40 = 1
                     if alt40 == 1:
-                        # osekoil.g:333:79: description
+                        # osekoil.g:334:79: description
                         pass 
-                        self._state.following.append(self.FOLLOW_description_in_implAttrDef1381)
+                        self._state.following.append(self.FOLLOW_description_in_implAttrDef1384)
                         description77 = self.description()
 
                         self._state.following.pop()
@@ -3215,7 +3156,7 @@ class osekoilParser(BaseParser):
 
 
 
-                    SEMI78 = self.match(self.input, SEMI, self.FOLLOW_SEMI_in_implAttrDef1384) 
+                    SEMI78 = self.match(self.input, SEMI, self.FOLLOW_SEMI_in_implAttrDef1387) 
                     if self._state.backtracking == 0:
                         stream_SEMI.add(SEMI78)
 
@@ -3241,7 +3182,7 @@ class osekoilParser(BaseParser):
 
 
                     # AST Rewrite
-                    # elements: defaultString, autoSpecifier, 114, multipleSpecifier, attributeName, description
+                    # elements: autoSpecifier, defaultString, multipleSpecifier, description, 114, attributeName
                     # token labels: 
                     # rule labels: retval
                     # token list labels: 
@@ -3256,8 +3197,8 @@ class osekoilParser(BaseParser):
 
 
                         root_0 = self._adaptor.nil()
-                        # 349:7: -> ^( IMPL_ATTR_DEF 'STRING' attributeName ( autoSpecifier )? ( multipleSpecifier )? ( defaultString )? ( description )? )
-                        # osekoil.g:349:10: ^( IMPL_ATTR_DEF 'STRING' attributeName ( autoSpecifier )? ( multipleSpecifier )? ( defaultString )? ( description )? )
+                        # 350:7: -> ^( IMPL_ATTR_DEF 'STRING' attributeName ( autoSpecifier )? ( multipleSpecifier )? ( defaultString )? ( description )? )
+                        # osekoil.g:350:10: ^( IMPL_ATTR_DEF 'STRING' attributeName ( autoSpecifier )? ( multipleSpecifier )? ( defaultString )? ( description )? )
                         root_1 = self._adaptor.nil()
                         root_1 = self._adaptor.becomeRoot(
                         self._adaptor.createFromType(IMPL_ATTR_DEF, "IMPL_ATTR_DEF")
@@ -3269,28 +3210,28 @@ class osekoilParser(BaseParser):
 
                         self._adaptor.addChild(root_1, stream_attributeName.nextTree())
 
-                        # osekoil.g:349:49: ( autoSpecifier )?
+                        # osekoil.g:350:49: ( autoSpecifier )?
                         if stream_autoSpecifier.hasNext():
                             self._adaptor.addChild(root_1, stream_autoSpecifier.nextTree())
 
 
                         stream_autoSpecifier.reset();
 
-                        # osekoil.g:349:64: ( multipleSpecifier )?
+                        # osekoil.g:350:64: ( multipleSpecifier )?
                         if stream_multipleSpecifier.hasNext():
                             self._adaptor.addChild(root_1, stream_multipleSpecifier.nextTree())
 
 
                         stream_multipleSpecifier.reset();
 
-                        # osekoil.g:349:83: ( defaultString )?
+                        # osekoil.g:350:83: ( defaultString )?
                         if stream_defaultString.hasNext():
                             self._adaptor.addChild(root_1, stream_defaultString.nextTree())
 
 
                         stream_defaultString.reset();
 
-                        # osekoil.g:349:98: ( description )?
+                        # osekoil.g:350:98: ( description )?
                         if stream_description.hasNext():
                             self._adaptor.addChild(root_1, stream_description.nextTree())
 
@@ -3308,23 +3249,23 @@ class osekoilParser(BaseParser):
 
 
                 elif alt46 == 8:
-                    # osekoil.g:350:7: 'BOOLEAN' ( autoSpecifier )? ( boolValues )? attributeName ( multipleSpecifier )? ( defaultBool )? ( description )? SEMI
+                    # osekoil.g:351:7: 'BOOLEAN' ( autoSpecifier )? ( boolValues )? attributeName ( multipleSpecifier )? ( defaultBool )? ( description )? SEMI
                     pass 
-                    string_literal79 = self.match(self.input, 84, self.FOLLOW_84_in_implAttrDef1428) 
+                    string_literal79 = self.match(self.input, 84, self.FOLLOW_84_in_implAttrDef1431) 
                     if self._state.backtracking == 0:
                         stream_84.add(string_literal79)
 
 
-                    # osekoil.g:350:19: ( autoSpecifier )?
+                    # osekoil.g:351:19: ( autoSpecifier )?
                     alt41 = 2
                     LA41_0 = self.input.LA(1)
 
                     if (LA41_0 == 120) :
                         alt41 = 1
                     if alt41 == 1:
-                        # osekoil.g:350:19: autoSpecifier
+                        # osekoil.g:351:19: autoSpecifier
                         pass 
-                        self._state.following.append(self.FOLLOW_autoSpecifier_in_implAttrDef1432)
+                        self._state.following.append(self.FOLLOW_autoSpecifier_in_implAttrDef1435)
                         autoSpecifier80 = self.autoSpecifier()
 
                         self._state.following.pop()
@@ -3335,16 +3276,16 @@ class osekoilParser(BaseParser):
 
 
 
-                    # osekoil.g:350:34: ( boolValues )?
+                    # osekoil.g:351:34: ( boolValues )?
                     alt42 = 2
                     LA42_0 = self.input.LA(1)
 
                     if (LA42_0 == LBRACK) :
                         alt42 = 1
                     if alt42 == 1:
-                        # osekoil.g:350:34: boolValues
+                        # osekoil.g:351:34: boolValues
                         pass 
-                        self._state.following.append(self.FOLLOW_boolValues_in_implAttrDef1435)
+                        self._state.following.append(self.FOLLOW_boolValues_in_implAttrDef1438)
                         boolValues81 = self.boolValues()
 
                         self._state.following.pop()
@@ -3355,7 +3296,7 @@ class osekoilParser(BaseParser):
 
 
 
-                    self._state.following.append(self.FOLLOW_attributeName_in_implAttrDef1438)
+                    self._state.following.append(self.FOLLOW_attributeName_in_implAttrDef1441)
                     attributeName82 = self.attributeName()
 
                     self._state.following.pop()
@@ -3363,16 +3304,16 @@ class osekoilParser(BaseParser):
                         stream_attributeName.add(attributeName82.tree)
 
 
-                    # osekoil.g:350:60: ( multipleSpecifier )?
+                    # osekoil.g:351:60: ( multipleSpecifier )?
                     alt43 = 2
                     LA43_0 = self.input.LA(1)
 
                     if (LA43_0 == LBRACK) :
                         alt43 = 1
                     if alt43 == 1:
-                        # osekoil.g:350:60: multipleSpecifier
+                        # osekoil.g:351:60: multipleSpecifier
                         pass 
-                        self._state.following.append(self.FOLLOW_multipleSpecifier_in_implAttrDef1440)
+                        self._state.following.append(self.FOLLOW_multipleSpecifier_in_implAttrDef1443)
                         multipleSpecifier83 = self.multipleSpecifier()
 
                         self._state.following.pop()
@@ -3383,16 +3324,16 @@ class osekoilParser(BaseParser):
 
 
 
-                    # osekoil.g:350:79: ( defaultBool )?
+                    # osekoil.g:351:79: ( defaultBool )?
                     alt44 = 2
                     LA44_0 = self.input.LA(1)
 
                     if (LA44_0 == ASSIGN) :
                         alt44 = 1
                     if alt44 == 1:
-                        # osekoil.g:350:79: defaultBool
+                        # osekoil.g:351:79: defaultBool
                         pass 
-                        self._state.following.append(self.FOLLOW_defaultBool_in_implAttrDef1443)
+                        self._state.following.append(self.FOLLOW_defaultBool_in_implAttrDef1446)
                         defaultBool84 = self.defaultBool()
 
                         self._state.following.pop()
@@ -3403,16 +3344,16 @@ class osekoilParser(BaseParser):
 
 
 
-                    # osekoil.g:350:92: ( description )?
+                    # osekoil.g:351:92: ( description )?
                     alt45 = 2
                     LA45_0 = self.input.LA(1)
 
                     if (LA45_0 == 78) :
                         alt45 = 1
                     if alt45 == 1:
-                        # osekoil.g:350:92: description
+                        # osekoil.g:351:92: description
                         pass 
-                        self._state.following.append(self.FOLLOW_description_in_implAttrDef1446)
+                        self._state.following.append(self.FOLLOW_description_in_implAttrDef1449)
                         description85 = self.description()
 
                         self._state.following.pop()
@@ -3423,7 +3364,7 @@ class osekoilParser(BaseParser):
 
 
 
-                    SEMI86 = self.match(self.input, SEMI, self.FOLLOW_SEMI_in_implAttrDef1449) 
+                    SEMI86 = self.match(self.input, SEMI, self.FOLLOW_SEMI_in_implAttrDef1452) 
                     if self._state.backtracking == 0:
                         stream_SEMI.add(SEMI86)
 
@@ -3450,7 +3391,7 @@ class osekoilParser(BaseParser):
 
 
                     # AST Rewrite
-                    # elements: autoSpecifier, boolValues, description, multipleSpecifier, defaultBool, attributeName, 84
+                    # elements: defaultBool, boolValues, attributeName, multipleSpecifier, autoSpecifier, description, 84
                     # token labels: 
                     # rule labels: retval
                     # token list labels: 
@@ -3465,8 +3406,8 @@ class osekoilParser(BaseParser):
 
 
                         root_0 = self._adaptor.nil()
-                        # 367:7: -> ^( IMPL_ATTR_DEF 'BOOLEAN' attributeName ( autoSpecifier )? ( boolValues )? ( multipleSpecifier )? ( defaultBool )? ( description )? )
-                        # osekoil.g:367:10: ^( IMPL_ATTR_DEF 'BOOLEAN' attributeName ( autoSpecifier )? ( boolValues )? ( multipleSpecifier )? ( defaultBool )? ( description )? )
+                        # 368:7: -> ^( IMPL_ATTR_DEF 'BOOLEAN' attributeName ( autoSpecifier )? ( boolValues )? ( multipleSpecifier )? ( defaultBool )? ( description )? )
+                        # osekoil.g:368:10: ^( IMPL_ATTR_DEF 'BOOLEAN' attributeName ( autoSpecifier )? ( boolValues )? ( multipleSpecifier )? ( defaultBool )? ( description )? )
                         root_1 = self._adaptor.nil()
                         root_1 = self._adaptor.becomeRoot(
                         self._adaptor.createFromType(IMPL_ATTR_DEF, "IMPL_ATTR_DEF")
@@ -3478,35 +3419,35 @@ class osekoilParser(BaseParser):
 
                         self._adaptor.addChild(root_1, stream_attributeName.nextTree())
 
-                        # osekoil.g:367:50: ( autoSpecifier )?
+                        # osekoil.g:368:50: ( autoSpecifier )?
                         if stream_autoSpecifier.hasNext():
                             self._adaptor.addChild(root_1, stream_autoSpecifier.nextTree())
 
 
                         stream_autoSpecifier.reset();
 
-                        # osekoil.g:367:65: ( boolValues )?
+                        # osekoil.g:368:65: ( boolValues )?
                         if stream_boolValues.hasNext():
                             self._adaptor.addChild(root_1, stream_boolValues.nextTree())
 
 
                         stream_boolValues.reset();
 
-                        # osekoil.g:367:77: ( multipleSpecifier )?
+                        # osekoil.g:368:77: ( multipleSpecifier )?
                         if stream_multipleSpecifier.hasNext():
                             self._adaptor.addChild(root_1, stream_multipleSpecifier.nextTree())
 
 
                         stream_multipleSpecifier.reset();
 
-                        # osekoil.g:367:96: ( defaultBool )?
+                        # osekoil.g:368:96: ( defaultBool )?
                         if stream_defaultBool.hasNext():
                             self._adaptor.addChild(root_1, stream_defaultBool.nextTree())
 
 
                         stream_defaultBool.reset();
 
-                        # osekoil.g:367:109: ( description )?
+                        # osekoil.g:368:109: ( description )?
                         if stream_description.hasNext():
                             self._adaptor.addChild(root_1, stream_description.nextTree())
 
@@ -3568,7 +3509,7 @@ class osekoilParser(BaseParser):
 
 
     # $ANTLR start "attributeName"
-    # osekoil.g:370:1: attributeName : ( ID -> ^( ATTRIBUTE_NAME ID ) | object -> ^( ATTRIBUTE_NAME object ) );
+    # osekoil.g:371:1: attributeName : ( ID -> ^( ATTRIBUTE_NAME ID ) | object -> ^( ATTRIBUTE_NAME object ) );
     def attributeName(self, ):
         retval = self.attributeName_return()
         retval.start = self.input.LT(1)
@@ -3579,13 +3520,12 @@ class osekoilParser(BaseParser):
         ID87 = None
         object88 = None
 
-
         ID87_tree = None
         stream_ID = RewriteRuleTokenStream(self._adaptor, "token ID")
         stream_object = RewriteRuleSubtreeStream(self._adaptor, "rule object")
         try:
             try:
-                # osekoil.g:371:4: ( ID -> ^( ATTRIBUTE_NAME ID ) | object -> ^( ATTRIBUTE_NAME object ) )
+                # osekoil.g:372:4: ( ID -> ^( ATTRIBUTE_NAME ID ) | object -> ^( ATTRIBUTE_NAME object ) )
                 alt47 = 2
                 LA47_0 = self.input.LA(1)
 
@@ -3604,9 +3544,9 @@ class osekoilParser(BaseParser):
 
 
                 if alt47 == 1:
-                    # osekoil.g:371:7: ID
+                    # osekoil.g:372:7: ID
                     pass 
-                    ID87 = self.match(self.input, ID, self.FOLLOW_ID_in_attributeName1504) 
+                    ID87 = self.match(self.input, ID, self.FOLLOW_ID_in_attributeName1507) 
                     if self._state.backtracking == 0:
                         stream_ID.add(ID87)
 
@@ -3627,8 +3567,8 @@ class osekoilParser(BaseParser):
 
 
                         root_0 = self._adaptor.nil()
-                        # 371:14: -> ^( ATTRIBUTE_NAME ID )
-                        # osekoil.g:371:17: ^( ATTRIBUTE_NAME ID )
+                        # 372:14: -> ^( ATTRIBUTE_NAME ID )
+                        # osekoil.g:372:17: ^( ATTRIBUTE_NAME ID )
                         root_1 = self._adaptor.nil()
                         root_1 = self._adaptor.becomeRoot(
                         self._adaptor.createFromType(ATTRIBUTE_NAME, "ATTRIBUTE_NAME")
@@ -3649,9 +3589,9 @@ class osekoilParser(BaseParser):
 
 
                 elif alt47 == 2:
-                    # osekoil.g:372:7: object
+                    # osekoil.g:373:7: object
                     pass 
-                    self._state.following.append(self.FOLLOW_object_in_attributeName1524)
+                    self._state.following.append(self.FOLLOW_object_in_attributeName1527)
                     object88 = self.object()
 
                     self._state.following.pop()
@@ -3675,8 +3615,8 @@ class osekoilParser(BaseParser):
 
 
                         root_0 = self._adaptor.nil()
-                        # 372:14: -> ^( ATTRIBUTE_NAME object )
-                        # osekoil.g:372:17: ^( ATTRIBUTE_NAME object )
+                        # 373:14: -> ^( ATTRIBUTE_NAME object )
+                        # osekoil.g:373:17: ^( ATTRIBUTE_NAME object )
                         root_1 = self._adaptor.nil()
                         root_1 = self._adaptor.becomeRoot(
                         self._adaptor.createFromType(ATTRIBUTE_NAME, "ATTRIBUTE_NAME")
@@ -3729,7 +3669,7 @@ class osekoilParser(BaseParser):
 
 
     # $ANTLR start "numberRange"
-    # osekoil.g:375:1: numberRange returns [range, nfrom, nto] : ( '[' ( numberList -> ^( NUMBER_RANGE numberList ) | (numberFrom= number range numberTo= number -> ^( NUMBER_RANGE $numberFrom $numberTo) ) ) ']' ) ;
+    # osekoil.g:376:1: numberRange returns [range, nfrom, nto] : ( '[' ( numberList -> ^( NUMBER_RANGE numberList ) | (numberFrom= number range numberTo= number -> ^( NUMBER_RANGE $numberFrom $numberTo) ) ) ']' ) ;
     def numberRange(self, ):
         retval = self.numberRange_return()
         retval.start = self.input.LT(1)
@@ -3740,13 +3680,9 @@ class osekoilParser(BaseParser):
         char_literal89 = None
         char_literal92 = None
         numberFrom = None
-
         numberTo = None
-
         numberList90 = None
-
         range91 = None
-
 
         char_literal89_tree = None
         char_literal92_tree = None
@@ -3757,18 +3693,18 @@ class osekoilParser(BaseParser):
         stream_number = RewriteRuleSubtreeStream(self._adaptor, "rule number")
         try:
             try:
-                # osekoil.g:376:4: ( ( '[' ( numberList -> ^( NUMBER_RANGE numberList ) | (numberFrom= number range numberTo= number -> ^( NUMBER_RANGE $numberFrom $numberTo) ) ) ']' ) )
-                # osekoil.g:376:7: ( '[' ( numberList -> ^( NUMBER_RANGE numberList ) | (numberFrom= number range numberTo= number -> ^( NUMBER_RANGE $numberFrom $numberTo) ) ) ']' )
+                # osekoil.g:377:4: ( ( '[' ( numberList -> ^( NUMBER_RANGE numberList ) | (numberFrom= number range numberTo= number -> ^( NUMBER_RANGE $numberFrom $numberTo) ) ) ']' ) )
+                # osekoil.g:377:7: ( '[' ( numberList -> ^( NUMBER_RANGE numberList ) | (numberFrom= number range numberTo= number -> ^( NUMBER_RANGE $numberFrom $numberTo) ) ) ']' )
                 pass 
-                # osekoil.g:376:7: ( '[' ( numberList -> ^( NUMBER_RANGE numberList ) | (numberFrom= number range numberTo= number -> ^( NUMBER_RANGE $numberFrom $numberTo) ) ) ']' )
-                # osekoil.g:376:8: '[' ( numberList -> ^( NUMBER_RANGE numberList ) | (numberFrom= number range numberTo= number -> ^( NUMBER_RANGE $numberFrom $numberTo) ) ) ']'
+                # osekoil.g:377:7: ( '[' ( numberList -> ^( NUMBER_RANGE numberList ) | (numberFrom= number range numberTo= number -> ^( NUMBER_RANGE $numberFrom $numberTo) ) ) ']' )
+                # osekoil.g:377:8: '[' ( numberList -> ^( NUMBER_RANGE numberList ) | (numberFrom= number range numberTo= number -> ^( NUMBER_RANGE $numberFrom $numberTo) ) ) ']'
                 pass 
-                char_literal89 = self.match(self.input, LBRACK, self.FOLLOW_LBRACK_in_numberRange1552) 
+                char_literal89 = self.match(self.input, LBRACK, self.FOLLOW_LBRACK_in_numberRange1555) 
                 if self._state.backtracking == 0:
                     stream_LBRACK.add(char_literal89)
 
 
-                # osekoil.g:376:12: ( numberList -> ^( NUMBER_RANGE numberList ) | (numberFrom= number range numberTo= number -> ^( NUMBER_RANGE $numberFrom $numberTo) ) )
+                # osekoil.g:377:12: ( numberList -> ^( NUMBER_RANGE numberList ) | (numberFrom= number range numberTo= number -> ^( NUMBER_RANGE $numberFrom $numberTo) ) )
                 alt48 = 2
                 LA48_0 = self.input.LA(1)
 
@@ -3817,9 +3753,9 @@ class osekoilParser(BaseParser):
 
 
                 if alt48 == 1:
-                    # osekoil.g:376:13: numberList
+                    # osekoil.g:377:13: numberList
                     pass 
-                    self._state.following.append(self.FOLLOW_numberList_in_numberRange1555)
+                    self._state.following.append(self.FOLLOW_numberList_in_numberRange1558)
                     numberList90 = self.numberList()
 
                     self._state.following.pop()
@@ -3852,8 +3788,8 @@ class osekoilParser(BaseParser):
 
 
                         root_0 = self._adaptor.nil()
-                        # 381:4: -> ^( NUMBER_RANGE numberList )
-                        # osekoil.g:381:7: ^( NUMBER_RANGE numberList )
+                        # 382:4: -> ^( NUMBER_RANGE numberList )
+                        # osekoil.g:382:7: ^( NUMBER_RANGE numberList )
                         root_1 = self._adaptor.nil()
                         root_1 = self._adaptor.becomeRoot(
                         self._adaptor.createFromType(NUMBER_RANGE, "NUMBER_RANGE")
@@ -3872,12 +3808,12 @@ class osekoilParser(BaseParser):
 
 
                 elif alt48 == 2:
-                    # osekoil.g:382:7: (numberFrom= number range numberTo= number -> ^( NUMBER_RANGE $numberFrom $numberTo) )
+                    # osekoil.g:383:7: (numberFrom= number range numberTo= number -> ^( NUMBER_RANGE $numberFrom $numberTo) )
                     pass 
-                    # osekoil.g:382:7: (numberFrom= number range numberTo= number -> ^( NUMBER_RANGE $numberFrom $numberTo) )
-                    # osekoil.g:382:8: numberFrom= number range numberTo= number
+                    # osekoil.g:383:7: (numberFrom= number range numberTo= number -> ^( NUMBER_RANGE $numberFrom $numberTo) )
+                    # osekoil.g:383:8: numberFrom= number range numberTo= number
                     pass 
-                    self._state.following.append(self.FOLLOW_number_in_numberRange1584)
+                    self._state.following.append(self.FOLLOW_number_in_numberRange1587)
                     numberFrom = self.number()
 
                     self._state.following.pop()
@@ -3894,7 +3830,7 @@ class osekoilParser(BaseParser):
 
 
 
-                    self._state.following.append(self.FOLLOW_range_in_numberRange1591)
+                    self._state.following.append(self.FOLLOW_range_in_numberRange1594)
                     range91 = self.range()
 
                     self._state.following.pop()
@@ -3902,7 +3838,7 @@ class osekoilParser(BaseParser):
                         stream_range.add(range91.tree)
 
 
-                    self._state.following.append(self.FOLLOW_number_in_numberRange1597)
+                    self._state.following.append(self.FOLLOW_number_in_numberRange1600)
                     numberTo = self.number()
 
                     self._state.following.pop()
@@ -3918,7 +3854,7 @@ class osekoilParser(BaseParser):
 
 
                     # AST Rewrite
-                    # elements: numberTo, numberFrom
+                    # elements: numberFrom, numberTo
                     # token labels: 
                     # rule labels: numberFrom, retval, numberTo
                     # token list labels: 
@@ -3943,8 +3879,8 @@ class osekoilParser(BaseParser):
 
 
                         root_0 = self._adaptor.nil()
-                        # 389:4: -> ^( NUMBER_RANGE $numberFrom $numberTo)
-                        # osekoil.g:389:7: ^( NUMBER_RANGE $numberFrom $numberTo)
+                        # 390:4: -> ^( NUMBER_RANGE $numberFrom $numberTo)
+                        # osekoil.g:390:7: ^( NUMBER_RANGE $numberFrom $numberTo)
                         root_1 = self._adaptor.nil()
                         root_1 = self._adaptor.becomeRoot(
                         self._adaptor.createFromType(NUMBER_RANGE, "NUMBER_RANGE")
@@ -3969,7 +3905,7 @@ class osekoilParser(BaseParser):
 
 
 
-                char_literal92 = self.match(self.input, RBRACK, self.FOLLOW_RBRACK_in_numberRange1625) 
+                char_literal92 = self.match(self.input, RBRACK, self.FOLLOW_RBRACK_in_numberRange1628) 
                 if self._state.backtracking == 0:
                     stream_RBRACK.add(char_literal92)
 
@@ -4012,7 +3948,7 @@ class osekoilParser(BaseParser):
 
 
     # $ANTLR start "numberList"
-    # osekoil.g:393:1: numberList returns [values] :nums+= number ( ',' nums+= number )* -> ^( NUMBER_LIST ( number )+ ) ;
+    # osekoil.g:394:1: numberList returns [values] :nums+= number ( ',' nums+= number )* -> ^( NUMBER_LIST ( number )+ ) ;
     def numberList(self, ):
         retval = self.numberList_return()
         retval.start = self.input.LT(1)
@@ -4023,8 +3959,6 @@ class osekoilParser(BaseParser):
         char_literal93 = None
         list_nums = None
         nums = None
-
-        nums = None
         char_literal93_tree = None
         stream_76 = RewriteRuleTokenStream(self._adaptor, "token 76")
         stream_number = RewriteRuleSubtreeStream(self._adaptor, "rule number")
@@ -4033,10 +3967,10 @@ class osekoilParser(BaseParser):
 
         try:
             try:
-                # osekoil.g:397:4: (nums+= number ( ',' nums+= number )* -> ^( NUMBER_LIST ( number )+ ) )
-                # osekoil.g:397:7: nums+= number ( ',' nums+= number )*
+                # osekoil.g:398:4: (nums+= number ( ',' nums+= number )* -> ^( NUMBER_LIST ( number )+ ) )
+                # osekoil.g:398:7: nums+= number ( ',' nums+= number )*
                 pass 
-                self._state.following.append(self.FOLLOW_number_in_numberList1654)
+                self._state.following.append(self.FOLLOW_number_in_numberList1657)
                 nums = self.number()
 
                 self._state.following.pop()
@@ -4048,7 +3982,7 @@ class osekoilParser(BaseParser):
                 list_nums.append(nums.tree)
 
 
-                # osekoil.g:397:22: ( ',' nums+= number )*
+                # osekoil.g:398:22: ( ',' nums+= number )*
                 while True: #loop49
                     alt49 = 2
                     LA49_0 = self.input.LA(1)
@@ -4058,14 +3992,14 @@ class osekoilParser(BaseParser):
 
 
                     if alt49 == 1:
-                        # osekoil.g:397:23: ',' nums+= number
+                        # osekoil.g:398:23: ',' nums+= number
                         pass 
-                        char_literal93 = self.match(self.input, 76, self.FOLLOW_76_in_numberList1657) 
+                        char_literal93 = self.match(self.input, 76, self.FOLLOW_76_in_numberList1660) 
                         if self._state.backtracking == 0:
                             stream_76.add(char_literal93)
 
 
-                        self._state.following.append(self.FOLLOW_number_in_numberList1663)
+                        self._state.following.append(self.FOLLOW_number_in_numberList1666)
                         nums = self.number()
 
                         self._state.following.pop()
@@ -4106,14 +4040,14 @@ class osekoilParser(BaseParser):
 
 
                     root_0 = self._adaptor.nil()
-                    # 401:4: -> ^( NUMBER_LIST ( number )+ )
-                    # osekoil.g:401:7: ^( NUMBER_LIST ( number )+ )
+                    # 402:4: -> ^( NUMBER_LIST ( number )+ )
+                    # osekoil.g:402:7: ^( NUMBER_LIST ( number )+ )
                     root_1 = self._adaptor.nil()
                     root_1 = self._adaptor.becomeRoot(
                     self._adaptor.createFromType(NUMBER_LIST, "NUMBER_LIST")
                     , root_1)
 
-                    # osekoil.g:401:21: ( number )+
+                    # osekoil.g:402:21: ( number )+
                     if not (stream_number.hasNext()):
                         raise RewriteEarlyExitException()
 
@@ -4166,7 +4100,7 @@ class osekoilParser(BaseParser):
 
 
     # $ANTLR start "multipleSpecifier"
-    # osekoil.g:404:1: multipleSpecifier : ( '[' ']' ) -> ^( MULTIPLE_SPECIFIER ) ;
+    # osekoil.g:405:1: multipleSpecifier : ( '[' ']' ) -> ^( MULTIPLE_SPECIFIER ) ;
     def multipleSpecifier(self, ):
         retval = self.multipleSpecifier_return()
         retval.start = self.input.LT(1)
@@ -4184,18 +4118,18 @@ class osekoilParser(BaseParser):
 
         try:
             try:
-                # osekoil.g:405:4: ( ( '[' ']' ) -> ^( MULTIPLE_SPECIFIER ) )
-                # osekoil.g:405:7: ( '[' ']' )
+                # osekoil.g:406:4: ( ( '[' ']' ) -> ^( MULTIPLE_SPECIFIER ) )
+                # osekoil.g:406:7: ( '[' ']' )
                 pass 
-                # osekoil.g:405:7: ( '[' ']' )
-                # osekoil.g:405:8: '[' ']'
+                # osekoil.g:406:7: ( '[' ']' )
+                # osekoil.g:406:8: '[' ']'
                 pass 
-                char_literal94 = self.match(self.input, LBRACK, self.FOLLOW_LBRACK_in_multipleSpecifier1699) 
+                char_literal94 = self.match(self.input, LBRACK, self.FOLLOW_LBRACK_in_multipleSpecifier1702) 
                 if self._state.backtracking == 0:
                     stream_LBRACK.add(char_literal94)
 
 
-                char_literal95 = self.match(self.input, RBRACK, self.FOLLOW_RBRACK_in_multipleSpecifier1701) 
+                char_literal95 = self.match(self.input, RBRACK, self.FOLLOW_RBRACK_in_multipleSpecifier1704) 
                 if self._state.backtracking == 0:
                     stream_RBRACK.add(char_literal95)
 
@@ -4219,8 +4153,8 @@ class osekoilParser(BaseParser):
 
 
                     root_0 = self._adaptor.nil()
-                    # 405:17: -> ^( MULTIPLE_SPECIFIER )
-                    # osekoil.g:405:20: ^( MULTIPLE_SPECIFIER )
+                    # 406:17: -> ^( MULTIPLE_SPECIFIER )
+                    # osekoil.g:406:20: ^( MULTIPLE_SPECIFIER )
                     root_1 = self._adaptor.nil()
                     root_1 = self._adaptor.becomeRoot(
                     self._adaptor.createFromType(MULTIPLE_SPECIFIER, "MULTIPLE_SPECIFIER")
@@ -4271,7 +4205,7 @@ class osekoilParser(BaseParser):
 
 
     # $ANTLR start "floatRange"
-    # osekoil.g:408:1: floatRange returns [nfrom, nto] : ( '[' (numberFrom= FLOAT range numberTo= FLOAT ) ']' ) -> ^( FLOAT_RANGE $numberFrom $numberTo) ;
+    # osekoil.g:409:1: floatRange returns [nfrom, nto] : ( '[' (numberFrom= FLOAT range numberTo= FLOAT ) ']' ) -> ^( FLOAT_RANGE $numberFrom $numberTo) ;
     def floatRange(self, ):
         retval = self.floatRange_return()
         retval.start = self.input.LT(1)
@@ -4285,7 +4219,6 @@ class osekoilParser(BaseParser):
         char_literal98 = None
         range97 = None
 
-
         numberFrom_tree = None
         numberTo_tree = None
         char_literal96_tree = None
@@ -4296,21 +4229,21 @@ class osekoilParser(BaseParser):
         stream_range = RewriteRuleSubtreeStream(self._adaptor, "rule range")
         try:
             try:
-                # osekoil.g:409:4: ( ( '[' (numberFrom= FLOAT range numberTo= FLOAT ) ']' ) -> ^( FLOAT_RANGE $numberFrom $numberTo) )
-                # osekoil.g:409:7: ( '[' (numberFrom= FLOAT range numberTo= FLOAT ) ']' )
+                # osekoil.g:410:4: ( ( '[' (numberFrom= FLOAT range numberTo= FLOAT ) ']' ) -> ^( FLOAT_RANGE $numberFrom $numberTo) )
+                # osekoil.g:410:7: ( '[' (numberFrom= FLOAT range numberTo= FLOAT ) ']' )
                 pass 
-                # osekoil.g:409:7: ( '[' (numberFrom= FLOAT range numberTo= FLOAT ) ']' )
-                # osekoil.g:409:8: '[' (numberFrom= FLOAT range numberTo= FLOAT ) ']'
+                # osekoil.g:410:7: ( '[' (numberFrom= FLOAT range numberTo= FLOAT ) ']' )
+                # osekoil.g:410:8: '[' (numberFrom= FLOAT range numberTo= FLOAT ) ']'
                 pass 
-                char_literal96 = self.match(self.input, LBRACK, self.FOLLOW_LBRACK_in_floatRange1728) 
+                char_literal96 = self.match(self.input, LBRACK, self.FOLLOW_LBRACK_in_floatRange1731) 
                 if self._state.backtracking == 0:
                     stream_LBRACK.add(char_literal96)
 
 
-                # osekoil.g:409:12: (numberFrom= FLOAT range numberTo= FLOAT )
-                # osekoil.g:409:13: numberFrom= FLOAT range numberTo= FLOAT
+                # osekoil.g:410:12: (numberFrom= FLOAT range numberTo= FLOAT )
+                # osekoil.g:410:13: numberFrom= FLOAT range numberTo= FLOAT
                 pass 
-                numberFrom = self.match(self.input, FLOAT, self.FOLLOW_FLOAT_in_floatRange1735) 
+                numberFrom = self.match(self.input, FLOAT, self.FOLLOW_FLOAT_in_floatRange1738) 
                 if self._state.backtracking == 0:
                     stream_FLOAT.add(numberFrom)
 
@@ -4321,7 +4254,7 @@ class osekoilParser(BaseParser):
 
 
 
-                self._state.following.append(self.FOLLOW_range_in_floatRange1739)
+                self._state.following.append(self.FOLLOW_range_in_floatRange1742)
                 range97 = self.range()
 
                 self._state.following.pop()
@@ -4329,7 +4262,7 @@ class osekoilParser(BaseParser):
                     stream_range.add(range97.tree)
 
 
-                numberTo = self.match(self.input, FLOAT, self.FOLLOW_FLOAT_in_floatRange1745) 
+                numberTo = self.match(self.input, FLOAT, self.FOLLOW_FLOAT_in_floatRange1748) 
                 if self._state.backtracking == 0:
                     stream_FLOAT.add(numberTo)
 
@@ -4343,7 +4276,7 @@ class osekoilParser(BaseParser):
 
 
 
-                char_literal98 = self.match(self.input, RBRACK, self.FOLLOW_RBRACK_in_floatRange1750) 
+                char_literal98 = self.match(self.input, RBRACK, self.FOLLOW_RBRACK_in_floatRange1753) 
                 if self._state.backtracking == 0:
                     stream_RBRACK.add(char_literal98)
 
@@ -4369,8 +4302,8 @@ class osekoilParser(BaseParser):
 
 
                     root_0 = self._adaptor.nil()
-                    # 410:4: -> ^( FLOAT_RANGE $numberFrom $numberTo)
-                    # osekoil.g:410:7: ^( FLOAT_RANGE $numberFrom $numberTo)
+                    # 411:4: -> ^( FLOAT_RANGE $numberFrom $numberTo)
+                    # osekoil.g:411:7: ^( FLOAT_RANGE $numberFrom $numberTo)
                     root_1 = self._adaptor.nil()
                     root_1 = self._adaptor.becomeRoot(
                     self._adaptor.createFromType(FLOAT_RANGE, "FLOAT_RANGE")
@@ -4424,7 +4357,7 @@ class osekoilParser(BaseParser):
 
 
     # $ANTLR start "enumeration"
-    # osekoil.g:413:1: enumeration returns [values] : '[' enumeratorList ']' -> ^( ENUMERATION enumeratorList ) ;
+    # osekoil.g:414:1: enumeration returns [values] : '[' enumeratorList ']' -> ^( ENUMERATION enumeratorList ) ;
     def enumeration(self, ):
         retval = self.enumeration_return()
         retval.start = self.input.LT(1)
@@ -4436,7 +4369,6 @@ class osekoilParser(BaseParser):
         char_literal101 = None
         enumeratorList100 = None
 
-
         char_literal99_tree = None
         char_literal101_tree = None
         stream_RBRACK = RewriteRuleTokenStream(self._adaptor, "token RBRACK")
@@ -4444,15 +4376,15 @@ class osekoilParser(BaseParser):
         stream_enumeratorList = RewriteRuleSubtreeStream(self._adaptor, "rule enumeratorList")
         try:
             try:
-                # osekoil.g:414:4: ( '[' enumeratorList ']' -> ^( ENUMERATION enumeratorList ) )
-                # osekoil.g:414:7: '[' enumeratorList ']'
+                # osekoil.g:415:4: ( '[' enumeratorList ']' -> ^( ENUMERATION enumeratorList ) )
+                # osekoil.g:415:7: '[' enumeratorList ']'
                 pass 
-                char_literal99 = self.match(self.input, LBRACK, self.FOLLOW_LBRACK_in_enumeration1785) 
+                char_literal99 = self.match(self.input, LBRACK, self.FOLLOW_LBRACK_in_enumeration1788) 
                 if self._state.backtracking == 0:
                     stream_LBRACK.add(char_literal99)
 
 
-                self._state.following.append(self.FOLLOW_enumeratorList_in_enumeration1787)
+                self._state.following.append(self.FOLLOW_enumeratorList_in_enumeration1790)
                 enumeratorList100 = self.enumeratorList()
 
                 self._state.following.pop()
@@ -4460,7 +4392,7 @@ class osekoilParser(BaseParser):
                     stream_enumeratorList.add(enumeratorList100.tree)
 
 
-                char_literal101 = self.match(self.input, RBRACK, self.FOLLOW_RBRACK_in_enumeration1789) 
+                char_literal101 = self.match(self.input, RBRACK, self.FOLLOW_RBRACK_in_enumeration1792) 
                 if self._state.backtracking == 0:
                     stream_RBRACK.add(char_literal101)
 
@@ -4489,8 +4421,8 @@ class osekoilParser(BaseParser):
 
 
                     root_0 = self._adaptor.nil()
-                    # 418:4: -> ^( ENUMERATION enumeratorList )
-                    # osekoil.g:418:7: ^( ENUMERATION enumeratorList )
+                    # 419:4: -> ^( ENUMERATION enumeratorList )
+                    # osekoil.g:419:7: ^( ENUMERATION enumeratorList )
                     root_1 = self._adaptor.nil()
                     root_1 = self._adaptor.becomeRoot(
                     self._adaptor.createFromType(ENUMERATION, "ENUMERATION")
@@ -4542,7 +4474,7 @@ class osekoilParser(BaseParser):
 
 
     # $ANTLR start "enumeratorList"
-    # osekoil.g:421:1: enumeratorList returns [values] :enums+= enumerator ( ',' enums+= enumerator )* -> ^( ENUMERATOR_LIST ( enumerator )+ ) ;
+    # osekoil.g:422:1: enumeratorList returns [values] :enums+= enumerator ( ',' enums+= enumerator )* -> ^( ENUMERATOR_LIST ( enumerator )+ ) ;
     def enumeratorList(self, ):
         retval = self.enumeratorList_return()
         retval.start = self.input.LT(1)
@@ -4553,8 +4485,6 @@ class osekoilParser(BaseParser):
         char_literal102 = None
         list_enums = None
         enums = None
-
-        enums = None
         char_literal102_tree = None
         stream_76 = RewriteRuleTokenStream(self._adaptor, "token 76")
         stream_enumerator = RewriteRuleSubtreeStream(self._adaptor, "rule enumerator")
@@ -4563,10 +4493,10 @@ class osekoilParser(BaseParser):
 
         try:
             try:
-                # osekoil.g:428:4: (enums+= enumerator ( ',' enums+= enumerator )* -> ^( ENUMERATOR_LIST ( enumerator )+ ) )
-                # osekoil.g:428:7: enums+= enumerator ( ',' enums+= enumerator )*
+                # osekoil.g:429:4: (enums+= enumerator ( ',' enums+= enumerator )* -> ^( ENUMERATOR_LIST ( enumerator )+ ) )
+                # osekoil.g:429:7: enums+= enumerator ( ',' enums+= enumerator )*
                 pass 
-                self._state.following.append(self.FOLLOW_enumerator_in_enumeratorList1838)
+                self._state.following.append(self.FOLLOW_enumerator_in_enumeratorList1841)
                 enums = self.enumerator()
 
                 self._state.following.pop()
@@ -4584,7 +4514,7 @@ class osekoilParser(BaseParser):
 
 
 
-                # osekoil.g:428:57: ( ',' enums+= enumerator )*
+                # osekoil.g:429:57: ( ',' enums+= enumerator )*
                 while True: #loop50
                     alt50 = 2
                     LA50_0 = self.input.LA(1)
@@ -4594,14 +4524,14 @@ class osekoilParser(BaseParser):
 
 
                     if alt50 == 1:
-                        # osekoil.g:428:58: ',' enums+= enumerator
+                        # osekoil.g:429:58: ',' enums+= enumerator
                         pass 
-                        char_literal102 = self.match(self.input, 76, self.FOLLOW_76_in_enumeratorList1843) 
+                        char_literal102 = self.match(self.input, 76, self.FOLLOW_76_in_enumeratorList1846) 
                         if self._state.backtracking == 0:
                             stream_76.add(char_literal102)
 
 
-                        self._state.following.append(self.FOLLOW_enumerator_in_enumeratorList1849)
+                        self._state.following.append(self.FOLLOW_enumerator_in_enumeratorList1852)
                         enums = self.enumerator()
 
                         self._state.following.pop()
@@ -4640,14 +4570,14 @@ class osekoilParser(BaseParser):
 
 
                     root_0 = self._adaptor.nil()
-                    # 429:4: -> ^( ENUMERATOR_LIST ( enumerator )+ )
-                    # osekoil.g:429:7: ^( ENUMERATOR_LIST ( enumerator )+ )
+                    # 430:4: -> ^( ENUMERATOR_LIST ( enumerator )+ )
+                    # osekoil.g:430:7: ^( ENUMERATOR_LIST ( enumerator )+ )
                     root_1 = self._adaptor.nil()
                     root_1 = self._adaptor.becomeRoot(
                     self._adaptor.createFromType(ENUMERATOR_LIST, "ENUMERATOR_LIST")
                     , root_1)
 
-                    # osekoil.g:429:25: ( enumerator )+
+                    # osekoil.g:430:25: ( enumerator )+
                     if not (stream_enumerator.hasNext()):
                         raise RewriteEarlyExitException()
 
@@ -4709,7 +4639,7 @@ class osekoilParser(BaseParser):
 
 
     # $ANTLR start "enumerator"
-    # osekoil.g:432:1: enumerator returns [value] : ID ( implParameterList )? ( description )? -> ^( ENUMERATOR ID ( implParameterList )? ( description )? ) ;
+    # osekoil.g:433:1: enumerator returns [value] : ID ( implParameterList )? ( description )? -> ^( ENUMERATOR ID ( implParameterList )? ( description )? ) ;
     def enumerator(self, ):
         retval = self.enumerator_return()
         retval.start = self.input.LT(1)
@@ -4719,9 +4649,7 @@ class osekoilParser(BaseParser):
 
         ID103 = None
         implParameterList104 = None
-
         description105 = None
-
 
         ID103_tree = None
         stream_ID = RewriteRuleTokenStream(self._adaptor, "token ID")
@@ -4732,24 +4660,24 @@ class osekoilParser(BaseParser):
 
         try:
             try:
-                # osekoil.g:439:4: ( ID ( implParameterList )? ( description )? -> ^( ENUMERATOR ID ( implParameterList )? ( description )? ) )
-                # osekoil.g:439:7: ID ( implParameterList )? ( description )?
+                # osekoil.g:440:4: ( ID ( implParameterList )? ( description )? -> ^( ENUMERATOR ID ( implParameterList )? ( description )? ) )
+                # osekoil.g:440:7: ID ( implParameterList )? ( description )?
                 pass 
-                ID103 = self.match(self.input, ID, self.FOLLOW_ID_in_enumerator1894) 
+                ID103 = self.match(self.input, ID, self.FOLLOW_ID_in_enumerator1897) 
                 if self._state.backtracking == 0:
                     stream_ID.add(ID103)
 
 
-                # osekoil.g:439:10: ( implParameterList )?
+                # osekoil.g:440:10: ( implParameterList )?
                 alt51 = 2
                 LA51_0 = self.input.LA(1)
 
                 if (LA51_0 == LCURLY) :
                     alt51 = 1
                 if alt51 == 1:
-                    # osekoil.g:439:10: implParameterList
+                    # osekoil.g:440:10: implParameterList
                     pass 
-                    self._state.following.append(self.FOLLOW_implParameterList_in_enumerator1896)
+                    self._state.following.append(self.FOLLOW_implParameterList_in_enumerator1899)
                     implParameterList104 = self.implParameterList()
 
                     self._state.following.pop()
@@ -4760,16 +4688,16 @@ class osekoilParser(BaseParser):
 
 
 
-                # osekoil.g:439:29: ( description )?
+                # osekoil.g:440:29: ( description )?
                 alt52 = 2
                 LA52_0 = self.input.LA(1)
 
                 if (LA52_0 == 78) :
                     alt52 = 1
                 if alt52 == 1:
-                    # osekoil.g:439:29: description
+                    # osekoil.g:440:29: description
                     pass 
-                    self._state.following.append(self.FOLLOW_description_in_enumerator1899)
+                    self._state.following.append(self.FOLLOW_description_in_enumerator1902)
                     description105 = self.description()
 
                     self._state.following.pop()
@@ -4790,7 +4718,7 @@ class osekoilParser(BaseParser):
 
 
                 # AST Rewrite
-                # elements: implParameterList, description, ID
+                # elements: implParameterList, ID, description
                 # token labels: 
                 # rule labels: retval
                 # token list labels: 
@@ -4805,8 +4733,8 @@ class osekoilParser(BaseParser):
 
 
                     root_0 = self._adaptor.nil()
-                    # 444:4: -> ^( ENUMERATOR ID ( implParameterList )? ( description )? )
-                    # osekoil.g:444:7: ^( ENUMERATOR ID ( implParameterList )? ( description )? )
+                    # 445:4: -> ^( ENUMERATOR ID ( implParameterList )? ( description )? )
+                    # osekoil.g:445:7: ^( ENUMERATOR ID ( implParameterList )? ( description )? )
                     root_1 = self._adaptor.nil()
                     root_1 = self._adaptor.becomeRoot(
                     self._adaptor.createFromType(ENUMERATOR, "ENUMERATOR")
@@ -4816,14 +4744,14 @@ class osekoilParser(BaseParser):
                     stream_ID.nextNode()
                     )
 
-                    # osekoil.g:444:23: ( implParameterList )?
+                    # osekoil.g:445:23: ( implParameterList )?
                     if stream_implParameterList.hasNext():
                         self._adaptor.addChild(root_1, stream_implParameterList.nextTree())
 
 
                     stream_implParameterList.reset();
 
-                    # osekoil.g:444:42: ( description )?
+                    # osekoil.g:445:42: ( description )?
                     if stream_description.hasNext():
                         self._adaptor.addChild(root_1, stream_description.nextTree())
 
@@ -4881,7 +4809,7 @@ class osekoilParser(BaseParser):
 
 
     # $ANTLR start "boolValues"
-    # osekoil.g:447:1: boolValues returns [values] : ( '[' 'TRUE' (tlist= implParameterList )? (tdesc= description )? ',' 'FALSE' (flist= implParameterList )? (fdesc= description )? ']' ) -> ^( BOOL_VALUES ^( 'TRUE' ( $tlist)? ( $tdesc)? ) ^( 'FALSE' ( $flist)? ( $fdesc)? ) ) ;
+    # osekoil.g:448:1: boolValues returns [values] : ( '[' 'TRUE' (tlist= implParameterList )? (tdesc= description )? ',' 'FALSE' (flist= implParameterList )? (fdesc= description )? ']' ) -> ^( BOOL_VALUES ^( 'TRUE' ( $tlist)? ( $tdesc)? ) ^( 'FALSE' ( $flist)? ( $fdesc)? ) ) ;
     def boolValues(self, ):
         retval = self.boolValues_return()
         retval.start = self.input.LT(1)
@@ -4895,13 +4823,9 @@ class osekoilParser(BaseParser):
         string_literal109 = None
         char_literal110 = None
         tlist = None
-
         tdesc = None
-
         flist = None
-
         fdesc = None
-
 
         char_literal106_tree = None
         string_literal107_tree = None
@@ -4920,32 +4844,32 @@ class osekoilParser(BaseParser):
 
         try:
             try:
-                # osekoil.g:454:4: ( ( '[' 'TRUE' (tlist= implParameterList )? (tdesc= description )? ',' 'FALSE' (flist= implParameterList )? (fdesc= description )? ']' ) -> ^( BOOL_VALUES ^( 'TRUE' ( $tlist)? ( $tdesc)? ) ^( 'FALSE' ( $flist)? ( $fdesc)? ) ) )
-                # osekoil.g:454:7: ( '[' 'TRUE' (tlist= implParameterList )? (tdesc= description )? ',' 'FALSE' (flist= implParameterList )? (fdesc= description )? ']' )
+                # osekoil.g:455:4: ( ( '[' 'TRUE' (tlist= implParameterList )? (tdesc= description )? ',' 'FALSE' (flist= implParameterList )? (fdesc= description )? ']' ) -> ^( BOOL_VALUES ^( 'TRUE' ( $tlist)? ( $tdesc)? ) ^( 'FALSE' ( $flist)? ( $fdesc)? ) ) )
+                # osekoil.g:455:7: ( '[' 'TRUE' (tlist= implParameterList )? (tdesc= description )? ',' 'FALSE' (flist= implParameterList )? (fdesc= description )? ']' )
                 pass 
-                # osekoil.g:454:7: ( '[' 'TRUE' (tlist= implParameterList )? (tdesc= description )? ',' 'FALSE' (flist= implParameterList )? (fdesc= description )? ']' )
-                # osekoil.g:454:8: '[' 'TRUE' (tlist= implParameterList )? (tdesc= description )? ',' 'FALSE' (flist= implParameterList )? (fdesc= description )? ']'
+                # osekoil.g:455:7: ( '[' 'TRUE' (tlist= implParameterList )? (tdesc= description )? ',' 'FALSE' (flist= implParameterList )? (fdesc= description )? ']' )
+                # osekoil.g:455:8: '[' 'TRUE' (tlist= implParameterList )? (tdesc= description )? ',' 'FALSE' (flist= implParameterList )? (fdesc= description )? ']'
                 pass 
-                char_literal106 = self.match(self.input, LBRACK, self.FOLLOW_LBRACK_in_boolValues1952) 
+                char_literal106 = self.match(self.input, LBRACK, self.FOLLOW_LBRACK_in_boolValues1955) 
                 if self._state.backtracking == 0:
                     stream_LBRACK.add(char_literal106)
 
 
-                string_literal107 = self.match(self.input, 117, self.FOLLOW_117_in_boolValues1954) 
+                string_literal107 = self.match(self.input, 117, self.FOLLOW_117_in_boolValues1957) 
                 if self._state.backtracking == 0:
                     stream_117.add(string_literal107)
 
 
-                # osekoil.g:454:25: (tlist= implParameterList )?
+                # osekoil.g:455:25: (tlist= implParameterList )?
                 alt53 = 2
                 LA53_0 = self.input.LA(1)
 
                 if (LA53_0 == LCURLY) :
                     alt53 = 1
                 if alt53 == 1:
-                    # osekoil.g:454:25: tlist= implParameterList
+                    # osekoil.g:455:25: tlist= implParameterList
                     pass 
-                    self._state.following.append(self.FOLLOW_implParameterList_in_boolValues1960)
+                    self._state.following.append(self.FOLLOW_implParameterList_in_boolValues1963)
                     tlist = self.implParameterList()
 
                     self._state.following.pop()
@@ -4956,16 +4880,16 @@ class osekoilParser(BaseParser):
 
 
 
-                # osekoil.g:454:52: (tdesc= description )?
+                # osekoil.g:455:52: (tdesc= description )?
                 alt54 = 2
                 LA54_0 = self.input.LA(1)
 
                 if (LA54_0 == 78) :
                     alt54 = 1
                 if alt54 == 1:
-                    # osekoil.g:454:52: tdesc= description
+                    # osekoil.g:455:52: tdesc= description
                     pass 
-                    self._state.following.append(self.FOLLOW_description_in_boolValues1967)
+                    self._state.following.append(self.FOLLOW_description_in_boolValues1970)
                     tdesc = self.description()
 
                     self._state.following.pop()
@@ -4976,26 +4900,26 @@ class osekoilParser(BaseParser):
 
 
 
-                char_literal108 = self.match(self.input, 76, self.FOLLOW_76_in_boolValues1970) 
+                char_literal108 = self.match(self.input, 76, self.FOLLOW_76_in_boolValues1973) 
                 if self._state.backtracking == 0:
                     stream_76.add(char_literal108)
 
 
-                string_literal109 = self.match(self.input, 93, self.FOLLOW_93_in_boolValues1972) 
+                string_literal109 = self.match(self.input, 93, self.FOLLOW_93_in_boolValues1975) 
                 if self._state.backtracking == 0:
                     stream_93.add(string_literal109)
 
 
-                # osekoil.g:454:85: (flist= implParameterList )?
+                # osekoil.g:455:85: (flist= implParameterList )?
                 alt55 = 2
                 LA55_0 = self.input.LA(1)
 
                 if (LA55_0 == LCURLY) :
                     alt55 = 1
                 if alt55 == 1:
-                    # osekoil.g:454:85: flist= implParameterList
+                    # osekoil.g:455:85: flist= implParameterList
                     pass 
-                    self._state.following.append(self.FOLLOW_implParameterList_in_boolValues1978)
+                    self._state.following.append(self.FOLLOW_implParameterList_in_boolValues1981)
                     flist = self.implParameterList()
 
                     self._state.following.pop()
@@ -5006,16 +4930,16 @@ class osekoilParser(BaseParser):
 
 
 
-                # osekoil.g:454:112: (fdesc= description )?
+                # osekoil.g:455:112: (fdesc= description )?
                 alt56 = 2
                 LA56_0 = self.input.LA(1)
 
                 if (LA56_0 == 78) :
                     alt56 = 1
                 if alt56 == 1:
-                    # osekoil.g:454:112: fdesc= description
+                    # osekoil.g:455:112: fdesc= description
                     pass 
-                    self._state.following.append(self.FOLLOW_description_in_boolValues1985)
+                    self._state.following.append(self.FOLLOW_description_in_boolValues1988)
                     fdesc = self.description()
 
                     self._state.following.pop()
@@ -5026,7 +4950,7 @@ class osekoilParser(BaseParser):
 
 
 
-                char_literal110 = self.match(self.input, RBRACK, self.FOLLOW_RBRACK_in_boolValues1988) 
+                char_literal110 = self.match(self.input, RBRACK, self.FOLLOW_RBRACK_in_boolValues1991) 
                 if self._state.backtracking == 0:
                     stream_RBRACK.add(char_literal110)
 
@@ -5043,7 +4967,7 @@ class osekoilParser(BaseParser):
 
 
                 # AST Rewrite
-                # elements: tlist, tdesc, flist, 117, 93, fdesc
+                # elements: tlist, 117, fdesc, 93, tdesc, flist
                 # token labels: 
                 # rule labels: tlist, retval, fdesc, tdesc, flist
                 # token list labels: 
@@ -5078,27 +5002,27 @@ class osekoilParser(BaseParser):
 
 
                     root_0 = self._adaptor.nil()
-                    # 458:4: -> ^( BOOL_VALUES ^( 'TRUE' ( $tlist)? ( $tdesc)? ) ^( 'FALSE' ( $flist)? ( $fdesc)? ) )
-                    # osekoil.g:458:7: ^( BOOL_VALUES ^( 'TRUE' ( $tlist)? ( $tdesc)? ) ^( 'FALSE' ( $flist)? ( $fdesc)? ) )
+                    # 459:4: -> ^( BOOL_VALUES ^( 'TRUE' ( $tlist)? ( $tdesc)? ) ^( 'FALSE' ( $flist)? ( $fdesc)? ) )
+                    # osekoil.g:459:7: ^( BOOL_VALUES ^( 'TRUE' ( $tlist)? ( $tdesc)? ) ^( 'FALSE' ( $flist)? ( $fdesc)? ) )
                     root_1 = self._adaptor.nil()
                     root_1 = self._adaptor.becomeRoot(
                     self._adaptor.createFromType(BOOL_VALUES, "BOOL_VALUES")
                     , root_1)
 
-                    # osekoil.g:458:21: ^( 'TRUE' ( $tlist)? ( $tdesc)? )
+                    # osekoil.g:459:21: ^( 'TRUE' ( $tlist)? ( $tdesc)? )
                     root_2 = self._adaptor.nil()
                     root_2 = self._adaptor.becomeRoot(
                     stream_117.nextNode()
                     , root_2)
 
-                    # osekoil.g:458:31: ( $tlist)?
+                    # osekoil.g:459:31: ( $tlist)?
                     if stream_tlist.hasNext():
                         self._adaptor.addChild(root_2, stream_tlist.nextTree())
 
 
                     stream_tlist.reset();
 
-                    # osekoil.g:458:39: ( $tdesc)?
+                    # osekoil.g:459:39: ( $tdesc)?
                     if stream_tdesc.hasNext():
                         self._adaptor.addChild(root_2, stream_tdesc.nextTree())
 
@@ -5107,20 +5031,20 @@ class osekoilParser(BaseParser):
 
                     self._adaptor.addChild(root_1, root_2)
 
-                    # osekoil.g:458:47: ^( 'FALSE' ( $flist)? ( $fdesc)? )
+                    # osekoil.g:459:47: ^( 'FALSE' ( $flist)? ( $fdesc)? )
                     root_2 = self._adaptor.nil()
                     root_2 = self._adaptor.becomeRoot(
                     stream_93.nextNode()
                     , root_2)
 
-                    # osekoil.g:458:58: ( $flist)?
+                    # osekoil.g:459:58: ( $flist)?
                     if stream_flist.hasNext():
                         self._adaptor.addChild(root_2, stream_flist.nextTree())
 
 
                     stream_flist.reset();
 
-                    # osekoil.g:458:66: ( $fdesc)?
+                    # osekoil.g:459:66: ( $fdesc)?
                     if stream_fdesc.hasNext():
                         self._adaptor.addChild(root_2, stream_fdesc.nextTree())
 
@@ -5179,7 +5103,7 @@ class osekoilParser(BaseParser):
 
 
     # $ANTLR start "autoSpecifier"
-    # osekoil.g:461:1: autoSpecifier : 'WITH_AUTO' ;
+    # osekoil.g:462:1: autoSpecifier : 'WITH_AUTO' ;
     def autoSpecifier(self, ):
         retval = self.autoSpecifier_return()
         retval.start = self.input.LT(1)
@@ -5193,13 +5117,13 @@ class osekoilParser(BaseParser):
 
         try:
             try:
-                # osekoil.g:462:4: ( 'WITH_AUTO' )
-                # osekoil.g:462:7: 'WITH_AUTO'
+                # osekoil.g:463:4: ( 'WITH_AUTO' )
+                # osekoil.g:463:7: 'WITH_AUTO'
                 pass 
                 root_0 = self._adaptor.nil()
 
 
-                string_literal111 = self.match(self.input, 120, self.FOLLOW_120_in_autoSpecifier2043)
+                string_literal111 = self.match(self.input, 120, self.FOLLOW_120_in_autoSpecifier2046)
                 if self._state.backtracking == 0:
                     string_literal111_tree = self._adaptor.createWithPayload(string_literal111)
                     self._adaptor.addChild(root_0, string_literal111_tree)
@@ -5241,7 +5165,7 @@ class osekoilParser(BaseParser):
 
 
     # $ANTLR start "defaultNumber"
-    # osekoil.g:465:1: defaultNumber returns [value] : ( ASSIGN (num= number -> ^( DEFAULT_NUMBER $num) |id= 'NO_DEFAULT' -> ^( DEFAULT_NUMBER $id) |id= 'AUTO' -> ^( DEFAULT_NUMBER $id) ) ) ;
+    # osekoil.g:466:1: defaultNumber returns [value] : ( ASSIGN (num= number -> ^( DEFAULT_NUMBER $num) |id= 'NO_DEFAULT' -> ^( DEFAULT_NUMBER $id) |id= 'AUTO' -> ^( DEFAULT_NUMBER $id) ) ) ;
     def defaultNumber(self, ):
         retval = self.defaultNumber_return()
         retval.start = self.input.LT(1)
@@ -5253,7 +5177,6 @@ class osekoilParser(BaseParser):
         ASSIGN112 = None
         num = None
 
-
         id_tree = None
         ASSIGN112_tree = None
         stream_108 = RewriteRuleTokenStream(self._adaptor, "token 108")
@@ -5262,18 +5185,18 @@ class osekoilParser(BaseParser):
         stream_number = RewriteRuleSubtreeStream(self._adaptor, "rule number")
         try:
             try:
-                # osekoil.g:466:4: ( ( ASSIGN (num= number -> ^( DEFAULT_NUMBER $num) |id= 'NO_DEFAULT' -> ^( DEFAULT_NUMBER $id) |id= 'AUTO' -> ^( DEFAULT_NUMBER $id) ) ) )
-                # osekoil.g:466:7: ( ASSIGN (num= number -> ^( DEFAULT_NUMBER $num) |id= 'NO_DEFAULT' -> ^( DEFAULT_NUMBER $id) |id= 'AUTO' -> ^( DEFAULT_NUMBER $id) ) )
+                # osekoil.g:467:4: ( ( ASSIGN (num= number -> ^( DEFAULT_NUMBER $num) |id= 'NO_DEFAULT' -> ^( DEFAULT_NUMBER $id) |id= 'AUTO' -> ^( DEFAULT_NUMBER $id) ) ) )
+                # osekoil.g:467:7: ( ASSIGN (num= number -> ^( DEFAULT_NUMBER $num) |id= 'NO_DEFAULT' -> ^( DEFAULT_NUMBER $id) |id= 'AUTO' -> ^( DEFAULT_NUMBER $id) ) )
                 pass 
-                # osekoil.g:466:7: ( ASSIGN (num= number -> ^( DEFAULT_NUMBER $num) |id= 'NO_DEFAULT' -> ^( DEFAULT_NUMBER $id) |id= 'AUTO' -> ^( DEFAULT_NUMBER $id) ) )
-                # osekoil.g:466:8: ASSIGN (num= number -> ^( DEFAULT_NUMBER $num) |id= 'NO_DEFAULT' -> ^( DEFAULT_NUMBER $id) |id= 'AUTO' -> ^( DEFAULT_NUMBER $id) )
+                # osekoil.g:467:7: ( ASSIGN (num= number -> ^( DEFAULT_NUMBER $num) |id= 'NO_DEFAULT' -> ^( DEFAULT_NUMBER $id) |id= 'AUTO' -> ^( DEFAULT_NUMBER $id) ) )
+                # osekoil.g:467:8: ASSIGN (num= number -> ^( DEFAULT_NUMBER $num) |id= 'NO_DEFAULT' -> ^( DEFAULT_NUMBER $id) |id= 'AUTO' -> ^( DEFAULT_NUMBER $id) )
                 pass 
-                ASSIGN112 = self.match(self.input, ASSIGN, self.FOLLOW_ASSIGN_in_defaultNumber2064) 
+                ASSIGN112 = self.match(self.input, ASSIGN, self.FOLLOW_ASSIGN_in_defaultNumber2067) 
                 if self._state.backtracking == 0:
                     stream_ASSIGN.add(ASSIGN112)
 
 
-                # osekoil.g:466:15: (num= number -> ^( DEFAULT_NUMBER $num) |id= 'NO_DEFAULT' -> ^( DEFAULT_NUMBER $id) |id= 'AUTO' -> ^( DEFAULT_NUMBER $id) )
+                # osekoil.g:467:15: (num= number -> ^( DEFAULT_NUMBER $num) |id= 'NO_DEFAULT' -> ^( DEFAULT_NUMBER $id) |id= 'AUTO' -> ^( DEFAULT_NUMBER $id) )
                 alt57 = 3
                 LA57 = self.input.LA(1)
                 if LA57 == HEX or LA57 == INT:
@@ -5293,9 +5216,9 @@ class osekoilParser(BaseParser):
 
 
                 if alt57 == 1:
-                    # osekoil.g:467:4: num= number
+                    # osekoil.g:468:4: num= number
                     pass 
-                    self._state.following.append(self.FOLLOW_number_in_defaultNumber2075)
+                    self._state.following.append(self.FOLLOW_number_in_defaultNumber2078)
                     num = self.number()
 
                     self._state.following.pop()
@@ -5330,8 +5253,8 @@ class osekoilParser(BaseParser):
 
 
                         root_0 = self._adaptor.nil()
-                        # 467:47: -> ^( DEFAULT_NUMBER $num)
-                        # osekoil.g:467:50: ^( DEFAULT_NUMBER $num)
+                        # 468:47: -> ^( DEFAULT_NUMBER $num)
+                        # osekoil.g:468:50: ^( DEFAULT_NUMBER $num)
                         root_1 = self._adaptor.nil()
                         root_1 = self._adaptor.becomeRoot(
                         self._adaptor.createFromType(DEFAULT_NUMBER, "DEFAULT_NUMBER")
@@ -5350,9 +5273,9 @@ class osekoilParser(BaseParser):
 
 
                 elif alt57 == 2:
-                    # osekoil.g:468:6: id= 'NO_DEFAULT'
+                    # osekoil.g:469:6: id= 'NO_DEFAULT'
                     pass 
-                    id = self.match(self.input, 108, self.FOLLOW_108_in_defaultNumber2098) 
+                    id = self.match(self.input, 108, self.FOLLOW_108_in_defaultNumber2101) 
                     if self._state.backtracking == 0:
                         stream_108.add(id)
 
@@ -5380,8 +5303,8 @@ class osekoilParser(BaseParser):
 
 
                         root_0 = self._adaptor.nil()
-                        # 468:47: -> ^( DEFAULT_NUMBER $id)
-                        # osekoil.g:468:50: ^( DEFAULT_NUMBER $id)
+                        # 469:47: -> ^( DEFAULT_NUMBER $id)
+                        # osekoil.g:469:50: ^( DEFAULT_NUMBER $id)
                         root_1 = self._adaptor.nil()
                         root_1 = self._adaptor.becomeRoot(
                         self._adaptor.createFromType(DEFAULT_NUMBER, "DEFAULT_NUMBER")
@@ -5400,9 +5323,9 @@ class osekoilParser(BaseParser):
 
 
                 elif alt57 == 3:
-                    # osekoil.g:469:6: id= 'AUTO'
+                    # osekoil.g:470:6: id= 'AUTO'
                     pass 
-                    id = self.match(self.input, 83, self.FOLLOW_83_in_defaultNumber2121) 
+                    id = self.match(self.input, 83, self.FOLLOW_83_in_defaultNumber2124) 
                     if self._state.backtracking == 0:
                         stream_83.add(id)
 
@@ -5430,8 +5353,8 @@ class osekoilParser(BaseParser):
 
 
                         root_0 = self._adaptor.nil()
-                        # 469:47: -> ^( DEFAULT_NUMBER $id)
-                        # osekoil.g:469:50: ^( DEFAULT_NUMBER $id)
+                        # 470:47: -> ^( DEFAULT_NUMBER $id)
+                        # osekoil.g:470:50: ^( DEFAULT_NUMBER $id)
                         root_1 = self._adaptor.nil()
                         root_1 = self._adaptor.becomeRoot(
                         self._adaptor.createFromType(DEFAULT_NUMBER, "DEFAULT_NUMBER")
@@ -5489,7 +5412,7 @@ class osekoilParser(BaseParser):
 
 
     # $ANTLR start "defaultFloat"
-    # osekoil.g:473:1: defaultFloat returns [value] : ( ASSIGN (num= float -> ^( DEFAULT_FLOAT $num) |id= 'NO_DEFAULT' -> ^( DEFAULT_FLOAT $id) |id= 'AUTO' -> ^( DEFAULT_FLOAT $id) ) ) ;
+    # osekoil.g:474:1: defaultFloat returns [value] : ( ASSIGN (num= float -> ^( DEFAULT_FLOAT $num) |id= 'NO_DEFAULT' -> ^( DEFAULT_FLOAT $id) |id= 'AUTO' -> ^( DEFAULT_FLOAT $id) ) ) ;
     def defaultFloat(self, ):
         retval = self.defaultFloat_return()
         retval.start = self.input.LT(1)
@@ -5501,7 +5424,6 @@ class osekoilParser(BaseParser):
         ASSIGN113 = None
         num = None
 
-
         id_tree = None
         ASSIGN113_tree = None
         stream_108 = RewriteRuleTokenStream(self._adaptor, "token 108")
@@ -5510,18 +5432,18 @@ class osekoilParser(BaseParser):
         stream_float = RewriteRuleSubtreeStream(self._adaptor, "rule float")
         try:
             try:
-                # osekoil.g:474:4: ( ( ASSIGN (num= float -> ^( DEFAULT_FLOAT $num) |id= 'NO_DEFAULT' -> ^( DEFAULT_FLOAT $id) |id= 'AUTO' -> ^( DEFAULT_FLOAT $id) ) ) )
-                # osekoil.g:474:7: ( ASSIGN (num= float -> ^( DEFAULT_FLOAT $num) |id= 'NO_DEFAULT' -> ^( DEFAULT_FLOAT $id) |id= 'AUTO' -> ^( DEFAULT_FLOAT $id) ) )
+                # osekoil.g:475:4: ( ( ASSIGN (num= float -> ^( DEFAULT_FLOAT $num) |id= 'NO_DEFAULT' -> ^( DEFAULT_FLOAT $id) |id= 'AUTO' -> ^( DEFAULT_FLOAT $id) ) ) )
+                # osekoil.g:475:7: ( ASSIGN (num= float -> ^( DEFAULT_FLOAT $num) |id= 'NO_DEFAULT' -> ^( DEFAULT_FLOAT $id) |id= 'AUTO' -> ^( DEFAULT_FLOAT $id) ) )
                 pass 
-                # osekoil.g:474:7: ( ASSIGN (num= float -> ^( DEFAULT_FLOAT $num) |id= 'NO_DEFAULT' -> ^( DEFAULT_FLOAT $id) |id= 'AUTO' -> ^( DEFAULT_FLOAT $id) ) )
-                # osekoil.g:474:8: ASSIGN (num= float -> ^( DEFAULT_FLOAT $num) |id= 'NO_DEFAULT' -> ^( DEFAULT_FLOAT $id) |id= 'AUTO' -> ^( DEFAULT_FLOAT $id) )
+                # osekoil.g:475:7: ( ASSIGN (num= float -> ^( DEFAULT_FLOAT $num) |id= 'NO_DEFAULT' -> ^( DEFAULT_FLOAT $id) |id= 'AUTO' -> ^( DEFAULT_FLOAT $id) ) )
+                # osekoil.g:475:8: ASSIGN (num= float -> ^( DEFAULT_FLOAT $num) |id= 'NO_DEFAULT' -> ^( DEFAULT_FLOAT $id) |id= 'AUTO' -> ^( DEFAULT_FLOAT $id) )
                 pass 
-                ASSIGN113 = self.match(self.input, ASSIGN, self.FOLLOW_ASSIGN_in_defaultFloat2165) 
+                ASSIGN113 = self.match(self.input, ASSIGN, self.FOLLOW_ASSIGN_in_defaultFloat2168) 
                 if self._state.backtracking == 0:
                     stream_ASSIGN.add(ASSIGN113)
 
 
-                # osekoil.g:474:15: (num= float -> ^( DEFAULT_FLOAT $num) |id= 'NO_DEFAULT' -> ^( DEFAULT_FLOAT $id) |id= 'AUTO' -> ^( DEFAULT_FLOAT $id) )
+                # osekoil.g:475:15: (num= float -> ^( DEFAULT_FLOAT $num) |id= 'NO_DEFAULT' -> ^( DEFAULT_FLOAT $id) |id= 'AUTO' -> ^( DEFAULT_FLOAT $id) )
                 alt58 = 3
                 LA58 = self.input.LA(1)
                 if LA58 == FLOAT:
@@ -5541,9 +5463,9 @@ class osekoilParser(BaseParser):
 
 
                 if alt58 == 1:
-                    # osekoil.g:475:4: num= float
+                    # osekoil.g:476:4: num= float
                     pass 
-                    self._state.following.append(self.FOLLOW_float_in_defaultFloat2176)
+                    self._state.following.append(self.FOLLOW_float_in_defaultFloat2179)
                     num = self.float()
 
                     self._state.following.pop()
@@ -5578,8 +5500,8 @@ class osekoilParser(BaseParser):
 
 
                         root_0 = self._adaptor.nil()
-                        # 475:47: -> ^( DEFAULT_FLOAT $num)
-                        # osekoil.g:475:50: ^( DEFAULT_FLOAT $num)
+                        # 476:47: -> ^( DEFAULT_FLOAT $num)
+                        # osekoil.g:476:50: ^( DEFAULT_FLOAT $num)
                         root_1 = self._adaptor.nil()
                         root_1 = self._adaptor.becomeRoot(
                         self._adaptor.createFromType(DEFAULT_FLOAT, "DEFAULT_FLOAT")
@@ -5598,9 +5520,9 @@ class osekoilParser(BaseParser):
 
 
                 elif alt58 == 2:
-                    # osekoil.g:476:6: id= 'NO_DEFAULT'
+                    # osekoil.g:477:6: id= 'NO_DEFAULT'
                     pass 
-                    id = self.match(self.input, 108, self.FOLLOW_108_in_defaultFloat2199) 
+                    id = self.match(self.input, 108, self.FOLLOW_108_in_defaultFloat2202) 
                     if self._state.backtracking == 0:
                         stream_108.add(id)
 
@@ -5628,8 +5550,8 @@ class osekoilParser(BaseParser):
 
 
                         root_0 = self._adaptor.nil()
-                        # 476:47: -> ^( DEFAULT_FLOAT $id)
-                        # osekoil.g:476:50: ^( DEFAULT_FLOAT $id)
+                        # 477:47: -> ^( DEFAULT_FLOAT $id)
+                        # osekoil.g:477:50: ^( DEFAULT_FLOAT $id)
                         root_1 = self._adaptor.nil()
                         root_1 = self._adaptor.becomeRoot(
                         self._adaptor.createFromType(DEFAULT_FLOAT, "DEFAULT_FLOAT")
@@ -5648,9 +5570,9 @@ class osekoilParser(BaseParser):
 
 
                 elif alt58 == 3:
-                    # osekoil.g:477:6: id= 'AUTO'
+                    # osekoil.g:478:6: id= 'AUTO'
                     pass 
-                    id = self.match(self.input, 83, self.FOLLOW_83_in_defaultFloat2222) 
+                    id = self.match(self.input, 83, self.FOLLOW_83_in_defaultFloat2225) 
                     if self._state.backtracking == 0:
                         stream_83.add(id)
 
@@ -5678,8 +5600,8 @@ class osekoilParser(BaseParser):
 
 
                         root_0 = self._adaptor.nil()
-                        # 477:46: -> ^( DEFAULT_FLOAT $id)
-                        # osekoil.g:477:49: ^( DEFAULT_FLOAT $id)
+                        # 478:46: -> ^( DEFAULT_FLOAT $id)
+                        # osekoil.g:478:49: ^( DEFAULT_FLOAT $id)
                         root_1 = self._adaptor.nil()
                         root_1 = self._adaptor.becomeRoot(
                         self._adaptor.createFromType(DEFAULT_FLOAT, "DEFAULT_FLOAT")
@@ -5736,7 +5658,7 @@ class osekoilParser(BaseParser):
 
 
     # $ANTLR start "float"
-    # osekoil.g:481:1: float : FLOAT -> ^( FLOAT_DEF FLOAT ) ;
+    # osekoil.g:482:1: float : FLOAT -> ^( FLOAT_DEF FLOAT ) ;
     def float(self, ):
         retval = self.float_return()
         retval.start = self.input.LT(1)
@@ -5751,10 +5673,10 @@ class osekoilParser(BaseParser):
 
         try:
             try:
-                # osekoil.g:482:4: ( FLOAT -> ^( FLOAT_DEF FLOAT ) )
-                # osekoil.g:482:7: FLOAT
+                # osekoil.g:483:4: ( FLOAT -> ^( FLOAT_DEF FLOAT ) )
+                # osekoil.g:483:7: FLOAT
                 pass 
-                FLOAT114 = self.match(self.input, FLOAT, self.FOLLOW_FLOAT_in_float2261) 
+                FLOAT114 = self.match(self.input, FLOAT, self.FOLLOW_FLOAT_in_float2264) 
                 if self._state.backtracking == 0:
                     stream_FLOAT.add(FLOAT114)
 
@@ -5775,8 +5697,8 @@ class osekoilParser(BaseParser):
 
 
                     root_0 = self._adaptor.nil()
-                    # 483:4: -> ^( FLOAT_DEF FLOAT )
-                    # osekoil.g:483:7: ^( FLOAT_DEF FLOAT )
+                    # 484:4: -> ^( FLOAT_DEF FLOAT )
+                    # osekoil.g:484:7: ^( FLOAT_DEF FLOAT )
                     root_1 = self._adaptor.nil()
                     root_1 = self._adaptor.becomeRoot(
                     self._adaptor.createFromType(FLOAT_DEF, "FLOAT_DEF")
@@ -5830,7 +5752,7 @@ class osekoilParser(BaseParser):
 
 
     # $ANTLR start "defaultName"
-    # osekoil.g:486:1: defaultName returns [value] : ( ASSIGN (id= ID |id= 'NO_DEFAULT' |id= 'AUTO' ) -> ^( DEFAULT_NAME $id) ) ;
+    # osekoil.g:487:1: defaultName returns [value] : ( ASSIGN (id= ID |id= 'NO_DEFAULT' |id= 'AUTO' ) -> ^( DEFAULT_NAME $id) ) ;
     def defaultName(self, ):
         retval = self.defaultName_return()
         retval.start = self.input.LT(1)
@@ -5850,18 +5772,18 @@ class osekoilParser(BaseParser):
 
         try:
             try:
-                # osekoil.g:487:4: ( ( ASSIGN (id= ID |id= 'NO_DEFAULT' |id= 'AUTO' ) -> ^( DEFAULT_NAME $id) ) )
-                # osekoil.g:487:7: ( ASSIGN (id= ID |id= 'NO_DEFAULT' |id= 'AUTO' ) -> ^( DEFAULT_NAME $id) )
+                # osekoil.g:488:4: ( ( ASSIGN (id= ID |id= 'NO_DEFAULT' |id= 'AUTO' ) -> ^( DEFAULT_NAME $id) ) )
+                # osekoil.g:488:7: ( ASSIGN (id= ID |id= 'NO_DEFAULT' |id= 'AUTO' ) -> ^( DEFAULT_NAME $id) )
                 pass 
-                # osekoil.g:487:7: ( ASSIGN (id= ID |id= 'NO_DEFAULT' |id= 'AUTO' ) -> ^( DEFAULT_NAME $id) )
-                # osekoil.g:487:8: ASSIGN (id= ID |id= 'NO_DEFAULT' |id= 'AUTO' )
+                # osekoil.g:488:7: ( ASSIGN (id= ID |id= 'NO_DEFAULT' |id= 'AUTO' ) -> ^( DEFAULT_NAME $id) )
+                # osekoil.g:488:8: ASSIGN (id= ID |id= 'NO_DEFAULT' |id= 'AUTO' )
                 pass 
-                ASSIGN115 = self.match(self.input, ASSIGN, self.FOLLOW_ASSIGN_in_defaultName2292) 
+                ASSIGN115 = self.match(self.input, ASSIGN, self.FOLLOW_ASSIGN_in_defaultName2295) 
                 if self._state.backtracking == 0:
                     stream_ASSIGN.add(ASSIGN115)
 
 
-                # osekoil.g:487:15: (id= ID |id= 'NO_DEFAULT' |id= 'AUTO' )
+                # osekoil.g:488:15: (id= ID |id= 'NO_DEFAULT' |id= 'AUTO' )
                 alt59 = 3
                 LA59 = self.input.LA(1)
                 if LA59 == ID:
@@ -5881,27 +5803,27 @@ class osekoilParser(BaseParser):
 
 
                 if alt59 == 1:
-                    # osekoil.g:488:4: id= ID
+                    # osekoil.g:489:4: id= ID
                     pass 
-                    id = self.match(self.input, ID, self.FOLLOW_ID_in_defaultName2303) 
+                    id = self.match(self.input, ID, self.FOLLOW_ID_in_defaultName2306) 
                     if self._state.backtracking == 0:
                         stream_ID.add(id)
 
 
 
                 elif alt59 == 2:
-                    # osekoil.g:489:6: id= 'NO_DEFAULT'
+                    # osekoil.g:490:6: id= 'NO_DEFAULT'
                     pass 
-                    id = self.match(self.input, 108, self.FOLLOW_108_in_defaultName2314) 
+                    id = self.match(self.input, 108, self.FOLLOW_108_in_defaultName2317) 
                     if self._state.backtracking == 0:
                         stream_108.add(id)
 
 
 
                 elif alt59 == 3:
-                    # osekoil.g:490:6: id= 'AUTO'
+                    # osekoil.g:491:6: id= 'AUTO'
                     pass 
-                    id = self.match(self.input, 83, self.FOLLOW_83_in_defaultName2325) 
+                    id = self.match(self.input, 83, self.FOLLOW_83_in_defaultName2328) 
                     if self._state.backtracking == 0:
                         stream_83.add(id)
 
@@ -5926,8 +5848,8 @@ class osekoilParser(BaseParser):
 
 
                     root_0 = self._adaptor.nil()
-                    # 492:4: -> ^( DEFAULT_NAME $id)
-                    # osekoil.g:492:7: ^( DEFAULT_NAME $id)
+                    # 493:4: -> ^( DEFAULT_NAME $id)
+                    # osekoil.g:493:7: ^( DEFAULT_NAME $id)
                     root_1 = self._adaptor.nil()
                     root_1 = self._adaptor.becomeRoot(
                     self._adaptor.createFromType(DEFAULT_NAME, "DEFAULT_NAME")
@@ -5988,7 +5910,7 @@ class osekoilParser(BaseParser):
 
 
     # $ANTLR start "defaultString"
-    # osekoil.g:497:1: defaultString returns [value] : ( ASSIGN (id= STRING |id= 'NO_DEFAULT' |id= 'AUTO' ) -> ^( DEFAULT_STRING $id) ) ;
+    # osekoil.g:498:1: defaultString returns [value] : ( ASSIGN (id= STRING |id= 'NO_DEFAULT' |id= 'AUTO' ) -> ^( DEFAULT_STRING $id) ) ;
     def defaultString(self, ):
         retval = self.defaultString_return()
         retval.start = self.input.LT(1)
@@ -6008,18 +5930,18 @@ class osekoilParser(BaseParser):
 
         try:
             try:
-                # osekoil.g:498:4: ( ( ASSIGN (id= STRING |id= 'NO_DEFAULT' |id= 'AUTO' ) -> ^( DEFAULT_STRING $id) ) )
-                # osekoil.g:498:7: ( ASSIGN (id= STRING |id= 'NO_DEFAULT' |id= 'AUTO' ) -> ^( DEFAULT_STRING $id) )
+                # osekoil.g:499:4: ( ( ASSIGN (id= STRING |id= 'NO_DEFAULT' |id= 'AUTO' ) -> ^( DEFAULT_STRING $id) ) )
+                # osekoil.g:499:7: ( ASSIGN (id= STRING |id= 'NO_DEFAULT' |id= 'AUTO' ) -> ^( DEFAULT_STRING $id) )
                 pass 
-                # osekoil.g:498:7: ( ASSIGN (id= STRING |id= 'NO_DEFAULT' |id= 'AUTO' ) -> ^( DEFAULT_STRING $id) )
-                # osekoil.g:498:8: ASSIGN (id= STRING |id= 'NO_DEFAULT' |id= 'AUTO' )
+                # osekoil.g:499:7: ( ASSIGN (id= STRING |id= 'NO_DEFAULT' |id= 'AUTO' ) -> ^( DEFAULT_STRING $id) )
+                # osekoil.g:499:8: ASSIGN (id= STRING |id= 'NO_DEFAULT' |id= 'AUTO' )
                 pass 
-                ASSIGN116 = self.match(self.input, ASSIGN, self.FOLLOW_ASSIGN_in_defaultString2372) 
+                ASSIGN116 = self.match(self.input, ASSIGN, self.FOLLOW_ASSIGN_in_defaultString2375) 
                 if self._state.backtracking == 0:
                     stream_ASSIGN.add(ASSIGN116)
 
 
-                # osekoil.g:498:15: (id= STRING |id= 'NO_DEFAULT' |id= 'AUTO' )
+                # osekoil.g:499:15: (id= STRING |id= 'NO_DEFAULT' |id= 'AUTO' )
                 alt60 = 3
                 LA60 = self.input.LA(1)
                 if LA60 == STRING:
@@ -6039,27 +5961,27 @@ class osekoilParser(BaseParser):
 
 
                 if alt60 == 1:
-                    # osekoil.g:499:4: id= STRING
+                    # osekoil.g:500:4: id= STRING
                     pass 
-                    id = self.match(self.input, STRING, self.FOLLOW_STRING_in_defaultString2383) 
+                    id = self.match(self.input, STRING, self.FOLLOW_STRING_in_defaultString2386) 
                     if self._state.backtracking == 0:
                         stream_STRING.add(id)
 
 
 
                 elif alt60 == 2:
-                    # osekoil.g:500:6: id= 'NO_DEFAULT'
+                    # osekoil.g:501:6: id= 'NO_DEFAULT'
                     pass 
-                    id = self.match(self.input, 108, self.FOLLOW_108_in_defaultString2394) 
+                    id = self.match(self.input, 108, self.FOLLOW_108_in_defaultString2397) 
                     if self._state.backtracking == 0:
                         stream_108.add(id)
 
 
 
                 elif alt60 == 3:
-                    # osekoil.g:501:6: id= 'AUTO'
+                    # osekoil.g:502:6: id= 'AUTO'
                     pass 
-                    id = self.match(self.input, 83, self.FOLLOW_83_in_defaultString2405) 
+                    id = self.match(self.input, 83, self.FOLLOW_83_in_defaultString2408) 
                     if self._state.backtracking == 0:
                         stream_83.add(id)
 
@@ -6084,8 +6006,8 @@ class osekoilParser(BaseParser):
 
 
                     root_0 = self._adaptor.nil()
-                    # 503:4: -> ^( DEFAULT_STRING $id)
-                    # osekoil.g:503:7: ^( DEFAULT_STRING $id)
+                    # 504:4: -> ^( DEFAULT_STRING $id)
+                    # osekoil.g:504:7: ^( DEFAULT_STRING $id)
                     root_1 = self._adaptor.nil()
                     root_1 = self._adaptor.becomeRoot(
                     self._adaptor.createFromType(DEFAULT_STRING, "DEFAULT_STRING")
@@ -6146,7 +6068,7 @@ class osekoilParser(BaseParser):
 
 
     # $ANTLR start "defaultBool"
-    # osekoil.g:508:1: defaultBool returns [value] : ( ASSIGN ( boolean -> ^( DEFAULT_BOOL boolean ) |id= 'NO_DEFAULT' -> ^( DEFAULT_BOOL $id) |id= 'AUTO' -> ^( DEFAULT_BOOL $id) ) ) ;
+    # osekoil.g:509:1: defaultBool returns [value] : ( ASSIGN ( boolean -> ^( DEFAULT_BOOL boolean ) |id= 'NO_DEFAULT' -> ^( DEFAULT_BOOL $id) |id= 'AUTO' -> ^( DEFAULT_BOOL $id) ) ) ;
     def defaultBool(self, ):
         retval = self.defaultBool_return()
         retval.start = self.input.LT(1)
@@ -6158,7 +6080,6 @@ class osekoilParser(BaseParser):
         ASSIGN117 = None
         boolean118 = None
 
-
         id_tree = None
         ASSIGN117_tree = None
         stream_108 = RewriteRuleTokenStream(self._adaptor, "token 108")
@@ -6167,18 +6088,18 @@ class osekoilParser(BaseParser):
         stream_boolean = RewriteRuleSubtreeStream(self._adaptor, "rule boolean")
         try:
             try:
-                # osekoil.g:509:4: ( ( ASSIGN ( boolean -> ^( DEFAULT_BOOL boolean ) |id= 'NO_DEFAULT' -> ^( DEFAULT_BOOL $id) |id= 'AUTO' -> ^( DEFAULT_BOOL $id) ) ) )
-                # osekoil.g:509:7: ( ASSIGN ( boolean -> ^( DEFAULT_BOOL boolean ) |id= 'NO_DEFAULT' -> ^( DEFAULT_BOOL $id) |id= 'AUTO' -> ^( DEFAULT_BOOL $id) ) )
+                # osekoil.g:510:4: ( ( ASSIGN ( boolean -> ^( DEFAULT_BOOL boolean ) |id= 'NO_DEFAULT' -> ^( DEFAULT_BOOL $id) |id= 'AUTO' -> ^( DEFAULT_BOOL $id) ) ) )
+                # osekoil.g:510:7: ( ASSIGN ( boolean -> ^( DEFAULT_BOOL boolean ) |id= 'NO_DEFAULT' -> ^( DEFAULT_BOOL $id) |id= 'AUTO' -> ^( DEFAULT_BOOL $id) ) )
                 pass 
-                # osekoil.g:509:7: ( ASSIGN ( boolean -> ^( DEFAULT_BOOL boolean ) |id= 'NO_DEFAULT' -> ^( DEFAULT_BOOL $id) |id= 'AUTO' -> ^( DEFAULT_BOOL $id) ) )
-                # osekoil.g:509:8: ASSIGN ( boolean -> ^( DEFAULT_BOOL boolean ) |id= 'NO_DEFAULT' -> ^( DEFAULT_BOOL $id) |id= 'AUTO' -> ^( DEFAULT_BOOL $id) )
+                # osekoil.g:510:7: ( ASSIGN ( boolean -> ^( DEFAULT_BOOL boolean ) |id= 'NO_DEFAULT' -> ^( DEFAULT_BOOL $id) |id= 'AUTO' -> ^( DEFAULT_BOOL $id) ) )
+                # osekoil.g:510:8: ASSIGN ( boolean -> ^( DEFAULT_BOOL boolean ) |id= 'NO_DEFAULT' -> ^( DEFAULT_BOOL $id) |id= 'AUTO' -> ^( DEFAULT_BOOL $id) )
                 pass 
-                ASSIGN117 = self.match(self.input, ASSIGN, self.FOLLOW_ASSIGN_in_defaultBool2452) 
+                ASSIGN117 = self.match(self.input, ASSIGN, self.FOLLOW_ASSIGN_in_defaultBool2455) 
                 if self._state.backtracking == 0:
                     stream_ASSIGN.add(ASSIGN117)
 
 
-                # osekoil.g:509:15: ( boolean -> ^( DEFAULT_BOOL boolean ) |id= 'NO_DEFAULT' -> ^( DEFAULT_BOOL $id) |id= 'AUTO' -> ^( DEFAULT_BOOL $id) )
+                # osekoil.g:510:15: ( boolean -> ^( DEFAULT_BOOL boolean ) |id= 'NO_DEFAULT' -> ^( DEFAULT_BOOL $id) |id= 'AUTO' -> ^( DEFAULT_BOOL $id) )
                 alt61 = 3
                 LA61 = self.input.LA(1)
                 if LA61 == 93 or LA61 == 117:
@@ -6198,9 +6119,9 @@ class osekoilParser(BaseParser):
 
 
                 if alt61 == 1:
-                    # osekoil.g:510:4: boolean
+                    # osekoil.g:511:4: boolean
                     pass 
-                    self._state.following.append(self.FOLLOW_boolean_in_defaultBool2459)
+                    self._state.following.append(self.FOLLOW_boolean_in_defaultBool2462)
                     boolean118 = self.boolean()
 
                     self._state.following.pop()
@@ -6224,8 +6145,8 @@ class osekoilParser(BaseParser):
 
 
                         root_0 = self._adaptor.nil()
-                        # 510:20: -> ^( DEFAULT_BOOL boolean )
-                        # osekoil.g:510:23: ^( DEFAULT_BOOL boolean )
+                        # 511:20: -> ^( DEFAULT_BOOL boolean )
+                        # osekoil.g:511:23: ^( DEFAULT_BOOL boolean )
                         root_1 = self._adaptor.nil()
                         root_1 = self._adaptor.becomeRoot(
                         self._adaptor.createFromType(DEFAULT_BOOL, "DEFAULT_BOOL")
@@ -6244,9 +6165,9 @@ class osekoilParser(BaseParser):
 
 
                 elif alt61 == 2:
-                    # osekoil.g:511:6: id= 'NO_DEFAULT'
+                    # osekoil.g:512:6: id= 'NO_DEFAULT'
                     pass 
-                    id = self.match(self.input, 108, self.FOLLOW_108_in_defaultBool2486) 
+                    id = self.match(self.input, 108, self.FOLLOW_108_in_defaultBool2489) 
                     if self._state.backtracking == 0:
                         stream_108.add(id)
 
@@ -6268,8 +6189,8 @@ class osekoilParser(BaseParser):
 
 
                         root_0 = self._adaptor.nil()
-                        # 511:24: -> ^( DEFAULT_BOOL $id)
-                        # osekoil.g:511:27: ^( DEFAULT_BOOL $id)
+                        # 512:24: -> ^( DEFAULT_BOOL $id)
+                        # osekoil.g:512:27: ^( DEFAULT_BOOL $id)
                         root_1 = self._adaptor.nil()
                         root_1 = self._adaptor.becomeRoot(
                         self._adaptor.createFromType(DEFAULT_BOOL, "DEFAULT_BOOL")
@@ -6288,9 +6209,9 @@ class osekoilParser(BaseParser):
 
 
                 elif alt61 == 3:
-                    # osekoil.g:512:6: id= 'AUTO'
+                    # osekoil.g:513:6: id= 'AUTO'
                     pass 
-                    id = self.match(self.input, 83, self.FOLLOW_83_in_defaultBool2506) 
+                    id = self.match(self.input, 83, self.FOLLOW_83_in_defaultBool2509) 
                     if self._state.backtracking == 0:
                         stream_83.add(id)
 
@@ -6312,8 +6233,8 @@ class osekoilParser(BaseParser):
 
 
                         root_0 = self._adaptor.nil()
-                        # 512:24: -> ^( DEFAULT_BOOL $id)
-                        # osekoil.g:512:27: ^( DEFAULT_BOOL $id)
+                        # 513:24: -> ^( DEFAULT_BOOL $id)
+                        # osekoil.g:513:27: ^( DEFAULT_BOOL $id)
                         root_1 = self._adaptor.nil()
                         root_1 = self._adaptor.becomeRoot(
                         self._adaptor.createFromType(DEFAULT_BOOL, "DEFAULT_BOOL")
@@ -6371,7 +6292,7 @@ class osekoilParser(BaseParser):
 
 
     # $ANTLR start "implParameterList"
-    # osekoil.g:516:1: implParameterList returns [values] : ( '{' implDefList '}' ) -> ^( IMPL_PARAMETER_LIST implDefList ) ;
+    # osekoil.g:517:1: implParameterList returns [values] : ( '{' implDefList '}' ) -> ^( IMPL_PARAMETER_LIST implDefList ) ;
     def implParameterList(self, ):
         retval = self.implParameterList_return()
         retval.start = self.input.LT(1)
@@ -6383,7 +6304,6 @@ class osekoilParser(BaseParser):
         char_literal121 = None
         implDefList120 = None
 
-
         char_literal119_tree = None
         char_literal121_tree = None
         stream_LCURLY = RewriteRuleTokenStream(self._adaptor, "token LCURLY")
@@ -6391,18 +6311,18 @@ class osekoilParser(BaseParser):
         stream_implDefList = RewriteRuleSubtreeStream(self._adaptor, "rule implDefList")
         try:
             try:
-                # osekoil.g:517:4: ( ( '{' implDefList '}' ) -> ^( IMPL_PARAMETER_LIST implDefList ) )
-                # osekoil.g:517:7: ( '{' implDefList '}' )
+                # osekoil.g:518:4: ( ( '{' implDefList '}' ) -> ^( IMPL_PARAMETER_LIST implDefList ) )
+                # osekoil.g:518:7: ( '{' implDefList '}' )
                 pass 
-                # osekoil.g:517:7: ( '{' implDefList '}' )
-                # osekoil.g:517:8: '{' implDefList '}'
+                # osekoil.g:518:7: ( '{' implDefList '}' )
+                # osekoil.g:518:8: '{' implDefList '}'
                 pass 
-                char_literal119 = self.match(self.input, LCURLY, self.FOLLOW_LCURLY_in_implParameterList2547) 
+                char_literal119 = self.match(self.input, LCURLY, self.FOLLOW_LCURLY_in_implParameterList2550) 
                 if self._state.backtracking == 0:
                     stream_LCURLY.add(char_literal119)
 
 
-                self._state.following.append(self.FOLLOW_implDefList_in_implParameterList2549)
+                self._state.following.append(self.FOLLOW_implDefList_in_implParameterList2552)
                 implDefList120 = self.implDefList()
 
                 self._state.following.pop()
@@ -6418,7 +6338,7 @@ class osekoilParser(BaseParser):
 
 
 
-                char_literal121 = self.match(self.input, RCURLY, self.FOLLOW_RCURLY_in_implParameterList2556) 
+                char_literal121 = self.match(self.input, RCURLY, self.FOLLOW_RCURLY_in_implParameterList2559) 
                 if self._state.backtracking == 0:
                     stream_RCURLY.add(char_literal121)
 
@@ -6442,8 +6362,8 @@ class osekoilParser(BaseParser):
 
 
                     root_0 = self._adaptor.nil()
-                    # 521:4: -> ^( IMPL_PARAMETER_LIST implDefList )
-                    # osekoil.g:521:7: ^( IMPL_PARAMETER_LIST implDefList )
+                    # 522:4: -> ^( IMPL_PARAMETER_LIST implDefList )
+                    # osekoil.g:522:7: ^( IMPL_PARAMETER_LIST implDefList )
                     root_1 = self._adaptor.nil()
                     root_1 = self._adaptor.becomeRoot(
                     self._adaptor.createFromType(IMPL_PARAMETER_LIST, "IMPL_PARAMETER_LIST")
@@ -6495,7 +6415,7 @@ class osekoilParser(BaseParser):
 
 
     # $ANTLR start "implDefList"
-    # osekoil.g:524:1: implDefList returns [values] : (defs+= ( implementationDef ) )* -> ^( IMPL_DEF_LIST ( implementationDef )* ) ;
+    # osekoil.g:525:1: implDefList returns [values] : (defs+= ( implementationDef ) )* -> ^( IMPL_DEF_LIST ( implementationDef )* ) ;
     def implDefList(self, ):
         retval = self.implDefList_return()
         retval.start = self.input.LT(1)
@@ -6507,7 +6427,6 @@ class osekoilParser(BaseParser):
         list_defs = None
         implementationDef122 = None
 
-
         defs_tree = None
         stream_implementationDef = RewriteRuleSubtreeStream(self._adaptor, "rule implementationDef")
               
@@ -6515,10 +6434,10 @@ class osekoilParser(BaseParser):
 
         try:
             try:
-                # osekoil.g:531:4: ( (defs+= ( implementationDef ) )* -> ^( IMPL_DEF_LIST ( implementationDef )* ) )
-                # osekoil.g:531:7: (defs+= ( implementationDef ) )*
+                # osekoil.g:532:4: ( (defs+= ( implementationDef ) )* -> ^( IMPL_DEF_LIST ( implementationDef )* ) )
+                # osekoil.g:532:7: (defs+= ( implementationDef ) )*
                 pass 
-                # osekoil.g:531:12: (defs+= ( implementationDef ) )*
+                # osekoil.g:532:12: (defs+= ( implementationDef ) )*
                 while True: #loop62
                     alt62 = 2
                     LA62_0 = self.input.LA(1)
@@ -6528,12 +6447,12 @@ class osekoilParser(BaseParser):
 
 
                     if alt62 == 1:
-                        # osekoil.g:531:12: defs+= ( implementationDef )
+                        # osekoil.g:532:12: defs+= ( implementationDef )
                         pass 
-                        # osekoil.g:531:15: ( implementationDef )
-                        # osekoil.g:531:16: implementationDef
+                        # osekoil.g:532:15: ( implementationDef )
+                        # osekoil.g:532:16: implementationDef
                         pass 
-                        self._state.following.append(self.FOLLOW_implementationDef_in_implDefList2602)
+                        self._state.following.append(self.FOLLOW_implementationDef_in_implDefList2605)
                         implementationDef122 = self.implementationDef()
 
                         self._state.following.pop()
@@ -6579,14 +6498,14 @@ class osekoilParser(BaseParser):
 
 
                     root_0 = self._adaptor.nil()
-                    # 535:4: -> ^( IMPL_DEF_LIST ( implementationDef )* )
-                    # osekoil.g:535:7: ^( IMPL_DEF_LIST ( implementationDef )* )
+                    # 536:4: -> ^( IMPL_DEF_LIST ( implementationDef )* )
+                    # osekoil.g:536:7: ^( IMPL_DEF_LIST ( implementationDef )* )
                     root_1 = self._adaptor.nil()
                     root_1 = self._adaptor.becomeRoot(
                     self._adaptor.createFromType(IMPL_DEF_LIST, "IMPL_DEF_LIST")
                     , root_1)
 
-                    # osekoil.g:535:23: ( implementationDef )*
+                    # osekoil.g:536:23: ( implementationDef )*
                     while stream_implementationDef.hasNext():
                         self._adaptor.addChild(root_1, stream_implementationDef.nextTree())
 
@@ -6648,7 +6567,7 @@ class osekoilParser(BaseParser):
 
 
     # $ANTLR start "implRefDef"
-    # osekoil.g:539:1: implRefDef returns [objectType, name, mult, desc] : objectRefType referenceName ( multipleSpecifier )? ( description )? SEMI -> ^( IMPL_REF_DEF objectRefType referenceName ( multipleSpecifier )? ( description )? ) ;
+    # osekoil.g:540:1: implRefDef returns [objectType, name, mult, desc] : objectRefType referenceName ( multipleSpecifier )? ( description )? SEMI -> ^( IMPL_REF_DEF objectRefType referenceName ( multipleSpecifier )? ( description )? ) ;
     def implRefDef(self, ):
         retval = self.implRefDef_return()
         retval.start = self.input.LT(1)
@@ -6658,13 +6577,9 @@ class osekoilParser(BaseParser):
 
         SEMI127 = None
         objectRefType123 = None
-
         referenceName124 = None
-
         multipleSpecifier125 = None
-
         description126 = None
-
 
         SEMI127_tree = None
         stream_SEMI = RewriteRuleTokenStream(self._adaptor, "token SEMI")
@@ -6674,10 +6589,10 @@ class osekoilParser(BaseParser):
         stream_referenceName = RewriteRuleSubtreeStream(self._adaptor, "rule referenceName")
         try:
             try:
-                # osekoil.g:540:4: ( objectRefType referenceName ( multipleSpecifier )? ( description )? SEMI -> ^( IMPL_REF_DEF objectRefType referenceName ( multipleSpecifier )? ( description )? ) )
-                # osekoil.g:540:7: objectRefType referenceName ( multipleSpecifier )? ( description )? SEMI
+                # osekoil.g:541:4: ( objectRefType referenceName ( multipleSpecifier )? ( description )? SEMI -> ^( IMPL_REF_DEF objectRefType referenceName ( multipleSpecifier )? ( description )? ) )
+                # osekoil.g:541:7: objectRefType referenceName ( multipleSpecifier )? ( description )? SEMI
                 pass 
-                self._state.following.append(self.FOLLOW_objectRefType_in_implRefDef2644)
+                self._state.following.append(self.FOLLOW_objectRefType_in_implRefDef2647)
                 objectRefType123 = self.objectRefType()
 
                 self._state.following.pop()
@@ -6685,7 +6600,7 @@ class osekoilParser(BaseParser):
                     stream_objectRefType.add(objectRefType123.tree)
 
 
-                self._state.following.append(self.FOLLOW_referenceName_in_implRefDef2646)
+                self._state.following.append(self.FOLLOW_referenceName_in_implRefDef2649)
                 referenceName124 = self.referenceName()
 
                 self._state.following.pop()
@@ -6693,16 +6608,16 @@ class osekoilParser(BaseParser):
                     stream_referenceName.add(referenceName124.tree)
 
 
-                # osekoil.g:540:35: ( multipleSpecifier )?
+                # osekoil.g:541:35: ( multipleSpecifier )?
                 alt63 = 2
                 LA63_0 = self.input.LA(1)
 
                 if (LA63_0 == LBRACK) :
                     alt63 = 1
                 if alt63 == 1:
-                    # osekoil.g:540:35: multipleSpecifier
+                    # osekoil.g:541:35: multipleSpecifier
                     pass 
-                    self._state.following.append(self.FOLLOW_multipleSpecifier_in_implRefDef2648)
+                    self._state.following.append(self.FOLLOW_multipleSpecifier_in_implRefDef2651)
                     multipleSpecifier125 = self.multipleSpecifier()
 
                     self._state.following.pop()
@@ -6713,16 +6628,16 @@ class osekoilParser(BaseParser):
 
 
 
-                # osekoil.g:540:54: ( description )?
+                # osekoil.g:541:54: ( description )?
                 alt64 = 2
                 LA64_0 = self.input.LA(1)
 
                 if (LA64_0 == 78) :
                     alt64 = 1
                 if alt64 == 1:
-                    # osekoil.g:540:54: description
+                    # osekoil.g:541:54: description
                     pass 
-                    self._state.following.append(self.FOLLOW_description_in_implRefDef2651)
+                    self._state.following.append(self.FOLLOW_description_in_implRefDef2654)
                     description126 = self.description()
 
                     self._state.following.pop()
@@ -6733,7 +6648,7 @@ class osekoilParser(BaseParser):
 
 
 
-                SEMI127 = self.match(self.input, SEMI, self.FOLLOW_SEMI_in_implRefDef2654) 
+                SEMI127 = self.match(self.input, SEMI, self.FOLLOW_SEMI_in_implRefDef2657) 
                 if self._state.backtracking == 0:
                     stream_SEMI.add(SEMI127)
 
@@ -6753,7 +6668,7 @@ class osekoilParser(BaseParser):
 
 
                 # AST Rewrite
-                # elements: description, objectRefType, referenceName, multipleSpecifier
+                # elements: referenceName, description, multipleSpecifier, objectRefType
                 # token labels: 
                 # rule labels: retval
                 # token list labels: 
@@ -6768,8 +6683,8 @@ class osekoilParser(BaseParser):
 
 
                     root_0 = self._adaptor.nil()
-                    # 550:7: -> ^( IMPL_REF_DEF objectRefType referenceName ( multipleSpecifier )? ( description )? )
-                    # osekoil.g:550:10: ^( IMPL_REF_DEF objectRefType referenceName ( multipleSpecifier )? ( description )? )
+                    # 551:7: -> ^( IMPL_REF_DEF objectRefType referenceName ( multipleSpecifier )? ( description )? )
+                    # osekoil.g:551:10: ^( IMPL_REF_DEF objectRefType referenceName ( multipleSpecifier )? ( description )? )
                     root_1 = self._adaptor.nil()
                     root_1 = self._adaptor.becomeRoot(
                     self._adaptor.createFromType(IMPL_REF_DEF, "IMPL_REF_DEF")
@@ -6779,14 +6694,14 @@ class osekoilParser(BaseParser):
 
                     self._adaptor.addChild(root_1, stream_referenceName.nextTree())
 
-                    # osekoil.g:550:53: ( multipleSpecifier )?
+                    # osekoil.g:551:53: ( multipleSpecifier )?
                     if stream_multipleSpecifier.hasNext():
                         self._adaptor.addChild(root_1, stream_multipleSpecifier.nextTree())
 
 
                     stream_multipleSpecifier.reset();
 
-                    # osekoil.g:550:72: ( description )?
+                    # osekoil.g:551:72: ( description )?
                     if stream_description.hasNext():
                         self._adaptor.addChild(root_1, stream_description.nextTree())
 
@@ -6836,7 +6751,7 @@ class osekoilParser(BaseParser):
 
 
     # $ANTLR start "objectRefType"
-    # osekoil.g:553:1: objectRefType : (id= 'OS_TYPE' |id= 'TASK_TYPE' |id= 'COUNTER_TYPE' |id= 'ALARM_TYPE' |id= 'RESOURCE_TYPE' |id= 'EVENT_TYPE' |id= 'ISR_TYPE' |id= 'MESSAGE_TYPE' |id= 'COM_TYPE' |id= 'NM_TYPE' |id= 'APPMODE_TYPE' |id= 'IPDU_TYPE' |id= 'NETWORKMESSAGE_TYPE' -> ^( OBJECT_REF_TYPE $id) );
+    # osekoil.g:554:1: objectRefType : (id= 'OS_TYPE' |id= 'TASK_TYPE' |id= 'COUNTER_TYPE' |id= 'ALARM_TYPE' |id= 'RESOURCE_TYPE' |id= 'EVENT_TYPE' |id= 'ISR_TYPE' |id= 'MESSAGE_TYPE' |id= 'COM_TYPE' |id= 'NM_TYPE' |id= 'APPMODE_TYPE' |id= 'IPDU_TYPE' |id= 'NETWORKMESSAGE_TYPE' -> ^( OBJECT_REF_TYPE $id) );
     def objectRefType(self, ):
         retval = self.objectRefType_return()
         retval.start = self.input.LT(1)
@@ -6851,7 +6766,7 @@ class osekoilParser(BaseParser):
 
         try:
             try:
-                # osekoil.g:554:4: (id= 'OS_TYPE' |id= 'TASK_TYPE' |id= 'COUNTER_TYPE' |id= 'ALARM_TYPE' |id= 'RESOURCE_TYPE' |id= 'EVENT_TYPE' |id= 'ISR_TYPE' |id= 'MESSAGE_TYPE' |id= 'COM_TYPE' |id= 'NM_TYPE' |id= 'APPMODE_TYPE' |id= 'IPDU_TYPE' |id= 'NETWORKMESSAGE_TYPE' -> ^( OBJECT_REF_TYPE $id) )
+                # osekoil.g:555:4: (id= 'OS_TYPE' |id= 'TASK_TYPE' |id= 'COUNTER_TYPE' |id= 'ALARM_TYPE' |id= 'RESOURCE_TYPE' |id= 'EVENT_TYPE' |id= 'ISR_TYPE' |id= 'MESSAGE_TYPE' |id= 'COM_TYPE' |id= 'NM_TYPE' |id= 'APPMODE_TYPE' |id= 'IPDU_TYPE' |id= 'NETWORKMESSAGE_TYPE' -> ^( OBJECT_REF_TYPE $id) )
                 alt65 = 13
                 LA65 = self.input.LA(1)
                 if LA65 == 111:
@@ -6891,12 +6806,12 @@ class osekoilParser(BaseParser):
 
 
                 if alt65 == 1:
-                    # osekoil.g:554:7: id= 'OS_TYPE'
+                    # osekoil.g:555:7: id= 'OS_TYPE'
                     pass 
                     root_0 = self._adaptor.nil()
 
 
-                    id = self.match(self.input, 111, self.FOLLOW_111_in_objectRefType2701)
+                    id = self.match(self.input, 111, self.FOLLOW_111_in_objectRefType2704)
                     if self._state.backtracking == 0:
                         id_tree = self._adaptor.createWithPayload(id)
                         self._adaptor.addChild(root_0, id_tree)
@@ -6905,12 +6820,12 @@ class osekoilParser(BaseParser):
 
 
                 elif alt65 == 2:
-                    # osekoil.g:555:7: id= 'TASK_TYPE'
+                    # osekoil.g:556:7: id= 'TASK_TYPE'
                     pass 
                     root_0 = self._adaptor.nil()
 
 
-                    id = self.match(self.input, 116, self.FOLLOW_116_in_objectRefType2713)
+                    id = self.match(self.input, 116, self.FOLLOW_116_in_objectRefType2716)
                     if self._state.backtracking == 0:
                         id_tree = self._adaptor.createWithPayload(id)
                         self._adaptor.addChild(root_0, id_tree)
@@ -6919,12 +6834,12 @@ class osekoilParser(BaseParser):
 
 
                 elif alt65 == 3:
-                    # osekoil.g:556:7: id= 'COUNTER_TYPE'
+                    # osekoil.g:557:7: id= 'COUNTER_TYPE'
                     pass 
                     root_0 = self._adaptor.nil()
 
 
-                    id = self.match(self.input, 88, self.FOLLOW_88_in_objectRefType2725)
+                    id = self.match(self.input, 88, self.FOLLOW_88_in_objectRefType2728)
                     if self._state.backtracking == 0:
                         id_tree = self._adaptor.createWithPayload(id)
                         self._adaptor.addChild(root_0, id_tree)
@@ -6933,12 +6848,12 @@ class osekoilParser(BaseParser):
 
 
                 elif alt65 == 4:
-                    # osekoil.g:557:7: id= 'ALARM_TYPE'
+                    # osekoil.g:558:7: id= 'ALARM_TYPE'
                     pass 
                     root_0 = self._adaptor.nil()
 
 
-                    id = self.match(self.input, 80, self.FOLLOW_80_in_objectRefType2737)
+                    id = self.match(self.input, 80, self.FOLLOW_80_in_objectRefType2740)
                     if self._state.backtracking == 0:
                         id_tree = self._adaptor.createWithPayload(id)
                         self._adaptor.addChild(root_0, id_tree)
@@ -6947,12 +6862,12 @@ class osekoilParser(BaseParser):
 
 
                 elif alt65 == 5:
-                    # osekoil.g:558:7: id= 'RESOURCE_TYPE'
+                    # osekoil.g:559:7: id= 'RESOURCE_TYPE'
                     pass 
                     root_0 = self._adaptor.nil()
 
 
-                    id = self.match(self.input, 113, self.FOLLOW_113_in_objectRefType2749)
+                    id = self.match(self.input, 113, self.FOLLOW_113_in_objectRefType2752)
                     if self._state.backtracking == 0:
                         id_tree = self._adaptor.createWithPayload(id)
                         self._adaptor.addChild(root_0, id_tree)
@@ -6961,12 +6876,12 @@ class osekoilParser(BaseParser):
 
 
                 elif alt65 == 6:
-                    # osekoil.g:559:7: id= 'EVENT_TYPE'
+                    # osekoil.g:560:7: id= 'EVENT_TYPE'
                     pass 
                     root_0 = self._adaptor.nil()
 
 
-                    id = self.match(self.input, 92, self.FOLLOW_92_in_objectRefType2761)
+                    id = self.match(self.input, 92, self.FOLLOW_92_in_objectRefType2764)
                     if self._state.backtracking == 0:
                         id_tree = self._adaptor.createWithPayload(id)
                         self._adaptor.addChild(root_0, id_tree)
@@ -6975,12 +6890,12 @@ class osekoilParser(BaseParser):
 
 
                 elif alt65 == 7:
-                    # osekoil.g:560:7: id= 'ISR_TYPE'
+                    # osekoil.g:561:7: id= 'ISR_TYPE'
                     pass 
                     root_0 = self._adaptor.nil()
 
 
-                    id = self.match(self.input, 101, self.FOLLOW_101_in_objectRefType2773)
+                    id = self.match(self.input, 101, self.FOLLOW_101_in_objectRefType2776)
                     if self._state.backtracking == 0:
                         id_tree = self._adaptor.createWithPayload(id)
                         self._adaptor.addChild(root_0, id_tree)
@@ -6989,12 +6904,12 @@ class osekoilParser(BaseParser):
 
 
                 elif alt65 == 8:
-                    # osekoil.g:561:7: id= 'MESSAGE_TYPE'
+                    # osekoil.g:562:7: id= 'MESSAGE_TYPE'
                     pass 
                     root_0 = self._adaptor.nil()
 
 
-                    id = self.match(self.input, 103, self.FOLLOW_103_in_objectRefType2785)
+                    id = self.match(self.input, 103, self.FOLLOW_103_in_objectRefType2788)
                     if self._state.backtracking == 0:
                         id_tree = self._adaptor.createWithPayload(id)
                         self._adaptor.addChild(root_0, id_tree)
@@ -7003,12 +6918,12 @@ class osekoilParser(BaseParser):
 
 
                 elif alt65 == 9:
-                    # osekoil.g:562:7: id= 'COM_TYPE'
+                    # osekoil.g:563:7: id= 'COM_TYPE'
                     pass 
                     root_0 = self._adaptor.nil()
 
 
-                    id = self.match(self.input, 86, self.FOLLOW_86_in_objectRefType2797)
+                    id = self.match(self.input, 86, self.FOLLOW_86_in_objectRefType2800)
                     if self._state.backtracking == 0:
                         id_tree = self._adaptor.createWithPayload(id)
                         self._adaptor.addChild(root_0, id_tree)
@@ -7017,12 +6932,12 @@ class osekoilParser(BaseParser):
 
 
                 elif alt65 == 10:
-                    # osekoil.g:563:7: id= 'NM_TYPE'
+                    # osekoil.g:564:7: id= 'NM_TYPE'
                     pass 
                     root_0 = self._adaptor.nil()
 
 
-                    id = self.match(self.input, 107, self.FOLLOW_107_in_objectRefType2809)
+                    id = self.match(self.input, 107, self.FOLLOW_107_in_objectRefType2812)
                     if self._state.backtracking == 0:
                         id_tree = self._adaptor.createWithPayload(id)
                         self._adaptor.addChild(root_0, id_tree)
@@ -7031,12 +6946,12 @@ class osekoilParser(BaseParser):
 
 
                 elif alt65 == 11:
-                    # osekoil.g:564:7: id= 'APPMODE_TYPE'
+                    # osekoil.g:565:7: id= 'APPMODE_TYPE'
                     pass 
                     root_0 = self._adaptor.nil()
 
 
-                    id = self.match(self.input, 82, self.FOLLOW_82_in_objectRefType2821)
+                    id = self.match(self.input, 82, self.FOLLOW_82_in_objectRefType2824)
                     if self._state.backtracking == 0:
                         id_tree = self._adaptor.createWithPayload(id)
                         self._adaptor.addChild(root_0, id_tree)
@@ -7045,12 +6960,12 @@ class osekoilParser(BaseParser):
 
 
                 elif alt65 == 12:
-                    # osekoil.g:565:7: id= 'IPDU_TYPE'
+                    # osekoil.g:566:7: id= 'IPDU_TYPE'
                     pass 
                     root_0 = self._adaptor.nil()
 
 
-                    id = self.match(self.input, 99, self.FOLLOW_99_in_objectRefType2833)
+                    id = self.match(self.input, 99, self.FOLLOW_99_in_objectRefType2836)
                     if self._state.backtracking == 0:
                         id_tree = self._adaptor.createWithPayload(id)
                         self._adaptor.addChild(root_0, id_tree)
@@ -7059,9 +6974,9 @@ class osekoilParser(BaseParser):
 
 
                 elif alt65 == 13:
-                    # osekoil.g:566:7: id= 'NETWORKMESSAGE_TYPE'
+                    # osekoil.g:567:7: id= 'NETWORKMESSAGE_TYPE'
                     pass 
-                    id = self.match(self.input, 105, self.FOLLOW_105_in_objectRefType2845) 
+                    id = self.match(self.input, 105, self.FOLLOW_105_in_objectRefType2848) 
                     if self._state.backtracking == 0:
                         stream_105.add(id)
 
@@ -7083,8 +6998,8 @@ class osekoilParser(BaseParser):
 
 
                         root_0 = self._adaptor.nil()
-                        # 567:4: -> ^( OBJECT_REF_TYPE $id)
-                        # osekoil.g:567:7: ^( OBJECT_REF_TYPE $id)
+                        # 568:4: -> ^( OBJECT_REF_TYPE $id)
+                        # osekoil.g:568:7: ^( OBJECT_REF_TYPE $id)
                         root_1 = self._adaptor.nil()
                         root_1 = self._adaptor.becomeRoot(
                         self._adaptor.createFromType(OBJECT_REF_TYPE, "OBJECT_REF_TYPE")
@@ -7134,7 +7049,7 @@ class osekoilParser(BaseParser):
 
 
     # $ANTLR start "referenceName"
-    # osekoil.g:570:1: referenceName : ( ID -> ^( REFERENCE_NAME ID ) | object -> ^( REFERENCE_NAME object ) );
+    # osekoil.g:571:1: referenceName : ( ID -> ^( REFERENCE_NAME ID ) | object -> ^( REFERENCE_NAME object ) );
     def referenceName(self, ):
         retval = self.referenceName_return()
         retval.start = self.input.LT(1)
@@ -7145,13 +7060,12 @@ class osekoilParser(BaseParser):
         ID128 = None
         object129 = None
 
-
         ID128_tree = None
         stream_ID = RewriteRuleTokenStream(self._adaptor, "token ID")
         stream_object = RewriteRuleSubtreeStream(self._adaptor, "rule object")
         try:
             try:
-                # osekoil.g:571:4: ( ID -> ^( REFERENCE_NAME ID ) | object -> ^( REFERENCE_NAME object ) )
+                # osekoil.g:572:4: ( ID -> ^( REFERENCE_NAME ID ) | object -> ^( REFERENCE_NAME object ) )
                 alt66 = 2
                 LA66_0 = self.input.LA(1)
 
@@ -7170,9 +7084,9 @@ class osekoilParser(BaseParser):
 
 
                 if alt66 == 1:
-                    # osekoil.g:571:7: ID
+                    # osekoil.g:572:7: ID
                     pass 
-                    ID128 = self.match(self.input, ID, self.FOLLOW_ID_in_referenceName2873) 
+                    ID128 = self.match(self.input, ID, self.FOLLOW_ID_in_referenceName2876) 
                     if self._state.backtracking == 0:
                         stream_ID.add(ID128)
 
@@ -7193,8 +7107,8 @@ class osekoilParser(BaseParser):
 
 
                         root_0 = self._adaptor.nil()
-                        # 571:10: -> ^( REFERENCE_NAME ID )
-                        # osekoil.g:571:13: ^( REFERENCE_NAME ID )
+                        # 572:10: -> ^( REFERENCE_NAME ID )
+                        # osekoil.g:572:13: ^( REFERENCE_NAME ID )
                         root_1 = self._adaptor.nil()
                         root_1 = self._adaptor.becomeRoot(
                         self._adaptor.createFromType(REFERENCE_NAME, "REFERENCE_NAME")
@@ -7215,9 +7129,9 @@ class osekoilParser(BaseParser):
 
 
                 elif alt66 == 2:
-                    # osekoil.g:572:7: object
+                    # osekoil.g:573:7: object
                     pass 
-                    self._state.following.append(self.FOLLOW_object_in_referenceName2889)
+                    self._state.following.append(self.FOLLOW_object_in_referenceName2892)
                     object129 = self.object()
 
                     self._state.following.pop()
@@ -7241,8 +7155,8 @@ class osekoilParser(BaseParser):
 
 
                         root_0 = self._adaptor.nil()
-                        # 572:16: -> ^( REFERENCE_NAME object )
-                        # osekoil.g:572:19: ^( REFERENCE_NAME object )
+                        # 573:16: -> ^( REFERENCE_NAME object )
+                        # osekoil.g:573:19: ^( REFERENCE_NAME object )
                         root_1 = self._adaptor.nil()
                         root_1 = self._adaptor.becomeRoot(
                         self._adaptor.createFromType(REFERENCE_NAME, "REFERENCE_NAME")
@@ -7293,7 +7207,7 @@ class osekoilParser(BaseParser):
 
 
     # $ANTLR start "applicationDefinition"
-    # osekoil.g:580:1: applicationDefinition returns [value] : 'CPU' ID '{' objectDefinitionList '}' ( description )? SEMI -> ^( APPLICATION_DEFINITION objectDefinitionList ( description )? ) ;
+    # osekoil.g:581:1: applicationDefinition returns [value] : 'CPU' ID '{' objectDefinitionList '}' ( description )? SEMI -> ^( APPLICATION_DEFINITION objectDefinitionList ( description )? ) ;
     def applicationDefinition(self, ):
         retval = self.applicationDefinition_return()
         retval.start = self.input.LT(1)
@@ -7307,9 +7221,7 @@ class osekoilParser(BaseParser):
         char_literal134 = None
         SEMI136 = None
         objectDefinitionList133 = None
-
         description135 = None
-
 
         string_literal130_tree = None
         ID131_tree = None
@@ -7325,25 +7237,25 @@ class osekoilParser(BaseParser):
         stream_objectDefinitionList = RewriteRuleSubtreeStream(self._adaptor, "rule objectDefinitionList")
         try:
             try:
-                # osekoil.g:581:4: ( 'CPU' ID '{' objectDefinitionList '}' ( description )? SEMI -> ^( APPLICATION_DEFINITION objectDefinitionList ( description )? ) )
-                # osekoil.g:581:7: 'CPU' ID '{' objectDefinitionList '}' ( description )? SEMI
+                # osekoil.g:582:4: ( 'CPU' ID '{' objectDefinitionList '}' ( description )? SEMI -> ^( APPLICATION_DEFINITION objectDefinitionList ( description )? ) )
+                # osekoil.g:582:7: 'CPU' ID '{' objectDefinitionList '}' ( description )? SEMI
                 pass 
-                string_literal130 = self.match(self.input, 89, self.FOLLOW_89_in_applicationDefinition2923) 
+                string_literal130 = self.match(self.input, 89, self.FOLLOW_89_in_applicationDefinition2926) 
                 if self._state.backtracking == 0:
                     stream_89.add(string_literal130)
 
 
-                ID131 = self.match(self.input, ID, self.FOLLOW_ID_in_applicationDefinition2925) 
+                ID131 = self.match(self.input, ID, self.FOLLOW_ID_in_applicationDefinition2928) 
                 if self._state.backtracking == 0:
                     stream_ID.add(ID131)
 
 
-                char_literal132 = self.match(self.input, LCURLY, self.FOLLOW_LCURLY_in_applicationDefinition2927) 
+                char_literal132 = self.match(self.input, LCURLY, self.FOLLOW_LCURLY_in_applicationDefinition2930) 
                 if self._state.backtracking == 0:
                     stream_LCURLY.add(char_literal132)
 
 
-                self._state.following.append(self.FOLLOW_objectDefinitionList_in_applicationDefinition2929)
+                self._state.following.append(self.FOLLOW_objectDefinitionList_in_applicationDefinition2932)
                 objectDefinitionList133 = self.objectDefinitionList()
 
                 self._state.following.pop()
@@ -7351,21 +7263,21 @@ class osekoilParser(BaseParser):
                     stream_objectDefinitionList.add(objectDefinitionList133.tree)
 
 
-                char_literal134 = self.match(self.input, RCURLY, self.FOLLOW_RCURLY_in_applicationDefinition2931) 
+                char_literal134 = self.match(self.input, RCURLY, self.FOLLOW_RCURLY_in_applicationDefinition2934) 
                 if self._state.backtracking == 0:
                     stream_RCURLY.add(char_literal134)
 
 
-                # osekoil.g:581:45: ( description )?
+                # osekoil.g:582:45: ( description )?
                 alt67 = 2
                 LA67_0 = self.input.LA(1)
 
                 if (LA67_0 == 78) :
                     alt67 = 1
                 if alt67 == 1:
-                    # osekoil.g:581:45: description
+                    # osekoil.g:582:45: description
                     pass 
-                    self._state.following.append(self.FOLLOW_description_in_applicationDefinition2933)
+                    self._state.following.append(self.FOLLOW_description_in_applicationDefinition2936)
                     description135 = self.description()
 
                     self._state.following.pop()
@@ -7376,7 +7288,7 @@ class osekoilParser(BaseParser):
 
 
 
-                SEMI136 = self.match(self.input, SEMI, self.FOLLOW_SEMI_in_applicationDefinition2936) 
+                SEMI136 = self.match(self.input, SEMI, self.FOLLOW_SEMI_in_applicationDefinition2939) 
                 if self._state.backtracking == 0:
                     stream_SEMI.add(SEMI136)
 
@@ -7405,8 +7317,8 @@ class osekoilParser(BaseParser):
 
 
                     root_0 = self._adaptor.nil()
-                    # 585:4: -> ^( APPLICATION_DEFINITION objectDefinitionList ( description )? )
-                    # osekoil.g:585:8: ^( APPLICATION_DEFINITION objectDefinitionList ( description )? )
+                    # 586:4: -> ^( APPLICATION_DEFINITION objectDefinitionList ( description )? )
+                    # osekoil.g:586:8: ^( APPLICATION_DEFINITION objectDefinitionList ( description )? )
                     root_1 = self._adaptor.nil()
                     root_1 = self._adaptor.becomeRoot(
                     self._adaptor.createFromType(APPLICATION_DEFINITION, "APPLICATION_DEFINITION")
@@ -7414,7 +7326,7 @@ class osekoilParser(BaseParser):
 
                     self._adaptor.addChild(root_1, stream_objectDefinitionList.nextTree())
 
-                    # osekoil.g:585:54: ( description )?
+                    # osekoil.g:586:54: ( description )?
                     if stream_description.hasNext():
                         self._adaptor.addChild(root_1, stream_description.nextTree())
 
@@ -7465,7 +7377,7 @@ class osekoilParser(BaseParser):
 
 
     # $ANTLR start "objectDefinitionList"
-    # osekoil.g:589:1: objectDefinitionList returns [value] : (defs+= ( objectDefinition ) )* -> ^( OBJECT_DEFINITION_LIST ( objectDefinition )* ) ;
+    # osekoil.g:590:1: objectDefinitionList returns [value] : (defs+= ( objectDefinition ) )* -> ^( OBJECT_DEFINITION_LIST ( objectDefinition )* ) ;
     def objectDefinitionList(self, ):
         retval = self.objectDefinitionList_return()
         retval.start = self.input.LT(1)
@@ -7477,7 +7389,6 @@ class osekoilParser(BaseParser):
         list_defs = None
         objectDefinition137 = None
 
-
         defs_tree = None
         stream_objectDefinition = RewriteRuleSubtreeStream(self._adaptor, "rule objectDefinition")
               
@@ -7485,10 +7396,10 @@ class osekoilParser(BaseParser):
 
         try:
             try:
-                # osekoil.g:597:4: ( (defs+= ( objectDefinition ) )* -> ^( OBJECT_DEFINITION_LIST ( objectDefinition )* ) )
-                # osekoil.g:597:7: (defs+= ( objectDefinition ) )*
+                # osekoil.g:598:4: ( (defs+= ( objectDefinition ) )* -> ^( OBJECT_DEFINITION_LIST ( objectDefinition )* ) )
+                # osekoil.g:598:7: (defs+= ( objectDefinition ) )*
                 pass 
-                # osekoil.g:597:12: (defs+= ( objectDefinition ) )*
+                # osekoil.g:598:12: (defs+= ( objectDefinition ) )*
                 while True: #loop68
                     alt68 = 2
                     LA68_0 = self.input.LA(1)
@@ -7498,12 +7409,12 @@ class osekoilParser(BaseParser):
 
 
                     if alt68 == 1:
-                        # osekoil.g:597:12: defs+= ( objectDefinition )
+                        # osekoil.g:598:12: defs+= ( objectDefinition )
                         pass 
-                        # osekoil.g:597:15: ( objectDefinition )
-                        # osekoil.g:597:16: objectDefinition
+                        # osekoil.g:598:15: ( objectDefinition )
+                        # osekoil.g:598:16: objectDefinition
                         pass 
-                        self._state.following.append(self.FOLLOW_objectDefinition_in_objectDefinitionList2991)
+                        self._state.following.append(self.FOLLOW_objectDefinition_in_objectDefinitionList2994)
                         objectDefinition137 = self.objectDefinition()
 
                         self._state.following.pop()
@@ -7541,14 +7452,14 @@ class osekoilParser(BaseParser):
 
 
                     root_0 = self._adaptor.nil()
-                    # 598:4: -> ^( OBJECT_DEFINITION_LIST ( objectDefinition )* )
-                    # osekoil.g:598:7: ^( OBJECT_DEFINITION_LIST ( objectDefinition )* )
+                    # 599:4: -> ^( OBJECT_DEFINITION_LIST ( objectDefinition )* )
+                    # osekoil.g:599:7: ^( OBJECT_DEFINITION_LIST ( objectDefinition )* )
                     root_1 = self._adaptor.nil()
                     root_1 = self._adaptor.becomeRoot(
                     self._adaptor.createFromType(OBJECT_DEFINITION_LIST, "OBJECT_DEFINITION_LIST")
                     , root_1)
 
-                    # osekoil.g:598:32: ( objectDefinition )*
+                    # osekoil.g:599:32: ( objectDefinition )*
                     while stream_objectDefinition.hasNext():
                         self._adaptor.addChild(root_1, stream_objectDefinition.nextTree())
 
@@ -7608,7 +7519,7 @@ class osekoilParser(BaseParser):
 
 
     # $ANTLR start "objectDefinition"
-    # osekoil.g:602:1: objectDefinition returns [value] : objectName ( '{' parameterList '}' )? ( description )? SEMI -> ^( OBJECT_DEFINITION objectName ( parameterList )? ( description )? ) ;
+    # osekoil.g:603:1: objectDefinition returns [value] : objectName ( '{' parameterList '}' )? ( description )? SEMI -> ^( OBJECT_DEFINITION objectName ( parameterList )? ( description )? ) ;
     def objectDefinition(self, ):
         self.objectDefinition_stack.append(objectDefinition_scope())
         retval = self.objectDefinition_return()
@@ -7621,11 +7532,8 @@ class osekoilParser(BaseParser):
         char_literal141 = None
         SEMI143 = None
         objectName138 = None
-
         parameterList140 = None
-
         description142 = None
-
 
         char_literal139_tree = None
         char_literal141_tree = None
@@ -7638,10 +7546,10 @@ class osekoilParser(BaseParser):
         stream_parameterList = RewriteRuleSubtreeStream(self._adaptor, "rule parameterList")
         try:
             try:
-                # osekoil.g:606:4: ( objectName ( '{' parameterList '}' )? ( description )? SEMI -> ^( OBJECT_DEFINITION objectName ( parameterList )? ( description )? ) )
-                # osekoil.g:606:7: objectName ( '{' parameterList '}' )? ( description )? SEMI
+                # osekoil.g:607:4: ( objectName ( '{' parameterList '}' )? ( description )? SEMI -> ^( OBJECT_DEFINITION objectName ( parameterList )? ( description )? ) )
+                # osekoil.g:607:7: objectName ( '{' parameterList '}' )? ( description )? SEMI
                 pass 
-                self._state.following.append(self.FOLLOW_objectName_in_objectDefinition3033)
+                self._state.following.append(self.FOLLOW_objectName_in_objectDefinition3036)
                 objectName138 = self.objectName()
 
                 self._state.following.pop()
@@ -7655,21 +7563,21 @@ class osekoilParser(BaseParser):
 
 
 
-                # osekoil.g:607:7: ( '{' parameterList '}' )?
+                # osekoil.g:608:7: ( '{' parameterList '}' )?
                 alt69 = 2
                 LA69_0 = self.input.LA(1)
 
                 if (LA69_0 == LCURLY) :
                     alt69 = 1
                 if alt69 == 1:
-                    # osekoil.g:607:8: '{' parameterList '}'
+                    # osekoil.g:608:8: '{' parameterList '}'
                     pass 
-                    char_literal139 = self.match(self.input, LCURLY, self.FOLLOW_LCURLY_in_objectDefinition3044) 
+                    char_literal139 = self.match(self.input, LCURLY, self.FOLLOW_LCURLY_in_objectDefinition3047) 
                     if self._state.backtracking == 0:
                         stream_LCURLY.add(char_literal139)
 
 
-                    self._state.following.append(self.FOLLOW_parameterList_in_objectDefinition3046)
+                    self._state.following.append(self.FOLLOW_parameterList_in_objectDefinition3049)
                     parameterList140 = self.parameterList()
 
                     self._state.following.pop()
@@ -7677,7 +7585,7 @@ class osekoilParser(BaseParser):
                         stream_parameterList.add(parameterList140.tree)
 
 
-                    char_literal141 = self.match(self.input, RCURLY, self.FOLLOW_RCURLY_in_objectDefinition3048) 
+                    char_literal141 = self.match(self.input, RCURLY, self.FOLLOW_RCURLY_in_objectDefinition3051) 
                     if self._state.backtracking == 0:
                         stream_RCURLY.add(char_literal141)
 
@@ -7685,16 +7593,16 @@ class osekoilParser(BaseParser):
 
 
 
-                # osekoil.g:607:32: ( description )?
+                # osekoil.g:608:32: ( description )?
                 alt70 = 2
                 LA70_0 = self.input.LA(1)
 
                 if (LA70_0 == 78) :
                     alt70 = 1
                 if alt70 == 1:
-                    # osekoil.g:607:32: description
+                    # osekoil.g:608:32: description
                     pass 
-                    self._state.following.append(self.FOLLOW_description_in_objectDefinition3052)
+                    self._state.following.append(self.FOLLOW_description_in_objectDefinition3055)
                     description142 = self.description()
 
                     self._state.following.pop()
@@ -7705,7 +7613,7 @@ class osekoilParser(BaseParser):
 
 
 
-                SEMI143 = self.match(self.input, SEMI, self.FOLLOW_SEMI_in_objectDefinition3055) 
+                SEMI143 = self.match(self.input, SEMI, self.FOLLOW_SEMI_in_objectDefinition3058) 
                 if self._state.backtracking == 0:
                     stream_SEMI.add(SEMI143)
 
@@ -7724,7 +7632,7 @@ class osekoilParser(BaseParser):
 
 
                 # AST Rewrite
-                # elements: parameterList, objectName, description
+                # elements: objectName, parameterList, description
                 # token labels: 
                 # rule labels: retval
                 # token list labels: 
@@ -7739,8 +7647,8 @@ class osekoilParser(BaseParser):
 
 
                     root_0 = self._adaptor.nil()
-                    # 616:7: -> ^( OBJECT_DEFINITION objectName ( parameterList )? ( description )? )
-                    # osekoil.g:616:10: ^( OBJECT_DEFINITION objectName ( parameterList )? ( description )? )
+                    # 617:7: -> ^( OBJECT_DEFINITION objectName ( parameterList )? ( description )? )
+                    # osekoil.g:617:10: ^( OBJECT_DEFINITION objectName ( parameterList )? ( description )? )
                     root_1 = self._adaptor.nil()
                     root_1 = self._adaptor.becomeRoot(
                     self._adaptor.createFromType(OBJECT_DEFINITION, "OBJECT_DEFINITION")
@@ -7748,14 +7656,14 @@ class osekoilParser(BaseParser):
 
                     self._adaptor.addChild(root_1, stream_objectName.nextTree())
 
-                    # osekoil.g:616:41: ( parameterList )?
+                    # osekoil.g:617:41: ( parameterList )?
                     if stream_parameterList.hasNext():
                         self._adaptor.addChild(root_1, stream_parameterList.nextTree())
 
 
                     stream_parameterList.reset();
 
-                    # osekoil.g:616:56: ( description )?
+                    # osekoil.g:617:56: ( description )?
                     if stream_description.hasNext():
                         self._adaptor.addChild(root_1, stream_description.nextTree())
 
@@ -7808,7 +7716,7 @@ class osekoilParser(BaseParser):
 
 
     # $ANTLR start "objectName"
-    # osekoil.g:620:1: objectName returns [objectType, name] : object ID -> ^( OBJECT_NAME object ID ) ;
+    # osekoil.g:621:1: objectName returns [objectType, name] : object ID -> ^( OBJECT_NAME object ID ) ;
     def objectName(self, ):
         retval = self.objectName_return()
         retval.start = self.input.LT(1)
@@ -7819,16 +7727,15 @@ class osekoilParser(BaseParser):
         ID145 = None
         object144 = None
 
-
         ID145_tree = None
         stream_ID = RewriteRuleTokenStream(self._adaptor, "token ID")
         stream_object = RewriteRuleSubtreeStream(self._adaptor, "rule object")
         try:
             try:
-                # osekoil.g:621:4: ( object ID -> ^( OBJECT_NAME object ID ) )
-                # osekoil.g:621:7: object ID
+                # osekoil.g:622:4: ( object ID -> ^( OBJECT_NAME object ID ) )
+                # osekoil.g:622:7: object ID
                 pass 
-                self._state.following.append(self.FOLLOW_object_in_objectName3100)
+                self._state.following.append(self.FOLLOW_object_in_objectName3103)
                 object144 = self.object()
 
                 self._state.following.pop()
@@ -7836,7 +7743,7 @@ class osekoilParser(BaseParser):
                     stream_object.add(object144.tree)
 
 
-                ID145 = self.match(self.input, ID, self.FOLLOW_ID_in_objectName3102) 
+                ID145 = self.match(self.input, ID, self.FOLLOW_ID_in_objectName3105) 
                 if self._state.backtracking == 0:
                     stream_ID.add(ID145)
 
@@ -7867,8 +7774,8 @@ class osekoilParser(BaseParser):
 
 
                     root_0 = self._adaptor.nil()
-                    # 626:4: -> ^( OBJECT_NAME object ID )
-                    # osekoil.g:626:7: ^( OBJECT_NAME object ID )
+                    # 627:4: -> ^( OBJECT_NAME object ID )
+                    # osekoil.g:627:7: ^( OBJECT_NAME object ID )
                     root_1 = self._adaptor.nil()
                     root_1 = self._adaptor.becomeRoot(
                     self._adaptor.createFromType(OBJECT_NAME, "OBJECT_NAME")
@@ -7924,7 +7831,7 @@ class osekoilParser(BaseParser):
 
 
     # $ANTLR start "parameterList"
-    # osekoil.g:629:1: parameterList returns [value] : ( parameter )* -> ^( PARAMETER_LIST ( parameter )* ) ;
+    # osekoil.g:630:1: parameterList returns [value] : ( parameter )* -> ^( PARAMETER_LIST ( parameter )* ) ;
     def parameterList(self, ):
         retval = self.parameterList_return()
         retval.start = self.input.LT(1)
@@ -7934,17 +7841,16 @@ class osekoilParser(BaseParser):
 
         parameter146 = None
 
-
         stream_parameter = RewriteRuleSubtreeStream(self._adaptor, "rule parameter")
               
         myList = ApplicationDefinition.ParameterList()
 
         try:
             try:
-                # osekoil.g:636:4: ( ( parameter )* -> ^( PARAMETER_LIST ( parameter )* ) )
-                # osekoil.g:636:7: ( parameter )*
+                # osekoil.g:638:4: ( ( parameter )* -> ^( PARAMETER_LIST ( parameter )* ) )
+                # osekoil.g:638:7: ( parameter )*
                 pass 
-                # osekoil.g:636:7: ( parameter )*
+                # osekoil.g:638:7: ( parameter )*
                 while True: #loop71
                     alt71 = 2
                     LA71_0 = self.input.LA(1)
@@ -7954,9 +7860,9 @@ class osekoilParser(BaseParser):
 
 
                     if alt71 == 1:
-                        # osekoil.g:636:8: parameter
+                        # osekoil.g:638:8: parameter
                         pass 
-                        self._state.following.append(self.FOLLOW_parameter_in_parameterList3147)
+                        self._state.following.append(self.FOLLOW_parameter_in_parameterList3150)
                         parameter146 = self.parameter()
 
                         self._state.following.pop()
@@ -7991,14 +7897,14 @@ class osekoilParser(BaseParser):
 
 
                     root_0 = self._adaptor.nil()
-                    # 637:4: -> ^( PARAMETER_LIST ( parameter )* )
-                    # osekoil.g:637:7: ^( PARAMETER_LIST ( parameter )* )
+                    # 639:4: -> ^( PARAMETER_LIST ( parameter )* )
+                    # osekoil.g:639:7: ^( PARAMETER_LIST ( parameter )* )
                     root_1 = self._adaptor.nil()
                     root_1 = self._adaptor.becomeRoot(
                     self._adaptor.createFromType(PARAMETER_LIST, "PARAMETER_LIST")
                     , root_1)
 
-                    # osekoil.g:637:24: ( parameter )*
+                    # osekoil.g:639:24: ( parameter )*
                     while stream_parameter.hasNext():
                         self._adaptor.addChild(root_1, stream_parameter.nextTree())
 
@@ -8028,6 +7934,7 @@ class osekoilParser(BaseParser):
                 if self._state.backtracking == 0:
                     pass
                            
+                    myList = myList.sort()
                     retval.value = myList
 
 
@@ -8057,7 +7964,7 @@ class osekoilParser(BaseParser):
 
 
     # $ANTLR start "parameter"
-    # osekoil.g:640:1: parameter returns [value] : attributeName ASSIGN attributeValue ( description )? SEMI -> ^( PARAMETER attributeName attributeValue ( description )? ) ;
+    # osekoil.g:642:1: parameter returns [value] : attributeName ASSIGN attributeValue ( description )? SEMI -> ^( PARAMETER attributeName attributeValue ( description )? ) ;
     def parameter(self, ):
         self.parameter_stack.append(parameter_scope())
         retval = self.parameter_return()
@@ -8069,11 +7976,8 @@ class osekoilParser(BaseParser):
         ASSIGN148 = None
         SEMI151 = None
         attributeName147 = None
-
         attributeValue149 = None
-
         description150 = None
-
 
         ASSIGN148_tree = None
         SEMI151_tree = None
@@ -8084,10 +7988,10 @@ class osekoilParser(BaseParser):
         stream_description = RewriteRuleSubtreeStream(self._adaptor, "rule description")
         try:
             try:
-                # osekoil.g:644:4: ( attributeName ASSIGN attributeValue ( description )? SEMI -> ^( PARAMETER attributeName attributeValue ( description )? ) )
-                # osekoil.g:644:7: attributeName ASSIGN attributeValue ( description )? SEMI
+                # osekoil.g:646:4: ( attributeName ASSIGN attributeValue ( description )? SEMI -> ^( PARAMETER attributeName attributeValue ( description )? ) )
+                # osekoil.g:646:7: attributeName ASSIGN attributeValue ( description )? SEMI
                 pass 
-                self._state.following.append(self.FOLLOW_attributeName_in_parameter3187)
+                self._state.following.append(self.FOLLOW_attributeName_in_parameter3190)
                 attributeName147 = self.attributeName()
 
                 self._state.following.pop()
@@ -8095,12 +7999,12 @@ class osekoilParser(BaseParser):
                     stream_attributeName.add(attributeName147.tree)
 
 
-                ASSIGN148 = self.match(self.input, ASSIGN, self.FOLLOW_ASSIGN_in_parameter3189) 
+                ASSIGN148 = self.match(self.input, ASSIGN, self.FOLLOW_ASSIGN_in_parameter3192) 
                 if self._state.backtracking == 0:
                     stream_ASSIGN.add(ASSIGN148)
 
 
-                self._state.following.append(self.FOLLOW_attributeValue_in_parameter3191)
+                self._state.following.append(self.FOLLOW_attributeValue_in_parameter3194)
                 attributeValue149 = self.attributeValue()
 
                 self._state.following.pop()
@@ -8108,16 +8012,16 @@ class osekoilParser(BaseParser):
                     stream_attributeValue.add(attributeValue149.tree)
 
 
-                # osekoil.g:644:43: ( description )?
+                # osekoil.g:646:43: ( description )?
                 alt72 = 2
                 LA72_0 = self.input.LA(1)
 
                 if (LA72_0 == 78) :
                     alt72 = 1
                 if alt72 == 1:
-                    # osekoil.g:644:43: description
+                    # osekoil.g:646:43: description
                     pass 
-                    self._state.following.append(self.FOLLOW_description_in_parameter3193)
+                    self._state.following.append(self.FOLLOW_description_in_parameter3196)
                     description150 = self.description()
 
                     self._state.following.pop()
@@ -8128,7 +8032,7 @@ class osekoilParser(BaseParser):
 
 
 
-                SEMI151 = self.match(self.input, SEMI, self.FOLLOW_SEMI_in_parameter3196) 
+                SEMI151 = self.match(self.input, SEMI, self.FOLLOW_SEMI_in_parameter3199) 
                 if self._state.backtracking == 0:
                     stream_SEMI.add(SEMI151)
 
@@ -8158,8 +8062,8 @@ class osekoilParser(BaseParser):
 
 
                     root_0 = self._adaptor.nil()
-                    # 649:4: -> ^( PARAMETER attributeName attributeValue ( description )? )
-                    # osekoil.g:649:7: ^( PARAMETER attributeName attributeValue ( description )? )
+                    # 651:4: -> ^( PARAMETER attributeName attributeValue ( description )? )
+                    # osekoil.g:651:7: ^( PARAMETER attributeName attributeValue ( description )? )
                     root_1 = self._adaptor.nil()
                     root_1 = self._adaptor.becomeRoot(
                     self._adaptor.createFromType(PARAMETER, "PARAMETER")
@@ -8169,7 +8073,7 @@ class osekoilParser(BaseParser):
 
                     self._adaptor.addChild(root_1, stream_attributeValue.nextTree())
 
-                    # osekoil.g:649:48: ( description )?
+                    # osekoil.g:651:48: ( description )?
                     if stream_description.hasNext():
                         self._adaptor.addChild(root_1, stream_description.nextTree())
 
@@ -8221,7 +8125,7 @@ class osekoilParser(BaseParser):
 
 
     # $ANTLR start "attributeValue"
-    # osekoil.g:652:1: attributeValue returns [value] : ( ID ( '{' parameterList '}' )? -> ^( ID_VALUE ID ( parameterList )? ) | boolean ( '{' parameterList '}' )? -> ^( BOOL_VALUE boolean ( parameterList )? ) | number -> ^( NUMBER_VALUE number ) | FLOAT -> ^( FLOAT_VALUE FLOAT ) | STRING -> ^( STRING_VALUE STRING ) | 'AUTO' -> ^( AUTO_VALUE ) );
+    # osekoil.g:654:1: attributeValue returns [value] : ( ID ( '{' parameterList '}' )? -> ^( ID_VALUE ID ( parameterList )? ) | boolean ( '{' parameterList '}' )? -> ^( BOOL_VALUE boolean ( parameterList )? ) | number -> ^( NUMBER_VALUE number ) | FLOAT -> ^( FLOAT_VALUE FLOAT ) | STRING -> ^( STRING_VALUE STRING ) | 'AUTO' -> ^( AUTO_VALUE ) );
     def attributeValue(self, ):
         retval = self.attributeValue_return()
         retval.start = self.input.LT(1)
@@ -8238,13 +8142,9 @@ class osekoilParser(BaseParser):
         STRING162 = None
         string_literal163 = None
         parameterList154 = None
-
         boolean156 = None
-
         parameterList158 = None
-
         number160 = None
-
 
         ID152_tree = None
         char_literal153_tree = None
@@ -8265,7 +8165,7 @@ class osekoilParser(BaseParser):
         stream_boolean = RewriteRuleSubtreeStream(self._adaptor, "rule boolean")
         try:
             try:
-                # osekoil.g:656:4: ( ID ( '{' parameterList '}' )? -> ^( ID_VALUE ID ( parameterList )? ) | boolean ( '{' parameterList '}' )? -> ^( BOOL_VALUE boolean ( parameterList )? ) | number -> ^( NUMBER_VALUE number ) | FLOAT -> ^( FLOAT_VALUE FLOAT ) | STRING -> ^( STRING_VALUE STRING ) | 'AUTO' -> ^( AUTO_VALUE ) )
+                # osekoil.g:658:4: ( ID ( '{' parameterList '}' )? -> ^( ID_VALUE ID ( parameterList )? ) | boolean ( '{' parameterList '}' )? -> ^( BOOL_VALUE boolean ( parameterList )? ) | number -> ^( NUMBER_VALUE number ) | FLOAT -> ^( FLOAT_VALUE FLOAT ) | STRING -> ^( STRING_VALUE STRING ) | 'AUTO' -> ^( AUTO_VALUE ) )
                 alt75 = 6
                 LA75 = self.input.LA(1)
                 if LA75 == ID:
@@ -8291,28 +8191,28 @@ class osekoilParser(BaseParser):
 
 
                 if alt75 == 1:
-                    # osekoil.g:656:7: ID ( '{' parameterList '}' )?
+                    # osekoil.g:658:7: ID ( '{' parameterList '}' )?
                     pass 
-                    ID152 = self.match(self.input, ID, self.FOLLOW_ID_in_attributeValue3241) 
+                    ID152 = self.match(self.input, ID, self.FOLLOW_ID_in_attributeValue3244) 
                     if self._state.backtracking == 0:
                         stream_ID.add(ID152)
 
 
-                    # osekoil.g:656:10: ( '{' parameterList '}' )?
+                    # osekoil.g:658:10: ( '{' parameterList '}' )?
                     alt73 = 2
                     LA73_0 = self.input.LA(1)
 
                     if (LA73_0 == LCURLY) :
                         alt73 = 1
                     if alt73 == 1:
-                        # osekoil.g:656:11: '{' parameterList '}'
+                        # osekoil.g:658:11: '{' parameterList '}'
                         pass 
-                        char_literal153 = self.match(self.input, LCURLY, self.FOLLOW_LCURLY_in_attributeValue3244) 
+                        char_literal153 = self.match(self.input, LCURLY, self.FOLLOW_LCURLY_in_attributeValue3247) 
                         if self._state.backtracking == 0:
                             stream_LCURLY.add(char_literal153)
 
 
-                        self._state.following.append(self.FOLLOW_parameterList_in_attributeValue3246)
+                        self._state.following.append(self.FOLLOW_parameterList_in_attributeValue3249)
                         parameterList154 = self.parameterList()
 
                         self._state.following.pop()
@@ -8320,7 +8220,7 @@ class osekoilParser(BaseParser):
                             stream_parameterList.add(parameterList154.tree)
 
 
-                        char_literal155 = self.match(self.input, RCURLY, self.FOLLOW_RCURLY_in_attributeValue3248) 
+                        char_literal155 = self.match(self.input, RCURLY, self.FOLLOW_RCURLY_in_attributeValue3251) 
                         if self._state.backtracking == 0:
                             stream_RCURLY.add(char_literal155)
 
@@ -8332,7 +8232,7 @@ class osekoilParser(BaseParser):
                         pass
                            
                         retval.value = ApplicationDefinition.AttributeValueContainter(ApplicationDefinition.AttributeValueContainter.ID_VALUE,
-                            idValue = ID152.text, values = ((parameterList154 is not None) and [parameterList154.value] or [None])[0] or []
+                            idValue = ID152.text, values = ((parameterList154 is not None) and [parameterList154.value] or [None])[0] or ParameterList()
                         )
                            
 
@@ -8354,8 +8254,8 @@ class osekoilParser(BaseParser):
 
 
                         root_0 = self._adaptor.nil()
-                        # 661:6: -> ^( ID_VALUE ID ( parameterList )? )
-                        # osekoil.g:661:9: ^( ID_VALUE ID ( parameterList )? )
+                        # 663:6: -> ^( ID_VALUE ID ( parameterList )? )
+                        # osekoil.g:663:9: ^( ID_VALUE ID ( parameterList )? )
                         root_1 = self._adaptor.nil()
                         root_1 = self._adaptor.becomeRoot(
                         self._adaptor.createFromType(ID_VALUE, "ID_VALUE")
@@ -8365,7 +8265,7 @@ class osekoilParser(BaseParser):
                         stream_ID.nextNode()
                         )
 
-                        # osekoil.g:661:23: ( parameterList )?
+                        # osekoil.g:663:23: ( parameterList )?
                         if stream_parameterList.hasNext():
                             self._adaptor.addChild(root_1, stream_parameterList.nextTree())
 
@@ -8383,9 +8283,9 @@ class osekoilParser(BaseParser):
 
 
                 elif alt75 == 2:
-                    # osekoil.g:662:7: boolean ( '{' parameterList '}' )?
+                    # osekoil.g:664:7: boolean ( '{' parameterList '}' )?
                     pass 
-                    self._state.following.append(self.FOLLOW_boolean_in_attributeValue3274)
+                    self._state.following.append(self.FOLLOW_boolean_in_attributeValue3277)
                     boolean156 = self.boolean()
 
                     self._state.following.pop()
@@ -8393,21 +8293,21 @@ class osekoilParser(BaseParser):
                         stream_boolean.add(boolean156.tree)
 
 
-                    # osekoil.g:662:15: ( '{' parameterList '}' )?
+                    # osekoil.g:664:15: ( '{' parameterList '}' )?
                     alt74 = 2
                     LA74_0 = self.input.LA(1)
 
                     if (LA74_0 == LCURLY) :
                         alt74 = 1
                     if alt74 == 1:
-                        # osekoil.g:662:16: '{' parameterList '}'
+                        # osekoil.g:664:16: '{' parameterList '}'
                         pass 
-                        char_literal157 = self.match(self.input, LCURLY, self.FOLLOW_LCURLY_in_attributeValue3277) 
+                        char_literal157 = self.match(self.input, LCURLY, self.FOLLOW_LCURLY_in_attributeValue3280) 
                         if self._state.backtracking == 0:
                             stream_LCURLY.add(char_literal157)
 
 
-                        self._state.following.append(self.FOLLOW_parameterList_in_attributeValue3279)
+                        self._state.following.append(self.FOLLOW_parameterList_in_attributeValue3282)
                         parameterList158 = self.parameterList()
 
                         self._state.following.pop()
@@ -8415,7 +8315,7 @@ class osekoilParser(BaseParser):
                             stream_parameterList.add(parameterList158.tree)
 
 
-                        char_literal159 = self.match(self.input, RCURLY, self.FOLLOW_RCURLY_in_attributeValue3281) 
+                        char_literal159 = self.match(self.input, RCURLY, self.FOLLOW_RCURLY_in_attributeValue3284) 
                         if self._state.backtracking == 0:
                             stream_RCURLY.add(char_literal159)
 
@@ -8427,7 +8327,7 @@ class osekoilParser(BaseParser):
                         pass
                            
                         retval.value = ApplicationDefinition.AttributeValueContainter(ApplicationDefinition.AttributeValueContainter.BOOL_VALUE,
-                            booleanValue = ((boolean156 is not None) and [boolean156.value] or [None])[0], values = ((parameterList158 is not None) and [parameterList158.value] or [None])[0] or []
+                            booleanValue = ((boolean156 is not None) and [boolean156.value] or [None])[0], values = ((parameterList158 is not None) and [parameterList158.value] or [None])[0] or ParameterList()
                         )
                            
 
@@ -8449,8 +8349,8 @@ class osekoilParser(BaseParser):
 
 
                         root_0 = self._adaptor.nil()
-                        # 667:6: -> ^( BOOL_VALUE boolean ( parameterList )? )
-                        # osekoil.g:667:9: ^( BOOL_VALUE boolean ( parameterList )? )
+                        # 669:6: -> ^( BOOL_VALUE boolean ( parameterList )? )
+                        # osekoil.g:669:9: ^( BOOL_VALUE boolean ( parameterList )? )
                         root_1 = self._adaptor.nil()
                         root_1 = self._adaptor.becomeRoot(
                         self._adaptor.createFromType(BOOL_VALUE, "BOOL_VALUE")
@@ -8458,7 +8358,7 @@ class osekoilParser(BaseParser):
 
                         self._adaptor.addChild(root_1, stream_boolean.nextTree())
 
-                        # osekoil.g:667:30: ( parameterList )?
+                        # osekoil.g:669:30: ( parameterList )?
                         if stream_parameterList.hasNext():
                             self._adaptor.addChild(root_1, stream_parameterList.nextTree())
 
@@ -8476,9 +8376,9 @@ class osekoilParser(BaseParser):
 
 
                 elif alt75 == 3:
-                    # osekoil.g:668:7: number
+                    # osekoil.g:670:7: number
                     pass 
-                    self._state.following.append(self.FOLLOW_number_in_attributeValue3307)
+                    self._state.following.append(self.FOLLOW_number_in_attributeValue3310)
                     number160 = self.number()
 
                     self._state.following.pop()
@@ -8512,8 +8412,8 @@ class osekoilParser(BaseParser):
 
 
                         root_0 = self._adaptor.nil()
-                        # 673:6: -> ^( NUMBER_VALUE number )
-                        # osekoil.g:673:9: ^( NUMBER_VALUE number )
+                        # 675:6: -> ^( NUMBER_VALUE number )
+                        # osekoil.g:675:9: ^( NUMBER_VALUE number )
                         root_1 = self._adaptor.nil()
                         root_1 = self._adaptor.becomeRoot(
                         self._adaptor.createFromType(NUMBER_VALUE, "NUMBER_VALUE")
@@ -8532,9 +8432,9 @@ class osekoilParser(BaseParser):
 
 
                 elif alt75 == 4:
-                    # osekoil.g:674:7: FLOAT
+                    # osekoil.g:676:7: FLOAT
                     pass 
-                    FLOAT161 = self.match(self.input, FLOAT, self.FOLLOW_FLOAT_in_attributeValue3328) 
+                    FLOAT161 = self.match(self.input, FLOAT, self.FOLLOW_FLOAT_in_attributeValue3331) 
                     if self._state.backtracking == 0:
                         stream_FLOAT.add(FLOAT161)
 
@@ -8566,8 +8466,8 @@ class osekoilParser(BaseParser):
 
 
                         root_0 = self._adaptor.nil()
-                        # 680:6: -> ^( FLOAT_VALUE FLOAT )
-                        # osekoil.g:680:9: ^( FLOAT_VALUE FLOAT )
+                        # 682:6: -> ^( FLOAT_VALUE FLOAT )
+                        # osekoil.g:682:9: ^( FLOAT_VALUE FLOAT )
                         root_1 = self._adaptor.nil()
                         root_1 = self._adaptor.becomeRoot(
                         self._adaptor.createFromType(FLOAT_VALUE, "FLOAT_VALUE")
@@ -8588,9 +8488,9 @@ class osekoilParser(BaseParser):
 
 
                 elif alt75 == 5:
-                    # osekoil.g:681:7: STRING
+                    # osekoil.g:683:7: STRING
                     pass 
-                    STRING162 = self.match(self.input, STRING, self.FOLLOW_STRING_in_attributeValue3349) 
+                    STRING162 = self.match(self.input, STRING, self.FOLLOW_STRING_in_attributeValue3352) 
                     if self._state.backtracking == 0:
                         stream_STRING.add(STRING162)
 
@@ -8621,8 +8521,8 @@ class osekoilParser(BaseParser):
 
 
                         root_0 = self._adaptor.nil()
-                        # 686:6: -> ^( STRING_VALUE STRING )
-                        # osekoil.g:686:9: ^( STRING_VALUE STRING )
+                        # 688:6: -> ^( STRING_VALUE STRING )
+                        # osekoil.g:688:9: ^( STRING_VALUE STRING )
                         root_1 = self._adaptor.nil()
                         root_1 = self._adaptor.becomeRoot(
                         self._adaptor.createFromType(STRING_VALUE, "STRING_VALUE")
@@ -8643,9 +8543,9 @@ class osekoilParser(BaseParser):
 
 
                 elif alt75 == 6:
-                    # osekoil.g:687:7: 'AUTO'
+                    # osekoil.g:689:7: 'AUTO'
                     pass 
-                    string_literal163 = self.match(self.input, 83, self.FOLLOW_83_in_attributeValue3370) 
+                    string_literal163 = self.match(self.input, 83, self.FOLLOW_83_in_attributeValue3373) 
                     if self._state.backtracking == 0:
                         stream_83.add(string_literal163)
 
@@ -8674,8 +8574,8 @@ class osekoilParser(BaseParser):
 
 
                         root_0 = self._adaptor.nil()
-                        # 690:6: -> ^( AUTO_VALUE )
-                        # osekoil.g:690:9: ^( AUTO_VALUE )
+                        # 692:6: -> ^( AUTO_VALUE )
+                        # osekoil.g:692:9: ^( AUTO_VALUE )
                         root_1 = self._adaptor.nil()
                         root_1 = self._adaptor.becomeRoot(
                         self._adaptor.createFromType(AUTO_VALUE, "AUTO_VALUE")
@@ -8731,7 +8631,7 @@ class osekoilParser(BaseParser):
 
 
     # $ANTLR start "description"
-    # osekoil.g:694:1: description returns [value] : ( ':' STRING ) -> ^( DESCRIPTION STRING ) ;
+    # osekoil.g:696:1: description returns [value] : ( ':' STRING ) -> ^( DESCRIPTION STRING ) ;
     def description(self, ):
         retval = self.description_return()
         retval.start = self.input.LT(1)
@@ -8749,18 +8649,18 @@ class osekoilParser(BaseParser):
 
         try:
             try:
-                # osekoil.g:695:4: ( ( ':' STRING ) -> ^( DESCRIPTION STRING ) )
-                # osekoil.g:695:7: ( ':' STRING )
+                # osekoil.g:697:4: ( ( ':' STRING ) -> ^( DESCRIPTION STRING ) )
+                # osekoil.g:697:7: ( ':' STRING )
                 pass 
-                # osekoil.g:695:7: ( ':' STRING )
-                # osekoil.g:695:8: ':' STRING
+                # osekoil.g:697:7: ( ':' STRING )
+                # osekoil.g:697:8: ':' STRING
                 pass 
-                char_literal164 = self.match(self.input, 78, self.FOLLOW_78_in_description3402) 
+                char_literal164 = self.match(self.input, 78, self.FOLLOW_78_in_description3405) 
                 if self._state.backtracking == 0:
                     stream_78.add(char_literal164)
 
 
-                STRING165 = self.match(self.input, STRING, self.FOLLOW_STRING_in_description3404) 
+                STRING165 = self.match(self.input, STRING, self.FOLLOW_STRING_in_description3407) 
                 if self._state.backtracking == 0:
                     stream_STRING.add(STRING165)
 
@@ -8790,8 +8690,8 @@ class osekoilParser(BaseParser):
 
 
                     root_0 = self._adaptor.nil()
-                    # 697:4: -> ^( DESCRIPTION STRING )
-                    # osekoil.g:697:7: ^( DESCRIPTION STRING )
+                    # 699:4: -> ^( DESCRIPTION STRING )
+                    # osekoil.g:699:7: ^( DESCRIPTION STRING )
                     root_1 = self._adaptor.nil()
                     root_1 = self._adaptor.becomeRoot(
                     self._adaptor.createFromType(DESCRIPTION, "DESCRIPTION")
@@ -8845,7 +8745,7 @@ class osekoilParser(BaseParser):
 
 
     # $ANTLR start "number"
-    # osekoil.g:700:1: number returns [value] : (id= INT |id= HEX -> ^( NUMBER $id) );
+    # osekoil.g:702:1: number returns [value] : (id= INT |id= HEX -> ^( NUMBER $id) );
     def number(self, ):
         retval = self.number_return()
         retval.start = self.input.LT(1)
@@ -8860,7 +8760,7 @@ class osekoilParser(BaseParser):
 
         try:
             try:
-                # osekoil.g:701:4: (id= INT |id= HEX -> ^( NUMBER $id) )
+                # osekoil.g:703:4: (id= INT |id= HEX -> ^( NUMBER $id) )
                 alt76 = 2
                 LA76_0 = self.input.LA(1)
 
@@ -8879,12 +8779,12 @@ class osekoilParser(BaseParser):
 
 
                 if alt76 == 1:
-                    # osekoil.g:701:6: id= INT
+                    # osekoil.g:703:6: id= INT
                     pass 
                     root_0 = self._adaptor.nil()
 
 
-                    id = self.match(self.input, INT, self.FOLLOW_INT_in_number3443)
+                    id = self.match(self.input, INT, self.FOLLOW_INT_in_number3446)
                     if self._state.backtracking == 0:
                         id_tree = self._adaptor.createWithPayload(id)
                         self._adaptor.addChild(root_0, id_tree)
@@ -8899,9 +8799,9 @@ class osekoilParser(BaseParser):
 
 
                 elif alt76 == 2:
-                    # osekoil.g:702:6: id= HEX
+                    # osekoil.g:704:6: id= HEX
                     pass 
-                    id = self.match(self.input, HEX, self.FOLLOW_HEX_in_number3456) 
+                    id = self.match(self.input, HEX, self.FOLLOW_HEX_in_number3459) 
                     if self._state.backtracking == 0:
                         stream_HEX.add(id)
 
@@ -8929,8 +8829,8 @@ class osekoilParser(BaseParser):
 
 
                         root_0 = self._adaptor.nil()
-                        # 703:4: -> ^( NUMBER $id)
-                        # osekoil.g:703:7: ^( NUMBER $id)
+                        # 705:4: -> ^( NUMBER $id)
+                        # osekoil.g:705:7: ^( NUMBER $id)
                         root_1 = self._adaptor.nil()
                         root_1 = self._adaptor.becomeRoot(
                         self._adaptor.createFromType(NUMBER, "NUMBER")
@@ -8980,7 +8880,7 @@ class osekoilParser(BaseParser):
 
 
     # $ANTLR start "range"
-    # osekoil.g:706:1: range : ( '..' )=> '..' ;
+    # osekoil.g:708:1: range : ( '..' )=> '..' ;
     def range(self, ):
         retval = self.range_return()
         retval.start = self.input.LT(1)
@@ -8994,13 +8894,13 @@ class osekoilParser(BaseParser):
 
         try:
             try:
-                # osekoil.g:707:4: ( ( '..' )=> '..' )
-                # osekoil.g:707:7: ( '..' )=> '..'
+                # osekoil.g:709:4: ( ( '..' )=> '..' )
+                # osekoil.g:709:7: ( '..' )=> '..'
                 pass 
                 root_0 = self._adaptor.nil()
 
 
-                string_literal166 = self.match(self.input, 77, self.FOLLOW_77_in_range3491)
+                string_literal166 = self.match(self.input, 77, self.FOLLOW_77_in_range3494)
                 if self._state.backtracking == 0:
                     string_literal166_tree = self._adaptor.createWithPayload(string_literal166)
                     self._adaptor.addChild(root_0, string_literal166_tree)
@@ -9042,7 +8942,7 @@ class osekoilParser(BaseParser):
 
 
     # $ANTLR start "boolean"
-    # osekoil.g:710:1: boolean returns [value] : (id= 'TRUE' |id= 'FALSE' );
+    # osekoil.g:712:1: boolean returns [value] : (id= 'TRUE' |id= 'FALSE' );
     def boolean(self, ):
         retval = self.boolean_return()
         retval.start = self.input.LT(1)
@@ -9056,7 +8956,7 @@ class osekoilParser(BaseParser):
 
         try:
             try:
-                # osekoil.g:711:4: (id= 'TRUE' |id= 'FALSE' )
+                # osekoil.g:713:4: (id= 'TRUE' |id= 'FALSE' )
                 alt77 = 2
                 LA77_0 = self.input.LA(1)
 
@@ -9075,12 +8975,12 @@ class osekoilParser(BaseParser):
 
 
                 if alt77 == 1:
-                    # osekoil.g:711:6: id= 'TRUE'
+                    # osekoil.g:713:6: id= 'TRUE'
                     pass 
                     root_0 = self._adaptor.nil()
 
 
-                    id = self.match(self.input, 117, self.FOLLOW_117_in_boolean3513)
+                    id = self.match(self.input, 117, self.FOLLOW_117_in_boolean3516)
                     if self._state.backtracking == 0:
                         id_tree = self._adaptor.createWithPayload(id)
                         self._adaptor.addChild(root_0, id_tree)
@@ -9095,12 +8995,12 @@ class osekoilParser(BaseParser):
 
 
                 elif alt77 == 2:
-                    # osekoil.g:712:6: id= 'FALSE'
+                    # osekoil.g:714:6: id= 'FALSE'
                     pass 
                     root_0 = self._adaptor.nil()
 
 
-                    id = self.match(self.input, 93, self.FOLLOW_93_in_boolean3527)
+                    id = self.match(self.input, 93, self.FOLLOW_93_in_boolean3530)
                     if self._state.backtracking == 0:
                         id_tree = self._adaptor.createWithPayload(id)
                         self._adaptor.addChild(root_0, id_tree)
@@ -9138,230 +9038,230 @@ class osekoilParser(BaseParser):
 
  
 
-    FOLLOW_oilVersion_in_file387 = frozenset([95])
-    FOLLOW_implementationDefinition_in_file389 = frozenset([89])
-    FOLLOW_applicationDefinition_in_file391 = frozenset([1])
-    FOLLOW_109_in_oilVersion427 = frozenset([5])
-    FOLLOW_ASSIGN_in_oilVersion429 = frozenset([71])
-    FOLLOW_STRING_in_oilVersion431 = frozenset([68, 78])
-    FOLLOW_description_in_oilVersion433 = frozenset([68])
-    FOLLOW_SEMI_in_oilVersion436 = frozenset([1])
-    FOLLOW_95_in_implementationDefinition474 = frozenset([33])
-    FOLLOW_ID_in_implementationDefinition476 = frozenset([46])
-    FOLLOW_LCURLY_in_implementationDefinition478 = frozenset([65, 79, 81, 85, 87, 91, 98, 100, 102, 104, 106, 110, 112, 115])
-    FOLLOW_implementationSpecList_in_implementationDefinition480 = frozenset([65])
-    FOLLOW_RCURLY_in_implementationDefinition482 = frozenset([68, 78])
-    FOLLOW_description_in_implementationDefinition484 = frozenset([68])
-    FOLLOW_SEMI_in_implementationDefinition487 = frozenset([1])
-    FOLLOW_implementationSpec_in_implementationSpecList541 = frozenset([1, 79, 81, 85, 87, 91, 98, 100, 102, 104, 106, 110, 112, 115])
-    FOLLOW_object_in_implementationSpec587 = frozenset([46])
-    FOLLOW_LCURLY_in_implementationSpec591 = frozenset([65, 80, 82, 84, 86, 88, 90, 92, 94, 96, 97, 99, 101, 103, 105, 107, 111, 113, 114, 116, 118, 119])
-    FOLLOW_implementationList_in_implementationSpec593 = frozenset([65])
-    FOLLOW_RCURLY_in_implementationSpec595 = frozenset([68, 78])
-    FOLLOW_description_in_implementationSpec597 = frozenset([68])
-    FOLLOW_SEMI_in_implementationSpec600 = frozenset([1])
-    FOLLOW_110_in_object644 = frozenset([1])
-    FOLLOW_115_in_object656 = frozenset([1])
-    FOLLOW_87_in_object668 = frozenset([1])
-    FOLLOW_79_in_object680 = frozenset([1])
-    FOLLOW_112_in_object692 = frozenset([1])
-    FOLLOW_91_in_object704 = frozenset([1])
-    FOLLOW_100_in_object716 = frozenset([1])
-    FOLLOW_102_in_object728 = frozenset([1])
-    FOLLOW_85_in_object740 = frozenset([1])
-    FOLLOW_106_in_object752 = frozenset([1])
-    FOLLOW_81_in_object764 = frozenset([1])
-    FOLLOW_98_in_object776 = frozenset([1])
-    FOLLOW_104_in_object788 = frozenset([1])
-    FOLLOW_implementationDef_in_implementationList834 = frozenset([1, 80, 82, 84, 86, 88, 90, 92, 94, 96, 97, 99, 101, 103, 105, 107, 111, 113, 114, 116, 118, 119])
-    FOLLOW_implAttrDef_in_implementationDef879 = frozenset([1])
-    FOLLOW_implRefDef_in_implementationDef906 = frozenset([1])
-    FOLLOW_118_in_implAttrDef957 = frozenset([33, 45, 79, 81, 85, 87, 91, 98, 100, 102, 104, 106, 110, 112, 115, 120])
-    FOLLOW_autoSpecifier_in_implAttrDef959 = frozenset([33, 45, 79, 81, 85, 87, 91, 98, 100, 102, 104, 106, 110, 112, 115])
-    FOLLOW_numberRange_in_implAttrDef962 = frozenset([33, 79, 81, 85, 87, 91, 98, 100, 102, 104, 106, 110, 112, 115])
-    FOLLOW_attributeName_in_implAttrDef965 = frozenset([5, 45, 68, 78])
-    FOLLOW_multipleSpecifier_in_implAttrDef967 = frozenset([5, 68, 78])
-    FOLLOW_defaultNumber_in_implAttrDef970 = frozenset([68, 78])
-    FOLLOW_description_in_implAttrDef973 = frozenset([68])
-    FOLLOW_SEMI_in_implAttrDef976 = frozenset([1])
-    FOLLOW_96_in_implAttrDef1023 = frozenset([33, 45, 79, 81, 85, 87, 91, 98, 100, 102, 104, 106, 110, 112, 115, 120])
-    FOLLOW_autoSpecifier_in_implAttrDef1029 = frozenset([33, 45, 79, 81, 85, 87, 91, 98, 100, 102, 104, 106, 110, 112, 115])
-    FOLLOW_numberRange_in_implAttrDef1032 = frozenset([33, 79, 81, 85, 87, 91, 98, 100, 102, 104, 106, 110, 112, 115])
-    FOLLOW_attributeName_in_implAttrDef1035 = frozenset([5, 45, 68, 78])
-    FOLLOW_multipleSpecifier_in_implAttrDef1037 = frozenset([5, 68, 78])
-    FOLLOW_defaultNumber_in_implAttrDef1040 = frozenset([68, 78])
-    FOLLOW_description_in_implAttrDef1043 = frozenset([68])
-    FOLLOW_SEMI_in_implAttrDef1046 = frozenset([1])
-    FOLLOW_119_in_implAttrDef1093 = frozenset([33, 45, 79, 81, 85, 87, 91, 98, 100, 102, 104, 106, 110, 112, 115, 120])
-    FOLLOW_autoSpecifier_in_implAttrDef1095 = frozenset([33, 45, 79, 81, 85, 87, 91, 98, 100, 102, 104, 106, 110, 112, 115])
-    FOLLOW_numberRange_in_implAttrDef1098 = frozenset([33, 79, 81, 85, 87, 91, 98, 100, 102, 104, 106, 110, 112, 115])
-    FOLLOW_attributeName_in_implAttrDef1101 = frozenset([5, 45, 68, 78])
-    FOLLOW_multipleSpecifier_in_implAttrDef1103 = frozenset([5, 68, 78])
-    FOLLOW_defaultNumber_in_implAttrDef1106 = frozenset([68, 78])
-    FOLLOW_description_in_implAttrDef1109 = frozenset([68])
-    FOLLOW_SEMI_in_implAttrDef1112 = frozenset([1])
-    FOLLOW_97_in_implAttrDef1159 = frozenset([33, 45, 79, 81, 85, 87, 91, 98, 100, 102, 104, 106, 110, 112, 115, 120])
-    FOLLOW_autoSpecifier_in_implAttrDef1165 = frozenset([33, 45, 79, 81, 85, 87, 91, 98, 100, 102, 104, 106, 110, 112, 115])
-    FOLLOW_numberRange_in_implAttrDef1168 = frozenset([33, 79, 81, 85, 87, 91, 98, 100, 102, 104, 106, 110, 112, 115])
-    FOLLOW_attributeName_in_implAttrDef1171 = frozenset([5, 45, 68, 78])
-    FOLLOW_multipleSpecifier_in_implAttrDef1173 = frozenset([5, 68, 78])
-    FOLLOW_defaultNumber_in_implAttrDef1176 = frozenset([68, 78])
-    FOLLOW_description_in_implAttrDef1179 = frozenset([68])
-    FOLLOW_SEMI_in_implAttrDef1182 = frozenset([1])
-    FOLLOW_94_in_implAttrDef1229 = frozenset([33, 45, 79, 81, 85, 87, 91, 98, 100, 102, 104, 106, 110, 112, 115, 120])
-    FOLLOW_autoSpecifier_in_implAttrDef1235 = frozenset([33, 45, 79, 81, 85, 87, 91, 98, 100, 102, 104, 106, 110, 112, 115])
-    FOLLOW_floatRange_in_implAttrDef1238 = frozenset([33, 79, 81, 85, 87, 91, 98, 100, 102, 104, 106, 110, 112, 115])
-    FOLLOW_attributeName_in_implAttrDef1241 = frozenset([5, 45, 68, 78])
-    FOLLOW_multipleSpecifier_in_implAttrDef1243 = frozenset([5, 68, 78])
-    FOLLOW_defaultFloat_in_implAttrDef1246 = frozenset([68, 78])
-    FOLLOW_description_in_implAttrDef1249 = frozenset([68])
-    FOLLOW_SEMI_in_implAttrDef1252 = frozenset([1])
-    FOLLOW_90_in_implAttrDef1299 = frozenset([45, 120])
-    FOLLOW_autoSpecifier_in_implAttrDef1306 = frozenset([45])
-    FOLLOW_enumeration_in_implAttrDef1309 = frozenset([33, 79, 81, 85, 87, 91, 98, 100, 102, 104, 106, 110, 112, 115])
-    FOLLOW_attributeName_in_implAttrDef1311 = frozenset([5, 45, 68, 78])
-    FOLLOW_multipleSpecifier_in_implAttrDef1313 = frozenset([5, 68, 78])
-    FOLLOW_defaultName_in_implAttrDef1316 = frozenset([68, 78])
-    FOLLOW_description_in_implAttrDef1319 = frozenset([68])
-    FOLLOW_SEMI_in_implAttrDef1322 = frozenset([1])
-    FOLLOW_114_in_implAttrDef1368 = frozenset([33, 79, 81, 85, 87, 91, 98, 100, 102, 104, 106, 110, 112, 115, 120])
-    FOLLOW_autoSpecifier_in_implAttrDef1370 = frozenset([33, 79, 81, 85, 87, 91, 98, 100, 102, 104, 106, 110, 112, 115])
-    FOLLOW_attributeName_in_implAttrDef1373 = frozenset([5, 45, 68, 78])
-    FOLLOW_multipleSpecifier_in_implAttrDef1375 = frozenset([5, 68, 78])
-    FOLLOW_defaultString_in_implAttrDef1378 = frozenset([68, 78])
-    FOLLOW_description_in_implAttrDef1381 = frozenset([68])
-    FOLLOW_SEMI_in_implAttrDef1384 = frozenset([1])
-    FOLLOW_84_in_implAttrDef1428 = frozenset([33, 45, 79, 81, 85, 87, 91, 98, 100, 102, 104, 106, 110, 112, 115, 120])
-    FOLLOW_autoSpecifier_in_implAttrDef1432 = frozenset([33, 45, 79, 81, 85, 87, 91, 98, 100, 102, 104, 106, 110, 112, 115])
-    FOLLOW_boolValues_in_implAttrDef1435 = frozenset([33, 79, 81, 85, 87, 91, 98, 100, 102, 104, 106, 110, 112, 115])
-    FOLLOW_attributeName_in_implAttrDef1438 = frozenset([5, 45, 68, 78])
-    FOLLOW_multipleSpecifier_in_implAttrDef1440 = frozenset([5, 68, 78])
-    FOLLOW_defaultBool_in_implAttrDef1443 = frozenset([68, 78])
-    FOLLOW_description_in_implAttrDef1446 = frozenset([68])
-    FOLLOW_SEMI_in_implAttrDef1449 = frozenset([1])
-    FOLLOW_ID_in_attributeName1504 = frozenset([1])
-    FOLLOW_object_in_attributeName1524 = frozenset([1])
-    FOLLOW_LBRACK_in_numberRange1552 = frozenset([31, 44])
-    FOLLOW_numberList_in_numberRange1555 = frozenset([64])
-    FOLLOW_number_in_numberRange1584 = frozenset([77])
-    FOLLOW_range_in_numberRange1591 = frozenset([31, 44])
-    FOLLOW_number_in_numberRange1597 = frozenset([64])
-    FOLLOW_RBRACK_in_numberRange1625 = frozenset([1])
-    FOLLOW_number_in_numberList1654 = frozenset([1, 76])
-    FOLLOW_76_in_numberList1657 = frozenset([31, 44])
-    FOLLOW_number_in_numberList1663 = frozenset([1, 76])
-    FOLLOW_LBRACK_in_multipleSpecifier1699 = frozenset([64])
-    FOLLOW_RBRACK_in_multipleSpecifier1701 = frozenset([1])
-    FOLLOW_LBRACK_in_floatRange1728 = frozenset([27])
-    FOLLOW_FLOAT_in_floatRange1735 = frozenset([77])
-    FOLLOW_range_in_floatRange1739 = frozenset([27])
-    FOLLOW_FLOAT_in_floatRange1745 = frozenset([64])
-    FOLLOW_RBRACK_in_floatRange1750 = frozenset([1])
-    FOLLOW_LBRACK_in_enumeration1785 = frozenset([33])
-    FOLLOW_enumeratorList_in_enumeration1787 = frozenset([64])
-    FOLLOW_RBRACK_in_enumeration1789 = frozenset([1])
-    FOLLOW_enumerator_in_enumeratorList1838 = frozenset([1, 76])
-    FOLLOW_76_in_enumeratorList1843 = frozenset([33])
-    FOLLOW_enumerator_in_enumeratorList1849 = frozenset([1, 76])
-    FOLLOW_ID_in_enumerator1894 = frozenset([1, 46, 78])
-    FOLLOW_implParameterList_in_enumerator1896 = frozenset([1, 78])
-    FOLLOW_description_in_enumerator1899 = frozenset([1])
-    FOLLOW_LBRACK_in_boolValues1952 = frozenset([117])
-    FOLLOW_117_in_boolValues1954 = frozenset([46, 76, 78])
-    FOLLOW_implParameterList_in_boolValues1960 = frozenset([76, 78])
-    FOLLOW_description_in_boolValues1967 = frozenset([76])
-    FOLLOW_76_in_boolValues1970 = frozenset([93])
-    FOLLOW_93_in_boolValues1972 = frozenset([46, 64, 78])
-    FOLLOW_implParameterList_in_boolValues1978 = frozenset([64, 78])
-    FOLLOW_description_in_boolValues1985 = frozenset([64])
-    FOLLOW_RBRACK_in_boolValues1988 = frozenset([1])
-    FOLLOW_120_in_autoSpecifier2043 = frozenset([1])
-    FOLLOW_ASSIGN_in_defaultNumber2064 = frozenset([31, 44, 83, 108])
-    FOLLOW_number_in_defaultNumber2075 = frozenset([1])
-    FOLLOW_108_in_defaultNumber2098 = frozenset([1])
-    FOLLOW_83_in_defaultNumber2121 = frozenset([1])
-    FOLLOW_ASSIGN_in_defaultFloat2165 = frozenset([27, 83, 108])
-    FOLLOW_float_in_defaultFloat2176 = frozenset([1])
-    FOLLOW_108_in_defaultFloat2199 = frozenset([1])
-    FOLLOW_83_in_defaultFloat2222 = frozenset([1])
-    FOLLOW_FLOAT_in_float2261 = frozenset([1])
-    FOLLOW_ASSIGN_in_defaultName2292 = frozenset([33, 83, 108])
-    FOLLOW_ID_in_defaultName2303 = frozenset([1])
-    FOLLOW_108_in_defaultName2314 = frozenset([1])
-    FOLLOW_83_in_defaultName2325 = frozenset([1])
-    FOLLOW_ASSIGN_in_defaultString2372 = frozenset([71, 83, 108])
-    FOLLOW_STRING_in_defaultString2383 = frozenset([1])
-    FOLLOW_108_in_defaultString2394 = frozenset([1])
-    FOLLOW_83_in_defaultString2405 = frozenset([1])
-    FOLLOW_ASSIGN_in_defaultBool2452 = frozenset([83, 93, 108, 117])
-    FOLLOW_boolean_in_defaultBool2459 = frozenset([1])
-    FOLLOW_108_in_defaultBool2486 = frozenset([1])
-    FOLLOW_83_in_defaultBool2506 = frozenset([1])
-    FOLLOW_LCURLY_in_implParameterList2547 = frozenset([65, 80, 82, 84, 86, 88, 90, 92, 94, 96, 97, 99, 101, 103, 105, 107, 111, 113, 114, 116, 118, 119])
-    FOLLOW_implDefList_in_implParameterList2549 = frozenset([65])
-    FOLLOW_RCURLY_in_implParameterList2556 = frozenset([1])
-    FOLLOW_implementationDef_in_implDefList2602 = frozenset([1, 80, 82, 84, 86, 88, 90, 92, 94, 96, 97, 99, 101, 103, 105, 107, 111, 113, 114, 116, 118, 119])
-    FOLLOW_objectRefType_in_implRefDef2644 = frozenset([33, 79, 81, 85, 87, 91, 98, 100, 102, 104, 106, 110, 112, 115])
-    FOLLOW_referenceName_in_implRefDef2646 = frozenset([45, 68, 78])
-    FOLLOW_multipleSpecifier_in_implRefDef2648 = frozenset([68, 78])
-    FOLLOW_description_in_implRefDef2651 = frozenset([68])
-    FOLLOW_SEMI_in_implRefDef2654 = frozenset([1])
-    FOLLOW_111_in_objectRefType2701 = frozenset([1])
-    FOLLOW_116_in_objectRefType2713 = frozenset([1])
-    FOLLOW_88_in_objectRefType2725 = frozenset([1])
-    FOLLOW_80_in_objectRefType2737 = frozenset([1])
-    FOLLOW_113_in_objectRefType2749 = frozenset([1])
-    FOLLOW_92_in_objectRefType2761 = frozenset([1])
-    FOLLOW_101_in_objectRefType2773 = frozenset([1])
-    FOLLOW_103_in_objectRefType2785 = frozenset([1])
-    FOLLOW_86_in_objectRefType2797 = frozenset([1])
-    FOLLOW_107_in_objectRefType2809 = frozenset([1])
-    FOLLOW_82_in_objectRefType2821 = frozenset([1])
-    FOLLOW_99_in_objectRefType2833 = frozenset([1])
-    FOLLOW_105_in_objectRefType2845 = frozenset([1])
-    FOLLOW_ID_in_referenceName2873 = frozenset([1])
-    FOLLOW_object_in_referenceName2889 = frozenset([1])
-    FOLLOW_89_in_applicationDefinition2923 = frozenset([33])
-    FOLLOW_ID_in_applicationDefinition2925 = frozenset([46])
-    FOLLOW_LCURLY_in_applicationDefinition2927 = frozenset([65, 79, 81, 85, 87, 91, 98, 100, 102, 104, 106, 110, 112, 115])
-    FOLLOW_objectDefinitionList_in_applicationDefinition2929 = frozenset([65])
-    FOLLOW_RCURLY_in_applicationDefinition2931 = frozenset([68, 78])
-    FOLLOW_description_in_applicationDefinition2933 = frozenset([68])
-    FOLLOW_SEMI_in_applicationDefinition2936 = frozenset([1])
-    FOLLOW_objectDefinition_in_objectDefinitionList2991 = frozenset([1, 79, 81, 85, 87, 91, 98, 100, 102, 104, 106, 110, 112, 115])
-    FOLLOW_objectName_in_objectDefinition3033 = frozenset([46, 68, 78])
-    FOLLOW_LCURLY_in_objectDefinition3044 = frozenset([33, 65, 79, 81, 85, 87, 91, 98, 100, 102, 104, 106, 110, 112, 115])
-    FOLLOW_parameterList_in_objectDefinition3046 = frozenset([65])
-    FOLLOW_RCURLY_in_objectDefinition3048 = frozenset([68, 78])
-    FOLLOW_description_in_objectDefinition3052 = frozenset([68])
-    FOLLOW_SEMI_in_objectDefinition3055 = frozenset([1])
-    FOLLOW_object_in_objectName3100 = frozenset([33])
-    FOLLOW_ID_in_objectName3102 = frozenset([1])
-    FOLLOW_parameter_in_parameterList3147 = frozenset([1, 33, 79, 81, 85, 87, 91, 98, 100, 102, 104, 106, 110, 112, 115])
-    FOLLOW_attributeName_in_parameter3187 = frozenset([5])
-    FOLLOW_ASSIGN_in_parameter3189 = frozenset([27, 31, 33, 44, 71, 83, 93, 117])
-    FOLLOW_attributeValue_in_parameter3191 = frozenset([68, 78])
-    FOLLOW_description_in_parameter3193 = frozenset([68])
-    FOLLOW_SEMI_in_parameter3196 = frozenset([1])
-    FOLLOW_ID_in_attributeValue3241 = frozenset([1, 46])
-    FOLLOW_LCURLY_in_attributeValue3244 = frozenset([33, 65, 79, 81, 85, 87, 91, 98, 100, 102, 104, 106, 110, 112, 115])
-    FOLLOW_parameterList_in_attributeValue3246 = frozenset([65])
-    FOLLOW_RCURLY_in_attributeValue3248 = frozenset([1])
-    FOLLOW_boolean_in_attributeValue3274 = frozenset([1, 46])
-    FOLLOW_LCURLY_in_attributeValue3277 = frozenset([33, 65, 79, 81, 85, 87, 91, 98, 100, 102, 104, 106, 110, 112, 115])
-    FOLLOW_parameterList_in_attributeValue3279 = frozenset([65])
-    FOLLOW_RCURLY_in_attributeValue3281 = frozenset([1])
-    FOLLOW_number_in_attributeValue3307 = frozenset([1])
-    FOLLOW_FLOAT_in_attributeValue3328 = frozenset([1])
-    FOLLOW_STRING_in_attributeValue3349 = frozenset([1])
-    FOLLOW_83_in_attributeValue3370 = frozenset([1])
-    FOLLOW_78_in_description3402 = frozenset([71])
-    FOLLOW_STRING_in_description3404 = frozenset([1])
-    FOLLOW_INT_in_number3443 = frozenset([1])
-    FOLLOW_HEX_in_number3456 = frozenset([1])
-    FOLLOW_77_in_range3491 = frozenset([1])
-    FOLLOW_117_in_boolean3513 = frozenset([1])
-    FOLLOW_93_in_boolean3527 = frozenset([1])
+    FOLLOW_oilVersion_in_file390 = frozenset([95])
+    FOLLOW_implementationDefinition_in_file392 = frozenset([89])
+    FOLLOW_applicationDefinition_in_file394 = frozenset([1])
+    FOLLOW_109_in_oilVersion430 = frozenset([5])
+    FOLLOW_ASSIGN_in_oilVersion432 = frozenset([71])
+    FOLLOW_STRING_in_oilVersion434 = frozenset([68, 78])
+    FOLLOW_description_in_oilVersion436 = frozenset([68])
+    FOLLOW_SEMI_in_oilVersion439 = frozenset([1])
+    FOLLOW_95_in_implementationDefinition477 = frozenset([33])
+    FOLLOW_ID_in_implementationDefinition479 = frozenset([46])
+    FOLLOW_LCURLY_in_implementationDefinition481 = frozenset([65, 79, 81, 85, 87, 91, 98, 100, 102, 104, 106, 110, 112, 115])
+    FOLLOW_implementationSpecList_in_implementationDefinition483 = frozenset([65])
+    FOLLOW_RCURLY_in_implementationDefinition485 = frozenset([68, 78])
+    FOLLOW_description_in_implementationDefinition487 = frozenset([68])
+    FOLLOW_SEMI_in_implementationDefinition490 = frozenset([1])
+    FOLLOW_implementationSpec_in_implementationSpecList544 = frozenset([1, 79, 81, 85, 87, 91, 98, 100, 102, 104, 106, 110, 112, 115])
+    FOLLOW_object_in_implementationSpec590 = frozenset([46])
+    FOLLOW_LCURLY_in_implementationSpec594 = frozenset([65, 80, 82, 84, 86, 88, 90, 92, 94, 96, 97, 99, 101, 103, 105, 107, 111, 113, 114, 116, 118, 119])
+    FOLLOW_implementationList_in_implementationSpec596 = frozenset([65])
+    FOLLOW_RCURLY_in_implementationSpec598 = frozenset([68, 78])
+    FOLLOW_description_in_implementationSpec600 = frozenset([68])
+    FOLLOW_SEMI_in_implementationSpec603 = frozenset([1])
+    FOLLOW_110_in_object647 = frozenset([1])
+    FOLLOW_115_in_object659 = frozenset([1])
+    FOLLOW_87_in_object671 = frozenset([1])
+    FOLLOW_79_in_object683 = frozenset([1])
+    FOLLOW_112_in_object695 = frozenset([1])
+    FOLLOW_91_in_object707 = frozenset([1])
+    FOLLOW_100_in_object719 = frozenset([1])
+    FOLLOW_102_in_object731 = frozenset([1])
+    FOLLOW_85_in_object743 = frozenset([1])
+    FOLLOW_106_in_object755 = frozenset([1])
+    FOLLOW_81_in_object767 = frozenset([1])
+    FOLLOW_98_in_object779 = frozenset([1])
+    FOLLOW_104_in_object791 = frozenset([1])
+    FOLLOW_implementationDef_in_implementationList837 = frozenset([1, 80, 82, 84, 86, 88, 90, 92, 94, 96, 97, 99, 101, 103, 105, 107, 111, 113, 114, 116, 118, 119])
+    FOLLOW_implAttrDef_in_implementationDef882 = frozenset([1])
+    FOLLOW_implRefDef_in_implementationDef909 = frozenset([1])
+    FOLLOW_118_in_implAttrDef960 = frozenset([33, 45, 79, 81, 85, 87, 91, 98, 100, 102, 104, 106, 110, 112, 115, 120])
+    FOLLOW_autoSpecifier_in_implAttrDef962 = frozenset([33, 45, 79, 81, 85, 87, 91, 98, 100, 102, 104, 106, 110, 112, 115])
+    FOLLOW_numberRange_in_implAttrDef965 = frozenset([33, 79, 81, 85, 87, 91, 98, 100, 102, 104, 106, 110, 112, 115])
+    FOLLOW_attributeName_in_implAttrDef968 = frozenset([5, 45, 68, 78])
+    FOLLOW_multipleSpecifier_in_implAttrDef970 = frozenset([5, 68, 78])
+    FOLLOW_defaultNumber_in_implAttrDef973 = frozenset([68, 78])
+    FOLLOW_description_in_implAttrDef976 = frozenset([68])
+    FOLLOW_SEMI_in_implAttrDef979 = frozenset([1])
+    FOLLOW_96_in_implAttrDef1026 = frozenset([33, 45, 79, 81, 85, 87, 91, 98, 100, 102, 104, 106, 110, 112, 115, 120])
+    FOLLOW_autoSpecifier_in_implAttrDef1032 = frozenset([33, 45, 79, 81, 85, 87, 91, 98, 100, 102, 104, 106, 110, 112, 115])
+    FOLLOW_numberRange_in_implAttrDef1035 = frozenset([33, 79, 81, 85, 87, 91, 98, 100, 102, 104, 106, 110, 112, 115])
+    FOLLOW_attributeName_in_implAttrDef1038 = frozenset([5, 45, 68, 78])
+    FOLLOW_multipleSpecifier_in_implAttrDef1040 = frozenset([5, 68, 78])
+    FOLLOW_defaultNumber_in_implAttrDef1043 = frozenset([68, 78])
+    FOLLOW_description_in_implAttrDef1046 = frozenset([68])
+    FOLLOW_SEMI_in_implAttrDef1049 = frozenset([1])
+    FOLLOW_119_in_implAttrDef1096 = frozenset([33, 45, 79, 81, 85, 87, 91, 98, 100, 102, 104, 106, 110, 112, 115, 120])
+    FOLLOW_autoSpecifier_in_implAttrDef1098 = frozenset([33, 45, 79, 81, 85, 87, 91, 98, 100, 102, 104, 106, 110, 112, 115])
+    FOLLOW_numberRange_in_implAttrDef1101 = frozenset([33, 79, 81, 85, 87, 91, 98, 100, 102, 104, 106, 110, 112, 115])
+    FOLLOW_attributeName_in_implAttrDef1104 = frozenset([5, 45, 68, 78])
+    FOLLOW_multipleSpecifier_in_implAttrDef1106 = frozenset([5, 68, 78])
+    FOLLOW_defaultNumber_in_implAttrDef1109 = frozenset([68, 78])
+    FOLLOW_description_in_implAttrDef1112 = frozenset([68])
+    FOLLOW_SEMI_in_implAttrDef1115 = frozenset([1])
+    FOLLOW_97_in_implAttrDef1162 = frozenset([33, 45, 79, 81, 85, 87, 91, 98, 100, 102, 104, 106, 110, 112, 115, 120])
+    FOLLOW_autoSpecifier_in_implAttrDef1168 = frozenset([33, 45, 79, 81, 85, 87, 91, 98, 100, 102, 104, 106, 110, 112, 115])
+    FOLLOW_numberRange_in_implAttrDef1171 = frozenset([33, 79, 81, 85, 87, 91, 98, 100, 102, 104, 106, 110, 112, 115])
+    FOLLOW_attributeName_in_implAttrDef1174 = frozenset([5, 45, 68, 78])
+    FOLLOW_multipleSpecifier_in_implAttrDef1176 = frozenset([5, 68, 78])
+    FOLLOW_defaultNumber_in_implAttrDef1179 = frozenset([68, 78])
+    FOLLOW_description_in_implAttrDef1182 = frozenset([68])
+    FOLLOW_SEMI_in_implAttrDef1185 = frozenset([1])
+    FOLLOW_94_in_implAttrDef1232 = frozenset([33, 45, 79, 81, 85, 87, 91, 98, 100, 102, 104, 106, 110, 112, 115, 120])
+    FOLLOW_autoSpecifier_in_implAttrDef1238 = frozenset([33, 45, 79, 81, 85, 87, 91, 98, 100, 102, 104, 106, 110, 112, 115])
+    FOLLOW_floatRange_in_implAttrDef1241 = frozenset([33, 79, 81, 85, 87, 91, 98, 100, 102, 104, 106, 110, 112, 115])
+    FOLLOW_attributeName_in_implAttrDef1244 = frozenset([5, 45, 68, 78])
+    FOLLOW_multipleSpecifier_in_implAttrDef1246 = frozenset([5, 68, 78])
+    FOLLOW_defaultFloat_in_implAttrDef1249 = frozenset([68, 78])
+    FOLLOW_description_in_implAttrDef1252 = frozenset([68])
+    FOLLOW_SEMI_in_implAttrDef1255 = frozenset([1])
+    FOLLOW_90_in_implAttrDef1302 = frozenset([45, 120])
+    FOLLOW_autoSpecifier_in_implAttrDef1309 = frozenset([45])
+    FOLLOW_enumeration_in_implAttrDef1312 = frozenset([33, 79, 81, 85, 87, 91, 98, 100, 102, 104, 106, 110, 112, 115])
+    FOLLOW_attributeName_in_implAttrDef1314 = frozenset([5, 45, 68, 78])
+    FOLLOW_multipleSpecifier_in_implAttrDef1316 = frozenset([5, 68, 78])
+    FOLLOW_defaultName_in_implAttrDef1319 = frozenset([68, 78])
+    FOLLOW_description_in_implAttrDef1322 = frozenset([68])
+    FOLLOW_SEMI_in_implAttrDef1325 = frozenset([1])
+    FOLLOW_114_in_implAttrDef1371 = frozenset([33, 79, 81, 85, 87, 91, 98, 100, 102, 104, 106, 110, 112, 115, 120])
+    FOLLOW_autoSpecifier_in_implAttrDef1373 = frozenset([33, 79, 81, 85, 87, 91, 98, 100, 102, 104, 106, 110, 112, 115])
+    FOLLOW_attributeName_in_implAttrDef1376 = frozenset([5, 45, 68, 78])
+    FOLLOW_multipleSpecifier_in_implAttrDef1378 = frozenset([5, 68, 78])
+    FOLLOW_defaultString_in_implAttrDef1381 = frozenset([68, 78])
+    FOLLOW_description_in_implAttrDef1384 = frozenset([68])
+    FOLLOW_SEMI_in_implAttrDef1387 = frozenset([1])
+    FOLLOW_84_in_implAttrDef1431 = frozenset([33, 45, 79, 81, 85, 87, 91, 98, 100, 102, 104, 106, 110, 112, 115, 120])
+    FOLLOW_autoSpecifier_in_implAttrDef1435 = frozenset([33, 45, 79, 81, 85, 87, 91, 98, 100, 102, 104, 106, 110, 112, 115])
+    FOLLOW_boolValues_in_implAttrDef1438 = frozenset([33, 79, 81, 85, 87, 91, 98, 100, 102, 104, 106, 110, 112, 115])
+    FOLLOW_attributeName_in_implAttrDef1441 = frozenset([5, 45, 68, 78])
+    FOLLOW_multipleSpecifier_in_implAttrDef1443 = frozenset([5, 68, 78])
+    FOLLOW_defaultBool_in_implAttrDef1446 = frozenset([68, 78])
+    FOLLOW_description_in_implAttrDef1449 = frozenset([68])
+    FOLLOW_SEMI_in_implAttrDef1452 = frozenset([1])
+    FOLLOW_ID_in_attributeName1507 = frozenset([1])
+    FOLLOW_object_in_attributeName1527 = frozenset([1])
+    FOLLOW_LBRACK_in_numberRange1555 = frozenset([31, 44])
+    FOLLOW_numberList_in_numberRange1558 = frozenset([64])
+    FOLLOW_number_in_numberRange1587 = frozenset([77])
+    FOLLOW_range_in_numberRange1594 = frozenset([31, 44])
+    FOLLOW_number_in_numberRange1600 = frozenset([64])
+    FOLLOW_RBRACK_in_numberRange1628 = frozenset([1])
+    FOLLOW_number_in_numberList1657 = frozenset([1, 76])
+    FOLLOW_76_in_numberList1660 = frozenset([31, 44])
+    FOLLOW_number_in_numberList1666 = frozenset([1, 76])
+    FOLLOW_LBRACK_in_multipleSpecifier1702 = frozenset([64])
+    FOLLOW_RBRACK_in_multipleSpecifier1704 = frozenset([1])
+    FOLLOW_LBRACK_in_floatRange1731 = frozenset([27])
+    FOLLOW_FLOAT_in_floatRange1738 = frozenset([77])
+    FOLLOW_range_in_floatRange1742 = frozenset([27])
+    FOLLOW_FLOAT_in_floatRange1748 = frozenset([64])
+    FOLLOW_RBRACK_in_floatRange1753 = frozenset([1])
+    FOLLOW_LBRACK_in_enumeration1788 = frozenset([33])
+    FOLLOW_enumeratorList_in_enumeration1790 = frozenset([64])
+    FOLLOW_RBRACK_in_enumeration1792 = frozenset([1])
+    FOLLOW_enumerator_in_enumeratorList1841 = frozenset([1, 76])
+    FOLLOW_76_in_enumeratorList1846 = frozenset([33])
+    FOLLOW_enumerator_in_enumeratorList1852 = frozenset([1, 76])
+    FOLLOW_ID_in_enumerator1897 = frozenset([1, 46, 78])
+    FOLLOW_implParameterList_in_enumerator1899 = frozenset([1, 78])
+    FOLLOW_description_in_enumerator1902 = frozenset([1])
+    FOLLOW_LBRACK_in_boolValues1955 = frozenset([117])
+    FOLLOW_117_in_boolValues1957 = frozenset([46, 76, 78])
+    FOLLOW_implParameterList_in_boolValues1963 = frozenset([76, 78])
+    FOLLOW_description_in_boolValues1970 = frozenset([76])
+    FOLLOW_76_in_boolValues1973 = frozenset([93])
+    FOLLOW_93_in_boolValues1975 = frozenset([46, 64, 78])
+    FOLLOW_implParameterList_in_boolValues1981 = frozenset([64, 78])
+    FOLLOW_description_in_boolValues1988 = frozenset([64])
+    FOLLOW_RBRACK_in_boolValues1991 = frozenset([1])
+    FOLLOW_120_in_autoSpecifier2046 = frozenset([1])
+    FOLLOW_ASSIGN_in_defaultNumber2067 = frozenset([31, 44, 83, 108])
+    FOLLOW_number_in_defaultNumber2078 = frozenset([1])
+    FOLLOW_108_in_defaultNumber2101 = frozenset([1])
+    FOLLOW_83_in_defaultNumber2124 = frozenset([1])
+    FOLLOW_ASSIGN_in_defaultFloat2168 = frozenset([27, 83, 108])
+    FOLLOW_float_in_defaultFloat2179 = frozenset([1])
+    FOLLOW_108_in_defaultFloat2202 = frozenset([1])
+    FOLLOW_83_in_defaultFloat2225 = frozenset([1])
+    FOLLOW_FLOAT_in_float2264 = frozenset([1])
+    FOLLOW_ASSIGN_in_defaultName2295 = frozenset([33, 83, 108])
+    FOLLOW_ID_in_defaultName2306 = frozenset([1])
+    FOLLOW_108_in_defaultName2317 = frozenset([1])
+    FOLLOW_83_in_defaultName2328 = frozenset([1])
+    FOLLOW_ASSIGN_in_defaultString2375 = frozenset([71, 83, 108])
+    FOLLOW_STRING_in_defaultString2386 = frozenset([1])
+    FOLLOW_108_in_defaultString2397 = frozenset([1])
+    FOLLOW_83_in_defaultString2408 = frozenset([1])
+    FOLLOW_ASSIGN_in_defaultBool2455 = frozenset([83, 93, 108, 117])
+    FOLLOW_boolean_in_defaultBool2462 = frozenset([1])
+    FOLLOW_108_in_defaultBool2489 = frozenset([1])
+    FOLLOW_83_in_defaultBool2509 = frozenset([1])
+    FOLLOW_LCURLY_in_implParameterList2550 = frozenset([65, 80, 82, 84, 86, 88, 90, 92, 94, 96, 97, 99, 101, 103, 105, 107, 111, 113, 114, 116, 118, 119])
+    FOLLOW_implDefList_in_implParameterList2552 = frozenset([65])
+    FOLLOW_RCURLY_in_implParameterList2559 = frozenset([1])
+    FOLLOW_implementationDef_in_implDefList2605 = frozenset([1, 80, 82, 84, 86, 88, 90, 92, 94, 96, 97, 99, 101, 103, 105, 107, 111, 113, 114, 116, 118, 119])
+    FOLLOW_objectRefType_in_implRefDef2647 = frozenset([33, 79, 81, 85, 87, 91, 98, 100, 102, 104, 106, 110, 112, 115])
+    FOLLOW_referenceName_in_implRefDef2649 = frozenset([45, 68, 78])
+    FOLLOW_multipleSpecifier_in_implRefDef2651 = frozenset([68, 78])
+    FOLLOW_description_in_implRefDef2654 = frozenset([68])
+    FOLLOW_SEMI_in_implRefDef2657 = frozenset([1])
+    FOLLOW_111_in_objectRefType2704 = frozenset([1])
+    FOLLOW_116_in_objectRefType2716 = frozenset([1])
+    FOLLOW_88_in_objectRefType2728 = frozenset([1])
+    FOLLOW_80_in_objectRefType2740 = frozenset([1])
+    FOLLOW_113_in_objectRefType2752 = frozenset([1])
+    FOLLOW_92_in_objectRefType2764 = frozenset([1])
+    FOLLOW_101_in_objectRefType2776 = frozenset([1])
+    FOLLOW_103_in_objectRefType2788 = frozenset([1])
+    FOLLOW_86_in_objectRefType2800 = frozenset([1])
+    FOLLOW_107_in_objectRefType2812 = frozenset([1])
+    FOLLOW_82_in_objectRefType2824 = frozenset([1])
+    FOLLOW_99_in_objectRefType2836 = frozenset([1])
+    FOLLOW_105_in_objectRefType2848 = frozenset([1])
+    FOLLOW_ID_in_referenceName2876 = frozenset([1])
+    FOLLOW_object_in_referenceName2892 = frozenset([1])
+    FOLLOW_89_in_applicationDefinition2926 = frozenset([33])
+    FOLLOW_ID_in_applicationDefinition2928 = frozenset([46])
+    FOLLOW_LCURLY_in_applicationDefinition2930 = frozenset([65, 79, 81, 85, 87, 91, 98, 100, 102, 104, 106, 110, 112, 115])
+    FOLLOW_objectDefinitionList_in_applicationDefinition2932 = frozenset([65])
+    FOLLOW_RCURLY_in_applicationDefinition2934 = frozenset([68, 78])
+    FOLLOW_description_in_applicationDefinition2936 = frozenset([68])
+    FOLLOW_SEMI_in_applicationDefinition2939 = frozenset([1])
+    FOLLOW_objectDefinition_in_objectDefinitionList2994 = frozenset([1, 79, 81, 85, 87, 91, 98, 100, 102, 104, 106, 110, 112, 115])
+    FOLLOW_objectName_in_objectDefinition3036 = frozenset([46, 68, 78])
+    FOLLOW_LCURLY_in_objectDefinition3047 = frozenset([33, 65, 79, 81, 85, 87, 91, 98, 100, 102, 104, 106, 110, 112, 115])
+    FOLLOW_parameterList_in_objectDefinition3049 = frozenset([65])
+    FOLLOW_RCURLY_in_objectDefinition3051 = frozenset([68, 78])
+    FOLLOW_description_in_objectDefinition3055 = frozenset([68])
+    FOLLOW_SEMI_in_objectDefinition3058 = frozenset([1])
+    FOLLOW_object_in_objectName3103 = frozenset([33])
+    FOLLOW_ID_in_objectName3105 = frozenset([1])
+    FOLLOW_parameter_in_parameterList3150 = frozenset([1, 33, 79, 81, 85, 87, 91, 98, 100, 102, 104, 106, 110, 112, 115])
+    FOLLOW_attributeName_in_parameter3190 = frozenset([5])
+    FOLLOW_ASSIGN_in_parameter3192 = frozenset([27, 31, 33, 44, 71, 83, 93, 117])
+    FOLLOW_attributeValue_in_parameter3194 = frozenset([68, 78])
+    FOLLOW_description_in_parameter3196 = frozenset([68])
+    FOLLOW_SEMI_in_parameter3199 = frozenset([1])
+    FOLLOW_ID_in_attributeValue3244 = frozenset([1, 46])
+    FOLLOW_LCURLY_in_attributeValue3247 = frozenset([33, 65, 79, 81, 85, 87, 91, 98, 100, 102, 104, 106, 110, 112, 115])
+    FOLLOW_parameterList_in_attributeValue3249 = frozenset([65])
+    FOLLOW_RCURLY_in_attributeValue3251 = frozenset([1])
+    FOLLOW_boolean_in_attributeValue3277 = frozenset([1, 46])
+    FOLLOW_LCURLY_in_attributeValue3280 = frozenset([33, 65, 79, 81, 85, 87, 91, 98, 100, 102, 104, 106, 110, 112, 115])
+    FOLLOW_parameterList_in_attributeValue3282 = frozenset([65])
+    FOLLOW_RCURLY_in_attributeValue3284 = frozenset([1])
+    FOLLOW_number_in_attributeValue3310 = frozenset([1])
+    FOLLOW_FLOAT_in_attributeValue3331 = frozenset([1])
+    FOLLOW_STRING_in_attributeValue3352 = frozenset([1])
+    FOLLOW_83_in_attributeValue3373 = frozenset([1])
+    FOLLOW_78_in_description3405 = frozenset([71])
+    FOLLOW_STRING_in_description3407 = frozenset([1])
+    FOLLOW_INT_in_number3446 = frozenset([1])
+    FOLLOW_HEX_in_number3459 = frozenset([1])
+    FOLLOW_77_in_range3494 = frozenset([1])
+    FOLLOW_117_in_boolean3516 = frozenset([1])
+    FOLLOW_93_in_boolean3530 = frozenset([1])
 
 
 

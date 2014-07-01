@@ -75,7 +75,7 @@ const OsTaskConfigurationType OS_TaskConf[OS_NUMBER_OF_TASKS] = {
     (uint8*)${task.name}_Stack,
     ${task.name.upper()}_STACK_SIZE,
 ##    ${realPrio(task.PRIORITY - 1)},
-    ((PriorityType)${hex(~(task.PRIORITY - 1) & 0x0f)}),
+    ((PriorityType)${hex(~(task.PRIORITY.value - 1) & 0x0f)}),
     ${task.flags}
 %if app.os.CC in ('BCC2','ECC2'):
     (uint8)${task.ACTIVATION},

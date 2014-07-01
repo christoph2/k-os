@@ -191,13 +191,12 @@ ${values}
 **
 */
 OS ${info.vendor}_${info.version}_arch {
-## ALL MISSING !!!
-##    RUNNINGTASK         = "${osVars.runningTask}";
-##    RUNNINGTASKPRIORITY = "${osVars.runningTaskPriority}";
-##    RUNNINGISR2         = "${osVars.isrID}";
-##    SERVICETRACE        = "${osVars.serviceID}";
-##    LASTERROR           = "${osVars.lastError}";
-##    CURRENTAPPMODE      = "${osVars.appMode}";
+    RUNNINGTASK         = "${osVars['runningTask']}";
+    RUNNINGTASKPRIORITY = "${osVars['runningTaskPriority']}";
+    RUNNINGISR2         = "${osVars['isrID']}";
+    SERVICETRACE        = "${osVars['serviceID']}";
+    LASTERROR           = "${osVars['lastError']}";
+    CURRENTAPPMODE      = "${osVars['appMode']}";
 };
 
 %for task in app.tasks:
@@ -208,7 +207,7 @@ TASK ${task.name} {
     CURRENTACTIVATIONS  = "(OS_TCB[${loop.index + 1}].Activations)";
     CONTEXT             = "${loop.index}";
 ##    vs_Base_Priority    = "${task.RELATIVE_PRIORITY}";        # MISSING!!!
-    vs_Schedule         = "${task.SCHEDULE}";
+    vs_Schedule         = "${task.SCHEDULE.value}";
     vs_Task_Type        = "${task.taskType}";
     vs_Events_WaitingFor= "(OS_TCB[${loop.index + 1}].EventsSet)";
     vs_Events_Set       = "(OS_TCB[${loop.index + 1}].EventsWaitingFor)";
@@ -236,11 +235,11 @@ CONTEXT CONTEXT_${task.name} {
 
 %for counter in app.counters:
 vs_COUNTER $(counter.name) {
-    vs_MAXALLOWEDVALUE  = "${counter.MAXALLOWEDVALUE}";
-    vs_MINCYCLE         = "${counter.MINCYCLE}";
-    vs_TICKSPERBASE     = "${counter.TICKSPERBASE}";
+    vs_MAXALLOWEDVALUE  = "${counter.MAXALLOWEDVALUE.value}";
+    vs_MINCYCLE         = "${counter.MINCYCLE.value}";
+    vs_TICKSPERBASE     = "${counter.TICKSPERBASE.value}";
     vs_CURRENTVALUE     = "Os_CounterValues[${loop.index}]";
-    vs_TYPE             = "${counter.TYPE}\
+    vs_TYPE             = "${counter.TYPE.value}\
 %if counter.TYPE == 'HARDWARE':
  [Driver: ${counter.TYPE.DRIVER}]\
 %endif
@@ -255,7 +254,7 @@ ALARM ${alarm.name} {
     CYCLETIME = "OS_AlarmValue[${loop.index}].CycleCounter";
     STATE     = "((OsAlm_ActiveAlarms & (1 << ${loop.index})) != 0) ? 1 : 0";
     ACTION    = "${alarmAction(alarm)}";
-    COUNTER   = "${alarm.COUNTER}";
+    COUNTER   = "${alarm.COUNTER.value}";
 };
 
 %endfor
