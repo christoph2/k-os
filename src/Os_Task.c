@@ -1,7 +1,7 @@
 /*
  * k_os (Konnex Operating-System based on the OSEK/VDX-Standard).
  *
- * (C) 2007-2013 by Christoph Schueler <github.com/Christoph2,
+ * (C) 2007-2014 by Christoph Schueler <github.com/Christoph2,
  *                                      cpu12.gems@googlemail.com>
  *
  * All Rights Reserved
@@ -108,12 +108,11 @@ StatusType OsTask_Activate(TaskType TaskID)
 
     if (OsTask_IsSuspended(TaskID)) {
 #endif
-    OsTask_ClearAllEvents(TaskID);
-    OsTask_Init(TaskID, FALSE);
-    OsTask_Ready(TaskID);
-#if     defined(OS_BCC2) || defined(OS_ECC2)
-}
-
+        OsTask_ClearAllEvents(TaskID);
+        OsTask_Init(TaskID, FALSE);
+        OsTask_Ready(TaskID);
+#if defined(OS_BCC2) || defined(OS_ECC2)
+    }
 
 #endif
     OsPort_EnableAllOsInterrupts();
@@ -122,6 +121,16 @@ StatusType OsTask_Activate(TaskType TaskID)
     return E_OK;
 }
 
+
+/*! \fn StatusType ActivateTask(TaskType TaskID)
+ * \brief Activates a task.
+ * \param TaskType TaskID.
+ * \return StatusType.
+ *      'E_OS_LIMIT': maximum Number of Activations reached; 'ActivateTask' on
+ *              ready/running/waiting Extended Task.
+ *
+ *      'E_OS_ID': invalid TaskID. (EXTENDED_STATUS)
+ */
 #if KOS_MEMORY_MAPPING == STD_ON
 STATIC FUNC(StatusType, OSEK_OS_CODE) ActivateTask(TaskType TaskID)
 #else
@@ -188,24 +197,25 @@ StatusType TerminateTask(void)
     return E_OK; /* never reached */
 }
 
-
+/*!
+ * \fn FUNC(StatusType, OSEK_OS_CODE) ChainTask(TaskType TaskID)
+ * \brief Terminates running Task and activates another, enforces Rescheduling..
+ * \param TaskType TaskID.
+ * \return StatusType.
+**       Standard-Status:
+**              – No return to call level.
+**              – 'E_OS_LIMIT' – too many activations of <TaskID>.
+**       Extended-Status:
+**              – 'E_OS_ID' – the task identifier is invalid.
+**              – 'E_OS_RESOURCE' – the calling task still occupies resources.
+**              – 'E_OS_CALLEVEL' – a call at the interrupt leve
+ */
 #if KOS_MEMORY_MAPPING == STD_ON
-STATIC FUNC(StatusType, OSEK_OS_CODE) ChainTask(TaskType TaskID)
+FUNC(StatusType, OSEK_OS_CODE) ChainTask(TaskType TaskID)
 #else
 StatusType ChainTask(TaskType TaskID)
 #endif /* KOS_MEMORY_MAPPING */
 {
-/*
-**      Terminates running Task and activates another, enforces Rescheduling.
-**
-**       Standard-Status:
-**              – No return to call level.
-**              – E_OS_LIMIT – too many activations of <TaskID>.
-**       Extended-Status:
-**              – E_OS_ID – the task identifier is invalid.
-**              – E_OS_RESOURCE – the calling task still occupies resources.
-**              – E_OS_CALLEVEL – a call at the interrupt level.
-*/
     Os_SaveServiceContext(OSServiceId_ChainTask, TaskID, NULL, NULL);
 
     ASSERT_VALID_TASKID(TaskID);
@@ -385,7 +395,7 @@ static void OsTask_Init(TaskType TaskID, boolean Schedule)
       (uint16)task_def->stack_size  * sizeof(StackType)
     );
 #endif
-    tcb->Stackpointer = OsPort_TaskStackInit(&task_def->TaskFunction,
+    tcb->Stackpointer = OsPort_TaskStackInit(TaskID, &task_def->TaskFunction,
       KDK_TOS(task_def->StackStart, task_def->StackSize * sizeof(StackType))
     );
     tcb->State = SUSPENDED;
@@ -413,3 +423,4 @@ static void OsTask_Init(TaskType TaskID, boolean Schedule)
     #define OSEK_OS_STOP_SEC_CODE
     #include "MemMap.h"
 #endif /* KOS_MEMORY_MAPPING */
+
