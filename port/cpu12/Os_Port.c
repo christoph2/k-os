@@ -1,31 +1,31 @@
 /*
-   k_os (Konnex Operating-System based on the OSEK/VDX-Standard).
-
-   (C) 2007-2032 by Christoph Schueler <github.com/Christoph2,
-                                        cpu12.gems@googlemail.com>
-
-   All Rights Reserved
-
-   This program is free software; you can redistribute it and/or modify
-   it under the terms of the GNU General Public License as published by
-   the Free Software Foundation; version 2 of the License.
-
-   This program is distributed in the hope that it will be useful,
-   but WITHOUT ANY WARRANTY; without even the implied warranty of
-   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-   GNU General Public License for more details.
-
-   You should have received a copy of the GNU General Public License
-   along with this program; if not, write to the Free Software
-   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
-
-   s. FLOSS-EXCEPTION.txt
- */
+** k_os (Konnex Operating-System based on the OSEK/VDX-Standard).
+**
+** (C) 2007-2014 by Christoph Schueler <github.com/Christoph2,
+**                                      cpu12.gems@googlemail.com>
+**
+** All Rights Reserved
+**
+** This program is free software; you can redistribute it and/or modify
+** it under the terms of the GNU General Public License as published by
+** the Free Software Foundation; version 2 of the License.
+**
+** This program is distributed in the hope that it will be useful,
+** but WITHOUT ANY WARRANTY; without even the implied warranty of
+** MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+** GNU General Public License for more details.
+**
+** You should have received a copy of the GNU General Public License
+** along with this program; if not, write to the Free Software
+** Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+**
+** s. FLOSS-EXCEPTION.txt
+**/
 #include "Os_Port.h"
 #include "Os_Cfg.h"
 
 #include "Hw_Cfg.h"
-#include "mcu/S12/inc/S12_Ect.h"
+#include "kdk/mcu/s12/S12_Ect.h"
 
 #if defined(CPU12_S12)
 #define PORT_ACKNOWLEDGE_MDCU_INTR()    S12ECT_ACKNOWLEDGE_MDCU_INTR()
@@ -124,6 +124,7 @@ uint8 * OsPort_TaskStackInit(TaskType TaskID, TaskFunctionType * TaskFunc, uint8
 
 #define TICKS_PER_MS ((uint16)1000u)
 
+#if 0
 static const S12Ect_ConfigType ECT_CFG = {
     (uint16)TICKS_PER_MS,           /* cycle - (od. Period/TimeBase???) in Nano-Secs. */
     ((uint8)IOS0),                  /* TIos     */
@@ -143,6 +144,7 @@ static const S12Ect_ConfigType ECT_CFG = {
     ((uint8)0x00),                  /* ICovw    */
     ((uint8)0x00),                  /* ICsys    */
 };
+#endif
 
 
 #if KOS_MEMORY_MAPPING == STD_ON
@@ -204,7 +206,7 @@ ISR(TC1Timer)
 ISR(TC2Timer)
 {
     PORT_ACKNOWLEDGE_TC2_INTR();
-    OS_TC2_DRIVER_IMPL();
+    //OS_TC2_DRIVER_IMPL();
 }
 #endif /* OS_FEATURE_INSTALL_TC2_HANDLER */
 
