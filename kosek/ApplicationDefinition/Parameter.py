@@ -27,6 +27,8 @@ __copyright__ = """
    s. FLOSS-EXCEPTION.txt
 """
 
+import itertools
+import operator
 import unittest
 
 from kosek.Logger import Logger
@@ -35,6 +37,8 @@ logger = Logger()
 
 class Parameter(object):
     def __init__(self, parameterName, parameterValue, description, objectName):
+        if objectName == 'InitTask' and parameterName == 'RESOURCE':
+            pass
         self._parameterName = parameterName
         self._parameterValue = parameterValue
         self._description = description
@@ -85,4 +89,10 @@ class ParameterList(list):
 
     def get(self, name):
         return [item for item in self if item.getParameterName() == name][0]
+    
+    def sort(self):
+        sortedList = sorted(self, key = operator.attrgetter('parameterName'))
+        return ParameterList(sortedList)
 
+    def grouped(self):
+        return [(key, list(group)) for key, group in itertools.groupby(self, key = operator.attrgetter('parameterName'))]

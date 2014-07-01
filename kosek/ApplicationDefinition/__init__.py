@@ -98,6 +98,9 @@ class ApplicationDefinitionBuilder(object):
                 resources[resourceName].ceilingPriority = max([t.ABSOLUTE_PRIORITY for t in tasks])
             except KeyError:
                 pass # TODO: Undefined resource!!!
+        
+        for idx, (_, alarm) in enumerate(self.getObjects('ALARM').items()):
+            alarm.pos = idx
         """
         for (key, values) in dict([(t[0], t[1].get('RESOURCE')) for t in applicationDefinition['TASK'].items()]).items():
             if values:
@@ -172,6 +175,9 @@ class ObjectDefinition(ParameterContainer):
     def __init__(self, parser, objectType, name, parameterList, description):
         self.parser = parser
         self.implDefinition = self.parser.implDefinition[objectType]
+        
+        if parameterList:
+            groups = parameterList.grouped()
         self._setValues(objectType, name, parameterList, description)
 
         self._hasAutostarts = False # Vorrübergehend!!
@@ -186,7 +192,7 @@ class ObjectDefinition(ParameterContainer):
         self.setDefaultAttr('implDefinition', self.parser.implDefinition[objectType])
         self.setDefaultAttr('name', name)
         self.description = description or ''
-        self.parameterList = parameterList or []
+        self.parameterList = parameterList or ParameterList()
 
         for param in self.parameterList:
             setattr(self, param.parameterName, param.getParameterValue())
@@ -289,12 +295,18 @@ class ObjectDefinitionList(object):
                         parameter, implParameterDefinition
                     )
             path = []
-            self.validate(definition, implDefinition[definition.objectType],path)
+            self.validate(definition, implDefinition[definition.objectType], path)
         return result
 
     def validate(self, definition, implDefinitionDict, path):
         path.append("[%s]%s" % (definition.objectType, definition.name))
-        for parameter in definition.parameterList:
+        
+        for _, group in definition.parameterList.grouped():    # Validate multiplicities.
+            sz = len(group)
+            if sz > 1:
+                pass
+        
+        for parameter in definition.parameterList:  # Validate individual parameters.
             parameterValue = parameter.parameterValue.value
             parameterName = parameter.parameterName
             implDefinition = implDefinitionDict[parameterName]

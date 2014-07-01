@@ -60,6 +60,8 @@ class AttributeValueContainter(object):
             setattr(self, "_%s" % k, v)
         
     def __getattr__(self, attr):
+        if attr == 'values':
+            pass
         if self.values.hasAttribute(attr):
             return self.values.get(attr)
         else:
