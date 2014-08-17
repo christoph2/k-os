@@ -5,7 +5,7 @@ __version__ = '0.9.2rc-1'
 __copyright__ = """
    k_os (Konnex Operating-System based on the OSEK/VDX-Standard).
 
-   (C) 2007-2013 by Christoph Schueler <github.com/Christoph2,
+   (C) 2007-2014 by Christoph Schueler <github.com/Christoph2,
                                         cpu12.gems@googlemail.com>
 
    All Rights Reserved
@@ -98,7 +98,7 @@ class ApplicationDefinitionBuilder(object):
                 resources[resourceName].ceilingPriority = max([t.ABSOLUTE_PRIORITY for t in tasks])
             except KeyError:
                 pass # TODO: Undefined resource!!!
-        
+
         for idx, (_, alarm) in enumerate(self.getObjects('ALARM').items()):
             alarm.pos = idx
         """
@@ -155,10 +155,12 @@ class ValueDescriptionPair(object):
         self._value = value
         self._description = description
 
-    def _getValue(self):
+    @property
+    def value(self):
         return self._value
 
-    def _getDescription(self):
+    @property
+    def description(self):
         return self._description
 
     def __repr__(self):
@@ -167,15 +169,12 @@ class ValueDescriptionPair(object):
         else:
             return 'VALUE(%s)' % (self.value, )
 
-    value = property(_getValue)
-    description = property(_getDescription)
-
 
 class ObjectDefinition(ParameterContainer):
     def __init__(self, parser, objectType, name, parameterList, description):
         self.parser = parser
         self.implDefinition = self.parser.implDefinition[objectType]
-        
+
         if parameterList:
             groups = parameterList.grouped()
         self._setValues(objectType, name, parameterList, description)
@@ -228,22 +227,21 @@ class ObjectDefinition(ParameterContainer):
         self._setValues(objectType, name, parameterList, description)
         return self
 
-    def _getTaskType(self):
+    @property
+    def taskType(self):
         return self._taskType
 
-    def _getHasResources(self):
+    @property
+    def hasResources(self):
         return self._hasResources
 
-    def _getHasEvents(self):
+    @property
+    def hasEvents(self):
         return self._hasEvents
 
-    def _getHasAutostarts(self):
+    @property
+    def hasAutostarts(self):
         return self._hasAutostarts
-
-    taskType = property(_getTaskType)
-    hasResources = property(_getHasResources)
-    hasEvents = property(_getHasEvents)
-    hasAutostarts = property(_getHasAutostarts)
 
 
 class ObjectDefinitionList(object):
@@ -265,25 +263,25 @@ class ObjectDefinitionList(object):
             else:
                 defaultParameters = set([key for key, value in definition.implDefinition.items() if not isinstance(value, ImplRefDef) and value.default])
                 nonDefaultParameters = set([key for key, value in definition.implDefinition.items() if not isinstance(value, ImplRefDef) and not value.default])
-            
+
             defaultsNeeded = defaultParameters - actualParameters
             nonDefaultsNeeded = nonDefaultParameters - actualParameters
-            
+
             for default in defaultsNeeded:
                 flonza = AttributeValueContainter(typeFromImplementationAttribute(
-                    implDefinitionForObject[default].dataType), 
+                    implDefinitionForObject[default].dataType),
                     **{default: implDefinitionForObject[default].default}
                 )
-                
+
                 setattr(definition, default, flonza)
             #print "*** '%s::%s' needs the following default parameters: '%s'." % (definition.objectType, definition.name , defaultsNeeded)
-            
+
             for parameter in definition.parameterList:
                 parameterValue = parameter.parameterValue.value
                 parameterName = parameter.parameterName
                 if parameterName == 'RESOURCE':
                     pass
-                
+
                 if parameterName == 'ISR_STACK_SIZE':
                     pass
                 implParameterDefinition = implDefinitionForObject[parameterName]
@@ -300,12 +298,12 @@ class ObjectDefinitionList(object):
 
     def validate(self, definition, implDefinitionDict, path):
         path.append("[%s]%s" % (definition.objectType, definition.name))
-        
+
         for _, group in definition.parameterList.grouped():    # Validate multiplicities.
             sz = len(group)
             if sz > 1:
                 pass
-        
+
         for parameter in definition.parameterList:  # Validate individual parameters.
             parameterValue = parameter.parameterValue.value
             parameterName = parameter.parameterName
@@ -315,12 +313,12 @@ class ObjectDefinitionList(object):
 
     def setDefaults(self, parameter):
         ImplRefDef = {}
-        
+
         actualParameters = set([p.parameterName for p in parameter.parameterList])
         if isinstance(parameter, ImplRefDef):
             defaultParameters = set()
         else:
             defaultParameters = set([key for key, value in parameter.implDefinition.items() if not isinstance(value, ImplRefDef) and value.default])
-            
+
         defaultsNeeded = defaultParameters - actualParameters
 
