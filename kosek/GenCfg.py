@@ -103,8 +103,8 @@ class ApplicationDefinition(object):
         for (name, appDef) in appDefs.definitionList.items():
             attr = name.lower()
             for a in appDef.values():
-                for param in a.parameterList:
-                    if param.parameterName in ('ORTI_DEBUG'):
+                for name, param in a.parameters.items():
+                    if name in ('ORTI_DEBUG'):
                         pass
             if attr not in ('com', 'nm', 'os'):
                 attr += 's'
@@ -145,18 +145,18 @@ def writeTemplate(tmplFileName, outFileName, namespace = {}, encodeAsUTF8 = True
 
 def alarmAction(alarm):
     if alarm.ACTION.value == 'ACTIVATETASK':
-        action = 'ALM_ACTIVATETASK,\n       { (void*)GetTaskName(' + alarm.ACTION.TASK.parameterValue.value + ') }'
+        action = 'ALM_ACTIVATETASK,\n       { (void*)GetTaskName(' + alarm.ACTION.TASK.value + ') }'
     elif alarm.ACTION.value == 'SETEVENT':
         action = 'ALM_SETEVENT,\n        { (void*)&alarmsEvents [' + str(alarm.pos) + '] }'
     elif alarm.ACTION.value == 'ALARMCALLBACK':
         action = 'ALM_CALLBACK,\n        { (void*)GetAlarmCallbackName(' + \
-            alarm.ACTION.ALARMCALLBACKNAME.parameterValue.value + ') }'
+            alarm.ACTION.ALARMCALLBACKNAME.value + ') }'
     else:
         print "??? '%s'" % alarm
     return action
 
 def mapNotification(n):
-    di = {'NONE' : 'COM_NOTIFY_NONE', 'ACTIVATETASK' : 'COM_ACTIVATETASK', 'SETEVENT' : 'COM_SETEVENT',
+    di = {None : 'COM_NOTIFY_NONE', 'ACTIVATETASK' : 'COM_ACTIVATETASK', 'SETEVENT' : 'COM_SETEVENT',
     'COMCALLBACK' : 'COM_COMCALLBACK','FLAG' : 'COM_FLAG','INMCALLBACK' :'COM_COMINMCALLBACK'}
     if n in di:
         return di[n]
@@ -168,13 +168,12 @@ def mapNotification(n):
 def getAlarmsForCounters():
     di = dict()
     for alarm in app.alarms:
-        di.setdefault(alarm.COUNTER, []).append(alarm.name)
-        #di.setdefault(alarm.COUNTER, alarm.name)
+        di.setdefault(alarm.parameters['COUNTER'][0].parameterValue.value, []).append(alarm.name)
     return di
 
 
 def getApplicationModes(obj):
-    return ''   ## TODO: Komkplett überarbeiten!!!
+    return ''   ## TODO: Komplett überarbeiten!!!
     '''
     if isinstance(obj.AUTOSTART.APPMODE, types.ListType):
         return '|'.join(map(lambda x: x.value, obj.AUTOSTART.APPMODE))
@@ -216,20 +215,20 @@ def Generate(fname, AppDef, Info):
     alarmsForCounters = getAlarmsForCounters()
 
     namespace = {
-        'app': app,
-        'osVars': osVars,
-        'info': Info,
-        'ORTICfg': ORTICfg,
-        'alarmsForCounters': alarmsForCounters,
-        'getApplicationModes': getApplicationModes,
-        'mapNotification': mapNotification,
-        'alarmAction': alarmAction,
-        'time': time,
+        'app':                  app,
+        'osVars':               osVars,
+        'info':                 Info,
+        'ORTICfg':              ORTICfg,
+        'alarmsForCounters':    alarmsForCounters,
+        'getApplicationModes':  getApplicationModes,
+        'mapNotification':      mapNotification,
+        'alarmAction':          alarmAction,
+        'time':                 time,
         }
 
     # app.tasks.sort(key=lambda x: x['RELATIVE_PRIORITY'].value)
 
-    app.tasks.sort(key=lambda x: x.PRIORITY)
+    app.tasks.sort(key=lambda x: x.parameters['PRIORITY'][0].parameterValue.value)
 
 
 #    if info['useResources'] == False:
@@ -241,11 +240,13 @@ def Generate(fname, AppDef, Info):
     writeTemplate('hfile.tmpl', 'Os_Cfg.h', namespace, encodeAsUTF8 = False, errorHandler = HandleError)
     writeTemplate('cfile.tmpl', 'Os_Cfg.c', namespace, encodeAsUTF8 = False, errorHandler = HandleError)
     writeTemplate('isrcfgfile.tmpl', 'ISR_Cfg.h', namespace, encodeAsUTF8 = False, errorHandler = HandleError)
-    if app.os.ORTI_DEBUG.value == True:
+    if 'ORTI_DEBUG' in app.os.parameters:
         info.vendor = 'K_OS'
 
-        info.koilVersion = app.os.ORTI_DEBUG.KOIL_VERSION.parameterValue.value
-        info.osekVersion = app.os.ORTI_DEBUG.OSEK_VERSION.parameterValue.value
+        info.koilVersion = app.os.ORTI_DEBUG.KOIL_VERSION.value
+        info.osekVersion = app.os.ORTI_DEBUG.OSEK_VERSION.value
+        info.osekVersion = "2.3"
+        info.koilVersion = "2.2"
 
         info.context = (
             Register('PC', 'uint16', 7),

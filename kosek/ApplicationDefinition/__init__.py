@@ -27,6 +27,7 @@ __copyright__ = """
    s. FLOSS-EXCEPTION.txt
 """
 
+from collections import defaultdict
 import unittest
 
 from kosek.Logger import Logger
@@ -67,7 +68,7 @@ class ApplicationDefinitionBuilder(object):
         # Filter nur vor�bergehend - AUTOSTART ist nicht optional!!!
         objs = [v for _, v in self.getObjects(objectType).items() if v.hasAutostarts]
         for obj in objs:
-            if obj.AUTOSTART == True:
+            if obj.AUTOSTART.value == True:
                 result.append(obj)
             elif isinstance(obj.AUTOSTART, NestedParameter) and obj.AUTOSTART.value:
                 result.append(obj)
@@ -76,9 +77,10 @@ class ApplicationDefinitionBuilder(object):
     def setTaskFlags(self):
         for (_, task) in self.getObjects('TASK').items():
             flags = []
-            if hasattr(task, 'EVENT'):
+            if 'EVENT' in task.parameters:
                 flags.append('OS_TASK_ATTR_EXTENDED')
-            if task.SCHEDULE == 'FULL':
+            schedule = task.SCHEDULE.value
+            if schedule == "FULL":
                 flags.append('OS_TASK_ATTR_FULLPREEMPT')
             if flags:
                 task.flags = ' | '.join(flags)
@@ -91,42 +93,29 @@ class ApplicationDefinitionBuilder(object):
 
         for _, task in self.getObjects('TASK').items():
             if hasattr(task, 'RESOURCE'):
-                for resource in task.RESOURCE.values:   ## TODO: Attribute mit multiplicities > 1 behandeln!!!
-                    usedResources.setdefault(resource, []).append(task)
+                for resource in task.RESOURCE:
+                    usedResources.setdefault(resource.value, []).append(task)
         for resourceName, tasks in usedResources.items():
             try:
-                resources[resourceName].ceilingPriority = max([t.ABSOLUTE_PRIORITY for t in tasks])
+                resources[resourceName].relativeCeilingPriority = max([t.ABSOLUTE_PRIORITY for t in tasks])
             except KeyError:
-                pass # TODO: Undefined resource!!!
+                print "Undefined resource '%s'." % resourceName
 
         for idx, (_, alarm) in enumerate(self.getObjects('ALARM').items()):
             alarm.pos = idx
-        """
-        for (key, values) in dict([(t[0], t[1].get('RESOURCE')) for t in applicationDefinition['TASK'].items()]).items():
-            if values:
-                for value in values:
-                    usedResources.setdefault(value.value, []).append(key)
-        for (key, value) in usedResources.items():
-            # # Calculate Ceiling Priority.
-            try:
-                applicationDefinition['RESOURCE'][key].relativeCeilingPriority = \
-                    max([applicationDefinition['TASK'][v]['PRIORITY'].value for v in value])
-            except KeyError:
-                pass  # Ignore non-existent Resources for now.
-        """
 
     def calculatePriorities(self):
-        #alm = tasks = self.getObjects('ALARM')
-        #isr = tasks = self.getObjects('ISR')
         eCCx = False
         xCC2 = False
         self.info.priorities = dict()
         tasks = self.getObjects('TASK')
+
+        os = self.getObjects('OS').values()[0]
+        ortiD = os.ORTI_DEBUG.KOIL_VERSION.value
+
         self.info.numberOfPreemtiveTasks = 0
         self.info.numberOfNonPreemtiveTasks = 0
         for _, task in tasks.items():
-            #priority = task.PRIORITY
-            #task.RELATIVE_PRIORITY = priority
             schedule = task.SCHEDULE.value
             priority = task.PRIORITY.value
             if schedule == 'FULL':
@@ -147,7 +136,6 @@ class ApplicationDefinitionBuilder(object):
                 activations += activationsForObject
             priorityMap[levelPriority] = (idx, activations)
         self.info.priorityMap = priorityMap
-
 
 
 class ValueDescriptionPair(object):
@@ -174,41 +162,31 @@ class ObjectDefinition(ParameterContainer):
     def __init__(self, parser, objectType, name, parameterList, description):
         self.parser = parser
         self.implDefinition = self.parser.implDefinition[objectType]
-
-        if parameterList:
-            groups = parameterList.grouped()
-        self._setValues(objectType, name, parameterList, description)
-
-        self._hasAutostarts = False # Vorrübergehend!!
-        #self.description = []
+        self.parameters = {}
+        self.setValues(objectType, name, parameterList, description)
+        self._hasAutostarts = False
 
     def setDefaultAttr(self, attr, value):
         if not hasattr(self, attr):
             setattr(self, attr, value)
 
-    def _setValues(self, objectType, name, parameterList, description):
+    def setValues(self, objectType, name, parameterList, description):
         self.setDefaultAttr('objectType', objectType)
         self.setDefaultAttr('implDefinition', self.parser.implDefinition[objectType])
         self.setDefaultAttr('name', name)
         self.description = description or ''
-        self.parameterList = parameterList or ParameterList()
-
-        for param in self.parameterList:
-            setattr(self, param.parameterName, param.getParameterValue())
-            if param.parameterName == 'ORTI_DEBUG':
-                pass
+        if parameterList:
+            self.parameters.update({p[0]: p[1] for p in parameterList.grouped()})
 
         if objectType == 'TASK':
-            self._taskType = 'EXTENDED' if self.parameterList.hasEvents() else 'BASIC'
-            self._hasResources = True if hasattr(self, 'RESOURCE') else False
-            self._hasEvents = True if hasattr(self, 'EVENT') else False
-            self._hasAutostarts = True if hasattr(self, 'AUTOSTART') else False
+            self._taskType = 'EXTENDED' if 'EVENT' in self.parameters else 'BASIC'
+            self._hasResources = True if 'RESOURCE'  in self.parameters else False
+            self._hasEvents = True if 'EVENT' in self.parameters else False
+            self._hasAutostarts = True if 'AUTOSTART' in self.parameters  else False
         elif objectType == 'ALARAM':
-            self._hasAutostarts = True if hasattr(self, 'AUTOSTART') else False
+            self._hasAutostarts = True if 'AUTOSTART'  in self.parameters else False
         elif objectType == 'RESOURCE':
-            #ts = self.parameterList[0].value.getTypeString()
-            resourceProperty = self.parameterList[0].parameterValue.value
-            #resourceProperty = self.parameterList[0].value.idValue  # TODO: Simplify!!!
+            resourceProperty = self.RESOURCEPROPERTY.value
             if resourceProperty == 'STANDARD':
                 self.parser.standardResources.append(self)
             elif resourceProperty == 'INTERNAL':
@@ -217,15 +195,27 @@ class ObjectDefinition(ParameterContainer):
                 self.parser.linkedResources.append(self)
         elif objectType == 'EVENT':
             pass
-
-        #for k, v in self.parser.defaults.items(objectType): # TODO; Nur die Parameter, die nicht in 'parameterList' enthalten sind!!!
-        #    if not hasattr(self, k):
-        #        setattr(self, k, v)
+        elif objectType == 'MESSAGE':
+            if 'INTERNAL' in self.MESSAGEPROPERTY.value:
+                self.parser.internalMessages.append(self)
+            else:
+                self.parser.externalMessages.append(self)
 
     def appendValues(self, objectType, name, parameterList, description):
         ## TODO: Warning/Error wenn vorhandene Werte �berschrieben werden sollen!!!
-        self._setValues(objectType, name, parameterList, description)
+        self.setValues(objectType, name, parameterList, description)
         return self
+
+    def __getattr__(self, attr):
+        if attr in self.parameters:
+            param = self.parameters[attr]
+            implDef = self.implDefinition[attr]
+            if implDef.mult == True:
+                 return [p.parameterValue for p in param]
+            else:
+                return param[0].parameterValue
+        else:
+            raise AttributeError(attr)
 
     @property
     def taskType(self):
@@ -257,7 +247,7 @@ class ObjectDefinitionList(object):
             result.setdefault(definition.objectType, {})[definition.name ] = definition
             #print "DEF: %s::%s" % (definition.objectType, definition.name)
             implDefinitionForObject = implDefinition[definition.objectType]
-            actualParameters = set([p.parameterName for p in definition.parameterList])
+            actualParameters = set(definition.parameters.keys())
             if isinstance(definition, ImplRefDef):
                 defaultParameters = set()
             else:
@@ -276,12 +266,9 @@ class ObjectDefinitionList(object):
                 setattr(definition, default, flonza)
             #print "*** '%s::%s' needs the following default parameters: '%s'." % (definition.objectType, definition.name , defaultsNeeded)
 
-            for parameter in definition.parameterList:
-                parameterValue = parameter.parameterValue.value
-                parameterName = parameter.parameterName
+            for parameterName, parameterValue in definition.parameters.items():
                 if parameterName == 'RESOURCE':
                     pass
-
                 if parameterName == 'ISR_STACK_SIZE':
                     pass
                 implParameterDefinition = implDefinitionForObject[parameterName]
@@ -297,19 +284,22 @@ class ObjectDefinitionList(object):
         return result
 
     def validate(self, definition, implDefinitionDict, path):
-        path.append("[%s]%s" % (definition.objectType, definition.name))
+        ##
+        ## TODO: Überarbeiten!!!
+        ##
+        path.append("Validate: [%s]%s" % (definition.objectType, definition.name))
 
-        for _, group in definition.parameterList.grouped():    # Validate multiplicities.
-            sz = len(group)
-            if sz > 1:
-                pass
+        #for _, group in definition.parameterList.grouped():    # Validate multiplicities.
+        #    sz = len(group)
+        #    if sz > 1:
+        #        pass
 
-        for parameter in definition.parameterList:  # Validate individual parameters.
-            parameterValue = parameter.parameterValue.value
-            parameterName = parameter.parameterName
-            implDefinition = implDefinitionDict[parameterName]
-
-            implDefinition.validate(parameter, path)
+        #for parameter in definition.parameterList:  # Validate individual parameters.
+        #    parameterValue = parameter.parameterValue.value
+        #    parameterName = parameter.parameterName
+        #    implDefinition = implDefinitionDict[parameterName]
+        #
+        #    implDefinition.validate(parameter, path)
 
     def setDefaults(self, parameter):
         ImplRefDef = {}
