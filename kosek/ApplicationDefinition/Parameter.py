@@ -5,7 +5,7 @@ __version__ = '0.9.2rc-1'
 __copyright__ = """
    k_os (Konnex Operating-System based on the OSEK/VDX-Standard).
 
-   (C) 2007-2013 by Christoph Schueler <github.com/Christoph2,
+   (C) 2007-2014 by Christoph Schueler <github.com/Christoph2,
                                         cpu12.gems@googlemail.com>
 
    All Rights Reserved
@@ -44,17 +44,30 @@ class Parameter(object):
         self._description = description
         self._objectName = objectName
 
-    def getParameterName(self):
+    @property
+    def parameterName(self):
         return self._parameterName
 
-    def getParameterValue(self):
+    @property
+    def parameterValue(self):
         return self._parameterValue
 
-    def getDescription(self):
+    @property
+    def description(self):
         return self._description
 
-    def getObjectName(self):
+    @property
+    def objectName(self):
         return self._objectName
+
+    @property
+    def value(self):
+        return self._parameterValue.value
+
+
+    @property
+    def values(self):
+        return self._parameterValue.values
 
     def __repr__(self):
         if self.description:
@@ -62,37 +75,33 @@ class Parameter(object):
         else:
             return "PARAMETER(%s::%s = %s)" % (self.objectName, self.parameterName, self.parameterValue)
 
-    parameterName = property(getParameterName, None, None, None)
-    parameterValue = property(getParameterValue, None, None, None)
-    description = property(getDescription, None, None, None)
-    objectName = property(getObjectName, None, None, None)
-
 
 class ParameterList(list):
     def hasAttribute(self, name):
         return any(p for p in self if p.parameterName == name)
-    
+
     def hasEvents(self):
         return self.hasAttribute('EVENT')
 
     def hasResources(self):
         return self.hasAttribute('RESOURCE')
-    
+
     def hasAutostarts(self):
         return self.hasAttribute('AUTOSTART')
 
     def hasAlarms(self):
         return self.hasAttribute('ALARM')
-    
+
     def hasMessages(self):
         return self.hasAttribute('MESSAGE')
 
     def get(self, name):
-        return [item for item in self if item.getParameterName() == name][0]
-    
+        return [item for item in self if item.parameterName == name][0]
+
     def sort(self):
         sortedList = sorted(self, key = operator.attrgetter('parameterName'))
         return ParameterList(sortedList)
 
     def grouped(self):
         return [(key, list(group)) for key, group in itertools.groupby(self, key = operator.attrgetter('parameterName'))]
+
