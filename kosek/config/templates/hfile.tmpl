@@ -1,7 +1,7 @@
 /*
 **  k_os (Konnex Operating-System based on the OSEK/VDX-Standard).
 **
-**  (C) 2007-2013 by Christoph Schueler <github.com/Christoph2,
+**  (C) 2007-2014 by Christoph Schueler <github.com/Christoph2,
 **                                       cpu12.gems@googlemail.com>
 **
 **  All Rights Reserved
@@ -58,7 +58,7 @@ extern "C"
 %endif
 
 /*  OSEK-OS Conformance Class    */
-#define OS_${app.os.CC}
+#define OS_${app.os.CC.value}
 
 /*  OSEK-OS Scheduling Policy    */<% schedPolicy = set([t.SCHEDULE for t in app.tasks]) %>
 %if len(schedPolicy) == 2:
@@ -149,8 +149,9 @@ extern "C"
 #define LOCALMESSAGESONLY                  STD_OFF
 
 /* Timebase: ${app.com.COMTIMEBASE.value} Seconds */
+
 %for appmode in app.com.COMAPPMODE:
-#define appmode.value.strip('"').ljust(30) ((COMApplicationModeType)${loop.index})
+#define ${appmode.value.ljust(30)} ((COMApplicationModeType)${loop.index})
 %endfor
 %endif
 %else:
@@ -211,11 +212,11 @@ extern const OsMLQ_QueueConfigurationType MLQ_QueueDef[];
 **  Tasks.
 **
 */
-#define IDLE_TASK_STACK_SIZE           ((uint8)${app.os.IDLE_TASK_STACK_SIZE})
-#define ISR_STACK_SIZE                 ((uint8)${app.os.ISR_STACK_SIZE})
+#define IDLE_TASK_STACK_SIZE           ((uint8)${app.os.IDLE_TASK_STACK_SIZE.value})
+#define ISR_STACK_SIZE                 ((uint8)${app.os.ISR_STACK_SIZE.value})
 
 %for task in app.tasks:
-#define ${task.name.upper()}_STACK_SIZE  ((uint8)${task.STACKSIZE})
+#define ${task.name.upper()}_STACK_SIZE  ((uint8)${task.STACKSIZE.value})
 extern uint8 ${task.name}_Stack[${task.name.upper()}_STACK_SIZE];
 
 %endfor
@@ -281,9 +282,9 @@ extern const CounterConfigurationType Os_CounterDefs[OS_NUMBER_OF_COUNTERS];
 <% conversionMacros = '\n'.join(map(lambda x: "#define OS_TICKS2%s_%s(ticks)" % (x, counter.name), units)) %>
 ${conversionMacros}
 
-#define OSMAXALLOWEDVALUE_${counter.name}  ((TickType)${counter.MAXALLOWEDVALUE})
-#define OSTICKSPERBASE_${counter.name}     ((TickType)${counter.TICKSPERBASE})
-#define OSMINCYCLE_${counter.name}         ((TickType)${counter.MINCYCLE})
+#define OSMAXALLOWEDVALUE_${counter.name}  ((TickType)${counter.MAXALLOWEDVALUE.value})
+#define OSTICKSPERBASE_${counter.name}     ((TickType)${counter.TICKSPERBASE.value})
+#define OSMINCYCLE_${counter.name}         ((TickType)${counter.MINCYCLE.value})
 %endfor
 %endif
 
@@ -344,7 +345,7 @@ extern const AlarmConfigurationType OS_AlarmConf[OS_NUMBER_OF_ALARMS];
 **
 */
 %for event in app.events:
-#define ${event.name} ((EventMaskType)${event.MASK})
+#define ${event.name} ((EventMaskType)${event.MASK.value})
 %endfor
 
 

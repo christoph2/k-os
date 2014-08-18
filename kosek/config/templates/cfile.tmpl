@@ -1,7 +1,7 @@
 /*
 **  k_os (Konnex Operating-System based on the OSEK/VDX-Standard).
 **
-**  (C) 2007-2013 by Christoph Schueler <github.com/Christoph2,
+**  (C) 2007-2014 by Christoph Schueler <github.com/Christoph2,
 **                                       cpu12.gems@googlemail.com>
 **
 **  All Rights Reserved
@@ -103,7 +103,8 @@ OsTCBType OS_TCB[OS_NUMBER_OF_TASKS];
 %if len(app.standardResources)>0:
 const OsResourceConfigurationType OS_ResourceConf[OS_NUMBER_OF_RESOURCES] = {
 %for res in app.standardResources:
-     { ${hex(~(res.ceilingPriority - 1) & 0x0f)} },
+     { ${hex(~(res.relativeCeilingPriority - 1) & 0x0f)} },
+##      { ${ res.parameterList[0].parameterValue.value } }
 %if res.description:
   /* ${res.name} [${res.description}] */
 %else:
@@ -120,7 +121,7 @@ OsResourceType Os_Resources[OS_NUMBER_OF_RESOURCES];
 const OsResourceConfigurationType OS_IntResourceConf[OS_NUMBER_OF_INT_RESOURCES + 1] = {
     { PRIO_SCHEDULER },    /* Index #0 ==> PRIO_SCHEDULER */
 %for res in app.internalResources:
-    { ${hex(~(res.ceilingPriority - 1) & 0x0f)} },
+    { ${hex(~(res.relativeCeilingPriority - 1) & 0x0f)} },
 %if res.description:
   /* ${res.name} [${res.description}] */
 %else:
@@ -178,7 +179,7 @@ volatile OSAlarm OS_AlarmValue[OS_NUMBER_OF_ALARMS];
 static const AlarmSetEventType alarmsEvents[${len(alarmsEvents)}] = {
 %for alarmsEvent in alarmsEvents:
 <% alarmsEvent.pos = loop.index %>
-    { ${alarmsEvent.ACTION.TASK}, ${alarmsEvent.ACTION.EVENT} },
+    { ${alarmsEvent.ACTION.TASK.value}, ${alarmsEvent.ACTION.EVENT.value} },
 %endfor
 };
 %endif
@@ -186,12 +187,12 @@ static const AlarmSetEventType alarmsEvents[${len(alarmsEvents)}] = {
 const AlarmConfigurationType OS_AlarmConf[OS_NUMBER_OF_ALARMS] = {
 %for alarm in app.alarms:
     {
-        ${alarm.COUNTER},
-        ##${alarmAction(alarm)},        # STRANGE ERROR!!!
+        ${alarm.COUNTER.value},
+        ${alarmAction(alarm)},
 %if alarm.AUTOSTART == True:
         ${getApplicationModes(alarm)}0,
-        (TickType)${alarm.AUTOSTART.ALARMTIME},
-        (TickType)${alarm.AUTOSTART.CYCLETIME}
+        (TickType)${alarm.AUTOSTART.ALARMTIME.value},
+        (TickType)${alarm.AUTOSTART.CYCLETIME.value}
 %elif len(app.autostartedAlarms) > 0:
         OS_AUTOSTART_NEVER,
         (TickType)0,
@@ -210,30 +211,24 @@ const AlarmConfigurationType OS_AlarmConf[OS_NUMBER_OF_ALARMS] = {
 */
 %for msg in app.internalMessages:
 %if hasattr(msg.MESSAGEPROPERTY, 'SENDINGMESSAGE'):
-<% sendingMessage = filter(lambda m: m.name == msg.MESSAGEPROPERTY.SENDINGMESSAGE, app.internalMessages)[0] %>
-static ${sendingMessage.MESSAGEPROPERTY.CDATATYPE.strip('"')} Msg_Value_${msg.name} /* SM: ${sendingMessage.name}  */;
+<% sendingMessage = filter(lambda m: m.name == msg.MESSAGEPROPERTY.SENDINGMESSAGE.value, app.internalMessages) %>
+static ${sendingMessage[0].MESSAGEPROPERTY.CDATATYPE.value.strip('"')} Msg_Value_${msg.name} /* Sending Message: ${sendingMessage[0].name}  */;
 %endif
 %endfor
 
 const Com_MessageObjectType Com_MessageObjects[COM_NUMBER_OF_INTERNAL_MESSAGES + COM_NUMBER_OF_EXTERNAL_MESSAGES] = {
-##    {SEND_STATIC_INTERNAL,COM_NOTIFY_NONE,(void*)NULL,4,(const ApplicationDataRef *)
-##        NULL,(uint8)1,(ComReceiverType*)&Message_Receive_Receiver},
-##
-##    {RECEIVE_UNQUEUED_INTERNAL,COM_SETEVENT,(void*)&Evt_Message_Receive,4,(const ApplicationDataRef *)
-##        &MsgDataReceive,(uint8)0,(ComReceiverType*)NULL},
-##
 %for msg in app.internalMessages:
     {   /* ${msg.name} */
-        ${msg.MESSAGEPROPERTY}
-        ${mapNotification}(${msg.NOTIFICATION}),
+        ${msg.MESSAGEPROPERTY.value}
+        ${mapNotification(msg.NOTIFICATION.value)},
         { (void *)NULL },
 %if hasattr(msg.MESSAGEPROPERTY, 'CDATATYPE'):
-        sizeof(${msg.MESSAGEPROPERTY.CDATATYPE.strip('"')}),
+        sizeof(${msg.MESSAGEPROPERTY.CDATATYPE.value.strip('"')}),
 %else:
         ((uint8)0), /* Received Message. */
 %endif
 %if hasattr(msg.MESSAGEPROPERTY, 'SENDINGMESSAGE'):
-<% sendingMessage = filter(lambda m: m.name == msg.MESSAGEPROPERTY.SENDINGMESSAGE, app.internalMessages)[0] %>
+<% sendingMessage = filter(lambda m: m.name == msg.MESSAGEPROPERTY.SENDINGMESSAGE, app.internalMessages) %>
         (const ApplicationDataRef *)&Msg_Value_${msg.name},
 %else:
         (const ApplicationDataRef *)NULL,
@@ -243,7 +238,6 @@ const Com_MessageObjectType Com_MessageObjects[COM_NUMBER_OF_INTERNAL_MESSAGES +
     },
 %endfor
 };
-
 %endif
 
 
