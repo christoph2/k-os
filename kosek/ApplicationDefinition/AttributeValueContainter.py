@@ -31,7 +31,7 @@ import unittest
 
 from kosek.Logger import Logger
 from collections import namedtuple
-from ImplementationDefinition.AttributeDefinitions import ImplAttrType
+from kosek.ImplementationDefinition.AttributeDefinitions import ImplAttrType
 
 logger = Logger()
 
@@ -51,14 +51,14 @@ class AttributeValueContainter(object):
         self._number = None
         self._stringValue = None
         self._values = []
-        
+
         self.multiValues = []
         self.nestedValues = []
-        
+
         self._type = type_
         for k, v in kwds.items():
             setattr(self, "_%s" % k, v)
-        
+
     def __getattr__(self, attr):
         if attr == 'values':
             pass
@@ -82,10 +82,10 @@ class AttributeValueContainter(object):
 
     def _getType(self):
         return self._type
-    
+
     def _getValues(self):
         return self._values
-    
+
     typeCode = property(_getType)
     value = property(_getValue)
     values = property(_getValues)
