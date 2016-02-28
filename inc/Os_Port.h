@@ -86,7 +86,7 @@ extern const SizeType OS_TOS_ISR;
     #if defined(__arm__)
         #include "port/arm/gcc/Os_Port_arm_gcc.h"
     #elif defined(__AVR__)
-        #include "port/avr/gcc/Os_Port_avr_gcc.h"
+        #include "port/ATMEGA644/gcc/Os_Port_avr_gcc.h"
     #elif defined(MC6812)
         #include "port/cpu12/gcc/Os_Port_S12_gcc.h"
     #elif defined(__MSP430__)
