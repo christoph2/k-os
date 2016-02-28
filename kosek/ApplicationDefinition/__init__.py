@@ -49,7 +49,7 @@ class ApplicationDefinitionBuilder(object):
         self.info = Info()
 
     def postProcessing(self):
-        self.standardResources = self.parser.standardResources  # TODO: in der Grammatik behandeln!!!
+        self.standardResources = self.parser.standardResources
         self.internalResources = self.parser.internalResources
         self.linkedResources = self.parser.linkedResources
         self.internalMessages = self.parser.internalMessages
@@ -177,7 +177,7 @@ class ObjectDefinition(ParameterContainer):
         self.description = description or ''
         if parameterList:
             self.parameters.update({p[0]: p[1] for p in parameterList.grouped()})
-
+# http://software-dl.ti.com/msp430/msp430_public_sw/mcu/msp430/MSPGCC/latest/exports/Msp430GCCopensource-msp430-130423-371-windows-installer.exe
         if objectType == 'TASK':
             self._taskType = 'EXTENDED' if 'EVENT' in self.parameters else 'BASIC'
             self._hasResources = True if 'RESOURCE'  in self.parameters else False

@@ -53,8 +53,9 @@ def SetIncludePaths(paths):
             Preproc.AddToPathList(p)
 
 
-def parse(fname):
-    inputFile = antlr3.StringStream(codecs.open(fname, encoding = 'UTF-8').read())
+def parse(fp):
+    #inputFile = antlr3.StringStream(codecs.open(fname, encoding = 'UTF-8').read())
+    inputFile = antlr3.StringStream(fp.read())
     lexer = osekoilLexer(inputFile)
 
     tokens = antlr3.CommonTokenStream(lexer)
@@ -66,6 +67,10 @@ def parse(fname):
 
     return (implementationDefinition, applicationDefinition, applicationDefinition.info)
 
+
+import sys
+
+sys.argv.append('Test.oil')
 
 def main():
     print ("kosgen, Part of k_os (Konnex Operating-System based on the OSEK/VDX-Standard).")
@@ -134,7 +139,7 @@ def main():
     except IOError:
         error.fatalError("Could not open file '%s'.\n" % outFilename)
     else:
-        (implDefMap, appDefMap, info) = parse(outFilename)
+        (implDefMap, appDefMap, info) = parse(codecs.open(outFilename, encoding = 'UTF-8'))
 
         info.version = __version__.replace('.', '_').replace('-', '_')
 
