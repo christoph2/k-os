@@ -33,7 +33,7 @@ import logging
 from optparse import OptionParser, OptionGroup
 import os
 
-import antlr3
+import antlr4
 from osekoilLexer import osekoilLexer
 from osekoilParser import osekoilParser
 
