@@ -30,7 +30,7 @@ oilfile: v = oilVersion i = implementationDefinition a = applicationDefinition
     ;
 
 
-oilVersion: 'OIL_VERSION' '=' v = STRING d = description? ';'
+oilVersion: 'OIL_VERSION' '=' v =stringValue d = description? ';'
     ;
 
 //
@@ -38,7 +38,7 @@ oilVersion: 'OIL_VERSION' '=' v = STRING d = description? ';'
 // Implementation Definition.
 //
 //
-implementationDefinition:  'IMPLEMENTATION' ID '{' i = implementationSpecList '}' d = description? ';'
+implementationDefinition:  'IMPLEMENTATION' identifier '{' i = implementationSpecList '}' d = description? ';'
     ;
 
 implementationSpecList:  (items += implementationSpec) *
@@ -84,7 +84,7 @@ implAttrDef:
    ;
 
 attributeName:
-     i = ID
+     i = identifier
    | o = oil_object
    ;
 
@@ -101,7 +101,7 @@ multipleSpecifier:
    ;
 
 floatRange:
-    ('[' (numberFrom = FLOAT rng numberTo = FLOAT) ']')
+    ('[' (numberFrom = float rng numberTo = float) ']')
    ;
 
 enumeration:
@@ -113,7 +113,7 @@ enumeratorList:
    ;
 
 enumerator:
-    i = ID l = implParameterList? d = description?
+    i = identifier l = implParameterList? d = description?
    ;
 
 boolValues:
@@ -133,7 +133,7 @@ defaultNumber:
 
 defaultFloat:
     '=' (
-         f = FLOAT
+         f = float
        | n = 'NO_DEFAULT'
        | a = 'AUTO'
    )
@@ -141,7 +141,7 @@ defaultFloat:
 
 defaultName:
     '=' (
-         i = ID
+         i = identifier
        | n = 'NO_DEFAULT'
        | a = 'AUTO'
    )
@@ -149,7 +149,7 @@ defaultName:
 
 defaultString:
     '=' (
-         s = STRING
+         s = stringValue
        | n = 'NO_DEFAULT'
        | a= 'AUTO'
    )
@@ -193,7 +193,7 @@ objectRefType
    ;
 
 referenceName:
-     i = ID
+     i = identifier
    | o = oil_object
    ;
 
@@ -203,7 +203,7 @@ referenceName:
 //
 //
 applicationDefinition:
-    'CPU' a = ID '{' o = objectDefinitionList '}' d = description? ';'
+    'CPU' a = identifier '{' o = objectDefinitionList '}' d = description? ';'
    ;
 
 objectDefinitionList:
@@ -227,26 +227,38 @@ parameter:
    ;
 
 attributeValue:
-     i = ID ('{' p0 = parameterList '}')?
+     i = identifier ('{' p0 = parameterList '}')?
    | b = boolean ('{' p1 = parameterList '}')?
    | n = number
-   | f = FLOAT
-   | s = STRING
+   | f = float
+   | s = stringValue
    | a = 'AUTO'
    ;
 
 description:
-    ':' v = STRING
+    ':' v = stringValue
    ;
 
 rng:
     '..'
     ;
 
+float:
+	f = FLOAT
+	;
+
+stringValue:
+	s = STRING
+	;
+
 number:
-     INT
-   | HEX
+     i = INT
+   | h = HEX
    ;
+
+identifier:
+	i = ID
+	;
 
 boolean:
      v = 'TRUE'

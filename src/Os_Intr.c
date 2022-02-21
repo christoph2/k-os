@@ -146,7 +146,7 @@ void ResumeCPUInterrrupts(void) /* s. Autosar O92 !!!*/
 }
 
 
-#if defined(OS_FEATURE_ORTI_DEBUG)
+#if (OS_FEATURE_ORTI_DEBUG == STD_ON)
 #if KOS_MEMORY_MAPPING == STD_ON
 STATIC FUNC(ISRType, OSEK_OS_CODE) GetISRID(void)
 #else

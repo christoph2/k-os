@@ -35,9 +35,9 @@ FUNC(void, OSEK_COM_CODE) ComIf_UpdateAndNotifyReceivers(
 #else
 void ComIf_UpdateAndNotifyReceivers(Com_MessageObjectType const * const MessageSendObject, ApplicationDataRef DataRef);
 
-void Com_SetFlag(uint8 message);
-void Com_ResetFlag(uint8 message);
-Std_LevelType Com_GetFlag(uint8 message);
+void Com_SetFlag(MessageIdentifier Message);
+void Com_ResetFlag(MessageIdentifier Message);
+Std_LevelType Com_GetFlag(MessageIdentifier Message);
 
 #endif  /* KOS_MEMORY_MAPPING */
 

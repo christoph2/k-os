@@ -30,7 +30,8 @@ extern "C"
 #endif  /* __cplusplus */
 
 #include "Com.h"
-#include "mcu/inc/mscan.h"
+
+//#include "mcu/inc/mscan.h"
 /* #include "Utl.h" */
 
 /*

@@ -24,7 +24,7 @@
 /** @file Os_Types.h
  *  @brief Types used by OSEK/k_os.
  *
- *  
+ *
  *
  *  @author Christoph Schueler (cpu12.gems@googlemail.com)
  */
@@ -49,7 +49,7 @@
 #define __RTOS_K_OS__
 #endif /* __RTOS_K_OS__ */
 
-#include "kdk/common/Std_Types.h"
+#include "Std_Types.h"
 
 #define E_AS        ((uint8)16)
 #define E_COM       ((uint8)32)
@@ -216,17 +216,17 @@ typedef struct tagOs_TCBType {
     /* OsPort_StackPointerType Stackpointer; */
     uint8 *         Stackpointer; /* todo: 'StackPointerType! */
     TaskStateType   State;
-#if defined(OS_BCC2) || defined(OS_ECC2) || defined(OS_FEATURE_ORTI_DEBUG)
+#if defined(OS_BCC2) || defined(OS_ECC2) || (OS_FEATURE_ORTI_DEBUG == STD_ON)
     uint8 Activations;
 #endif
 #if defined(OS_ECC1) || defined(OS_ECC2)
     EventMaskType EventsSet, EventsWaitingFor;
 #endif
 
-#if defined(OS_USE_RESOURCES)
+#if (OS_FEATURE_RESOURCES == STD_ON)
     uint8 ResourceCount;
 #endif
-#if defined(OS_USE_RESOURCES) || defined(OS_USE_INTERNAL_RESOURCES) /* || defined(OS_FEATURE_ORTI_DEBUG) */
+#if (OS_FEATURE_RESOURCES == STD_ON) || (OS_FEATURE_INTERNAL_RESOURCES == STD_ON) /* || (OS_FEATURE_ORTI_DEBUG == STD_ON) */
     PriorityType CurrentPriority;
 #endif
 } Os_TCBType;
@@ -243,7 +243,7 @@ typedef struct tagOs_TaskConfigurationType {
 #if defined(OS_FEATURE_AUTOSTART_TASKS)
     AppModeType Autostart;
 #endif
-#if defined(OS_USE_INTERNAL_RESOURCES)
+#if (OS_FEATURE_INTERNAL_RESOURCES == STD_ON)
     ResourceType InternalResource;
 #endif
 } Os_TaskConfigurationType;
@@ -253,25 +253,25 @@ typedef struct tagOs_ResourceConfigurationType {
 } Os_ResourceConfigurationType;
 
 typedef struct tagOs_ResourceType {
-/* #if defined(OS_FEATURE_ORTI_DEBUG) */
+/* #if (OS_FEATURE_ORTI_DEBUG == STD_ON) */
     TaskType Locker;
 /* #endif */
     PriorityType PriorPriorityOfTask;
 } Os_ResourceType;
 
 typedef enum tagOs_CallevelType {
-    OS_CL_INVALID          =          ((uint16) 0x0000u),
-    OS_CL_TASK             =             ((uint16) 0x0001u),
-    OS_CL_ISR2             =             ((uint16) 0x0002u),
-    OS_CL_ERROR_HOOK       =       ((uint16) 0x0004u),
+    OS_CL_INVALID          =    ((uint16) 0x0000u),
+    OS_CL_TASK             =    ((uint16) 0x0001u),
+    OS_CL_ISR2             =    ((uint16) 0x0002u),
+    OS_CL_ERROR_HOOK       =    ((uint16) 0x0004u),
     OS_CL_PRE_TASK_HOOK    =    ((uint16) 0x0008u),
-    OS_CL_POST_TASK_HOOK   =   ((uint16) 0x0010u),
-    OS_CL_STARTUP_HOOK     =     ((uint16) 0x0020u),
+    OS_CL_POST_TASK_HOOK   =    ((uint16) 0x0010u),
+    OS_CL_STARTUP_HOOK     =    ((uint16) 0x0020u),
     OS_CL_SHUTDOWN_HOOK    =    ((uint16) 0x0040u),
-    OS_CL_ALARM_CALLBACK   =   ((uint16) 0x0080u),
-    OS_CL_PROTECTION_HOOK  =  ((uint16) 0x0100u),
-    OS_CL_ANY              =              OS_CL_TASK + OS_CL_ISR2 + OS_CL_ERROR_HOOK + OS_CL_PRE_TASK_HOOK + \
-                             OS_CL_POST_TASK_HOOK + OS_CL_STARTUP_HOOK + OS_CL_SHUTDOWN_HOOK +               \
+    OS_CL_ALARM_CALLBACK   =    ((uint16) 0x0080u),
+    OS_CL_PROTECTION_HOOK  =    ((uint16) 0x0100u),
+    OS_CL_ANY              = OS_CL_TASK + OS_CL_ISR2 + OS_CL_ERROR_HOOK + OS_CL_PRE_TASK_HOOK + \
+                             OS_CL_POST_TASK_HOOK + OS_CL_STARTUP_HOOK + OS_CL_SHUTDOWN_HOOK +  \
                              OS_CL_ALARM_CALLBACK + OS_CL_PROTECTION_HOOK
 } Os_CallevelType;
 

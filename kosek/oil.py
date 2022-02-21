@@ -98,7 +98,7 @@ class ParserWrapper(object):
         """
 
 
-        return tree
+        return listener.value
 
     def parseFromFile(self, fileName, trace = False):
         return self.parse(ParserWrapper.stringStream(fileName), trace)

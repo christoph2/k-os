@@ -1,7 +1,7 @@
 /*
  * k_os (Konnex Operating-System based on the OSEK/VDX-Standard).
  *
- * (C) 2007-201$ by Christoph Schueler <github.com/Christoph2,
+ * (C) 2007-2018 by Christoph Schueler <github.com/Christoph2,
  *                                      cpu12.gems@googlemail.com>
  *
  * All Rights Reserved
@@ -24,7 +24,7 @@
 /** @file Os_Ctr.h
  *  @brief Counter related functions.
  *  Internal
- *  
+ *
  *
  *  @author Christoph Schueler (cpu12.gems@googlemail.com)
  */
@@ -42,12 +42,12 @@ extern "C"
 /*
 **  Global Functions.
 */
-#if 0
+
 #if KOS_MEMORY_MAPPING == STD_ON
 FUNC(void, OSEK_OS_CODE) OsCtr_InitCounters(void);
 #else
 void OsCtr_InitCounters(void);
-#endif
+
 
 #endif /* KOS_MEMORY_MAPPING */
 
@@ -56,7 +56,5 @@ void OsCtr_InitCounters(void);
 }
 #endif  /* __cplusplus */
 
-#undef STD_OFF
-#undef STD_ON
 
 #endif  /* __OS_CTR_H */

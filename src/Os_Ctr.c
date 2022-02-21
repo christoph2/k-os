@@ -1,7 +1,7 @@
 /*
    k_os (Konnex Operating-System based on the OSEK/VDX-Standard).
 
-   (C) 2007-2014 by Christoph Schueler <github.com/Christoph2,
+   (C) 2007-2018 by Christoph Schueler <github.com/Christoph2,
                                         cpu12.gems@googlemail.com>
 
    All Rights Reserved
@@ -24,7 +24,7 @@
 
 
 #include "Osek.h"
-#include "kdk/common/Utl.h"
+#include "Utl.h"
 #include "Os_Alm.h"
 
 /*
@@ -116,11 +116,11 @@ StatusType IncrementCounter(CounterType CounterID)
     OS_INCREMENT_COUNTER_VALUE(CounterID);
     OsPort_EnableAllOsInterrupts();
 
-#if defined(OS_USE_ALARMS)
+#if (OS_FEATURE_ALARMS == STD_ON)
     OsCtr_UpdateAttachedAlarms(CounterID);
 #endif
 
-#if defined(OS_USE_SCHEDULE_TABLES)
+#if (OS_FEATURE_SCHEDULE_TABLES == STD_ON)
     OsCtr_UpdateAttachedScheduleTables(CounterID);
 #endif
 

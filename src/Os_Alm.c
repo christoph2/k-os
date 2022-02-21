@@ -1,7 +1,7 @@
 /*
  * k_os (Konnex Operating-System based on the OSEK/VDX-Standard).
  *
- * (C) 2007-2014 by Christoph Schueler <github.com/Christoph2,
+ * (C) 2007-2018 by Christoph Schueler <github.com/Christoph2,
  *                                      cpu12.gems@googlemail.com>
  *
  * All Rights Reserved
@@ -23,7 +23,7 @@
  */
 
 #include "Osek.h"
-#include "kdk/common/Utl.h"
+#include "Utl.h"
 #include "Os_Alm.h"
 #include "Os_Task.h"
 #include "Os_Evt.h"
@@ -319,7 +319,7 @@ void OsAlm_NotifyAlarm(AlarmType AlarmID)
 {
     AlarmConfigurationType const * const Alarm = (AlarmConfigurationType *)&OS_AlarmConf[AlarmID];
 
-#if defined(OS_EXTENDED_STATUS) && defined(OS_FEATURE_CALLEVEL_CHECK)
+#if (OS_EXTENDED_STATUS == STD_ON) && (OS_FEATURE_CALLEVEL_CHECK == STD_ON)
     Os_CallevelType CallevelSaved;
 #endif
 
@@ -346,12 +346,12 @@ void OsAlm_NotifyAlarm(AlarmType AlarmID)
             break;
         case ALM_CALLBACK:
             OsPort_DisableAllOsInterrupts();
-            #if defined(OS_EXTENDED_STATUS) && defined(OS_FEATURE_CALLEVEL_CHECK)
+            #if (OS_EXTENDED_STATUS == STD_ON) && (OS_FEATURE_CALLEVEL_CHECK == STD_ON)
             CallevelSaved = Os_GetCallLevel();
             #endif
             Os_SetCallLevel(OS_CL_ALARM_CALLBACK);
             (Alarm->Action.AlarmCallback)();
-            #if defined(OS_EXTENDED_STATUS) && defined(OS_FEATURE_CALLEVEL_CHECK)
+            #if (OS_EXTENDED_STATUS == STD_ON) && (OS_FEATURE_CALLEVEL_CHECK == STD_ON)
             Os_SetCallLevel(CallevelSaved);
             #endif
             OsPort_EnableAllOsInterrupts();
@@ -371,4 +371,3 @@ void OsAlm_NotifyAlarm(AlarmType AlarmID)
     #define OSEK_OS_STOP_SEC_CODE
     #include "MemMap.h"
 #endif /* KOS_MEMORY_MAPPING */
-

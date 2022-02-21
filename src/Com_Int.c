@@ -1,7 +1,7 @@
 /*
    k_os (Konnex Operating-System based on the OSEK/VDX-Standard).
 
-   (C) 2007-2014 by Christoph Schueler <github.com/Christoph2,
+   (C) 2007-2018 by Christoph Schueler <github.com/Christoph2,
                                         cpu12.gems@googlemail.com>
 
    All Rights Reserved
@@ -29,7 +29,7 @@
 */
 
 #include "Com_Int.h"
-#include "kdk/common/Utl.h"
+#include "Utl.h"
 
 #if KOS_MEMORY_MAPPING == STD_ON
 FUNC(StatusType, OSEK_COM_CODE) ComInt_SendMessage(MessageIdentifier Message, ApplicationDataRef DataRef)
@@ -37,8 +37,7 @@ FUNC(StatusType, OSEK_COM_CODE) ComInt_SendMessage(MessageIdentifier Message, Ap
 StatusType ComInt_SendMessage(MessageIdentifier Message, ApplicationDataRef DataRef)
 #endif /* KOS_MEMORY_MAPPING */
 {
-    Com_MessageObjectType const * const MessageObject = (Com_MessageObjectType *) \
-                                                        &OSEK_COM_GET_MESSAGE_OBJECT(Message);
+    Com_MessageObjectType const * const MessageObject = (Com_MessageObjectType *) &OSEK_COM_GET_MESSAGE_OBJECT(Message);
 
     if (MessageObject->NumReceivers != (uint8)0) {
         ComIf_UpdateAndNotifyReceivers(MessageObject, DataRef);
@@ -63,4 +62,3 @@ StatusType ComInt_ReceiveMessage(MessageIdentifier Message, ApplicationDataRef D
 
     return E_OK;
 }
-

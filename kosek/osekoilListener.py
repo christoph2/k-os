@@ -276,11 +276,28 @@ class osekoilListener(ParseTreeListener):
         ctx.value = ctx.v.text
 
     def exitNumber(self, ctx):
-        i = ctx.INT()
-        h = ctx.HEX()
+        i = ctx.i.value
+        h = ctx.h.value
         value = int(i.getText()) if i else int(h.getText(), 16)
         ctx.value = value
 
     def exitBoolean(self, ctx):
         ctx.value = ctx.v.text == 'TRUE'
 
+    ###
+    ###
+    def exitIntValue(self, ctx):
+        ctx.value = int(ctx.i.text) if ctx.i else None
+            
+    def exitFloatValue(self, ctx):
+        ctx.value = float(ctx.f.text) if ctx.f else None
+                        
+    #def exitNumber(self, ctx):
+    #    ctx.value = ctx.i.value if ctx.i else ctx.f.value
+                                    
+    def exitStringValue(self, ctx):
+        ctx.value = ctx.s.text.strip('"') if ctx.s else None
+                                                
+    def exitIdentifierValue(self, ctx):
+        ctx.value = ctx.i.text if ctx.i else None
+                                                            

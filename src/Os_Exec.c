@@ -1,7 +1,7 @@
 /*
  * k_os (Konnex Operating-System based on the OSEK/VDX-Standard).
  *
- * (C) 2007-2014 by Christoph Schueler <github.com/Christoph2,
+ * (C) 2007-2018 by Christoph Schueler <github.com/Christoph2,
  *                                      cpu12.gems@googlemail.com>
  *
  * All Rights Reserved
@@ -30,12 +30,14 @@
 #include "Os_Exec.h"
 #include "Os_Res.h"
 #include "Os_Alm.h"
-/*/ #include "Os_Ctr.h" */
-#include "kdk/common/Utl.h"
+#include "Os_Ctr.h"
+#include "Utl.h"
 
 #define API_TRACE()     /* TODO: Nur zum Testen!!! */
 
 //#include "common/inc/apitracer.h"
+
+void Slk(uint32 ms);
 
 #if KOS_MEMORY_MAPPING == STD_ON
 STATIC FUNC(void, OSEK_OS_CODE) OsExec_Init(void);
@@ -47,7 +49,7 @@ static void OsExec_Init(void);
 
 #endif /* KOS_MEMORY_MAPPING */
 
-#if defined(OS_FEATURE_SAVE_STARTUP_CONTEXT)
+#if (OS_FEATURE_SAVE_STARTUP_CONTEXT == STD_ON)
 static Utl_JumpBufType StartupContext;
 #endif  /* OS_FEATURE_SAVE_STARTUP_CONTEXT */
 
@@ -87,27 +89,32 @@ void StartOS(AppModeType Mode)
 
     OsExec_Init();
 
-#if defined(OS_USE_STARTUPHOOK)
+#if (OS_FEATURE_STARTUPHOOK == STD_ON)
     Os_SetCallLevel(OS_CL_STARTUP_HOOK);
     StartupHook();
-#endif  /* OS_USE_STARTUPHOOK */
+#endif  /* OS_FEATURE_STARTUPHOOK */
     Os_SetCallLevel(OS_CL_TASK);
     Os_SetTaskLevel();
 
-    /* check: das n‰chste zur Sicherheit???*/
+    /* check: das n√§chste zur Sicherheit???*/
     OsExec_SetHighestPrioRunning();
 
     Os_ClearServiceContext();
 /*    OsPort_EnableAllOsInterrupts(); */
 
-#if defined(OS_FEATURE_SAVE_STARTUP_CONTEXT)
+#if (OS_FEATURE_SAVE_STARTUP_CONTEXT == STD_ON)
 
     if (Utl_SetJump(&StartupContext) == 0) {
 #endif  /* OS_FEATURE_SAVE_STARTUP_CONTEXT */
 
     OsPort_StartCurrentTask();
 
-#if defined(OS_FEATURE_SAVE_STARTUP_CONTEXT)
+#if OS_SIMULATED_ENV == STD_ON
+    OsPort_KeyboardLoop();
+#endif // OS_SIMULATED_ENV
+
+
+#if (OS_FEATURE_SAVE_STARTUP_CONTEXT == STD_ON)
 }
 
 
@@ -120,29 +127,30 @@ FUNC(void, OSEK_OS_CODE) ShutdownOS(StatusType Error)
 void ShutdownOS(StatusType Error)
 #endif /* KOS_MEMORY_MAPPING */
 {
-    uint8_least i;
+    uint8 i;
 
     Os_SaveServiceContext(OSServiceId_ShutdownOS, Error, NULL, NULL);
     CPU_DISABLE_ALL_INTERRUPTS();
 
-    for (i = (uint8_least)0; i < OS_NUMBER_OF_TASKS; ++i) {
-        OS_TCB[i].State = SUSPENDED;
+    for (i = (uint8)0; i < OS_NUMBER_OF_TASKS; ++i) {
+        OsTask_Suspend(i);
+        //OS_TCB[i].State = SUSPENDED;
     }
 
-#if defined(OS_USE_SHUTDOWNHOOK)
+#if (OS_FEATURE_SHUTDOWNHOOK == STD_ON)
     Os_SetCallLevel(OS_CL_SHUTDOWN_HOOK);
     ShutdownHook(Error);
-#else   /* OS_USE_SHUTDOWNHOOK */
+#else   /* OS_FEATURE_SHUTDOWNHOOK */
     UNREFERENCED_PARAMETER(Error);
 #endif
     Os_SetCallLevel(OS_CL_INVALID);
     Os_ClearServiceContext();    /* ??? */
 
-#if defined(OS_FEATURE_SHUTDOWN_OSPORT) /* TODO: Automatisch setzen, wenn Port Shutdown erforderlich!!! */
+#if (OS_FEATURE_SHUTDOWN_OSPORT == STD_ON) /* TODO: Automatisch setzen, wenn Port Shutdown erforderlich!!! */
     OsPort_Shutdown();
 #endif
 
-#if defined(OS_FEATURE_SAVE_STARTUP_CONTEXT)
+#if (OS_FEATURE_SAVE_STARTUP_CONTEXT == STD_ON)
     Utl_LongJump(&StartupContext, -1);
 #endif  /* OS_FEATURE_SAVE_STARTUP_CONTEXT */
 /*
@@ -188,21 +196,17 @@ static void OsExec_Init(void)
     Os_Flags        = (uint8)0x00;
 
     OsMLQ_Init();
-
     OsIntr_InitInterrupts();
-
     OsTask_InitTasks();
-
     OsRes_InitResources();
-
     OsCtr_InitCounters();
-
     OsAlm_InitAlarms();
 }
 
 
 TASK(OsExec_IdleTask)
 {
+    printf("Entering Idle Task.\n");
     /*lint -e716 */
     FOREVER {
         OsExec_WaitForReadyTasks();
@@ -273,8 +277,8 @@ boolean OsExec_HigherPriorityThenCurrentReady(void)
     uint16  currentPriority;
     boolean res;
 
-    /* TODO: ƒndern!!! */
-#if defined(OS_USE_RESOURCES) || defined(OS_USE_INTERNAL_RESOURCES)
+    /* TODO: √Ñndern!!! */
+#if (OS_FEATURE_RESOURCES == STD_ON) || (OS_FEATURE_INTERNAL_RESOURCES == STD_ON)
     currentPriority = Utl_SetBitTab16[Os_CurrentTCB->CurrentPriority];
 #else
     currentPriority = Utl_SetBitTab16[OS_TaskConf[Os_CurrentTID].Priority];

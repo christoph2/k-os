@@ -24,7 +24,7 @@
 /** @file Os_Port.h
  *  @brief Interface function to the actual microcontroller port.
  *
- *  
+ *
  *
  *  @author Christoph Schueler (cpu12.gems@googlemail.com)
  */
@@ -36,10 +36,10 @@ extern "C"
 {
 #endif  /* __cplusplus */
 
-#include "kdk/installisr/ISR.h"
+//#include "kdk/installisr/ISR.h"
 #include "Os_Cfg.h"
 #include "Os_Macros.h"
-#include "kdk/common/CPU_Primitives.h"
+#include "CPU_Primitives.h"
 
 /*
 **  Global Types.
@@ -58,6 +58,8 @@ extern InterruptStateType OsPort_InterruptState;
 /*
 **  Global Functions.
 */
+void OsPort_SuspendHook(uint16 taskID);
+
 #if KOS_MEMORY_MAPPING == STD_ON
 FUNC(void, OSEK_OS_CODE) OsPort_Init(void);
 FUNC(void, OSEK_OS_CODE) OsPort_Shutdown(void);
@@ -65,13 +67,28 @@ FUNC(uint8 *, OSEK_OS_CODE) OsPort_TaskStackInit(
     P2VAR(TaskFunctionType, AUTOMATIC, OSEK_OS_APPL_DATA) TaskFunc,
     P2VAR(uint8, AUTOMATIC, OSEK_OS_APPL_DATA) sp
     );
+FUNC(void, OSEK_OS_CODE) OsPort_StartCurrentTask(void);
 FUNC(uint32, OSEK_OS_CODE) OsPort_GetTimestamp(void);
+FUNC(void, OSEK_OS_CODE) OsPort_KeyboardLoop(void);
+FUNC(void, OSEK_OS_CODE) OsPort_SaveContext(void);
+FUNC(void, OSEK_OS_CODE) OsPort_RestoreContext(void);
+FUNC(void, OSEK_OS_CODE) OsPort_SwitchToISRContext(void)
+FUNC(void, OSEK_OS_CODE) OsPort_CreateEvents(void);
+FUNC(void, OSEK_OS_CODE) OsPort_SignalSchedulingEvent(void);
+FUNC(void, OSEK_OS_CODE) OsPort_AdjustProcessPriorityClass(void);
 #else
 void    OsPort_Init(void);
 void    OsPort_Shutdown(void);
 uint8 * OsPort_TaskStackInit(TaskType TaskID, TaskFunctionType const * TaskFunc, uint8 * sp);
+void OsPort_StartCurrentTask(void);
 uint32  OsPort_GetTimestamp(void);
-
+void OsPort_KeyboardLoop(void);
+void OsPort_SaveContext(void);
+void OsPort_RestoreContext(void);
+void OsPort_SwitchToISRContext(void);
+void OsPort_CreateEvents(void);
+void OsPort_SignalSchedulingEvent(void);
+void OsPort_AdjustProcessPriorityClass(void);
 #endif /* KOS_MEMORY_MAPPING */
 
 #define OsPort_DisableAllOsInterrupts() CPU_SAVE_AND_DISABLE_INTERRUPTS(OsPort_InterruptState)
@@ -91,7 +108,7 @@ extern const SizeType OS_TOS_ISR;
         #include "port/cpu12/gcc/Os_Port_S12_gcc.h"
     #elif defined(__MSP430__)
         #include "port/msp430/gcc/Os_Port_msp430_gcc.h"
-    #elif defined( __CYGWIN32__) /* && defined(__I386__) */
+    #elif defined( __CYGWIN32__) || defined(__CYGWIN__) /* && defined(__I386__) */
         #include "port/i386/gcc/Os_Port_i386_gcc.h"
     #else
         #error Unsupported Target for GCC.

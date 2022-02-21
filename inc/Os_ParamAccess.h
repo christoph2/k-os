@@ -1,7 +1,7 @@
 /*
  * k_os (Konnex Operating-System based on the OSEK/VDX-Standard).
  *
- * (C) 2007-2014 by Christoph Schueler <github.com/Christoph2,
+ * (C) 2007-2018 by Christoph Schueler <github.com/Christoph2,
  *                                      cpu12.gems@googlemail.com>
  *
  * All Rights Reserved
@@ -24,7 +24,7 @@
 /** @file Os_ParamAccess.h
  *  @brief Service identifier related stuff.
  *
- *  
+ *
  *
  *  @author Christoph Schueler (cpu12.gems@googlemail.com)
  */
@@ -108,7 +108,7 @@ typedef enum tagOS_ServiceIdType {
     COMServiceId_GetMessageStatus      = 120
 } Os_ServiceIdType;
 
-#if defined(OS_USE_PARAMETERACCESS)
+#if (OS_FEATURE_PARAMETERACCESS == STD_ON)
     #define OSError_ActivateTask_TaskID()                           ((TaskType)Os_ServiceContext.param1)
     #define OSError_ChainTask_TaskID()                              ((TaskType)Os_ServiceContext.param1)
     #define OSError_GetTaskID_TaskID()                              ((TaskRefType)Os_ServiceContext.param1)
@@ -272,12 +272,12 @@ typedef enum tagOS_ServiceIdType {
     #define COM_Error_GetMessageStatus_Message()                    ((MessageIdentifier)0)
 #endif
 
-#if defined(OS_USE_GETSERVICEID) || defined(OS_USE_PARAMETERACCESS) || defined(OS_FEATURE_ORTI_DEBUG)
+#if (OS_FEATURE_GETSERVICEID == STD_ON) || (OS_FEATURE_PARAMETERACCESS == STD_ON) || (OS_FEATURE_ORTI_DEBUG == STD_ON)
 typedef struct tagOs_ServiceContextType {
-    #if defined(OS_USE_GETSERVICEID) || defined(OS_FEATURE_ORTI_DEBUG)
+    #if (OS_FEATURE_GETSERVICEID == STD_ON) || (OS_FEATURE_ORTI_DEBUG == STD_ON)
     Os_ServiceIdType id;
     #endif
-    #if defined(OS_USE_PARAMETERACCESS)
+    #if (OS_FEATURE_PARAMETERACCESS == STD_ON)
     /*@null@*/ void *   param1;
     /*@null@*/ void *   param2;
     /*@null@*/ void *   param3;
@@ -293,7 +293,7 @@ OS_DECLARE_GLOBAL_IF_DEBUGGING(OsLastError, StatusType);
     Service-Context-Functions.
  **********************************************************************************/
 
-#if defined(OS_USE_GETSERVICEID)
+#if (OS_FEATURE_GETSERVICEID == STD_ON)
     #define OSErrorGetServiceId()   Os_ServiceContext.id
     #define Os_ClearServiceContext() Os_ServiceContext.id = OSServiceId_NoService
 #else
@@ -302,7 +302,7 @@ OS_DECLARE_GLOBAL_IF_DEBUGGING(OsLastError, StatusType);
 #endif
 
 #if KOS_MEMORY_MAPPING == STD_ON
-#if defined(OS_USE_GETSERVICEID) && defined(OS_USE_PARAMETERACCESS)
+#if (OS_FEATURE_GETSERVICEID == STD_ON) && (OS_FEATURE_PARAMETERACCESS == STD_ON)
 FUNC(void, OSEK_OS_CODE) OS_SaveServiceContext(Os_ServiceIdType id,
                                               /*@null@*//*@in@*/ P2VAR(void, AUTOMATIC, OSEK_OS_APPL_DATA) param1,
                                               /*@null@*//*@in@*/ P2VAR(void, AUTOMATIC, OSEK_OS_APPL_DATA) param2,
@@ -311,12 +311,12 @@ FUNC(void, OSEK_OS_CODE) OS_SaveServiceContext(Os_ServiceIdType id,
 
 #endif
 
-#if defined(OS_USE_GETSERVICEID) && !defined(OS_USE_PARAMETERACCESS)
+#if (OS_FEATURE_GETSERVICEID == STD_ON) && !(OS_FEATURE_PARAMETERACCESS == STD_ON)
 FUNC(void, OSEK_OS_CODE) OS_SaveServiceContext(Os_ServiceIdType id);
 
 #endif
 
-#if !defined(OS_USE_GETSERVICEID) && defined(OS_USE_PARAMETERACCESS)
+#if !(OS_FEATURE_GETSERVICEID == STD_ON) && (OS_FEATURE_PARAMETERACCESS == STD_ON)
 FUNC(void, OSEK_OS_CODE) OS_SaveServiceContext(
     /*@null@*//*@in@*/ P2VAR(void, AUTOMATIC, OSEK_OS_APPL_DATA) param1,
     /*@null@*//*@in@*/ P2VAR(void, AUTOMATIC, OSEK_OS_APPL_DATA) param2,
@@ -325,7 +325,7 @@ FUNC(void, OSEK_OS_CODE) OS_SaveServiceContext(
 
 #endif
 #else
-#if defined(OS_USE_GETSERVICEID) && defined(OS_USE_PARAMETERACCESS)
+#if (OS_FEATURE_GETSERVICEID == STD_ON) && (OS_FEATURE_PARAMETERACCESS == STD_ON)
 void OS_SaveServiceContext(Os_ServiceIdType          id,
                           /*@null@*//*@in@*/ void * param1,
                           /*@null@*//*@in@*/ void * param2,
@@ -335,13 +335,13 @@ void OS_SaveServiceContext(Os_ServiceIdType          id,
 
 #endif
 
-#if defined(OS_USE_GETSERVICEID) && !defined(OS_USE_PARAMETERACCESS)
+#if (OS_FEATURE_GETSERVICEID == STD_ON) && !(OS_FEATURE_PARAMETERACCESS == STD_ON)
 void OS_SaveServiceContext(Os_ServiceIdType id);
 
 
 #endif
 
-#if !defined(OS_USE_GETSERVICEID) && defined(OS_USE_PARAMETERACCESS)
+#if !(OS_FEATURE_GETSERVICEID == STD_ON) && (OS_FEATURE_PARAMETERACCESS == STD_ON)
 void OS_SaveServiceContext(
     /*@null@*//*@in@*/ void *   param1,
     /*@null@*//*@in@*/ void *   param2,
@@ -352,18 +352,18 @@ void OS_SaveServiceContext(
 #endif
 #endif /* KOS_MEMORY_MAPPING */
 
-#if !defined(OS_USE_GETSERVICEID) && !defined(OS_USE_PARAMETERACCESS)
+#if !(OS_FEATURE_GETSERVICEID == STD_ON) && !(OS_FEATURE_PARAMETERACCESS == STD_ON)
 #define Os_SaveServiceContext(id, param1, param2, param3)
 #else
-    #if defined(OS_USE_GETSERVICEID) && defined(OS_USE_PARAMETERACCESS)
+    #if (OS_FEATURE_GETSERVICEID == STD_ON) && (OS_FEATURE_PARAMETERACCESS == STD_ON)
         #define Os_SaveServiceContext(id, param1, param2, param3) \
     OS_SaveServiceContext(id, (void *)param1, (void *)param2, (void *)param3)
     #endif
-    #if defined(OS_USE_GETSERVICEID) && !defined(OS_USE_PARAMETERACCESS)
+    #if (OS_FEATURE_GETSERVICEID == STD_ON) && !(OS_FEATURE_PARAMETERACCESS == STD_ON)
         #define Os_SaveServiceContext(id, param1, param2, param3) \
     OS_SaveServiceContext(id)
     #endif
-    #if !defined(OS_USE_GETSERVICEID) && defined(OS_USE_PARAMETERACCESS)
+    #if !(OS_FEATURE_GETSERVICEID == STD_ON) && (OS_FEATURE_PARAMETERACCESS == STD_ON)
         #define Os_SaveServiceContext(id, param1, param2, param3) \
     OS_SaveServiceContext((void *)param1, (void *)param2, (void *)param3)
     #endif
@@ -374,4 +374,3 @@ void OS_SaveServiceContext(
 #endif  /* __cplusplus */
 
 #endif  /*  OS_PARAMACCESS */
-

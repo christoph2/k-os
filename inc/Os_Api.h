@@ -1,7 +1,7 @@
 /*
  * k_os (Konnex Operating-System based on the OSEK/VDX-Standard).
  *
- * (C) 2007-2014 by Christoph Schueler <github.com/Christoph2,
+ * (C) 2007-2018 by Christoph Schueler <github.com/Christoph2,
  *                                      cpu12.gems@googlemail.com>
  *
  * All Rights Reserved
@@ -26,7 +26,7 @@
 /** @file Os_Api.h
  *  @brief OSEK OS API as defined in specification v2.2.3
  *  Internal
- *  
+ *
  *
  *  @author Christoph Schueler (cpu12.gems@googlemail.com)
  */
@@ -96,15 +96,15 @@ StatusType  ReleaseResource(ResourceType ResID);
 **      Event-Control-Functions.
 */
 #if KOS_MEMORY_MAPPING == STD_ON
-FUNC(StatusType, OSEK_OS_CODE) SetEvent(TaskType TaskID, EventMaskType Mask);
-FUNC(StatusType, OSEK_OS_CODE) ClearEvent(EventMaskType Mask);
-FUNC(StatusType, OSEK_OS_CODE) GetEvent(TaskType TaskID, /*@out null@*/ EventMaskRefType Event);
-FUNC(StatusType, OSEK_OS_CODE) WaitEvent(EventMaskType Mask);
+FUNC(StatusType, OSEK_OS_CODE) Os_SetEvent(TaskType TaskID, EventMaskType Mask);
+FUNC(StatusType, OSEK_OS_CODE) Os_ClearEvent(EventMaskType Mask);
+FUNC(StatusType, OSEK_OS_CODE) Os_GetEvent(TaskType TaskID, /*@out null@*/ EventMaskRefType Event);
+FUNC(StatusType, OSEK_OS_CODE) Os_WaitEvent(EventMaskType Mask);
 #else
-StatusType  SetEvent(TaskType TaskID, EventMaskType Mask);
-StatusType  ClearEvent(EventMaskType Mask);
-StatusType  GetEvent(TaskType TaskID, /*@out null@*/ EventMaskRefType Event);
-StatusType  WaitEvent(EventMaskType Mask);
+StatusType Os_SetEvent(TaskType TaskID, EventMaskType Mask);
+StatusType Os_ClearEvent(EventMaskType Mask);
+StatusType Os_GetEvent(TaskType TaskID, /*@out null@*/ EventMaskRefType Event);
+StatusType Os_WaitEvent(EventMaskType Mask);
 
 
 #endif /* KOS_MEMORY_MAPPING */

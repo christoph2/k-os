@@ -1,7 +1,7 @@
 /*
  * k_os (Konnex Operating-System based on the OSEK/VDX-Standard).
  *
- * (C) 2007-2013 by Christoph Schueler <github.com/Christoph2,
+ * (C) 2007-2018 by Christoph Schueler <github.com/Christoph2,
  *                                      cpu12.gems@googlemail.com>
  *
  * All Rights Reserved
@@ -70,9 +70,9 @@ StatusType OsEvt_SetEvent(TaskType TaskID, EventMaskType Mask)
 
 
 #if KOS_MEMORY_MAPPING == STD_ON
-FUNC(StatusType, OSEK_OS_CODE) SetEvent(TaskType TaskID, EventMaskType Mask)
+FUNC(StatusType, OSEK_OS_CODE) Os_SetEvent(TaskType TaskID, EventMaskType Mask)
 #else
-StatusType SetEvent(TaskType TaskID, EventMaskType Mask)
+StatusType Os_SetEvent(TaskType TaskID, EventMaskType Mask)
 #endif /* KOS_MEMORY_MAPPING */
 {
 /*
@@ -109,9 +109,9 @@ StatusType SetEvent(TaskType TaskID, EventMaskType Mask)
 
 
 #if KOS_MEMORY_MAPPING == STD_ON
-FUNC(StatusType, OSEK_OS_CODE) ClearEvent(EventMaskType Mask)
+FUNC(StatusType, OSEK_OS_CODE) Os_ClearEvent(EventMaskType Mask)
 #else
-StatusType ClearEvent(EventMaskType Mask)
+StatusType Os_ClearEvent(EventMaskType Mask)
 #endif /* KOS_MEMORY_MAPPING */
 {
 
@@ -145,9 +145,9 @@ StatusType ClearEvent(EventMaskType Mask)
 
 
 #if KOS_MEMORY_MAPPING == STD_ON
-FUNC(StatusType, OSEK_OS_CODE) GetEvent(TaskType TaskID, EventMaskRefType Event)
+FUNC(StatusType, OSEK_OS_CODE) Os_GetEvent(TaskType TaskID, EventMaskRefType Event)
 #else
-StatusType GetEvent(TaskType TaskID, EventMaskRefType Event)
+StatusType Os_GetEvent(TaskType TaskID, EventMaskRefType Event)
 #endif /* KOS_MEMORY_MAPPING */
 {
 /*
@@ -183,9 +183,9 @@ StatusType GetEvent(TaskType TaskID, EventMaskRefType Event)
 
 
 #if KOS_MEMORY_MAPPING == STD_ON
-FUNC(StatusType, OSEK_OS_CODE) WaitEvent(EventMaskType Mask)
+FUNC(StatusType, OSEK_OS_CODE) Os_WaitEvent(EventMaskType Mask)
 #else
-StatusType WaitEvent(EventMaskType Mask)
+StatusType Os_WaitEvent(EventMaskType Mask)
 #endif /* KOS_MEMORY_MAPPING */
 {
 /*
@@ -238,4 +238,3 @@ StatusType WaitEvent(EventMaskType Mask)
     #define OSEK_OS_STOP_SEC_CODE
     #include "MemMap.h"
 #endif /* KOS_MEMORY_MAPPING */
-

@@ -1,8 +1,8 @@
 /*
    k_os (Konnex Operating-System based on the OSEK/VDX-Standard).
 
- * (C) 2007-2013 by Christoph Schueler <github.com/Christoph2,
- *                                      cpu12.gems@googlemail.com>
+   (C) 2007-2018 by Christoph Schueler <github.com/Christoph2,
+                                        cpu12.gems@googlemail.com>
 
    All Rights Reserved
 
@@ -22,15 +22,15 @@
    s. FLOSS-EXCEPTION.txt
  */
 #include "Os_ParamAccess.h"
-//#include "Os_Vars.h"
 
-#if defined(OS_USE_GETSERVICEID) || defined(OS_USE_PARAMETERACCESS) || defined(OS_FEATURE_ORTI_DEBUG)
+
+#if (OS_FEATURE_GETSERVICEID == STD_ON) || (OS_FEATURE_PARAMETERACCESS == STD_ON) || (OS_FEATURE_ORTI_DEBUG == STD_ON)
 OS_DEFINE_GLOBAL_IF_DEBUGGING(Os_ServiceContext, Os_ServiceContextType);
 
 OS_DEFINE_GLOBAL_IF_DEBUGGING(OsLastError, StatusType);
 #endif
 
-#if defined(OS_FEATURE_ORTI_DEBUG)
+#if (OS_FEATURE_ORTI_DEBUG == STD_ON)
 #define OsError_SaveLastError(Error) (OsLastError = Error)
 #else
 #define OsError_SaveLastError(Error)
@@ -44,7 +44,7 @@ OS_DEFINE_GLOBAL_IF_DEBUGGING(OsLastError, StatusType);
 /*
 **  Global functions.
 */
-#if defined(OS_USE_GETSERVICEID) && defined(OS_USE_PARAMETERACCESS)
+#if (OS_FEATURE_GETSERVICEID == STD_ON) && (OS_FEATURE_PARAMETERACCESS == STD_ON)
 #if KOS_MEMORY_MAPPING == STD_ON
 FUNC(void, OSEK_OS_CODE) OS_SaveServiceContext(Os_ServiceIdType id,
                                               P2VAR(void, AUTOMATIC, OSEK_OS_APPL_DATA) param1,
@@ -63,7 +63,7 @@ void OS_SaveServiceContext(Os_ServiceIdType id, void * param1, void * param2, vo
 #endif
 
 
-#if defined(OS_USE_GETSERVICEID) && !defined(OS_USE_PARAMETERACCESS)
+#if (OS_FEATURE_GETSERVICEID == STD_ON) && !(OS_FEATURE_PARAMETERACCESS == STD_ON)
 #if KOS_MEMORY_MAPPING == STD_ON
 FUNC(void, OSEK_OS_CODE) void OS_SaveServiceContext(Os_ServiceIdType id)
 #else
@@ -75,7 +75,7 @@ void OS_SaveServiceContext(Os_ServiceIdType id)
 #endif
 
 
-#if !defined(OS_USE_GETSERVICEID) && defined(OS_USE_PARAMETERACCESS)
+#if !(OS_FEATURE_GETSERVICEID == STD_ON) && (OS_FEATURE_PARAMETERACCESS == STD_ON)
 #if KOS_MEMORY_MAPPING == STD_ON
 FUNC(void, OSEK_OS_CODE) void OS_SaveServiceContext(P2VAR(void, AUTOMATIC, OSEK_OS_APPL_DATA)param1,
                                                    P2VAR(void, AUTOMATIC, OSEK_OS_APPL_DATA)param2,

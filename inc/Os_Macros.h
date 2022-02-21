@@ -1,7 +1,7 @@
 /*
  *  k_os (Konnex Operating-System based on the OSEK/VDX-Standard).
  *
- * (C) 2007-2014 by Christoph Schueler <github.com/Christoph2,
+ * (C) 2007-2018 by Christoph Schueler <github.com/Christoph2,
  *                                      cpu12.gems@googlemail.com>
  *
  * All Rights Reserved
@@ -22,9 +22,9 @@
  * s. FLOSS-EXCEPTION.txt
  */
 /** @file Os_Macros.h
- *  @brief Collections of preprocessor defines to get the job done.
+ *  @brief Collection of preprocessor defines to get the job done.
  *
- *  
+ *
  *
  *  @author Christoph Schueler (cpu12.gems@googlemail.com)
  */
@@ -60,7 +60,7 @@
 /*
 ** ORTI and other Debuggging-Strategies require global accessible Identifiers.
 */
-#if defined(OS_FEATURE_ORTI_DEBUG)
+#if OS_FEATURE_ORTI_DEBUG == STD_ON
 #define OS_DECLARE_GLOBAL_IF_DEBUGGING(var, type)   extern type var
 #define OS_DEFINE_GLOBAL_IF_DEBUGGING(var, type)    type var
 #else
@@ -73,13 +73,13 @@
 #elif defined(OS_SCHED_POLICY_PRE)
 #define OsTask_IsPreemptable(tid)                   (TRUE)
 #elif defined(OS_SCHED_POLICY_MIX)
-#if defined(OS_USE_RESOURCES) || defined(OS_USE_INTERNAL_RESOURCES)
+#if (OS_FEATURE_RESOURCES == STD_ON) || (OS_FEATURE_INTERNAL_RESOURCES == STD_ON)
 #define OsTask_IsPreemptable(tid)                   (Os_CurrentTCB->CurrentPriority != PRIO_SCHEDULER)
 #else
 /* todo: CHECK!!! */
 /* #define OsTask_IsPreemptable(tid) (OS_TaskConf[(tid)].Priority=!=PRIO_SCHEDULER) */
 #define OsTask_IsPreemptable(tid)                   (TRUE)
-#endif /* (OS_USE_RESOURCES) || (OS_USE_INTERNAL_RESOURCES) */
+#endif /* (OS_FEATURE_RESOURCES == STD_ON) || (OS_FEATURE_INTERNAL_RESOURCES == STD_ON) */
 #else
 #error "unknwon Scheduling-Policy!"
 #endif
@@ -154,12 +154,12 @@
 #if     defined(OS_BCC1) || defined(OS_ECC1)
 #define OsTask_IncrActivations(tid)
 #define OsTask_DecrActivations(tid)
-#elif   defined(OS_BCC2) || defined(OS_ECC2) || defined(OS_FEATURE_ORTI_DEBUG)
+#elif   defined(OS_BCC2) || defined(OS_ECC2) || (OS_FEATURE_ORTI_DEBUG == STD_ON)
 #define OsTask_IncrActivations(tid)         OS_TCB[(tid)].Activations++
 #define OsTask_DecrActivations(tid)         OS_TCB[(tid)].Activations--
 #endif
 
-#if     defined(OS_USE_RESSCHEDULER)
+#if     (OS_FEATURE_RESSCHEDULER == STD_ON)
 #define OsExec_LockScheduler()              (Os_Flags |= OS_SYS_FLAG_SCHED_OCCUPIED)
 #define OsExec_UnlockScheduler()            (Os_Flags &= (uint8) ~OS_SYS_FLAG_SCHED_OCCUPIED)
 #define OsExec_IsSchedulerLocked()          ((Os_Flags & OS_SYS_FLAG_SCHED_OCCUPIED) == OS_SYS_FLAG_SCHED_OCCUPIED)
@@ -167,7 +167,7 @@
 #define OsExec_LockScheduler()
 #define OsExec_UnlockScheduler()
 #define OsExec_IsSchedulerLocked()          (FALSE)
-#endif  /* OS_USE_RESSCHEDULER */
+#endif  /* OS_FEATURE_RESSCHEDULER */
 
 #define Os_SetISRLevel()                    (Os_Flags |= OS_SYS_FLAG_ISR_LEVEL)
 #define Os_SetTaskLevel()                   (Os_Flags &= (uint8) ~OS_SYS_FLAG_ISR_LEVEL)
@@ -176,31 +176,31 @@
 #define OsExec_IdleTimeAction()             CPU_ENTER_POWERDOWN_MODE() /*  'osconfig.h'  */
 /*  #define     OsExec_IdleTimeAction()   IdleTimeHook()  */
 
-#if defined(OS_EXTENDED_STATUS) && defined(OS_FEATURE_CALLEVEL_CHECK)
+#if (OS_EXTENDED_STATUS == STD_ON) && (OS_FEATURE_CALLEVEL_CHECK == STD_ON)
 #define Os_SetCallLevel(cl)                 (Os_Callevel = (cl))
 #else
 #define Os_SetCallLevel(cl)
 #endif
 
-#if defined(OS_EXTENDED_STATUS) && defined(OS_FEATURE_CALLEVEL_CHECK)
+#if (OS_EXTENDED_STATUS == STD_ON) && (OS_FEATURE_CALLEVEL_CHECK == STD_ON)
 #define Os_GetCallLevel()                   (Os_Callevel)
 #else
 #define Os_GetCallLevel()
 #endif
 
-#if defined(OS_EXTENDED_STATUS) && defined(OS_FEATURE_CALLEVEL_CHECK)
+#if (OS_EXTENDED_STATUS == STD_ON) && (OS_FEATURE_CALLEVEL_CHECK == STD_ON)
 #define Os_SaveCallLevel()                  (Os_CallevelSaved = Os_Callevel)
 #else
 #define Os_SaveCallLevel()
 #endif
 
-#if defined(OS_EXTENDED_STATUS) && defined(OS_FEATURE_CALLEVEL_CHECK)
+#if (OS_EXTENDED_STATUS == STD_ON) && (OS_FEATURE_CALLEVEL_CHECK == STD_ON)
 #define Os_RestoreCallLevel()               (Os_Callevel = Os_CallevelSaved)
 #else
 #define Os_RestoreCallLevel()
 #endif
 
-#if defined(OS_EXTENDED_STATUS) && defined(OS_FEATURE_CALLEVEL_CHECK)
+#if (OS_EXTENDED_STATUS == STD_ON) && (OS_FEATURE_CALLEVEL_CHECK == STD_ON)
 #define ASSERT_VALID_CALLEVEL(cl)                               \
     _BEGIN_BLOCK                                                \
     if ((Os_Callevel & (cl)) == OS_CL_INVALID) {                \
@@ -214,7 +214,7 @@
 /*
 ** !REQ!AS!OS367! "Operating System services wich do not return a StatusType shall not raise the error hook(s)."
 */
-#if defined(OS_EXTENDED_STATUS) && defined(OS_FEATURE_CALLEVEL_CHECK)
+#if (OS_EXTENDED_STATUS == STD_ON) && (OS_FEATURE_CALLEVEL_CHECK == STD_ON)
 #define ASSERT_OS_NOT_RUNNING()                                 \
     _BEGIN_BLOCK                                                \
     if (Os_Callevel != OS_CL_INVALID) {                         \
@@ -255,7 +255,7 @@
     OsPort_RestoreContext();                                    \
     _END_BLOCK
 
-#if defined(OS_USE_ERRORHOOK)
+#if (OS_FEATURE_ERRORHOOK == STD_ON)
 #define Os_CallErrorHookAndReturn(Error)                        \
     _BEGIN_BLOCK                                                \
     OsError_CallErrorHook(Error);                               \
@@ -268,7 +268,7 @@
     Os_ClearServiceContext();                                   \
     return Error;                                               \
     _END_BLOCK
-#endif  /*  OS_USE_ERRORHOOK */
+#endif  /*  OS_FEATURE_ERRORHOOK */
 
 #if defined(COM_USE_ERROR_HOOK)
 #define COM_CallErrorHookAndReturn(Error)                       \
@@ -285,7 +285,7 @@
     _END_BLOCK
 #endif  /*  COM_USE_ERROR_HOOK */
 
-#if defined(OS_USE_ERRORHOOK)
+#if (OS_FEATURE_ERRORHOOK == STD_ON)
 #define ASSERT_INTERRUPTS_ENABLED_AT_TASK_LEVEL()                   \
     _BEGIN_BLOCK                                                    \
     if ((CPU_INTERRUPTS_DISABLED()) && (!Os_RunningOnISRLevel())) { \
@@ -294,9 +294,9 @@
     _END_BLOCK
 #else
 #define ASSERT_INTERRUPTS_ENABLED_AT_TASK_LEVEL()
-#endif  /*  OS_USE_ERRORHOOK */
+#endif  /* OS_FEATURE_ERRORHOOK */
 
-#if defined(OS_EXTENDED_STATUS)
+#if (OS_EXTENDED_STATUS == STD_ON)
 #define ASSERT_VALID_TASKID(tid)                                    \
     _BEGIN_BLOCK                                                    \
     if (((tid) == INVALID_TASK) || ((tid) > OS_NUMBER_OF_TASKS)) {  \
@@ -307,7 +307,7 @@
 #define ASSERT_VALID_TASKID(tid)
 #endif
 
-#if defined(OS_EXTENDED_STATUS) && defined(OS_USE_RESOURCES)
+#if (OS_EXTENDED_STATUS == STD_ON) && (OS_FEATURE_RESOURCES == STD_ON)
 #define ASSERT_CURR_TASK_OCCUPIES_NO_RESOURCES()                \
     _BEGIN_BLOCK                                                \
     if ((Os_CurrentTCB->ResourceCount != (uint8)0) ||           \
@@ -319,7 +319,7 @@
 #define ASSERT_CURR_TASK_OCCUPIES_NO_RESOURCES()
 #endif
 
-#if defined(OS_EXTENDED_STATUS)
+#if (OS_EXTENDED_STATUS == STD_ON)
 #define ASSERT_VALID_COUNTERID(cid)                             \
     _BEGIN_BLOCK                                                \
     if ((cid) >= OS_NUMBER_OF_COUNTERS) {                       \
@@ -330,7 +330,7 @@
 #define ASSERT_VALID_COUNTERID(cid)
 #endif
 
-#if defined(OS_EXTENDED_STATUS)
+#if (OS_EXTENDED_STATUS == STD_ON)
 #define ASSERT_VALID_COUNTER_VALUE(cid, value)                  \
     _BEGIN_BLOCK                                                \
     if ((value) > Os_CounterDefs[(cid)].                        \
@@ -342,7 +342,7 @@
 #define ASSERT_VALID_COUNTER_VALUE(cid, value)
 #endif
 
-#if defined(OS_EXTENDED_STATUS)
+#if (OS_EXTENDED_STATUS == STD_ON)
 #define ASSERT_VALID_ALARMID(aid)                               \
     _BEGIN_BLOCK                                                \
     if ((aid) >= OS_NUMBER_OF_ALARMS) {                         \
@@ -367,7 +367,7 @@
     }                                                           \
     _END_BLOCK
 
-#if defined(OS_EXTENDED_STATUS)
+#if (OS_EXTENDED_STATUS == STD_ON)
 #define ASSERT_VALID_ALARM_VALUES(aid, value, cycle)                                    \
     _BEGIN_BLOCK                                                                        \
     if (((value) > Os_CounterDefs[OS_AlarmConf[(aid)].                                  \
@@ -391,7 +391,7 @@
     }                                                           \
     _END_BLOCK
 
-#if defined(OS_EXTENDED_STATUS)
+#if (OS_EXTENDED_STATUS == STD_ON)
 #define ASSERT_TASK_IS_NOT_SUSPENDED(tid)                       \
     _BEGIN_BLOCK                                                \
     if (OsTask_IsSuspended((tid))) {                            \
@@ -402,7 +402,7 @@
 #define ASSERT_TASK_IS_NOT_SUSPENDED(tid)
 #endif
 
-#if defined(OS_EXTENDED_STATUS)
+#if (OS_EXTENDED_STATUS == STD_ON)
 #define ASSERT_VALID_RESOURCEID(rid)                                        \
     _BEGIN_BLOCK                                                            \
     if (((rid) != RES_SCHEDULER) && ((rid) >= OS_NUMBER_OF_RESOURCES)) {    \
@@ -413,7 +413,7 @@
 #define ASSERT_VALID_RESOURCEID(rid)
 #endif
 
-#if defined(OS_EXTENDED_STATUS)
+#if (OS_EXTENDED_STATUS == STD_ON)
 #define ASSERT_RESOURCE_IS_OCCUPIED(rid)                        \
     _BEGIN_BLOCK                                                \
     if (rid == RES_SCHEDULER) {                                 \
@@ -428,7 +428,7 @@
 #define ASSERT_RESOURCE_IS_OCCUPIED(rid)
 #endif
 
-#if defined(OS_EXTENDED_STATUS)
+#if (OS_EXTENDED_STATUS == STD_ON)
 #define ASSERT_VALID_GET_RESOURCE_ACCESS(rid)                   \
     _BEGIN_BLOCK                                                \
     if (rid == RES_SCHEDULER) {                                 \
@@ -445,7 +445,7 @@
 #define ASSERT_VALID_GET_RESOURCE_ACCESS(rid)
 #endif
 
-#if defined(OS_EXTENDED_STATUS)
+#if (OS_EXTENDED_STATUS == STD_ON)
 #define ASSERT_VALID_RELEASE_RESOURCE_ACCESS(rid)               \
     _BEGIN_BLOCK                                                \
     if (ResID != RES_SCHEDULER) {                               \
@@ -459,13 +459,13 @@
 #define ASSERT_VALID_RELEASE_RESOURCE_ACCESS(rid)
 #endif
 
-#if defined(OS_USE_INTERNAL_RESOURCES)
+#if (OS_FEATURE_INTERNAL_RESOURCES == STD_ON)
 #define OsTask_LockInternalResource() OsRes_GetInternalResource()
 #else
 #define OsTask_LockInternalResource()
 #endif
 
-#if defined(OS_USE_INTERNAL_RESOURCES)
+#if (OS_FEATURE_INTERNAL_RESOURCES == STD_ON)
 #define OsTask_UnlockInternalResource() OsRes_ReleaseInternalResource()
 #else
 #define OsTask_UnlockInternalResource()

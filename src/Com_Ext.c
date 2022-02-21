@@ -78,6 +78,8 @@
 **    ISO 15765-2, F_NORMAL addressing format : CAN identifier).
 */
 
+#include "Com_If.h"
+
 static const uint8 ComExt_NodeAddr = (uint8)0x55;
 
 /*
@@ -267,6 +269,7 @@ void Com_TransmitMessages(void)
     uint8 flag;
     Com_MessageObjectType * MessageObject;
 
+#if 0
     for (idx = (uint8)0x00; idx < COM_NUMBER_OF_MESSAGES; ++idx) {
         flag = Com_GetFlag(idx);
         if (flag == Std_High) {
@@ -275,4 +278,10 @@ void Com_TransmitMessages(void)
             Com_ResetFlag(idx);
         }
     }
+#endif
+}
+
+void Com_SetFlag(MessageIdentifier Message)
+{
+    // TODO: Implement!
 }

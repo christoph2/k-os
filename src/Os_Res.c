@@ -1,7 +1,7 @@
 /*
  * k_os (Konnex Operating-System based on the OSEK/VDX-Standard).
  *
- * (C) 2007-2013 by Christoph Schueler <github.com/Christoph2,
+ * (C) 2007-2018 by Christoph Schueler <github.com/Christoph2,
  *                                      cpu12.gems@googlemail.com>
  *
  * All Rights Reserved
@@ -23,11 +23,13 @@
  */
 #include "Osek.h"
 #include "Os_Res.h"
+#include "Os_Mlq.h"
+#include "Utl.h"
 
 /*
 **  Local variables.
 */
-#if defined(OS_USE_INTERNAL_RESOURCES)
+#if (OS_FEATURE_INTERNAL_RESOURCES == STD_ON)
 static uint16 BM_InternalResources;
 #endif
 
@@ -45,24 +47,24 @@ FUNC(void, OSEK_OS_CODE) OsRes_InitResources(void)
 void OsRes_InitResources(void)
 #endif /* KOS_MEMORY_MAPPING */
 {
-#if defined(OS_USE_RESOURCES)
+#if (OS_FEATURE_RESOURCES == STD_ON)
     uint8 i;
 
-#if defined(OS_USE_INTERNAL_RESOURCES)
+#if (OS_FEATURE_INTERNAL_RESOURCES == STD_ON)
     BM_InternalResources = (uint16)0;
 #endif
 
-#if defined(OS_USE_RESOURCES)
+#if (OS_FEATURE_RESOURCES == STD_ON)
 
     for (i = (uint8)0; i < OS_NUMBER_OF_RESOURCES; ++i) {
-#if defined(OS_FEATURE_ORTI_DEBUG)
+#if (OS_FEATURE_ORTI_DEBUG == STD_ON)
         Os_Resources[i].Locker = INVALID_TASK;
 #endif
         Os_Resources[i].PriorPriorityOfTask = PRIO_NONE;
     }
 
 #endif
-#endif /* OS_USE_RESOURCES */
+#endif /* OS_FEATURE_RESOURCES */
 }
 
 
@@ -83,7 +85,7 @@ StatusType GetResource(ResourceType ResID)
 **                than the calculated ceiling priority.
 */
     Os_SaveServiceContext(OSServiceId_GetResource, ResID, NULL, NULL);
-#if defined(OS_USE_RESOURCES)
+#if (OS_FEATURE_RESOURCES == STD_ON)
     ASSERT_VALID_RESOURCEID(ResID);
     ASSERT_VALID_GET_RESOURCE_ACCESS(ResID);
     ASSERT_VALID_CALLEVEL(OS_CL_TASK);    /* ISR-Level Resources not implemented yet.  */
@@ -94,8 +96,8 @@ StatusType GetResource(ResourceType ResID)
     if (ResID == RES_SCHEDULER) {
         OsExec_LockScheduler();
     } else {
-#if defined(OS_USE_RESOURCES)
-#if defined(OS_FEATURE_ORTI_DEBUG)
+#if (OS_FEATURE_RESOURCES == STD_ON)
+#if (OS_FEATURE_ORTI_DEBUG == STD_ON)
         Os_Resources[ResID].Locker = Os_CurrentTID;      /* lock Resource. */
 #endif
         /* save current priority. */
@@ -114,7 +116,7 @@ StatusType GetResource(ResourceType ResID)
     OsPort_EnableAllOsInterrupts();
 #else
     UNREFERENCED_PARAMETER(ResID);
-#endif /* OS_USE_RESOURCES */
+#endif /* OS_FEATURE_RESOURCES */
     Os_ClearServiceContext();
     return E_OK;
 }
@@ -140,7 +142,7 @@ StatusType ReleaseResource(ResourceType ResID)
 **                returned only if E_OS_NOFUNC was not returned.
 */
     Os_SaveServiceContext(OSServiceId_ReleaseResource, ResID, NULL, NULL);
-#if defined(OS_USE_RESOURCES)
+#if (OS_FEATURE_RESOURCES == STD_ON)
     ASSERT_VALID_RESOURCEID(ResID);
     ASSERT_RESOURCE_IS_OCCUPIED(ResID);
     ASSERT_VALID_RELEASE_RESOURCE_ACCESS(ResID);
@@ -152,8 +154,8 @@ StatusType ReleaseResource(ResourceType ResID)
     if (ResID == RES_SCHEDULER) {
         OsExec_UnlockScheduler();
     } else {
-#if defined(OS_USE_RESOURCES)
-#if defined(OS_FEATURE_ORTI_DEBUG)
+#if (OS_FEATURE_RESOURCES == STD_ON)
+#if (OS_FEATURE_ORTI_DEBUG == STD_ON)
         Os_Resources[ResID].Locker = INVALID_TASK;       /* unlock Resource. */
 #endif
         Os_CurrentTCB->ResourceCount--;
@@ -171,7 +173,7 @@ StatusType ReleaseResource(ResourceType ResID)
     OsExec_CondScheduleFromTaskLevel();
 #else
     UNREFERENCED_PARAMETER(ResID);
-#endif /* OS_USE_RESOURCES */
+#endif /* OS_FEATURE_RESOURCES */
     Os_ClearServiceContext();
     return E_OK;
 }
@@ -182,7 +184,7 @@ StatusType ReleaseResource(ResourceType ResID)
 **  Functions for Internal Resources.
 **
 */
-#if defined(OS_USE_INTERNAL_RESOURCES)
+#if (OS_FEATURE_INTERNAL_RESOURCES == STD_ON)
 
 /* Hinweis: die 'Idle'-Task darf keine internen Resourcen haben!!! */
 #if KOS_MEMORY_MAPPING == STD_ON
@@ -193,10 +195,10 @@ void OsRes_GetInternalResource(void)
 {
     ResourceType InternalResource = OS_TaskConf[Os_CurrentTID].InternalResource;
 
-    if (InternalResource != INTERNAL_RES_NONE && !Utl_BitGet(BM_InternalResources, InternalResource)) {
+    if (InternalResource != INTERNAL_RES_NONE && !UTL_BIT_GET16(BM_InternalResources, InternalResource)) {
         Os_CurrentTCB->CurrentPriority = OS_IntResourceConf[InternalResource].CeilingPriority;
 
-        BM_InternalResources = Utl_BitSet(BM_InternalResources, InternalResource);
+        BM_InternalResources = UTL_BIT_SET16(BM_InternalResources, InternalResource);
 #if 0
         (void)OSSysPQChangePrio(Os_CurrentTID, Os_CurrentTCB->CurrentPriority);
 #endif
@@ -214,7 +216,7 @@ void OsRes_ReleaseInternalResource(void)
 {
     if (Os_CurrentTCB->CurrentPriority != OS_TaskConf[Os_CurrentTID].Priority) {
         Os_CurrentTCB->CurrentPriority  = OS_TaskConf[Os_CurrentTID].Priority;
-        BM_InternalResources           = Utl_BitReset(BM_InternalResources, OS_TaskConf[Os_CurrentTID].InternalResource);
+        BM_InternalResources           = UTL_BIT_RESET16(BM_InternalResources, OS_TaskConf[Os_CurrentTID].InternalResource);
 #if 0
         (void)OSSysPQChangePrio(Os_CurrentTID, OS_TaskConf[Os_CurrentTID].Priority, Os_CurrentTCB->CurrentPriority);
 #endif
@@ -223,7 +225,7 @@ void OsRes_ReleaseInternalResource(void)
 }
 
 
-#endif /* OS_USE_INTERNAL_RESOURCES */
+#endif /* OS_FEATURE_INTERNAL_RESOURCES */
 
 #if KOS_MEMORY_MAPPING == STD_ON
     #define OSEK_OS_STOP_SEC_CODE

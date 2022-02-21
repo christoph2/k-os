@@ -1,7 +1,7 @@
 /*
    k_os (Konnex Operating-System based on the OSEK/VDX-Standard).
 
-   (C) 2007-2013 by Christoph Schueler <github.com/Christoph2,
+   (C) 2007-2018 by Christoph Schueler <github.com/Christoph2,
                                         cpu12.gems@googlemail.com>
 
    All Rights Reserved
@@ -32,7 +32,7 @@
 #include "Com_Ext.h"
 #include "Os_Task.h"
 #include "Os_Evt.h"
-#include "kdk/common/Utl.h"
+#include "Utl.h"
 
 #if OS_FEATURE_COM == STD_ON
 
@@ -63,7 +63,7 @@ const Com_MessageObjectType Com_MessageObjects[COM_NUMBER_OF_MESSAGES] = {
 */
 #if KOS_MEMORY_MAPPING == STD_ON
 #define OSEK_START_SEC_VAR_UNSPECIFIED
-#include "MemMap.h
+#include "MemMap.h"
 #endif /* KOS_MEMORY_MAPPING */
 
 static Com_StatusType           Com_Status = COM_UNINIT;
@@ -544,7 +544,7 @@ void ComIf_UpdateAndNotifyReceivers(Com_MessageObjectType const * const MessageS
 }
 
 
-void Com_SetFlag(uint8 message)
+void Com_SetFlag(MessageIdentifier message)
 {
     uint8 idx;
     uint8 bit;
@@ -554,7 +554,7 @@ void Com_SetFlag(uint8 message)
     UTL_BIT_SET8(Com_Flags[idx], bit);
 }
 
-void Com_ResetFlag(uint8 message)
+void Com_ResetFlag(MessageIdentifier message)
 {
     uint8 idx;
     uint8 bit;
@@ -565,7 +565,7 @@ void Com_ResetFlag(uint8 message)
 }
 
 
-Std_LevelType Com_GetFlag(uint8 message)
+Std_LevelType Com_GetFlag(MessageIdentifier message)
 {
     uint8 idx;
     uint8 bit;

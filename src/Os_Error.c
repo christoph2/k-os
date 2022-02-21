@@ -1,7 +1,7 @@
 /*
    k_os (Konnex Operating-System based on the OSEK/VDX-Standard).
 
- * (C) 2007-2013 by Christoph Schueler <github.com/Christoph2,
+ * (C) 2007-2018 by Christoph Schueler <github.com/Christoph2,
  *                                      cpu12.gems@googlemail.com>
 
    All Rights Reserved
@@ -24,13 +24,13 @@
 #include "Os_Error.h"
 #include "Os_Vars.h"
 
-#if defined(OS_USE_GETSERVICEID) || defined(OS_USE_PARAMETERACCESS) || defined(OS_FEATURE_ORTI_DEBUG)
+#if (OS_FEATURE_GETSERVICEID == STD_ON) || (OS_FEATURE_PARAMETERACCESS == STD_ON) || (OS_FEATURE_ORTI_DEBUG == STD_ON)
 OS_DEFINE_GLOBAL_IF_DEBUGGING(Os_ServiceContext, Os_ServiceContextType);
 
 OS_DEFINE_GLOBAL_IF_DEBUGGING(OsLastError, StatusType);
 #endif
 
-#if defined(OS_FEATURE_ORTI_DEBUG)
+#if (OS_FEATURE_ORTI_DEBUG == STD_ON)
 #define OsError_SaveLastError(Error) (OsLastError = Error)
 #else
 #define OsError_SaveLastError(Error)

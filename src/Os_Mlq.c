@@ -1,7 +1,7 @@
 /*
  * k_os (Konnex Operating-System based on the OSEK/VDX-Standard).
  *
- * (C) 2007-2013 by Christoph Schueler <github.com/Christoph2,
+ * (C) 2007-2018 by Christoph Schueler <github.com/Christoph2,
  *                                      cpu12.gems@googlemail.com>
  *
  * All Rights Reserved
@@ -22,7 +22,7 @@
  * s. FLOSS-EXCEPTION.txt
  */
 #include "Os_Mlq.h"
-#include "kdk/common/Utl.h"
+#include "Utl.h"
 
 #if !defined(OS_SCHED_BM_ONLY)
 #if KOS_MEMORY_MAPPING == STD_ON
@@ -58,7 +58,7 @@ static TaskType OsMLQ_Front(uint8 num);
 /* static TaskType OsMLQ_Back(uint8 num); */
 #endif /* !OS_SCHED_BM_ONLY*/
 
-#if defined(OS_USE_RESOURCES)
+#if (OS_FEATURE_RESOURCES == STD_ON)
 #define PRIORITY_FOR_TASK(TaskID)   OS_TCB[(TaskID)].CurrentPriority
 #else
 #define PRIORITY_FOR_TASK(TaskID)   OS_TaskConf[(TaskID)].Priority
@@ -67,6 +67,19 @@ static TaskType OsMLQ_Front(uint8 num);
 #if defined(OS_SCHED_BM_ONLY)
 
 #endif
+
+
+static const uint8 ReversedLog2Tab[] = {
+    0x00, 0x08, 0x07, 0x00, 0x06, 0x00, 0x00, 0x00, 0x05, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+    0x04, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+    0x03, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+    0x02, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+    0x01
+};
 
 static OsMLQ_QueueType  MLQ_ReadyQueue[OS_MLQ_NUMBER_OF_PRIORITIES];
 static uint16           BM_NotEmpty; /* Bitmap for non-empty queues.  */
@@ -121,7 +134,6 @@ TaskType OsMLQ_GetHighestPrio(void)
         TaskID     = OsMLQ_Front(queue_num);
 #endif
     }
-
     return TaskID;
 }
 
@@ -205,7 +217,7 @@ void OsMLQ_RemoveTask(TaskType TaskID)
 }
 
 
-#if defined(OS_USE_RESOURCES) || defined(OS_USE_INTERNAL_RESOURCES)
+#if (OS_FEATURE_RESOURCES == STD_ON) || (OS_FEATURE_INTERNAL_RESOURCES == STD_ON)
 #if KOS_MEMORY_MAPPING == STD_ON
 FUNC(void, OSEK_OS_CODE) OsMLQ_ChangePrio(TaskType TaskID, PriorityType old_prio, PriorityType new_prio)
 #else
@@ -305,6 +317,27 @@ static TaskType OsMLQ_Front(uint8 num)
 #endif /* KOS_MEMORY_MAPPING */
 {
     return MLQ_QueueDef[num].data[MLQ_ReadyQueue[num].head];
+}
+
+#if KOS_MEMORY_MAPPING == STD_ON
+FUNC(uint8, OSEK_OS_CODE) OsMLQ_GetLowestBitNumber(uint16 Bitmap)
+#else
+uint8 OsMLQ_GetLowestBitNumber(uint16 Bitmap)
+#endif /* KOS_MEMORY_MAPPING */
+{
+    uint8 const * table = ReversedLog2Tab;
+    uint8 res;
+    uint8 hb, lb;
+
+    hb = (Bitmap & 0xff00u) >> 8;
+    lb = Bitmap & 0x00ffu;
+
+    if (hb == (uint8)0x00) {
+        res = ReversedLog2Tab[lb];
+    } else {
+        res = ReversedLog2Tab[hb];
+    }
+    return res;
 }
 
 

@@ -1,7 +1,7 @@
 /*
  * k_os (Konnex Operating-System based on the OSEK/VDX-Standard).
  *
- * (C) 2007-2014 by Christoph Schueler <github.com/Christoph2,
+ * (C) 2007-2018 by Christoph Schueler <github.com/Christoph2,
  *                                      cpu12.gems@googlemail.com>
  *
  * All Rights Reserved
@@ -25,6 +25,7 @@
 #include "Osek.h"
 #include "Os_Task.h"
 #include "Os_Mlq.h"
+#include "Os_Res.h"
 #include "Os_Exec.h"
 
 /* Fixed incorrect task activation on ISR level. */
@@ -56,7 +57,7 @@ STATIC FUNC(void, OSEK_OS_CODE) OsTask_Ready(TaskType TaskID)
 void OsTask_Ready(TaskType TaskID)
 #endif /* KOS_MEMORY_MAPPING */
 {
-#if defined(OS_USE_RESOURCES)
+#if (OS_FEATURE_RESOURCES == STD_ON)
     OsMLQ_AddTaskLast(TaskID, OS_TCB[TaskID].CurrentPriority);
 #else
     OsMLQ_AddTaskLast(TaskID, OS_TaskConf[TaskID].Priority);
@@ -73,6 +74,7 @@ void OsTask_Suspend(TaskType TaskID)
 {
     OsMLQ_RemoveTask(TaskID);
     OS_TCB[TaskID].State = SUSPENDED;
+    OsPort_SuspendHook(TaskID);
 }
 
 
@@ -140,7 +142,7 @@ StatusType ActivateTask(TaskType TaskID)
 /*
 **
 **      'E_OS_LIMIT': maximum Number of Activations reached; 'ActivateTask' on
-**              ready/running/waiting Extended Task (gilt auch für 'ChainTask()').
+**              ready/running/waiting Extended Task (gilt auch fÃ¼r 'ChainTask()').
 **
 **      'E_OS_ID': invalid TaskID. (EXTENDED_STATUS)
 **
@@ -165,8 +167,8 @@ StatusType TerminateTask(void)
 /*
 **      Standard-Status: no return to Calllevel.
 **      Extended-Status:
-**              – E_OS_RESOURCE – the task still occupies resources.
-**              – E_OS_CALLEVEL – a call at the interrupt level.
+**              â€“ E_OS_RESOURCE â€“ the task still occupies resources.
+**              â€“ E_OS_CALLEVEL â€“ a call at the interrupt level.
 **
 */
     Os_SaveServiceContext(OSServiceId_TerminateTask, NULL, NULL, NULL);
@@ -203,12 +205,12 @@ StatusType TerminateTask(void)
  * \param TaskType TaskID.
  * \return StatusType.
 **       Standard-Status:
-**              – No return to call level.
-**              – 'E_OS_LIMIT' – too many activations of <TaskID>.
+**              â€“ No return to call level.
+**              â€“ 'E_OS_LIMIT' â€“ too many activations of <TaskID>.
 **       Extended-Status:
-**              – 'E_OS_ID' – the task identifier is invalid.
-**              – 'E_OS_RESOURCE' – the calling task still occupies resources.
-**              – 'E_OS_CALLEVEL' – a call at the interrupt leve
+**              â€“ 'E_OS_ID' â€“ the task identifier is invalid.
+**              â€“ 'E_OS_RESOURCE' â€“ the calling task still occupies resources.
+**              â€“ 'E_OS_CALLEVEL' â€“ a call at the interrupt leve
  */
 #if KOS_MEMORY_MAPPING == STD_ON
 FUNC(StatusType, OSEK_OS_CODE) ChainTask(TaskType TaskID)
@@ -217,11 +219,14 @@ StatusType ChainTask(TaskType TaskID)
 #endif /* KOS_MEMORY_MAPPING */
 {
     Os_SaveServiceContext(OSServiceId_ChainTask, TaskID, NULL, NULL);
+    printf("ChainTask -- Enter\n");
 
     ASSERT_VALID_TASKID(TaskID);
     ASSERT_VALID_CALLEVEL(OS_CL_TASK);
     ASSERT_INTERRUPTS_ENABLED_AT_TASK_LEVEL();
     ASSERT_CURR_TASK_OCCUPIES_NO_RESOURCES();
+
+//    printf("Current Handle: %u\n", OsPort_GetCurrentThreadHandle());
 
     if (TaskID != Os_CurrentTID) {
         WARN_IF_TO_MANY_ACTIVATIONS(TaskID);
@@ -230,7 +235,9 @@ StatusType ChainTask(TaskType TaskID)
     OsPort_DisableAllOsInterrupts();
     OsTask_UnlockInternalResource();
     OsTask_DecrActivations(Os_CurrentTID);
+
     OsTask_Suspend(Os_CurrentTID);
+    printf("ChainTask() - after suspend\n");
 
     OsTask_IncrActivations(TaskID);
     OsTask_ClearAllEvents(TaskID);
@@ -238,12 +245,10 @@ StatusType ChainTask(TaskType TaskID)
     OsTask_Ready(TaskID);
 
     ASSERT(OS_TCB[Os_CurrentTID].State == SUSPENDED);
-
+    Os_ClearServiceContext();
     OsPort_EnableAllOsInterrupts();
-
     OsExec_StartHighestReadyTask();
 
-    Os_ClearServiceContext();
     return E_OK;
 }
 
@@ -258,7 +263,7 @@ StatusType GetTaskID(TaskRefType TaskID)
     "If no task currently running, the service returns INVALID_TASK
     constant."
     Hinweis zur Test-Prozedur: alle Tasks beenden, so dass nur noch
-    die IdleTask läuft und dann aus einer ISR 'GetTaskID' aufrufen!
+    die IdleTask lÃ¤uft und dann aus einer ISR 'GetTaskID' aufrufen!
 
  */
     /* TaskID ist not known at this point!!! */
@@ -290,7 +295,7 @@ StatusType GetTaskState(TaskType TaskID, TaskStateRefType State)
 **      from a task in a full-preemptive system, the result may already be
 **      incorrect at the time of evaluation."
 */
-    /* State is mot known @ this point!!! */
+    /* State is not known @ this point!!! */
     Os_SaveServiceContext(OSServiceId_GetTaskState, TaskID, /*State*/ NULL, NULL);
     ASSERT_VALID_TASKID(TaskID);
     ASSERT_VALID_CALLEVEL(OS_CL_TASK | OS_CL_ISR2 | OS_CL_ERROR_HOOK |
@@ -301,9 +306,9 @@ StatusType GetTaskState(TaskType TaskID, TaskStateRefType State)
     OsPort_EnableAllOsInterrupts();
 /*
 **      Standard-Status:
-**              – E_OK – no error.
+**              â€“ E_OK â€“ no error.
 **      Extended-Status:
-**               – E_OS_ID – the task identifier is invalid.
+**               â€“ E_OS_ID â€“ the task identifier is invalid.
 */
 
     Os_ClearServiceContext();
@@ -325,12 +330,12 @@ StatusType Schedule(void)
 
 /*
 **       Standard-Status:
-**              – E_OK – no error.
+**              â€“ E_OK â€“ no error.
 **       Extended-Status:
-**              – E_OS_CALLEVEL – a call at the interrupt level.
-**              – E_OS_RESOURCE - calling task occupies resources.
+**              â€“ E_OS_CALLEVEL â€“ a call at the interrupt level.
+**              â€“ E_OS_RESOURCE - calling task occupies resources.
 */
-#if defined(OS_USE_INTERNAL_RESOURCES)
+#if (OS_FEATURE_INTERNAL_RESOURCES == STD_ON)
 
     if (OS_TaskConf[Os_CurrentTID].InternalResource != INTERNAL_RES_NONE) {
 #if defined(OS_SCHED_POLICY_NON) ||  defined(OS_SCHED_POLICY_MIX)
@@ -352,16 +357,15 @@ void OsTask_InitTasks(void)
 #endif /* KOS_MEMORY_MAPPING */
 {
 #if defined(OS_FEATURE_AUTOSTART_TASKS)
-    uint8_least i;
+    uint8 i;
 #endif /* OS_FEATURE_AUTOSTART_TASKS */
 
     OsTask_Init((TaskType)0, FALSE);
 
 #if defined(OS_FEATURE_AUTOSTART_TASKS)
 
-    for (i = (uint8_least)1; i < OS_NUMBER_OF_TASKS; ++i) {
+    for (i = (uint8)1; i < OS_NUMBER_OF_TASKS; ++i) {
         OsTask_Init(i, FALSE);
-
         if (OS_TaskConf[i].Autostart & GetActiveApplicationMode()) {
             OsTask_Ready(i);
             OsTask_IncrActivations(i);
@@ -384,7 +388,7 @@ static void OsTask_Init(TaskType TaskID, boolean Schedule)
     Os_TaskConfigurationType const * task_def  = (Os_TaskConfigurationType *)&OS_TaskConf[TaskID];
     Os_TCBType * tcb  = &OS_TCB[TaskID];
 
-#if defined(OS_EXTENDED_STATUS)
+#if (OS_EXTENDED_STATUS == STD_ON)
     if (TaskID > (OS_NUMBER_OF_TASKS - (uint8)1)) {
         return; /* todo: Only in EXTENDED-Status!!! */
     }
@@ -403,7 +407,7 @@ static void OsTask_Init(TaskType TaskID, boolean Schedule)
     tcb->Activations = (uint8)0x00;
 #endif
 
-#if defined(OS_USE_RESOURCES)
+#if (OS_FEATURE_RESOURCES == STD_ON)
     tcb->CurrentPriority   = task_def->Priority;
     tcb->ResourceCount     = (uint8)0x00;
 #endif
