@@ -76,12 +76,12 @@ static const OsPort_InitialStackData[] = {
 #if 0
 #if KOS_MEMORY_MAPPING == STD_ON
 FUNC(uint8 *, OSEK_OS_CODE) OsPort_TaskStackInit(TaskType TaskID,
-    P2VAR(TaskFunctionType, AUTOMATIC, OSEK_OS_APPL_DATA) TaskFunc,
+    P2VAR(Os_TaskFunctionType, AUTOMATIC, OSEK_OS_APPL_DATA) TaskFunc,
     P2VAR(uint8, AUTOMATIC,  OSEK_OS_APPL_DATA) sp,
     boolean Reschedule
 )
 #else
-uint8 * OsPort_TaskStackInit(TaskType TaskID, TaskFunctionType * TaskFunc, uint8 * sp, boolean Reschedule)
+uint8 * OsPort_TaskStackInit(TaskType TaskID, Os_TaskFunctionType * TaskFunc, uint8 * sp, boolean Reschedule)
 #endif /* KOS_MEMORY_MAPPING */
 {
     /* Return-Adresse / for  E_MISSING_END  */

@@ -24,10 +24,11 @@
 #include "Os_Error.h"
 #include "Os_Vars.h"
 
+#if 0
 #if (OS_FEATURE_GETSERVICEID == STD_ON) || (OS_FEATURE_PARAMETERACCESS == STD_ON) || (OS_FEATURE_ORTI_DEBUG == STD_ON)
 OS_DEFINE_GLOBAL_IF_DEBUGGING(Os_ServiceContext, Os_ServiceContextType);
-
 OS_DEFINE_GLOBAL_IF_DEBUGGING(OsLastError, StatusType);
+#endif
 #endif
 
 #if (OS_FEATURE_ORTI_DEBUG == STD_ON)

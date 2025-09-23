@@ -313,7 +313,9 @@ COMApplicationModeType  GetCOMApplicationMode(void);
 StatusType              InitMessage(MessageIdentifier Message, ApplicationDataRef DataRef);
 StatusType              StartPeriodic(void);
 StatusType              StopPeriodic(void);
+#if 0
 StatusType              SendMessage(MessageIdentifier Message, ApplicationDataRef DataRef);
+#endif
 StatusType              SendDynamicMessage(MessageIdentifier Message, ApplicationDataRef DataRef, LengthRef LengthRef);
 StatusType              SendZeroMessage(MessageIdentifier Message);
 StatusType              GetMessageStatus(MessageIdentifier Message);

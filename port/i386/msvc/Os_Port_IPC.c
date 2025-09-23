@@ -50,8 +50,8 @@
 #define DISABLING_MESSAGE   "\nDisabling COM, Tracing and Remote-Control.\n"
 #define SERVER_ENDPOINT     "KOS\\SERVER"
 
-#define E_OK            ((int)0x00)
-#define E_NOT_OK        ((int)0xff)
+#define IPC_E_OK            ((int)0x00)
+#define IPC_E_NOT_OK        ((int)0xff)
 
 #define MSCAN_8_8_FILTERS(a, b, c, d, e, f, g, h)   {(uint8)(a), (uint8)(b), (uint8)(c), (uint8)(d), \
                                                      (uint8)(e), (uint8)(f), (uint8)(g), (uint8)(h)}
@@ -239,9 +239,9 @@ void PrintErrorMsg(char *lpszFunction)
 
 int StartCOMExtension(void)
 {
-    int Status = E_NOT_OK;
+    int Status = IPC_E_NOT_OK;
 
-    return E_OK;
+    return IPC_E_OK;
 
 #if 0
     HANDLE pipeHandle;

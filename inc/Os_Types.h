@@ -39,9 +39,9 @@
    numbers must not overlap. To show the difference in use,
    the names internal errors must start with E_OS_SYS_
    Examples:
-   • E_OS_SYS_STACK
-   • E_OS_SYS_PARITY
-   • ... and other implementation-specific errors, which
+   ï¿½ E_OS_SYS_STACK
+   ï¿½ E_OS_SYS_PARITY
+   ï¿½ ... and other implementation-specific errors, which
         have to be described in the vendorspecific document.
  */
 
@@ -122,7 +122,7 @@ typedef enum tagTaskStateType {
 } TaskStateType;                            /*  This data type identifies the state of a task.  */
 
 typedef TaskStateType * TaskStateRefType;   /*  This data type points to a variable of the data type TaskStateType. */
-typedef void (*TaskFunctionType)(void);
+typedef void (*Os_TaskFunctionType)(void);
 
 /*
 **      Datatypes / Resource-Management.
@@ -232,7 +232,7 @@ typedef struct tagOs_TCBType {
 } Os_TCBType;
 
 typedef struct tagOs_TaskConfigurationType {
-    TaskFunctionType    TaskFunction;
+    Os_TaskFunctionType    TaskFunction;
     uint8 *             StackStart;
     uint8               StackSize;
     PriorityType        Priority;
@@ -293,7 +293,7 @@ typedef struct tagOsMLQ_QueueType {
 /*
 **      AUTOSAR-OS.
 */
-typedef uint8 ISRType;  /* wird benötigt. */
+typedef uint8 ISRType;  /* wird benï¿½tigt. */
 #if 0
 
 typedef uint8 ApplicationType;

@@ -1,0 +1,3 @@
+[submodule "k-dk"]
+	path = k-dk
+	url = https://github.com/christoph2/k-dk
