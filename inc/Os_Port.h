@@ -129,6 +129,8 @@ extern const SizeType OS_TOS_ISR;
             defined(STM32L1xx) || defined(STM32WBxx) || defined(STM32MPxx) || \
 			defined(STM32L4R5xx)
             #include "port/stm32/Os_Port_STM32.h"
+        #elif defined(PICO_RP2040) || defined(PICO_BOARD)
+            #include "port/rp2040/Os_Port_RP2040.h"
         #else
             #include "port/arm/gcc/Os_Port_arm_gcc.h"
         #endif
