@@ -25,7 +25,8 @@ set(KOS_RP_TARGET "rp2040" CACHE STRING "RP target (rp2040|rp2350)")
 set(KOS_RP_SYSCLK_HZ "125000000" CACHE STRING "System clock frequency in Hz for SysTick programming")
 
 if(KOS_RP_TARGET STREQUAL "rp2350")
-    set(_KOS_CPU_FLAGS "-mcpu=cortex-m33 -mthumb -mfpu=fpv5-sp-d16 -mfloat-abi=hard")
+    # Default to softfp until FPU context save/restore is added (TODO).
+    set(_KOS_CPU_FLAGS "-mcpu=cortex-m33 -mthumb -mfpu=fpv5-sp-d16 -mfloat-abi=softfp")
     add_compile_definitions(PICO_RP2350=1)
 else()
     set(_KOS_CPU_FLAGS "-mcpu=cortex-m0plus -mthumb")

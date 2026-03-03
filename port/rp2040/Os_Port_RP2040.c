@@ -140,12 +140,6 @@ uint32_t OsPort_GetTimestamp(void)
 
 void OsPort_InitSysTick(void)
 {
-    /* SYST_* registers */
-    volatile uint32_t *syst_csr = (volatile uint32_t *)0xE000E010;
-    volatile uint32_t *syst_rvr = (volatile uint32_t *)0xE000E014;
-    volatile uint32_t *syst_cvr = (volatile uint32_t *)0xE000E018;
-
-
     uint32_t reload = 0;
     if (OSPORT_SYSTICK_FREQUENCY_HZ > 0U) {
         uint64_t tmp = ((uint64_t)OSPORT_SYSCLK_HZ / (uint64_t)OSPORT_SYSTICK_FREQUENCY_HZ);
@@ -157,20 +151,16 @@ void OsPort_InitSysTick(void)
         }
     }
 
-    *syst_rvr = reload;
-    *syst_cvr = 0;
-    *syst_csr = 0x7; /* Enable, TickInt, ClockSource=CPU */
+    SysTick->LOAD = reload;
+    SysTick->VAL = 0;
+    SysTick->CTRL = SysTick_CTRL_CLKSOURCE_Msk | SysTick_CTRL_TICKINT_Msk | SysTick_CTRL_ENABLE_Msk;
 
-    /* Set SysTick priority (SHPR3 register 0xE000ED20) */
-    volatile uint32_t *shpr3 = (volatile uint32_t *)0xE000ED20;
-    *shpr3 = (*shpr3 & 0x00FFFFFF) | (OSPORT_SYSTICK_PRIORITY << 24);
+    NVIC_SetPriority(SysTick_IRQn, OSPORT_SYSTICK_PRIORITY);
 }
 
 void OsPort_InitPendSV(void)
 {
-    /* Set PendSV priority (SHPR3 register 0xE000ED20, PendSV is bits 16-23) */
-    volatile uint32_t *shpr3 = (volatile uint32_t *)0xE000ED20;
-    *shpr3 = (*shpr3 & 0xFF00FFFF) | (OSPORT_PENDSV_PRIORITY << 16);
+    NVIC_SetPriority(PendSV_IRQn, OSPORT_PENDSV_PRIORITY);
 }
 
 void OsPort_TriggerContextSwitch(void)
@@ -202,6 +192,10 @@ void OsPort_StartCurrentTask(void)
 {
     OsPort_TriggerContextSwitch();
 }
+
+#if defined(PICO_RP2350)
+/* TODO: Save/restore FPU context when hard-float is enabled (RP2350). */
+#endif
 
 #if KOS_MEMORY_MAPPING == STD_ON
 FUNC(void, OSEK_OS_CODE) OsPort_SaveContext(void)

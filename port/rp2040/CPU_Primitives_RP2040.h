@@ -5,8 +5,14 @@
 #define __CPU_PRIMITIVES_RP2040_H
 
 #include <stdint.h>
-#include "hardware/regs/addressmap.h"
-#include "hardware/regs/m0plus.h"
+
+#if defined(PICO_RP2350) || defined(__ARM_ARCH_8M_MAIN__)
+    #include "core_cm33.h"
+#else
+    #include "core_cm0plus.h"
+    #include "hardware/regs/addressmap.h"
+    #include "hardware/regs/m0plus.h"
+#endif
 
 #define CPU_DSB() __asm volatile("dsb" ::: "memory")
 #define CPU_ISB() __asm volatile("isb" ::: "memory")
@@ -18,11 +24,11 @@
 
 #define CPU_DISABLE_WATCHDOG_TIMER() /* Not available */
 
-#define CPU_SOFTWARE_INTERRUPT()                                                                                       \
-    do {                                                                                                               \
-        *(volatile uint32_t *)(PPB_BASE + M0PLUS_ICSR_OFFSET) = M0PLUS_ICSR_PENDSVSET_BITS;                            \
-        CPU_DSB();                                                                                                     \
-        CPU_ISB();                                                                                                     \
+#define CPU_SOFTWARE_INTERRUPT()                      \
+    do {                                              \
+        SCB->ICSR = SCB_ICSR_PENDSVSET_Msk;           \
+        CPU_DSB();                                    \
+        CPU_ISB();                                    \
     } while (0)
 
 #define CPU_RETURN_FROM_INTERRUPT() __asm volatile("bx lr" ::: "memory")
@@ -31,26 +37,24 @@
 
 static inline uint32_t cpu_get_primask(void)
 {
-    uint32_t primask;
-    __asm volatile("mrs %0, PRIMASK" : "=r"(primask));
-    return primask;
+    return __get_PRIMASK();
 }
 
 static inline void cpu_set_primask(uint32_t primask)
 {
-    __asm volatile("msr PRIMASK, %0" : : "r"(primask) : "memory");
+    __set_PRIMASK(primask);
 }
 
 #define CPU_DISABLE_ALL_INTERRUPTS()                    \
     do {                                                \
-        __asm volatile("cpsid i" ::: "memory");         \
+        __disable_irq();                                \
         CPU_DSB();                                      \
         CPU_ISB();                                      \
     } while (0)
 
 #define CPU_ENABLE_ALL_INTERRUPTS()                     \
     do {                                                \
-        __asm volatile("cpsie i" ::: "memory");         \
+        __enable_irq();                                 \
         CPU_DSB();                                      \
         CPU_ISB();                                      \
     } while (0)
@@ -80,8 +84,7 @@ static inline void cpu_set_primask(uint32_t primask)
 #define CPU_SYSTEM_RESET()                                                                                             \
     do {                                                                                                               \
         CPU_DSB();                                                                                                     \
-        *(volatile uint32_t *)(PPB_BASE + M0PLUS_AIRCR_OFFSET) =                                                       \
-            (0x5FAu << M0PLUS_AIRCR_VECTKEY_Pos) | M0PLUS_AIRCR_SYSRESETREQ_BITS;                                      \
+        SCB->AIRCR = (0x5FAUL << SCB_AIRCR_VECTKEY_Pos) | SCB_AIRCR_SYSRESETREQ_Msk;                                   \
         CPU_DSB();                                                                                                     \
         CPU_ISB();                                                                                                     \
     } while (0)
