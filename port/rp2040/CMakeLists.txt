@@ -44,6 +44,8 @@ set(INCLUDES
         ${CMAKE_CURRENT_LIST_DIR}
         ${KOS_ROOT}
         ${KOS_ROOT}/inc
+        ${PICO_SDK_PATH}/src/rp2_common/cmsis/include
+        ${PICO_SDK_PATH}/src/rp2_common/cmsis/stub/CMSIS/Core/Include
         ${pico_mcp2515_SOURCE_DIR}/include
 )
 
@@ -127,16 +129,16 @@ if (NOT KOSGEN_CPP_EXECUTABLE)
 endif()
 
 add_custom_command(
-    OUTPUT ${KOS_RP2040_GEN_PREFIX}.c ${KOS_RP2040_GEN_PREFIX}.h ${KOS_RP2040_GEN_PREFIX}.info.txt
+    OUTPUT ${KOS_RP2040_GEN_PREFIX}.c ${KOS_RP2040_GEN_PREFIX}.h ${KOS_RP2040_GEN_PREFIX}.info.txt ${KOS_RP2040_GEN_PREFIX}.ort
     COMMAND ${CMAKE_COMMAND} -E make_directory ${KOS_RP2040_GEN_DIR}
-    COMMAND ${KOSGEN_CPP_EXECUTABLE} --include ${KOS_ROOT}/config/oil -o ${KOS_RP2040_GEN_PREFIX} ${KOS_RP2040_SAMPLE_OIL}
+    COMMAND ${KOSGEN_CPP_EXECUTABLE} --include ${KOS_ROOT}/config/oil --orti -o ${KOS_RP2040_GEN_PREFIX} ${KOS_RP2040_SAMPLE_OIL}
     DEPENDS ${KOS_RP2040_SAMPLE_OIL} ${KOSGEN_CPP_EXECUTABLE}
     COMMENT "Generating RP2040 sample OS config from ${KOS_RP2040_SAMPLE_OIL}"
     VERBATIM
 )
 
 add_custom_target(rp2040_sample_config ALL
-    DEPENDS ${KOS_RP2040_GEN_PREFIX}.c ${KOS_RP2040_GEN_PREFIX}.h ${KOS_RP2040_GEN_PREFIX}.info.txt
+    DEPENDS ${KOS_RP2040_GEN_PREFIX}.c ${KOS_RP2040_GEN_PREFIX}.h ${KOS_RP2040_GEN_PREFIX}.info.txt ${KOS_RP2040_GEN_PREFIX}.ort
 )
 
 add_library(k_os_rp2040_port STATIC ${RP2040_PORT_SOURCES})

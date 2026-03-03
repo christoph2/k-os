@@ -24,6 +24,7 @@
 
 #include "Os_Port.h"
 #include "Os_Cfg.h"
+#include "CPU_Primitives.h"
 extern void OsExec_TaskReturnGuard(void);
 
 /* Global variables */
@@ -140,6 +141,11 @@ uint32_t OsPort_GetTimestamp(void)
 
 void OsPort_InitSysTick(void)
 {
+    /* SYST_* registers */
+    volatile uint32_t *syst_csr = (volatile uint32_t *)0xE000E010;
+    volatile uint32_t *syst_rvr = (volatile uint32_t *)0xE000E014;
+    volatile uint32_t *syst_cvr = (volatile uint32_t *)0xE000E018;
+
     uint32_t reload = 0;
     if (OSPORT_SYSTICK_FREQUENCY_HZ > 0U) {
         uint64_t tmp = ((uint64_t)OSPORT_SYSCLK_HZ / (uint64_t)OSPORT_SYSTICK_FREQUENCY_HZ);
@@ -151,16 +157,20 @@ void OsPort_InitSysTick(void)
         }
     }
 
-    SysTick->LOAD = reload;
-    SysTick->VAL = 0;
-    SysTick->CTRL = SysTick_CTRL_CLKSOURCE_Msk | SysTick_CTRL_TICKINT_Msk | SysTick_CTRL_ENABLE_Msk;
+    *syst_rvr = reload;
+    *syst_cvr = 0;
+    *syst_csr = 0x7; /* Enable, TickInt, ClockSource=CPU */
 
-    NVIC_SetPriority(SysTick_IRQn, OSPORT_SYSTICK_PRIORITY);
+    /* Set SysTick priority (SHPR3 register 0xE000ED20) */
+    volatile uint32_t *shpr3 = (volatile uint32_t *)0xE000ED20;
+    *shpr3 = (*shpr3 & 0x00FFFFFF) | (OSPORT_SYSTICK_PRIORITY << 24);
 }
 
 void OsPort_InitPendSV(void)
 {
-    NVIC_SetPriority(PendSV_IRQn, OSPORT_PENDSV_PRIORITY);
+    /* Set PendSV priority (SHPR3 register 0xE000ED20, PendSV is bits 16-23) */
+    volatile uint32_t *shpr3 = (volatile uint32_t *)0xE000ED20;
+    *shpr3 = (*shpr3 & 0xFF00FFFF) | (OSPORT_PENDSV_PRIORITY << 16);
 }
 
 void OsPort_TriggerContextSwitch(void)
