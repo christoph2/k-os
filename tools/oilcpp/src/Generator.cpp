@@ -380,13 +380,18 @@ void Generator::writeOsCfgH(const OilModel& model, const Options& opts) const {
             }
         }
     }
-    size_t internalResourceCount = 0;
-    bool hasSchedulerResource = false;
+    bool hasNonPreemptTask = std::any_of(tasks.begin(), tasks.end(), [](const ObjectInstance* t) {
+        return toUpper(findAttr(*t, "SCHEDULE").value_or("FULL")) == "NON";
+    });
+    std::vector<const ObjectInstance*> internalResources;
+    bool hasSchedulerResource = hasNonPreemptTask;
     for (const auto* r : resources) {
         auto prop = toUpper(findAttr(*r, "RESOURCEPROPERTY").value_or(""));
-        if (prop.find("INTERNAL") != std::string::npos) ++internalResourceCount;
+        if (prop.find("INTERNAL") != std::string::npos) internalResources.push_back(r);
         if (prop.find("SCHEDULER") != std::string::npos || toUpper(r->name).find("SCHEDULER") != std::string::npos) hasSchedulerResource = true;
     }
+    size_t internalResourceCount = internalResources.size() + (hasSchedulerResource ? 1 : 0);
+    bool hasInternalResourceFeature = internalResourceCount > 0;
     auto conformance = computeConformance(model, tasks);
     bool anyAutostartAlarms = std::any_of(alarms.begin(), alarms.end(), [](const ObjectInstance* a) {
         return toBool(findAttr(*a, "AUTOSTART"), false);
@@ -413,6 +418,7 @@ void Generator::writeOsCfgH(const OilModel& model, const Options& opts) const {
     h << "#define OS_USE_ISRS                    STD_ON\n";
     h << "#define OS_USE_ALARMS                  " << (alarms.empty() ? "STD_OFF" : "STD_ON") << "\n";
     h << "#define OS_FEATURE_RESOURCES           " << (resources.empty() ? "STD_OFF" : "STD_ON") << "\n";
+    h << "#define OS_FEATURE_INTERNAL_RESOURCES  " << (hasInternalResourceFeature ? "STD_ON" : "STD_OFF") << "\n";
     h << "#define OS_FEATURE_COM                 " << (messages.empty() ? "STD_OFF" : "STD_ON") << "\n";
     h << "#define OS_FEATURE_AUTOSTART_TASKS\n";
     if (anyAutostartAlarms) {
@@ -617,6 +623,9 @@ void Generator::writeOsCfgH(const OilModel& model, const Options& opts) const {
         h << "extern const Os_ResourceConfigurationType OS_ResourceConf[OS_NUMBER_OF_RESOURCES];\n";
         h << "extern Os_ResourceType Os_Resources[OS_NUMBER_OF_RESOURCES];\n";
     }
+    if (hasInternalResourceFeature) {
+        h << "extern const Os_ResourceConfigurationType OS_IntResourceConf[OS_NUMBER_OF_INT_RESOURCES];\n";
+    }
     if (!appmodes.empty()) {
         h << "typedef enum {\n";
         for (size_t i = 0; i < appmodes.size(); ++i) {
@@ -767,6 +776,18 @@ void Generator::writeOsCfgC(const OilModel& model, const Options& opts) const {
     auto ipduIndex = indexByName(ipdus);
     auto resourceIndex = indexByName(resources);
     auto eventIndex = indexByName(events);
+    bool hasNonPreemptTask = std::any_of(tasks.begin(), tasks.end(), [](const ObjectInstance* t) {
+        return toUpper(findAttr(*t, "SCHEDULE").value_or("FULL")) == "NON";
+    });
+    std::vector<const ObjectInstance*> internalResources;
+    bool hasSchedulerResource = hasNonPreemptTask;
+    for (const auto* r : resources) {
+        auto prop = toUpper(findAttr(*r, "RESOURCEPROPERTY").value_or(""));
+        if (prop.find("INTERNAL") != std::string::npos) internalResources.push_back(r);
+        if (prop.find("SCHEDULER") != std::string::npos || toUpper(r->name).find("SCHEDULER") != std::string::npos) hasSchedulerResource = true;
+    }
+    size_t internalResourceCount = internalResources.size() + (hasSchedulerResource ? 1 : 0);
+    bool hasInternalResourceFeature = internalResourceCount > 0;
     std::vector<uint32_t> resourceCeil(resources.size(), 0);
     for (const auto* t : tasks) {
         auto resAttr = findAttr(*t, "RESOURCE");
@@ -791,6 +812,26 @@ void Generator::writeOsCfgC(const OilModel& model, const Options& opts) const {
             }
         }
     }
+    auto resolveInternalResourceIndex = [&](const std::string& name) -> std::optional<size_t> {
+        auto upper = toUpper(name);
+        for (size_t i = 0; i < internalResources.size(); ++i) {
+            if (toUpper(internalResources[i]->name) == upper) {
+                return hasSchedulerResource ? i + 1 : i;
+            }
+        }
+        return std::nullopt;
+    };
+    auto findTaskInternalResource = [&](const ObjectInstance* task) -> std::optional<size_t> {
+        auto resAttr = findAttr(*task, "RESOURCE");
+        if (!resAttr) return std::nullopt;
+        std::regex token(R"([A-Za-z_]\w*)");
+        for (std::sregex_iterator it(resAttr->begin(), resAttr->end(), token), end; it != end; ++it) {
+            auto name = (*it)[0].str();
+            auto idx = resolveInternalResourceIndex(name);
+            if (idx) return idx;
+        }
+        return std::nullopt;
+    };
     constexpr size_t defaultStack = 32;
     auto resolveTaskId = [&](const std::optional<std::string>& name) -> uint8_t {
         if (!name) return 0;
@@ -946,7 +987,9 @@ void Generator::writeOsCfgC(const OilModel& model, const Options& opts) const {
     c << "const Os_TaskConfigurationType OS_TaskConf[OS_NUMBER_OF_TASKS] = {\n";
     c << "    { GetTaskName(OsExec_IdleTask), IdleTask_Stack, IDLE_TASK_STACK_SIZE, ((PriorityType)0), OS_TASK_ATTR_FULLPREEMPT";
     if (conformance.hasMaxActivations) c << ", 1";
-    c << ", OS_AUTOSTART_ALWAYS },\n";
+    c << ", OS_AUTOSTART_ALWAYS";
+    if (hasInternalResourceFeature) c << ", INTERNAL_RES_NONE";
+    c << " },\n";
     for (size_t i = 0; i < tasks.size(); ++i) {
         auto ss = toNumber(findAttr(*tasks[i], "STACKSIZE"), 0);
         if (ss == 0) ss = defaultStack;
@@ -954,6 +997,7 @@ void Generator::writeOsCfgC(const OilModel& model, const Options& opts) const {
         auto sched = findAttr(*tasks[i], "SCHEDULE").value_or("NON");
         auto type = findAttr(*tasks[i], "TYPE").value_or("BASIC");
         auto activationCount = toNumber(findAttr(*tasks[i], "ACTIVATION"), 1);
+        auto explicitInternalRes = findTaskInternalResource(tasks[i]);
         uint8_t flags = 0;
         std::string sched_upper = toUpper(sched);
         if (sched_upper == "FULL") flags |= 0x01;
@@ -961,10 +1005,20 @@ void Generator::writeOsCfgC(const OilModel& model, const Options& opts) const {
         if (type_upper == "EXTENDED") flags |= 0x02;
         auto autostart = toBool(findAttr(*tasks[i], "AUTOSTART"), false);
         const char* autostartMode = autostart ? "DefaultAppMode" : "OS_AUTOSTART_NEVER";
+        std::string internalRes = "INTERNAL_RES_NONE";
+        if (explicitInternalRes) {
+            internalRes = "(ResourceType)" + std::to_string(*explicitInternalRes);
+            flags |= 0x04;
+        } else if (hasSchedulerResource && sched_upper == "NON") {
+            internalRes = "INTERNAL_RES_SCHEDULER";
+            flags |= 0x04;
+        }
         c << "    { GetTaskName(" << sanitize(tasks[i]->name) << "), " << sanitize(tasks[i]->name) << "_Stack, " << stackSizeMacro(tasks[i]->name)
           << ", ((PriorityType)" << prio << "), " << static_cast<unsigned>(flags);
         if (conformance.hasMaxActivations) c << ", " << activationCount;
-        c << ", " << autostartMode << " }";
+        c << ", " << autostartMode;
+        if (hasInternalResourceFeature) c << ", " << internalRes;
+        c << " }";
         if (i + 1 < tasks.size()) c << ",";
         c << "\n";
     }
@@ -1444,6 +1498,30 @@ void Generator::writeOsCfgC(const OilModel& model, const Options& opts) const {
         }
         c << "};\n\n";
         c << "Os_ResourceType Os_Resources[OS_NUMBER_OF_RESOURCES];\n\n";
+    }
+    if (hasInternalResourceFeature) {
+        c << "const Os_ResourceConfigurationType OS_IntResourceConf[OS_NUMBER_OF_INT_RESOURCES] = {\n";
+        if (hasSchedulerResource) {
+            c << "    { PRIO_SCHEDULER }";
+            if (!internalResources.empty()) c << ",";
+            c << "\n";
+        }
+        for (size_t i = 0; i < internalResources.size(); ++i) {
+            const auto* res = internalResources[i];
+            uint32_t ceil = 0;
+            auto it = resourceIndex.find(res->name);
+            if (it != resourceIndex.end()) {
+                auto idx = it->second;
+                if (idx < resourceCeil.size()) ceil = resourceCeil[idx];
+            }
+            if (ceil == 0) {
+                ceil = toNumber(findAttr(*res, "PRIORITY"), 0);
+            }
+            c << "    { (PriorityType)" << ceil << " }";
+            if (i + 1 < internalResources.size()) c << ",";
+            c << "\n";
+        }
+        c << "};\n\n";
     }
     if (!appmodes.empty()) {
         emitStringArray(c, "Os_AppModeNames", appmodes);

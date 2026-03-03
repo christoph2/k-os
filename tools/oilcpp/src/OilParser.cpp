@@ -531,7 +531,13 @@ OilModel OilParser::parse(const std::string& preprocessed, const std::filesystem
 
     std::unordered_map<std::string, std::set<std::string>> object_names;
     for (const auto& inst : model.application_objects) {
-        object_names[inst.object_type].insert(inst.name);
+        auto& set = object_names[inst.object_type];
+        auto [_, inserted] = set.insert(inst.name);
+        if (!inserted) {
+            std::ostringstream oss;
+            oss << "Duplicate " << inst.object_type << " name '" << inst.name << "'";
+            throw std::runtime_error(oss.str());
+        }
     }
 
     std::unordered_map<std::string, std::set<std::string>> allowed;

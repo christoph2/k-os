@@ -2,6 +2,8 @@
 <project version="4">
   <component name="VcsDirectoryMappings">
     <mapping directory="" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/cmake-build-debug/_deps/picotool-src" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/cmake-build-rp2040/_deps/picotool-src" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/port/rp2040/build/_deps/picotool-src" vcs="Git" />
   </component>
 </project>
