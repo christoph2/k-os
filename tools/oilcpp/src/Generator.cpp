@@ -677,6 +677,12 @@ void Generator::writeOsCfgH(const OilModel& model, const Options& opts) const {
             h << "} ISRType_Generated;\n";
         }
         h << "extern const char* const Os_IsrNames[OS_NUMBER_OF_ISRS];\n";
+        h << "typedef struct {\n";
+        h << "    uint8_t category;\n";
+        h << "    uint8_t priority;\n";
+        h << "    const char* type;\n";
+        h << "} Os_IsrConfig;\n";
+        h << "extern const Os_IsrConfig Os_Isrs[OS_NUMBER_OF_ISRS];\n";
     }
     h << "\n";
 
@@ -957,6 +963,25 @@ void Generator::writeOsCfgC(const OilModel& model, const Options& opts) const {
         if (joined.empty()) joined = joinAppModes(findAttr(*t, "APPMODE"));
         c << ", \"" << joined << "\"";
     }
+    c << "};\n";
+
+    c << "const Os_TaskConfig Os_Tasks[OS_NUMBER_OF_TASKS] = {\n";
+    c << "    { 1, 1, 0, IDLE_TASK_STACK_SIZE, \"FULL\", \"BASIC\", \"OS_AUTOSTART_ALWAYS\" },\n";
+    for (size_t i = 0; i < tasks.size(); ++i) {
+        auto prio = toNumber(findAttr(*tasks[i], "PRIORITY"), 1);
+        auto activationCount = toNumber(findAttr(*tasks[i], "ACTIVATION"), 1);
+        auto sched = findAttr(*tasks[i], "SCHEDULE").value_or("NON");
+        auto type = findAttr(*tasks[i], "TYPE").value_or("BASIC");
+        auto autostart = toBool(findAttr(*tasks[i], "AUTOSTART"), false) ? 1 : 0;
+        auto joined = joinAppModes(findAttr(*tasks[i], "AUTOSTART"));
+        if (joined.empty()) joined = joinAppModes(findAttr(*tasks[i], "APPMODE"));
+        auto ss = toNumber(findAttr(*tasks[i], "STACKSIZE"), 0);
+        if (ss == 0) ss = defaultStack;
+        c << "    { " << static_cast<unsigned>(autostart) << ", " << activationCount << ", " << prio << ", " << stackSizeMacro(tasks[i]->name)
+          << ", \"" << sched << "\", \"" << type << "\", \"" << joined << "\" }";
+        if (i + 1 < tasks.size()) c << ",";
+        c << "\n";
+    }
     c << "};\n\n";
 
     if (!isrs.empty() || !hwDriversC.empty()) {
@@ -971,6 +996,21 @@ void Generator::writeOsCfgC(const OilModel& model, const Options& opts) const {
             if (!first) c << ", ";
             c << "\"" << drv << "Timer\"";
             first = false;
+        }
+        c << "};\n\n";
+        c << "const Os_IsrConfig Os_Isrs[OS_NUMBER_OF_ISRS] = {\n";
+        for (size_t i = 0; i < isrs.size(); ++i) {
+            auto cat = toNumber(findAttr(*isrs[i], "CATEGORY"), 2);
+            auto prio = toNumber(findAttr(*isrs[i], "PRIORITY"), 0);
+            auto type = findAttr(*isrs[i], "TYPE").value_or("");
+            c << "    { (uint8_t)" << cat << ", (uint8_t)" << prio << ", \"" << type << "\" }";
+            if (i + 1 < isrs.size() + hwDriversC.size()) c << ",";
+            c << "\n";
+        }
+        for (size_t i = 0; i < hwDriversC.size(); ++i) {
+            c << "    { (uint8_t)2, (uint8_t)0, \"HARDWARE\" }";
+            if (i + 1 < hwDriversC.size()) c << ",";
+            c << "\n";
         }
         c << "};\n\n";
     }
@@ -1105,6 +1145,33 @@ void Generator::writeOsCfgC(const OilModel& model, const Options& opts) const {
         c << "\n";
     }
     c << "};\n\n";
+    if (!alarms.empty()) {
+        c << "const Os_AlarmConfig Os_Alarms[OS_NUMBER_OF_ALARMS] = {\n";
+        for (size_t i = 0; i < alarms.size(); ++i) {
+            auto counter_name = findAttr(*alarms[i], "COUNTER");
+            uint8_t counter_id = 0xFF;
+            if (counter_name) {
+                auto it = counterIndex.find(*counter_name);
+                if (it != counterIndex.end()) counter_id = static_cast<uint8_t>(it->second);
+            }
+            auto action_raw = findAttr(*alarms[i], "ACTION");
+            auto action_type_raw = parseActionType(action_raw);
+            std::string action_type = "ACTIVATETASK";
+            auto upper_action = toUpper(action_type_raw);
+            if (upper_action == "SETEVENT") action_type = "SETEVENT";
+            else if (upper_action == "ALARMCALLBACK" || upper_action == "CALLBACK") action_type = "ALARMCALLBACK";
+            auto action_task_name = parseFirstToken(action_raw, "TASK");
+            uint8_t action_task_id = resolveTaskId(action_task_name);
+            bool autostart = toBool(findAttr(*alarms[i], "AUTOSTART"), false);
+            auto autostart_modes = joinAppModes(findAttr(*alarms[i], "AUTOSTART"));
+            if (autostart_modes.empty()) autostart_modes = "OS_AUTOSTART_NEVER";
+            c << "    { (uint8_t)" << static_cast<unsigned>(counter_id) << ", (uint8_t)" << static_cast<unsigned>(action_task_id)
+              << ", \"" << action_type << "\", " << (autostart ? 1 : 0) << ", \"" << autostart_modes << "\" }";
+            if (i + 1 < alarms.size()) c << ",";
+            c << "\n";
+        }
+        c << "};\n\n";
+    }
 
     c << "static TaskType MLQ_QueueData[OS_MLQ_QUEUE_SIZE];\n";
     c << "const OsMLQ_QueueConfigurationType MLQ_QueueDef[OS_MLQ_NUMBER_OF_PRIORITIES] = {\n";
@@ -1551,6 +1618,20 @@ void Generator::writeOrti(const OilModel& model, const Options& opts) const {
     auto appmodes = filter(model, "APPMODE");
     auto isrs = filter(model, "ISR");
     auto messages = filter(model, "MESSAGE");
+    auto networkMessages = filter(model, "NETWORKMESSAGE");
+    auto ipdus = filter(model, "IPDU");
+    std::vector<std::pair<std::string, std::string>> hwDrivers;
+    for (const auto* ctr : counters) {
+        auto type = findAttr(*ctr, "TYPE");
+        auto driver = extractDriver(type, findAttr(*ctr, "DRIVER"));
+        if (!driver) driver = findAttr(*ctr, "HC12_TYPE");
+        if (type && toUpper(*type).find("HARDWARE") != std::string::npos && driver) {
+            auto sanitized = sanitize(*driver);
+            if (std::find_if(hwDrivers.begin(), hwDrivers.end(), [&](const auto& p) { return p.first == sanitized; }) == hwDrivers.end()) {
+                hwDrivers.emplace_back(sanitized, ctr->name);
+            }
+        }
+    }
     std::vector<const ObjectInstance*> autostartTasks;
     std::vector<const ObjectInstance*> otherTasks;
     for (const auto* t : tasks) {
@@ -1607,6 +1688,30 @@ void Generator::writeOrti(const OilModel& model, const Options& opts) const {
         o << (i + 1 < serviceIds.size() ? "," : "") << "\n";
     }
     o << "        ] SERVICETRACE, \"OS Service Watches\";\n\n";
+    if (!resources.empty()) {
+        o << "        TOTRACE ENUM \"uint8\" [\n";
+        for (size_t i = 0; i < resources.size(); ++i) {
+            o << "            \"" << sanitize(resources[i]->name) << "\" = " << i;
+            if (i + 1 < resources.size()) o << ",";
+            o << "\n";
+        }
+        o << "        ] RESOURCETRACE, \"Resource Trace\";\n\n";
+    }
+    if (!isrs.empty() || !hwDrivers.empty()) {
+        o << "        TOTRACE ENUM \"uint8\" [\n";
+        bool first = true;
+        for (size_t i = 0; i < isrs.size(); ++i) {
+            if (!first) o << ",\n";
+            o << "            \"" << sanitize(isrs[i]->name) << "\" = " << i;
+            first = false;
+        }
+        for (size_t i = 0; i < hwDrivers.size(); ++i) {
+            if (!first) o << ",\n";
+            o << "            \"" << sanitize(hwDrivers[i].first) << "Timer\" = " << (isrs.size() + i);
+            first = false;
+        }
+        o << "\n        ] ISRTRACE, \"ISR Trace\";\n\n";
+    }
 
     o << "        ENUM \"uint8\" [\n";
     o << "            \"NONE\" = 0";
@@ -1646,6 +1751,13 @@ void Generator::writeOrti(const OilModel& model, const Options& opts) const {
 
     if (!messages.empty()) {
         o << "    MESSAGE {\n";
+        o << "        TOTRACE ENUM \"uint16\" [\n";
+        for (size_t i = 0; i < messages.size(); ++i) {
+            o << "            \"" << sanitize(messages[i]->name) << "\" = " << i;
+            if (i + 1 < messages.size()) o << ",";
+            o << "\n";
+        }
+        o << "        ] COMTRACE, \"COM Message Trace\";\n";
         o << "        ENUM \"uint16\" [\n";
         for (size_t i = 0; i < messages.size(); ++i) {
             o << "            \"" << sanitize(messages[i]->name) << "\" = " << i;
@@ -1654,6 +1766,42 @@ void Generator::writeOrti(const OilModel& model, const Options& opts) const {
         }
         o << "        ] CURRENTMESSAGE, \"Current COM message parameter\";\n";
         o << "    }, \"COM\";\n\n";
+    }
+    if (!networkMessages.empty()) {
+        o << "    NETWORKMESSAGE {\n";
+        o << "        TOTRACE ENUM \"uint16\" [\n";
+        for (size_t i = 0; i < networkMessages.size(); ++i) {
+            o << "            \"" << sanitize(networkMessages[i]->name) << "\" = " << i;
+            if (i + 1 < networkMessages.size()) o << ",";
+            o << "\n";
+        }
+        o << "        ] NMTRACE, \"Network Message Trace\";\n";
+        o << "        ENUM \"uint16\" [\n";
+        for (size_t i = 0; i < networkMessages.size(); ++i) {
+            o << "            \"" << sanitize(networkMessages[i]->name) << "\" = " << i;
+            if (i + 1 < networkMessages.size()) o << ",";
+            o << "\n";
+        }
+        o << "        ] CURRENTNETWORKMESSAGE, \"Current Network Message\";\n";
+        o << "    }, \"NM\";\n\n";
+    }
+    if (!ipdus.empty()) {
+        o << "    IPDU {\n";
+        o << "        TOTRACE ENUM \"uint16\" [\n";
+        for (size_t i = 0; i < ipdus.size(); ++i) {
+            o << "            \"" << sanitize(ipdus[i]->name) << "\" = " << i;
+            if (i + 1 < ipdus.size()) o << ",";
+            o << "\n";
+        }
+        o << "        ] IPDUTRACE, \"IPDU Trace\";\n";
+        o << "        ENUM \"uint16\" [\n";
+        for (size_t i = 0; i < ipdus.size(); ++i) {
+            o << "            \"" << sanitize(ipdus[i]->name) << "\" = " << i;
+            if (i + 1 < ipdus.size()) o << ",";
+            o << "\n";
+        }
+        o << "        ] CURRENTIPDU, \"Current IPDU\";\n";
+        o << "    }, \"IPDU\";\n\n";
     }
 
     o << "    TASK {\n";
@@ -1752,6 +1900,21 @@ void Generator::writeOrti(const OilModel& model, const Options& opts) const {
     o << "    SERVICETRACE        = \"Os_ServiceContext.id\";\n";
     o << "    LASTERROR           = \"OsLastError\";\n";
     o << "    CURRENTAPPMODE      = \"Os_AppMode\";\n";
+    if (!resources.empty()) {
+        o << "    RESOURCETRACE       = \"(uint8)Os_ServiceContext.param1\";\n";
+    }
+    if (!isrs.empty() || !hwDrivers.empty()) {
+        o << "    ISRTRACE            = \"(uint8)OsCurrentISRID\";\n";
+    }
+    if (!messages.empty()) {
+        o << "    COMTRACE            = \"(MessageIdentifier)(Os_ServiceContext.param1)\";\n";
+    }
+    if (!networkMessages.empty()) {
+        o << "    NMTRACE             = \"(int16)(Os_ServiceContext.param1)\";\n";
+    }
+    if (!ipdus.empty()) {
+        o << "    IPDUTRACE           = \"(int16)(Os_ServiceContext.param1)\";\n";
+    }
     o << "};\n\n";
 
     if (!messages.empty()) {
@@ -1829,6 +1992,64 @@ void Generator::writeOrti(const OilModel& model, const Options& opts) const {
         if (!actionTask.empty()) o << " [" << actionTask << "]";
         o << "\";\n";
         o << "    COUNTER   = \"" << counterName << "\";\n";
+        o << "};\n\n";
+    }
+
+    for (size_t ri = 0; ri < resources.size(); ++ri) {
+        o << "RESOURCE " << sanitize(resources[ri]->name) << " {\n";
+        o << "    STATE    = \"(Os_Resources[" << ri << "].Locker != INVALID_TASK)\";\n";
+        o << "    LOCKER   = \"Os_Resources[" << ri << "].Locker\";\n";
+        o << "    PRIORITY = \"(OS_ResourceConf[" << ri << "].CeilingPriority)\";\n";
+        o << "};\n\n";
+    }
+
+    for (size_t ni = 0; ni < networkMessages.size(); ++ni) {
+        auto prop = firstTokenUpper(findAttr(*networkMessages[ni], "MESSAGEPROPERTY"));
+        auto ipduRef = findAttr(*networkMessages[ni], "IPDU").value_or("");
+        auto direction = firstTokenUpper(findAttr(*networkMessages[ni], "DIRECTION"));
+        auto transfer = firstTokenUpper(findAttr(*networkMessages[ni], "TRANSFERPROPERTY"));
+        auto bitOrder = findAttr(*networkMessages[ni], "BITORDERING").value_or("");
+        auto interpretation = findAttr(*networkMessages[ni], "DATAINTERPRETATION").value_or("");
+        uint32_t sizeBits = parseNumericToken(findAttr(*networkMessages[ni], "SIZEINBITS"), "SIZEINBITS").value_or(0);
+        uint32_t maxSizeBits = parseNumericToken(findAttr(*networkMessages[ni], "MAXIMUMSIZEINBITS"), "MAXIMUMSIZEINBITS").value_or(sizeBits);
+        uint32_t bitPos = parseNumericToken(findAttr(*networkMessages[ni], "BITPOSITION"), "BITPOSITION").value_or(0);
+        uint64_t initial = parseNumericToken(findAttr(*networkMessages[ni], "INITIALVALUE"), "INITIALVALUE").value_or(0);
+        o << "NETWORKMESSAGE " << sanitize(networkMessages[ni]->name) << " {\n";
+        o << "    PROPERTY   = \"" << prop << "\";\n";
+        o << "    IPDU       = \"" << ipduRef << "\";\n";
+        o << "    DIRECTION  = \"" << direction << "\";\n";
+        o << "    TRANSFER   = \"" << transfer << "\";\n";
+        o << "    BITORDER   = \"" << bitOrder << "\";\n";
+        o << "    INTERPRETATION = \"" << interpretation << "\";\n";
+        o << "    SIZEBITS   = \"" << sizeBits << "\";\n";
+        o << "    MAXSIZEBITS= \"" << maxSizeBits << "\";\n";
+        o << "    BITPOSITION= \"" << bitPos << "\";\n";
+        o << "    INITIAL    = \"" << static_cast<unsigned long long>(initial) << "\";\n";
+        o << "};\n\n";
+    }
+
+    for (size_t pi = 0; pi < ipdus.size(); ++pi) {
+        auto property = firstTokenUpper(findAttr(*ipdus[pi], "IPDUPROPERTY"));
+        auto transmission = firstTokenUpper(findAttr(*ipdus[pi], "TRANSMISSIONMODE"));
+        uint32_t sizeBits = parseNumericToken(findAttr(*ipdus[pi], "SIZEINBITS"), "SIZEINBITS").value_or(0);
+        auto period = parseNumericToken(findAttr(*ipdus[pi], "TRANSMISSIONMODE"), "TIMEPERIOD").value_or(0);
+        auto offset = parseNumericToken(findAttr(*ipdus[pi], "TRANSMISSIONMODE"), "TIMEOFFSET").value_or(0);
+        auto minDelay = parseNumericToken(findAttr(*ipdus[pi], "TRANSMISSIONMODE"), "MINIMUMDELAYTIME").value_or(0);
+        auto timeout = parseNumericToken(findAttr(*ipdus[pi], "TIMEOUT"), "TIMEOUT").value_or(0);
+        auto firstTimeout = parseNumericToken(findAttr(*ipdus[pi], "FIRSTTIMEOUT"), "FIRSTTIMEOUT").value_or(0);
+        auto callout = findAttr(*ipdus[pi], "IPDUCALLOUT").value_or("");
+        auto layer = findAttr(*ipdus[pi], "LAYERUSED").value_or("");
+        o << "IPDU " << sanitize(ipdus[pi]->name) << " {\n";
+        o << "    PROPERTY       = \"" << property << "\";\n";
+        o << "    TRANSMISSION   = \"" << transmission << "\";\n";
+        o << "    SIZEBITS       = \"" << sizeBits << "\";\n";
+        o << "    PERIOD         = \"" << static_cast<unsigned long long>(period) << "\";\n";
+        o << "    OFFSET         = \"" << static_cast<unsigned long long>(offset) << "\";\n";
+        o << "    MINDELAY       = \"" << static_cast<unsigned long long>(minDelay) << "\";\n";
+        o << "    TIMEOUT        = \"" << static_cast<unsigned long long>(timeout) << "\";\n";
+        o << "    FIRSTTIMEOUT   = \"" << static_cast<unsigned long long>(firstTimeout) << "\";\n";
+        o << "    CALLOUT        = \"" << callout << "\";\n";
+        o << "    LAYER          = \"" << layer << "\";\n";
         o << "};\n\n";
     }
 
