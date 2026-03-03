@@ -40,6 +40,11 @@ std::string toUpper(std::string text) {
     return text;
 }
 
+std::string toLower(std::string text) {
+    std::transform(text.begin(), text.end(), text.begin(), [](unsigned char c) { return static_cast<char>(std::tolower(c)); });
+    return text;
+}
+
 std::string stackSizeMacro(const std::string& taskName) {
     return toUpper(sanitize(taskName)) + "_STACK_SIZE";
 }
@@ -298,6 +303,7 @@ void Generator::generate(const OilModel& model, const Options& opts) const {
         writeOrti(model, opts);
     }
     writeMainStub(model, opts);
+    writeTargetTemplate(opts);
 }
 
 void Generator::writeOsCfgH(const OilModel& model, const Options& opts) const {
@@ -1247,6 +1253,101 @@ void Generator::writeOrti(const OilModel& model, const Options& opts) const {
         o << "};\n\n";
     }
 
+}
+
+void Generator::writeTargetTemplate(const Options& opts) const {
+    if (opts.target.empty()) return;
+
+    auto target = toLower(opts.target);
+    auto out_dir = opts.output_prefix.parent_path();
+    if (out_dir.empty()) out_dir = ".";
+    std::error_code ec;
+    std::filesystem::create_directories(out_dir, ec);
+    auto out = out_dir / "kosgen.cmake";
+
+    std::ofstream cm(out, std::ios::binary);
+    if (!cm) throw std::runtime_error("Cannot open output file: " + out.string());
+
+    auto prefix_name = opts.output_prefix.filename().generic_string();
+    if (prefix_name.empty()) prefix_name = "Os_Cfg";
+
+    cm << "# Auto-generated build snippet by kosgen_cpp (target: " << target << ")\n";
+    cm << "# Regenerate with kosgen_cpp; manual edits may be overwritten.\n\n";
+    cm << "if(NOT DEFINED KOS_SRC_PATH)\n";
+    cm << "  if(DEFINED ENV{KOS_SRC_PATH})\n";
+    cm << "    set(KOS_SRC_PATH \"$ENV{KOS_SRC_PATH}\")\n";
+    cm << "  else()\n";
+    cm << "    message(FATAL_ERROR \"KOS_SRC_PATH is not set; point it to the k_os source root.\")\n";
+    cm << "  endif()\n";
+    cm << "endif()\n\n";
+
+    cm << "set(KOSGEN_TARGET \"" << target << "\")\n";
+    cm << "set(KOSGEN_OUTPUT_DIR \"${CMAKE_CURRENT_LIST_DIR}\")\n";
+    cm << "set(KOSGEN_OUTPUT_PREFIX \"${KOSGEN_OUTPUT_DIR}/" << prefix_name << "\")\n\n";
+
+    cm << "set(KOSGEN_GENERATED_SOURCES\n";
+    cm << "    \"${KOSGEN_OUTPUT_PREFIX}.c\"\n";
+    cm << "    \"${KOSGEN_OUTPUT_PREFIX}.h\"\n";
+    cm << "    \"${KOSGEN_OUTPUT_PREFIX}.info.txt\"\n";
+    if (opts.generate_orti) {
+        cm << "    \"${KOSGEN_OUTPUT_PREFIX}.ort\"\n";
+    }
+    if (opts.generate_main_stub) {
+        cm << "    \"${KOSGEN_OUTPUT_DIR}/main.c\"\n";
+    }
+    cm << ")\n\n";
+
+    cm << "set(KOSGEN_INCLUDE_DIRS\n";
+    cm << "    \"${KOS_SRC_PATH}\"\n";
+    cm << "    \"${KOS_SRC_PATH}/inc\"\n";
+    cm << ")\n\n";
+
+    cm << "set(KOSGEN_KERNEL_SOURCES\n";
+    cm << "    \"${KOS_SRC_PATH}/src/Com_Flt.c\"\n";
+    cm << "    \"${KOS_SRC_PATH}/src/Com_If.c\"\n";
+    cm << "    \"${KOS_SRC_PATH}/src/Com_Int.c\"\n";
+    cm << "    \"${KOS_SRC_PATH}/src/Os_Alm.c\"\n";
+    cm << "    \"${KOS_SRC_PATH}/src/Os_Ctr.c\"\n";
+    cm << "    \"${KOS_SRC_PATH}/src/Os_Error.c\"\n";
+    cm << "    \"${KOS_SRC_PATH}/src/Os_Evt.c\"\n";
+    cm << "    \"${KOS_SRC_PATH}/src/Os_Exec.c\"\n";
+    cm << "    \"${KOS_SRC_PATH}/src/Os_Intr.c\"\n";
+    cm << "    \"${KOS_SRC_PATH}/src/Os_Mlq.c\"\n";
+    cm << "    \"${KOS_SRC_PATH}/src/Os_Orti.c\"\n";
+    cm << "    \"${KOS_SRC_PATH}/src/Os_ParamAccess.c\"\n";
+    cm << "    \"${KOS_SRC_PATH}/src/Os_Res.c\"\n";
+    cm << "    \"${KOS_SRC_PATH}/src/Os_SchT.c\"\n";
+    cm << "    \"${KOS_SRC_PATH}/src/Os_Task.c\"\n";
+    cm << "    \"${KOS_SRC_PATH}/src/Os_Vars.c\"\n";
+    cm << ")\n";
+    cm << "if(EXISTS \"${KOS_SRC_PATH}/src/Com_Ext.c\")\n";
+    cm << "  list(APPEND KOSGEN_KERNEL_SOURCES \"${KOS_SRC_PATH}/src/Com_Ext.c\")\n";
+    cm << "endif()\n\n";
+
+    cm << "set(KOSGEN_PORT_SOURCES \"\")\n";
+    cm << "set(KOSGEN_PORT_LIBS \"\")\n";
+    cm << "if(KOSGEN_TARGET STREQUAL \"rp2040\")\n";
+    cm << "  list(APPEND KOSGEN_INCLUDE_DIRS \"${KOS_SRC_PATH}/port/rp2040\" \"${KOS_SRC_PATH}/samples/template\")\n";
+    cm << "  list(APPEND KOSGEN_PORT_SOURCES \"${KOS_SRC_PATH}/port/rp2040/Os_Port_RP2040.c\")\n";
+    cm << "  list(APPEND KOSGEN_PORT_LIBS pico_stdlib hardware_spi)\n";
+    cm << "elseif(KOSGEN_TARGET STREQUAL \"stm32\")\n";
+    cm << "  list(APPEND KOSGEN_INCLUDE_DIRS \"${KOS_SRC_PATH}/port/stm32/gcc\")\n";
+    cm << "  list(APPEND KOSGEN_PORT_SOURCES \"${KOS_SRC_PATH}/port/stm32/gcc/Os_Port_stm32.c\")\n";
+    cm << "elseif(KOSGEN_TARGET STREQUAL \"windows\")\n";
+    cm << "  list(APPEND KOSGEN_INCLUDE_DIRS \"${KOS_SRC_PATH}/port/windows\")\n";
+    cm << "  list(APPEND KOSGEN_PORT_SOURCES \"${KOS_SRC_PATH}/port/windows/Os_Port_Win32.c\")\n";
+    cm << "  list(APPEND KOSGEN_PORT_LIBS kernel32 user32 winmm)\n";
+    cm << "elseif(KOSGEN_TARGET STREQUAL \"pthreads\" OR KOSGEN_TARGET STREQUAL \"posix\")\n";
+    cm << "  list(APPEND KOSGEN_INCLUDE_DIRS \"${KOS_SRC_PATH}/port/pthreads\")\n";
+    cm << "  list(APPEND KOSGEN_PORT_SOURCES \"${KOS_SRC_PATH}/port/pthreads/Os_Port_Unix.c\")\n";
+    cm << "  list(APPEND KOSGEN_PORT_LIBS pthread rt)\n";
+    cm << "endif()\n\n";
+
+    cm << "# Example usage:\n";
+    cm << "# add_executable(kos_app ${KOSGEN_GENERATED_SOURCES} ${KOSGEN_KERNEL_SOURCES} ${KOSGEN_PORT_SOURCES})\n";
+    cm << "# target_include_directories(kos_app PRIVATE ${KOSGEN_INCLUDE_DIRS})\n";
+    cm << "# target_link_libraries(kos_app ${KOSGEN_PORT_LIBS})\n";
+    cm << "# Adjust toolchain/SDK settings as needed for the selected target.\n";
 }
 
 void Generator::writeMainStub(const OilModel& model, const Options& opts) const {

@@ -8,6 +8,11 @@ endif()
 
 project(k_os_stm32 C ASM)
 
+if(NOT DEFINED ENV{KOS_SRC_PATH})
+    message(FATAL_ERROR "KOS_SRC_PATH is not set. Please point it to the k_os source root (e.g. C:/csprojects/k-os).")
+endif()
+get_filename_component(KOS_ROOT "$ENV{KOS_SRC_PATH}" ABSOLUTE)
+
 set(CMAKE_C_STANDARD 11)
 set(CMAKE_C_STANDARD_REQUIRED ON)
 
@@ -26,8 +31,8 @@ endif()
 # Define STM32 family
 add_definitions(-D${STM32_FAMILY})
 
-include_directories(inc)
-include_directories(port/stm32/gcc)
+include_directories(${KOS_ROOT}/inc)
+include_directories(${KOS_ROOT}/port/stm32/gcc)
 
 # STM32 port specific sources
 set(STM32_PORT_SOURCES

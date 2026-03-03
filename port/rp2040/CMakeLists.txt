@@ -40,12 +40,10 @@ set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} -Os")
 add_compile_definitions(OSPORT_SYSCLK_HZ=${KOS_RP_SYSCLK_HZ})
 
 set(INCLUDES
-        .
-        ../..
-        ../../inc
-        ../../samples/template
-        ../../k-dk/inc
-        ../../k-dk/inc/kdk/common
+        ${CMAKE_CURRENT_LIST_DIR}
+        ${KOS_ROOT}
+        ${KOS_ROOT}/inc
+        ${KOS_ROOT}/samples/template
         ${pico_mcp2515_SOURCE_DIR}/include
 )
 

@@ -24,6 +24,7 @@ private:
     void writeOsCfgC(const OilModel& model, const Options& opts) const;
     void writeOrti(const OilModel& model, const Options& opts) const;
     void writeMainStub(const OilModel& model, const Options& opts) const;
+    void writeTargetTemplate(const Options& opts) const;
 };
 
 }  // namespace kos::oilcpp

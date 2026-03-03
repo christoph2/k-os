@@ -8,7 +8,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 if(NOT DEFINED ENV{KOS_SRC_PATH})
     message(FATAL_ERROR "KOS_SRC_PATH is not set. Please point it to the k_os source root (e.g. C:/csprojects/k-os).")
 endif()
-set(KOS_SRC_PATH $ENV{KOS_SRC_PATH})
+get_filename_component(KOS_SRC_PATH "$ENV{KOS_SRC_PATH}" ABSOLUTE)
 
 # Windows-specific compiler definitions
 if(WIN32)
@@ -24,8 +24,8 @@ if(WIN32)
     endif()
 endif()
 
-include_directories(. ./inc samples/OSEKBumser)
-include_directories(port/windows)
+include_directories(${KOS_SRC_PATH} ${KOS_SRC_PATH}/inc ${KOS_SRC_PATH}/samples/OSEKBumser)
+include_directories(${KOS_SRC_PATH}/port/windows)
 
 option(BUILD_K_OS "Build k_os kernel" OFF)
 
