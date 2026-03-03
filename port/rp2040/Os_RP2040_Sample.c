@@ -4,7 +4,7 @@
 
 #include "pico/stdlib.h"
 
-#include "Os.h"
+#include "Osek.h"
 #include "Os_Cfg.h"
 #include "Com.h"
 

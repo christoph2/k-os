@@ -222,13 +222,6 @@ std::string joinAppModes(const std::optional<std::string>& val) {
     return oss.str();
 }
 
-bool hasAutostart(const std::vector<const ObjectInstance*>& tasks) {
-    for (const auto* t : tasks) {
-        if (toBool(findAttr(*t, "AUTOSTART"), false)) return true;
-    }
-    return false;
-}
-
 struct MessageStats {
     size_t internal_count{0};
     size_t external_count{0};
@@ -245,6 +238,35 @@ MessageStats classifyMessages(const std::vector<const ObjectInstance*>& messages
         }
     }
     return stats;
+}
+
+struct ConformanceInfo {
+    std::string cc;
+    bool hasMaxActivations;
+};
+
+ConformanceInfo computeConformance(const OilModel& model, const std::vector<const ObjectInstance*>& tasks) {
+    auto os = filter(model, "OS");
+    std::string cc = "AUTO";
+    if (!os.empty()) {
+        auto ccAttr = findAttr(*os.front(), "CC");
+        if (ccAttr) cc = toUpper(*ccAttr);
+    }
+    bool hasExtendedTask = std::any_of(tasks.begin(), tasks.end(), [](const ObjectInstance* t) {
+        return toUpper(findAttr(*t, "TYPE").value_or("BASIC")) == "EXTENDED";
+    });
+    bool hasMultiActivation = std::any_of(tasks.begin(), tasks.end(), [](const ObjectInstance* t) {
+        return toNumber(findAttr(*t, "ACTIVATION"), 1) > 1;
+    });
+    if (cc == "AUTO") {
+        if (hasExtendedTask) {
+            cc = hasMultiActivation ? "ECC2" : "ECC1";
+        } else {
+            cc = hasMultiActivation ? "BCC2" : "BCC1";
+        }
+    }
+    bool ccHasMaxActivations = (cc == "BCC2" || cc == "ECC2");
+    return ConformanceInfo{cc, ccHasMaxActivations};
 }
 
 }  // namespace
@@ -319,8 +341,22 @@ void Generator::writeOsCfgH(const OilModel& model, const Options& opts) const {
     auto resources = filter(model, "RESOURCE");
     auto appmodes = filter(model, "APPMODE");
     auto messages = filter(model, "MESSAGE");
+    auto isrs = filter(model, "ISR");
     auto msgStats = classifyMessages(messages);
     std::vector<std::pair<std::string, std::string>> hwDrivers;
+    for (const auto* ctr : counters) {
+        auto type = findAttr(*ctr, "TYPE");
+        auto driver = extractDriver(type, findAttr(*ctr, "DRIVER"));
+        if (!driver) driver = findAttr(*ctr, "HC12_TYPE");
+        if (type && toUpper(*type).find("HARDWARE") != std::string::npos && driver) {
+            auto drvName = *driver;
+            auto exists = std::find_if(hwDrivers.begin(), hwDrivers.end(), [&](const auto& p) { return sanitize(p.first) == sanitize(drvName); });
+            if (exists == hwDrivers.end()) {
+                hwDrivers.emplace_back(drvName, ctr->name);
+            }
+        }
+    }
+    auto conformance = computeConformance(model, tasks);
     bool anyAutostartAlarms = std::any_of(alarms.begin(), alarms.end(), [](const ObjectInstance* a) {
         return toBool(findAttr(*a, "AUTOSTART"), false);
     });
@@ -338,10 +374,11 @@ void Generator::writeOsCfgH(const OilModel& model, const Options& opts) const {
     h << "#define OS_USE_RESSCHEDULER\n";
     h << "#define OS_USE_O1SCHEDULER             STD_ON\n";
     h << "#define OS_SCHED_POLICY_MIX\n";
-    h << "#define OS_BCC1\n";
-    h << "#define OS_ECC1                        STD_OFF\n";
-    h << "#define OS_ECC2                        STD_OFF\n";
-    h << "#define OS_SC4                         STD_OFF\n";
+    if (conformance.cc == "BCC1" || conformance.cc == "BCC2" || conformance.cc == "ECC1" || conformance.cc == "ECC2") {
+        h << "#define OS_" << conformance.cc << "\n";
+    } else {
+        h << "#define OS_BCC1\n";
+    }
     h << "#define OS_USE_ISRS                    STD_ON\n";
     h << "#define OS_USE_ALARMS                  " << (alarms.empty() ? "STD_OFF" : "STD_ON") << "\n";
     h << "#define OS_FEATURE_RESOURCES           " << (resources.empty() ? "STD_OFF" : "STD_ON") << "\n";
@@ -362,7 +399,7 @@ void Generator::writeOsCfgH(const OilModel& model, const Options& opts) const {
     h << "#define OS_NUMBER_OF_EVENTS " << events.size() << "\n";
     h << "#define OS_NUMBER_OF_RESOURCES " << resources.size() << "\n";
     h << "#define OS_NUMBER_OF_APPMODES " << appmodes.size() << "\n";
-    h << "#define OS_NUMBER_OF_ISRS 1\n";
+    h << "#define OS_NUMBER_OF_ISRS " << (isrs.size() + hwDrivers.size()) << "\n";
     h << "#define OS_NUMBER_OF_MESSAGES " << messages.size() << "\n";
     h << "#define OS_NUMBER_OF_INTERNAL_MESSAGES " << msgStats.internal_count << "\n";
     h << "#define OS_NUMBER_OF_EXTERNAL_MESSAGES " << msgStats.external_count << "\n";
@@ -516,16 +553,48 @@ void Generator::writeOsCfgH(const OilModel& model, const Options& opts) const {
             h << "#define " << sanitize(messages[i]->name) << " ((uint8_t)MESSAGE_ID_" << sanitize(messages[i]->name) << ")\n";
         }
     }
-    if (!hwDrivers.empty()) {
+    if (!isrs.empty() || !hwDrivers.empty()) {
         h << "typedef enum {\n";
-        h << "    ISRID_NONE,\n";
-        for (size_t i = 0; i < hwDrivers.size(); ++i) {
-            h << "    ISRID_" << sanitize(hwDrivers[i].first) << "Timer";
-            if (i + 1 < hwDrivers.size()) h << ",";
-            h << "\n";
+        for (size_t i = 0; i < isrs.size(); ++i) {
+            h << "    ISR_ID_" << sanitize(isrs[i]->name) << " = " << i << ",\n";
         }
-        h << "} ISRType_Generated;\n";
+        for (size_t i = 0; i < hwDrivers.size(); ++i) {
+            h << "    ISR_ID_" << sanitize(hwDrivers[i].first) << "Timer = " << (isrs.size() + i) << ",\n";
+        }
+        h << "    ISR_ID_COUNT = " << (isrs.size() + hwDrivers.size()) << "\n";
+        h << "} Os_IsrId;\n";
+        for (size_t i = 0; i < isrs.size(); ++i) {
+            h << "#define " << sanitize(isrs[i]->name) << " ((uint8_t)ISR_ID_" << sanitize(isrs[i]->name) << ")\n";
+        }
+        for (size_t i = 0; i < hwDrivers.size(); ++i) {
+            h << "#define " << sanitize(hwDrivers[i].first) << "Timer ((uint8_t)ISR_ID_" << sanitize(hwDrivers[i].first) << "Timer)\n";
+        }
+        if (!hwDrivers.empty()) {
+            h << "typedef enum {\n";
+            h << "    ISRID_NONE,\n";
+            for (size_t i = 0; i < hwDrivers.size(); ++i) {
+                h << "    ISRID_" << sanitize(hwDrivers[i].first) << "Timer";
+                if (i + 1 < hwDrivers.size()) h << ",";
+                h << "\n";
+            }
+            h << "} ISRType_Generated;\n";
+        }
+        h << "extern const char* const Os_IsrNames[OS_NUMBER_OF_ISRS];\n";
     }
+    h << "\n";
+
+    h << "/* Forward declarations for Tasks and ISRs */\n";
+    h << "DeclareTask(OsExec_IdleTask);\n";
+    for (const auto* t : tasks) {
+        h << "DeclareTask(" << sanitize(t->name) << ");\n";
+    }
+    for (const auto* isr : isrs) {
+        h << "ISR2(" << sanitize(isr->name) << ");\n";
+    }
+    for (const auto& drv : hwDrivers) {
+        h << "ISR2(" << sanitize(drv.first) << "Timer);\n";
+    }
+    h << "\n";
     h << "extern const char* const Os_OilVersion;\n\n";
 
     h << "#define OS_DEFAULT_STACK_SIZE    32\n";
@@ -584,9 +653,11 @@ void Generator::writeOsCfgC(const OilModel& model, const Options& opts) const {
     auto resources = filter(model, "RESOURCE");
     auto appmodes = filter(model, "APPMODE");
     auto messages = filter(model, "MESSAGE");
+    auto isrs = filter(model, "ISR");
     bool anyAutostartAlarms = std::any_of(alarms.begin(), alarms.end(), [](const ObjectInstance* a) {
         return toBool(findAttr(*a, "AUTOSTART"), false);
     });
+    auto conformance = computeConformance(model, tasks);
     auto taskIndex = indexByName(tasks);
     auto counterIndex = indexByName(counters);
     std::vector<std::string> hwDriversC;
@@ -603,6 +674,7 @@ void Generator::writeOsCfgC(const OilModel& model, const Options& opts) const {
     }
     auto messageIndex = indexByName(messages);
     auto resourceIndex = indexByName(resources);
+    auto eventIndex = indexByName(events);
     std::vector<uint32_t> resourceCeil(resources.size(), 0);
     for (const auto* t : tasks) {
         auto resAttr = findAttr(*t, "RESOURCE");
@@ -677,11 +749,23 @@ void Generator::writeOsCfgC(const OilModel& model, const Options& opts) const {
         return 4;
     };
 
+    auto resolveEventMask = [&](const std::optional<std::string>& name) -> uint32_t {
+        if (!name) return 0;
+        auto it = eventIndex.find(*name);
+        if (it != eventIndex.end()) return 1u << it->second;
+        auto upper = toUpper(*name);
+        for (const auto& kv : eventIndex) {
+            if (toUpper(kv.first) == upper) return 1u << kv.second;
+        }
+        return 0;
+    };
+
     c << "/* Auto-generated by kosgen_cpp */\n";
     c << "#include \"Os_Cfg.h\"\n";
     c << "#include \"Os_Defs.h\"\n";
     c << "#include \"Os_Port.h\"\n";
     c << "#include \"Os_Vars.h\"\n";
+    c << "#include \"Os_Exec.h\"\n";
     if (!messages.empty()) {
         c << "#include \"Com.h\"\n";
     }
@@ -742,6 +826,22 @@ void Generator::writeOsCfgC(const OilModel& model, const Options& opts) const {
     }
     c << "};\n\n";
 
+    if (!isrs.empty() || !hwDriversC.empty()) {
+        c << "const char* const Os_IsrNames[OS_NUMBER_OF_ISRS] = {";
+        bool first = true;
+        for (const auto* isr : isrs) {
+            if (!first) c << ", ";
+            c << "\"" << isr->name << "\"";
+            first = false;
+        }
+        for (const auto& drv : hwDriversC) {
+            if (!first) c << ", ";
+            c << "\"" << drv << "Timer\"";
+            first = false;
+        }
+        c << "};\n\n";
+    }
+
     c << "uint8_t IdleTask_Stack[IDLE_TASK_STACK_SIZE];\n";
     c << "uint8_t ISR_Stack[ISR_STACK_SIZE];\n";
     for (const auto* t : tasks) {
@@ -752,13 +852,16 @@ void Generator::writeOsCfgC(const OilModel& model, const Options& opts) const {
     c << "\n";
 
     c << "const Os_TaskConfigurationType OS_TaskConf[OS_NUMBER_OF_TASKS] = {\n";
-    c << "    { GetTaskName(OsExec_IdleTask), IdleTask_Stack, IDLE_TASK_STACK_SIZE, ((PriorityType)0), OS_TASK_ATTR_FULLPREEMPT, OS_AUTOSTART_ALWAYS },\n";
+    c << "    { GetTaskName(OsExec_IdleTask), IdleTask_Stack, IDLE_TASK_STACK_SIZE, ((PriorityType)0), OS_TASK_ATTR_FULLPREEMPT";
+    if (conformance.hasMaxActivations) c << ", 1";
+    c << ", OS_AUTOSTART_ALWAYS },\n";
     for (size_t i = 0; i < tasks.size(); ++i) {
         auto ss = toNumber(findAttr(*tasks[i], "STACKSIZE"), 0);
         if (ss == 0) ss = defaultStack;
         auto prio = toNumber(findAttr(*tasks[i], "PRIORITY"), 1);
         auto sched = findAttr(*tasks[i], "SCHEDULE").value_or("NON");
         auto type = findAttr(*tasks[i], "TYPE").value_or("BASIC");
+        auto activationCount = toNumber(findAttr(*tasks[i], "ACTIVATION"), 1);
         uint8_t flags = 0;
         std::string sched_upper = toUpper(sched);
         if (sched_upper == "FULL") flags |= 0x01;
@@ -767,7 +870,9 @@ void Generator::writeOsCfgC(const OilModel& model, const Options& opts) const {
         auto autostart = toBool(findAttr(*tasks[i], "AUTOSTART"), false);
         const char* autostartMode = autostart ? "DefaultAppMode" : "OS_AUTOSTART_NEVER";
         c << "    { GetTaskName(" << sanitize(tasks[i]->name) << "), " << sanitize(tasks[i]->name) << "_Stack, " << stackSizeMacro(tasks[i]->name)
-          << ", ((PriorityType)" << prio << "), " << static_cast<unsigned>(flags) << ", " << autostartMode << " }";
+          << ", ((PriorityType)" << prio << "), " << static_cast<unsigned>(flags);
+        if (conformance.hasMaxActivations) c << ", " << activationCount;
+        c << ", " << autostartMode << " }";
         if (i + 1 < tasks.size()) c << ",";
         c << "\n";
     }
@@ -837,7 +942,7 @@ void Generator::writeOsCfgC(const OilModel& model, const Options& opts) const {
         std::string actionTaskInit = "0xFFFF";
         if (action_task_name) {
             auto it = taskIndex.find(*action_task_name);
-            if (it != taskIndex.end()) actionTaskInit = "GetTaskName(" + sanitize(*action_task_name) + ")";
+            if (it != taskIndex.end()) actionTaskInit = sanitize(*action_task_name);
         }
         bool autostart = toBool(findAttr(*alarms[i], "AUTOSTART"), false);
         auto autostartModeToken = parseFirstToken(findAttr(*alarms[i], "AUTOSTART"), "APPMODE");
@@ -935,9 +1040,7 @@ void Generator::writeOsCfgC(const OilModel& model, const Options& opts) const {
                         maskVal = *maskToken;
                     } else {
                         auto eventToken = parseFirstToken(*notif, "EVENT");
-                        if (eventToken) {
-                            maskVal = 1u << 0;
-                        }
+                        maskVal = resolveEventMask(eventToken);
                     }
                     std::string setEvtName = "Com_MessageSetEvent_" + sanitize(m->name);
                     std::ostringstream fwd;
@@ -1233,7 +1336,8 @@ void Generator::writeOrti(const OilModel& model, const Options& opts) const {
     for (size_t i = 0; i < orderedTasks.size(); ++i) {
         auto basePrio = toNumber(findAttr(*orderedTasks[i], "PRIORITY"), 1);
         auto sched = findAttr(*orderedTasks[i], "SCHEDULE").value_or("NON");
-        std::string type = "EXTENDED";
+        auto typeAttr = findAttr(*orderedTasks[i], "TYPE").value_or("EXTENDED");
+        std::string type = typeAttr;
         o << "TASK " << sanitize(orderedTasks[i]->name) << " {\n";
         o << "    PRIORITY            = \"(OS_TCB[" << (i + 1) << "].CurrentPriority)\";\n";
         o << "    STATE               = \"(OS_TCB[" << (i + 1) << "].State)\";\n";
@@ -1243,8 +1347,8 @@ void Generator::writeOrti(const OilModel& model, const Options& opts) const {
         o << "    vs_Base_Priority    = \"" << basePrio << "\";\n";
         o << "    vs_Schedule         = \"" << sched << "\";\n";
         o << "    vs_Task_Type        = \"" << type << "\";\n";
-        o << "    vs_Events_WaitingFor= \"(OS_TCB[" << (i + 1) << "].EventsSet)\";\n";
-        o << "    vs_Events_Set       = \"(OS_TCB[" << (i + 1) << "].EventsWaitingFor)\";\n";
+        o << "    vs_Events_WaitingFor= \"(OS_TCB[" << (i + 1) << "].EventsWaitingFor)\";\n";
+        o << "    vs_Events_Set       = \"(OS_TCB[" << (i + 1) << "].EventsSet)\";\n";
         o << "};\n\n";
 
         o << "STACK " << sanitize(orderedTasks[i]->name) << "_Stack {\n";

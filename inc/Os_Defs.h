@@ -72,6 +72,28 @@
 #define TASK(TaskName)                  void Func ## TaskName(void)
 
 /*
+** Interrupt helpers (self-contained replacement for former k-dk ISR macros).
+** ISR2 declares the handler body (suffix _Handler), IMPLEMENT_ISR2_VECTOR wraps it with OS enter/leave.
+*/
+#if !defined(ISR)
+#define ISR(IsrName)                    void IsrName##_Handler(void)
+#endif
+
+#if !defined(ISR2)
+#define ISR2(IsrName)                   void IsrName##_Handler(void)
+#endif
+
+#if !defined(IMPLEMENT_ISR2_VECTOR)
+#define IMPLEMENT_ISR2_VECTOR(IsrName)          \
+    void IsrName(void)                          \
+    {                                           \
+        Os_EnterISR();                          \
+        IsrName##_Handler();                    \
+        Os_LeaveISR();                          \
+    }
+#endif
+
+/*
 **
 **
 **

@@ -30,11 +30,8 @@ extern void OsExec_TaskReturnGuard(void);
 InterruptStateType OsPort_InterruptState = 0;
 volatile uint32_t OsPort_SystemTickCounter = 0;
 
-/* Stack for ISR context */
-#ifndef ISR_STACK_SIZE
-#define ISR_STACK_SIZE 512
-#endif
-uint8_t ISR_Stack[ISR_STACK_SIZE] __attribute__((aligned(8)));
+/* Stack for ISR context (provided by generated config) */
+extern uint8_t ISR_Stack[ISR_STACK_SIZE];
 const SizeType OS_TOS_ISR = (SizeType)((const uint8_t *)&ISR_Stack + ISR_STACK_SIZE);
 
 /* External references */
