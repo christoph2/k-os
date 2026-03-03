@@ -19,17 +19,13 @@ service hooks (StartupHook, ErrorHook, etc.).
 
 Documentation contents
 ~~~~~~~~~~~~~~~~~~~~~~
-.. toctree::
-   :maxdepth: 2
-   :caption: Documentation
-
-   installation
-   architecture
-   features
-   tutorial
-   examples
-   contributing
-   changelog
+- Installation — `Installation <installation.rst>`_
+- Architecture — `Architecture <architecture.rst>`_
+- Features — `Features <features.rst>`_
+- Tutorial — `Tutorial <tutorial.rst>`_
+- Examples — `Examples <examples.rst>`_
+- Contributing — `Contributing <contributing.rst>`_
+- Changelog — `Changelog <changelog.rst>`_
 
 License and authors
 ~~~~~~~~~~~~~~~~~~~
