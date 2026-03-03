@@ -42,6 +42,13 @@
 
 #define OSEK_SUCCESS(code)              (((code) == E_OK) ? TRUE : FALSE)
 
+#if !defined(_BEGIN_BLOCK)
+#define _BEGIN_BLOCK    do {
+#endif
+#if !defined(_END_BLOCK)
+#define _END_BLOCK      } while (0)
+#endif
+
 #if !defined(KDK_TOS)
 #define KDK_TOS(mem, size)              ((uint8 *)(mem) + ((size) - (uint8)1))
 #endif /* KDK_TOS */

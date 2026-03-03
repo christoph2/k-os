@@ -22,6 +22,7 @@
    s. FLOSS-EXCEPTION.txt
  */
 #include "Com_Flt.h"
+#include "Utl.h"
 
 /*
 **  Local Types.

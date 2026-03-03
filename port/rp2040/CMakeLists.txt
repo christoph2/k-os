@@ -52,6 +52,30 @@ set(RP2040_PORT_SOURCES
         Os_Port_RP2040.c
 )
 
+set(KOS_CORE_SOURCES
+        ${KOS_ROOT}/src/Com_Flt.c
+        ${KOS_ROOT}/src/Com_If.c
+        ${KOS_ROOT}/src/Com_Int.c
+        ${KOS_ROOT}/src/Os_Alm.c
+        ${KOS_ROOT}/src/Os_Ctr.c
+        ${KOS_ROOT}/src/Os_Error.c
+        ${KOS_ROOT}/src/Os_Evt.c
+        ${KOS_ROOT}/src/Os_Exec.c
+        ${KOS_ROOT}/src/Os_Intr.c
+        ${KOS_ROOT}/src/Os_Mlq.c
+        ${KOS_ROOT}/src/Os_Orti.c
+        ${KOS_ROOT}/src/Os_ParamAccess.c
+        ${KOS_ROOT}/src/Os_Res.c
+        ${KOS_ROOT}/src/Os_SchT.c
+        ${KOS_ROOT}/src/Os_Task.c
+        ${KOS_ROOT}/src/Os_Vars.c
+        ${KOS_ROOT}/src/Utl.c
+)
+
+if(EXISTS ${KOS_ROOT}/src/Com_Ext.c)
+    list(APPEND KOS_CORE_SOURCES ${KOS_ROOT}/src/Com_Ext.c)
+endif()
+
 if (MSVC)
     # Use case-insensitive match to catch Debug/Release values
     if (CMAKE_BUILD_TYPE MATCHES "^[Dd]ebug$")
@@ -119,3 +143,22 @@ add_custom_command(
 add_custom_target(rp2040_sample_config ALL
     DEPENDS ${KOS_RP2040_GEN_PREFIX}.c ${KOS_RP2040_GEN_PREFIX}.h ${KOS_RP2040_GEN_PREFIX}.info.txt
 )
+
+add_library(k_os_rp2040_core STATIC ${KOS_CORE_SOURCES})
+target_include_directories(k_os_rp2040_core PUBLIC ${INCLUDES} ${KOS_RP2040_GEN_DIR})
+target_compile_definitions(k_os_rp2040_core PRIVATE OS_FEATURE_ORTI_DEBUG=STD_OFF)
+target_link_libraries(k_os_rp2040_core k_os_rp2040_port)
+
+add_executable(k_os_rp2040_sample
+        Os_RP2040_Sample.c
+        ${KOS_RP2040_GEN_PREFIX}.c
+)
+add_dependencies(k_os_rp2040_sample rp2040_sample_config)
+target_include_directories(k_os_rp2040_sample PRIVATE ${INCLUDES} ${KOS_RP2040_GEN_DIR})
+target_link_libraries(k_os_rp2040_sample
+        k_os_rp2040_core
+        k_os_rp2040_port
+        pico_stdlib
+        hardware_spi
+)
+pico_add_extra_outputs(k_os_rp2040_sample)

@@ -24,6 +24,7 @@
 
 #include "Osek.h"
 #include "Os_Task.h"
+#include "Utl.h"
 
 #if KOS_MEMORY_MAPPING == STD_ON
     #define OSEK_OS_START_SEC_CODE
@@ -78,11 +79,11 @@ StatusType Os_SetEvent(TaskType TaskID, EventMaskType Mask)
 /*
 **
 **      Standard-Status:
-**              – E_OK – no error.
+**              ï¿½ E_OK ï¿½ no error.
 **      Extended-Status:
-**              – E_OS_ID – the task identifier is invalid.
-**              – E_OS_ACCESS – the referenced task is not an Extended Task.
-**              – E_OS_STATE – the referenced task is in the suspended state.
+**              ï¿½ E_OS_ID ï¿½ the task identifier is invalid.
+**              ï¿½ E_OS_ACCESS ï¿½ the referenced task is not an Extended Task.
+**              ï¿½ E_OS_STATE ï¿½ the referenced task is in the suspended state.
 */
 
 #if defined(OS_BCC1) || defined(OS_BCC2)
@@ -117,10 +118,10 @@ StatusType Os_ClearEvent(EventMaskType Mask)
 
 /*
 **      Standard-Status:
-**              – E_OK – no error.
+**              ï¿½ E_OK ï¿½ no error.
 **      Extended-Status:
-**              – E_OS_ACCESS – the calling task is not an Extended Task.
-**              – E_OS_CALLEVEL – a call at the interrupt level is not allowed.
+**              ï¿½ E_OS_ACCESS ï¿½ the calling task is not an Extended Task.
+**              ï¿½ E_OS_CALLEVEL ï¿½ a call at the interrupt level is not allowed.
 */
 
 #if defined(OS_BCC1) || defined(OS_BCC2)
@@ -152,11 +153,11 @@ StatusType Os_GetEvent(TaskType TaskID, EventMaskRefType Event)
 {
 /*
 **      Standard-Status:
-**              – E_OK – no error.
+**              ï¿½ E_OK ï¿½ no error.
 **      Extended-Status:
-**              – E_OS_ID – the task identifier is invalid.
-**              – E_OS_ACCESS – the referenced task is not an Extended Task.
-**              – E_OS_STATE – the referenced task is in the suspended state.
+**              ï¿½ E_OS_ID ï¿½ the task identifier is invalid.
+**              ï¿½ E_OS_ACCESS ï¿½ the referenced task is not an Extended Task.
+**              ï¿½ E_OS_STATE ï¿½ the referenced task is in the suspended state.
 */
 #if defined(OS_BCC1) || defined(OS_BCC2)
     UNREFERENCED_PARAMETER(TaskID);
@@ -193,11 +194,11 @@ StatusType Os_WaitEvent(EventMaskType Mask)
 **      "This call enforces the rescheduling, if the wait condition occurs."
 **
 **      Standard-Status:
-**              - E_OK – no error.
+**              - E_OK ï¿½ no error.
 **      Extended-Status:
-**              – E_OS_ACCESS – the calling task is not an Extended Task.
-**              – E_OS_RESOURCE – the calling task occupies resources.
-**              – E_OS_CALLEVEL – a call at the interrupt level is not allowed.
+**              ï¿½ E_OS_ACCESS ï¿½ the calling task is not an Extended Task.
+**              ï¿½ E_OS_RESOURCE ï¿½ the calling task occupies resources.
+**              ï¿½ E_OS_CALLEVEL ï¿½ a call at the interrupt level is not allowed.
 */
 #if defined(OS_BCC1) || defined(OS_BCC2)
     UNREFERENCED_PARAMETER(Mask);

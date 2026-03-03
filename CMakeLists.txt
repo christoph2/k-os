@@ -46,6 +46,7 @@ set(K_OS_SOURCES
         src/Os_SchT.c
         src/Os_Task.c
         src/Os_Vars.c
+        src/Utl.c
         port/windows/Os_Port_Win32.c
         samples/OSEKBumser/Os_Cfg.c
         samples/OSEKBumser/main.c)
