@@ -40,6 +40,7 @@ const SizeType OS_TOS_ISR = (SizeType)((const uint8_t *)&ISR_Stack + ISR_STACK_S
 /* External references */
 extern TaskType Os_CurrentTask;
 extern const uint8_t * Os_TaskStackPointer[];
+extern TaskType OsExec_GetHighestReadyTask(void);
 
 #if KOS_MEMORY_MAPPING == STD_ON
     #define OSEK_OS_START_SEC_CODE
@@ -284,6 +285,58 @@ void SysTick_Handler(void)
 __attribute__((naked)) void PendSV_Handler(void)
 {
     __asm volatile (
+        ".syntax unified                \n\t"
+        ".thumb                         \n\t"
+        "mrs r0, psp                    \n\t" /* r0 = current PSP */
+        "isb                            \n\t"
+
+        /* Make room and save r4-r7 */
+        "subs r0, #16                   \n\t"
+        "subs r0, #16                   \n\t"
+        "stmia r0!, {r4-r7}             \n\t"
+
+        /* Save r8-r11 using low registers */
+        "mov r4, r8                     \n\t"
+        "mov r5, r9                     \n\t"
+        "mov r6, r10                    \n\t"
+        "mov r7, r11                    \n\t"
+        "stmia r0!, {r4-r7}             \n\t"
+
+        /* r0 now points past saved regs; step back to base */
+        "subs r0, #16                   \n\t"
+        "subs r0, #16                   \n\t"
+
+        /* Store current PSP */
+        "ldr r1, =Os_CurrentTask        \n\t"
+        "ldr r2, [r1]                   \n\t"
+        "ldr r3, =Os_TaskStackPointer   \n\t"
+        "lsls r2, r2, #2                \n\t"
+        "add  r3, r3, r2                \n\t"
+        "str  r0, [r3]                  \n\t"
+
+        /* Select next task */
+        "bl OsExec_GetHighestReadyTask  \n\t"
+        "str r0, [r1]                   \n\t"
+
+        /* Load next PSP */
+        "ldr r3, =Os_TaskStackPointer   \n\t"
+        "lsls r0, r0, #2                \n\t"
+        "add  r3, r3, r0                \n\t"
+        "ldr  r0, [r3]                  \n\t"
+
+        /* Restore r8-r11 */
+        "ldmia r0!, {r4-r7}             \n\t"
+        "mov r8, r4                     \n\t"
+        "mov r9, r5                     \n\t"
+        "mov r10, r6                    \n\t"
+        "mov r11, r7                    \n\t"
+
+        /* Restore r4-r7 */
+        "ldmia r0!, {r4-r7}             \n\t"
+
+        /* Update PSP and return */
+        "msr psp, r0                    \n\t"
+        "isb                            \n\t"
         "bx lr                          \n\t"
     );
 }

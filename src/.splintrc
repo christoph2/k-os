@@ -28,13 +28,10 @@
 ##
 -I C:\projekte\csProjects\k-os\
 -I C:\projekte\csProjects\k-os\inc
--I C:\projekte\csProjects\k-dk\
 -I C:\projekte\csProjects\k-ar\inc
 -I C:\projekte\csProjects\k-ar\inc\cpu12
 -I C:\projekte\csProjects\k-os\samples\first
 -I C:\projekte\csProjects\k-ar\examples\inc
--I C:\projekte\csProjects\k-dk\InstallISR
-#-I C:\projekte\csProjects\k-dk\InstallISR\iar
 #-I "C:\Programme\IAR Systems\Embedded Workbench Evaluation 4.0\HCS12\inc"
 -I .
 #-D__CSMC__

@@ -19,15 +19,14 @@ def makeExtension(name, additionalSources = []):
         sources = [
                 '%s.i' % nt,
                 '../src/%s.c' % nt,
-                '../../k-dk/common/src/Utl.c',
 		'Os_Cfg.c',
                 'CommonMocks.c',
-        ]
+         ]
 
 	if additionalSources:
 	     sources.extend(additionalSources)
 
-        include_dirs = ['./', '../inc', '../', '../../k-dk/']
+        include_dirs = ['./', '../inc', '../']
 	define_macros = [('SWIG', '1'), ('KOS_MEMORY_MAPPING', 'STD_OFF')]
         # define_macros : [(name : string, value : string|None)]
         # library_dirs : [string]

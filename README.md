@@ -26,7 +26,7 @@ Projektstruktur (Auswahl)
 - src/ … OS-Implementierung (Scheduler, Hooks, Fehlerbehandlung, COM-IF u.a.).
 - port/ … Hardware/Plattform-Ports (z. B. cpu12, msp430, stm32, windows/pthreads/i386 msvc).
 - samples/ … Beispielanwendungen (u. a. OSEKBumser, first, Slick).
-- k-dk/ … „Kernel-Development Kit“: Common Types, Compiler/Platform-Abstraktionen, Tools.
+- Basistypen/Primitives: inc/Std_Types.h, inc/Platform_Types.h und port/<arch>/CPU_Primitives_*.h.
 - kosek/ … OIL/OSEK-Tooling, Definitionen, Code-Generator (py2/py3).
 - tools/ und pySART/ … Zusätzliche Skripte und Hilfsprogramme.
 
@@ -36,7 +36,7 @@ Wichtige Module und Dateien
 - src/Os_Error.c: Aufruf der ErrorHook/COMErrorHook inkl. Interruptschutz.
 - src/Com_If.c: OSEK-COM Interface/Dispatcher (falls COM aktiviert ist).
 - port/<arch>/*: Portierungsschicht, Interrupt-Enable/Disable, Kontextwechsel, Timer usw.
-- k-dk/inc/kdk/common/Std_Types.h: AUTOSAR-nahe Standardtypen (Std_ReturnType etc.).
+- inc/Std_Types.h und inc/Platform_Types.h: AUTOSAR-nahe Standardtypen (Std_ReturnType etc.).
 
 Feature-Überblick
 -----------------
@@ -117,7 +117,7 @@ Portierungen
 
 Werkzeuge & Generatoren
 -----------------------
-- k-dk: Typendefinitionen (Compiler.h, Platform_Types.h, Std_Types.h), Makros und Utilities.
+- Basistypen/Primitives: inc/Std_Types.h, inc/Platform_Types.h, port/*/CPU_Primitives_*.h (self-contained).
 - kosek: OIL- und Implementierungs-Definitionen, Python-Generatoren (py2/py3).
 - pySART: Zusätzliche Scripting-Unterstützung.
 
