@@ -1,0 +1,1 @@
+This directory is used by Sphinx for static assets.
