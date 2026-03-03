@@ -197,6 +197,28 @@ std::optional<uint32_t> parseNumberToken(const std::optional<std::string>& val, 
     return std::nullopt;
 }
 
+std::string firstTokenUpper(const std::optional<std::string>& val) {
+    if (!val) return {};
+    auto s = *val;
+    auto end = s.find_first_of(" {");
+    if (end != std::string::npos) s = s.substr(0, end);
+    return toUpper(s);
+}
+
+std::optional<uint64_t> parseNumericToken(const std::optional<std::string>& val, const std::string& key) {
+    if (!val) return std::nullopt;
+    std::regex re(key + R"(\s*=\s*([0-9xa-fA-F]+))", std::regex::icase);
+    std::smatch m;
+    if (std::regex_search(*val, m, re) && m.size() > 1) {
+        try {
+            return static_cast<uint64_t>(std::stoull(m[1].str(), nullptr, 0));
+        } catch (...) {
+            return std::nullopt;
+        }
+    }
+    return std::nullopt;
+}
+
 std::string joinAppModes(const std::optional<std::string>& val) {
     if (!val) return {};
     std::regex re(R"(APPMODE\s*=\s*([A-Za-z_]\w*))", std::regex::icase);
@@ -341,6 +363,8 @@ void Generator::writeOsCfgH(const OilModel& model, const Options& opts) const {
     auto resources = filter(model, "RESOURCE");
     auto appmodes = filter(model, "APPMODE");
     auto messages = filter(model, "MESSAGE");
+    auto networkMessages = filter(model, "NETWORKMESSAGE");
+    auto ipdus = filter(model, "IPDU");
     auto isrs = filter(model, "ISR");
     auto msgStats = classifyMessages(messages);
     std::vector<std::pair<std::string, std::string>> hwDrivers;
@@ -355,6 +379,13 @@ void Generator::writeOsCfgH(const OilModel& model, const Options& opts) const {
                 hwDrivers.emplace_back(drvName, ctr->name);
             }
         }
+    }
+    size_t internalResourceCount = 0;
+    bool hasSchedulerResource = false;
+    for (const auto* r : resources) {
+        auto prop = toUpper(findAttr(*r, "RESOURCEPROPERTY").value_or(""));
+        if (prop.find("INTERNAL") != std::string::npos) ++internalResourceCount;
+        if (prop.find("SCHEDULER") != std::string::npos || toUpper(r->name).find("SCHEDULER") != std::string::npos) hasSchedulerResource = true;
     }
     auto conformance = computeConformance(model, tasks);
     bool anyAutostartAlarms = std::any_of(alarms.begin(), alarms.end(), [](const ObjectInstance* a) {
@@ -387,9 +418,9 @@ void Generator::writeOsCfgH(const OilModel& model, const Options& opts) const {
     if (anyAutostartAlarms) {
         h << "#define OS_FEATURE_AUTOSTART_ALARMS    STD_ON\n";
     }
-    h << "#define OS_NUMBER_OF_INT_RESOURCES     0\n";
-    h << "#define OS_RES_SCHEDULER               0\n";
-    h << "#define OS_NUMBER_OF_EXTERNAL_TIMERS   1\n";
+    h << "#define OS_NUMBER_OF_INT_RESOURCES     " << internalResourceCount << "\n";
+    h << "#define OS_RES_SCHEDULER               " << (hasSchedulerResource ? 1 : 0) << "\n";
+    h << "#define OS_NUMBER_OF_EXTERNAL_TIMERS   " << hwDrivers.size() << "\n";
     h << "#define OS_NUMBER_OF_INTERNAL_TIMERS   0\n\n";
     const auto total_tasks = tasks.size() + 1;  // include idle task
     h << "#define OS_CFG_OIL_VERSION \"" << model.oil_version << "\"\n";
@@ -400,6 +431,8 @@ void Generator::writeOsCfgH(const OilModel& model, const Options& opts) const {
     h << "#define OS_NUMBER_OF_RESOURCES " << resources.size() << "\n";
     h << "#define OS_NUMBER_OF_APPMODES " << appmodes.size() << "\n";
     h << "#define OS_NUMBER_OF_ISRS " << (isrs.size() + hwDrivers.size()) << "\n";
+    h << "#define OS_NUMBER_OF_NETWORKMESSAGES " << networkMessages.size() << "\n";
+    h << "#define OS_NUMBER_OF_IPDUS " << ipdus.size() << "\n";
     h << "#define OS_NUMBER_OF_MESSAGES " << messages.size() << "\n";
     h << "#define OS_NUMBER_OF_INTERNAL_MESSAGES " << msgStats.internal_count << "\n";
     h << "#define OS_NUMBER_OF_EXTERNAL_MESSAGES " << msgStats.external_count << "\n";
@@ -444,6 +477,57 @@ void Generator::writeOsCfgH(const OilModel& model, const Options& opts) const {
     h << "extern const char* const Os_TaskSchedule[OS_NUMBER_OF_TASKS];\n";
     h << "extern const char* const Os_TaskType[OS_NUMBER_OF_TASKS];\n";
     h << "extern const char* const Os_TaskAutostartAppmodes[OS_NUMBER_OF_TASKS];\n";
+    if (!messages.empty()) {
+        h << "extern const char* const Os_MessageNames[OS_NUMBER_OF_MESSAGES];\n";
+        h << "typedef struct {\n";
+        h << "    Com_FilterAlgorithm filter;\n";
+        h << "    uint64_t mask;\n";
+        h << "    uint64_t x;\n";
+        h << "    uint64_t min;\n";
+        h << "    uint64_t max;\n";
+        h << "    uint64_t period;\n";
+        h << "    uint64_t offset;\n";
+        h << "    uint64_t initial_value;\n";
+        h << "    uint32_t queue_size;\n";
+        h << "    uint16_t link_message;\n";
+        h << "    uint8_t link_enabled;\n";
+        h << "    uint8_t is_queued;\n";
+        h << "} Os_MessageFilterConfig;\n";
+        h << "extern const Os_MessageFilterConfig Os_MessageFilters[COM_NUMBER_OF_MESSAGES];\n";
+        h << "extern const int16_t Os_MessageNetworkId[COM_NUMBER_OF_MESSAGES];\n";
+    }
+    if (!networkMessages.empty()) {
+        h << "extern const char* const Os_NetworkMessageNames[OS_NUMBER_OF_NETWORKMESSAGES];\n";
+        h << "typedef struct {\n";
+        h << "    int16_t ipdu_id;\n";
+        h << "    const char* property;\n";
+        h << "    uint32_t size_bits;\n";
+        h << "    uint32_t max_size_bits;\n";
+        h << "    uint32_t bit_position;\n";
+        h << "    const char* bit_order;\n";
+        h << "    const char* interpretation;\n";
+        h << "    const char* direction;\n";
+        h << "    const char* transfer;\n";
+        h << "    uint64_t initial_value;\n";
+        h << "} Os_NetworkMessageConfig;\n";
+        h << "extern const Os_NetworkMessageConfig Os_NetworkMessages[OS_NUMBER_OF_NETWORKMESSAGES];\n";
+    }
+    if (!ipdus.empty()) {
+        h << "extern const char* const Os_IpduNames[OS_NUMBER_OF_IPDUS];\n";
+        h << "typedef struct {\n";
+        h << "    const char* property;\n";
+        h << "    const char* transmission_mode;\n";
+        h << "    uint32_t size_bits;\n";
+        h << "    uint64_t period;\n";
+        h << "    uint64_t offset;\n";
+        h << "    uint64_t min_delay;\n";
+        h << "    uint64_t timeout;\n";
+        h << "    uint64_t first_timeout;\n";
+        h << "    const char* callout;\n";
+        h << "    const char* layer;\n";
+        h << "} Os_IpduConfig;\n";
+        h << "extern const Os_IpduConfig Os_Ipdus[OS_NUMBER_OF_IPDUS];\n";
+    }
     h << "typedef struct {\n";
     h << "    uint8_t autostart;\n";
     h << "    uint32_t activation;\n";
@@ -513,6 +597,10 @@ void Generator::writeOsCfgH(const OilModel& model, const Options& opts) const {
     }
     if (!events.empty()) {
         h << "extern const char* const Os_EventNames[OS_NUMBER_OF_EVENTS];\n";
+        for (size_t i = 0; i < events.size(); ++i) {
+            h << "#define " << sanitize(events[i]->name) << " ((EventMaskType)(1u << " << i << "))\n";
+        }
+        h << "extern const EventMaskType Os_EventMask[OS_NUMBER_OF_EVENTS];\n";
     }
     if (!resources.empty()) {
         h << "typedef enum {\n";
@@ -653,6 +741,8 @@ void Generator::writeOsCfgC(const OilModel& model, const Options& opts) const {
     auto resources = filter(model, "RESOURCE");
     auto appmodes = filter(model, "APPMODE");
     auto messages = filter(model, "MESSAGE");
+    auto networkMessages = filter(model, "NETWORKMESSAGE");
+    auto ipdus = filter(model, "IPDU");
     auto isrs = filter(model, "ISR");
     bool anyAutostartAlarms = std::any_of(alarms.begin(), alarms.end(), [](const ObjectInstance* a) {
         return toBool(findAttr(*a, "AUTOSTART"), false);
@@ -673,6 +763,8 @@ void Generator::writeOsCfgC(const OilModel& model, const Options& opts) const {
         }
     }
     auto messageIndex = indexByName(messages);
+    auto networkMessageIndex = indexByName(networkMessages);
+    auto ipduIndex = indexByName(ipdus);
     auto resourceIndex = indexByName(resources);
     auto eventIndex = indexByName(events);
     std::vector<uint32_t> resourceCeil(resources.size(), 0);
@@ -973,23 +1065,60 @@ void Generator::writeOsCfgC(const OilModel& model, const Options& opts) const {
     }
     if (!hwDriversC.empty()) c << "\n";
 
-    if (!messages.empty()) {
-        struct MessageGenInfo {
-            std::string propUpper;
-            size_t size;
-            bool isReceive;
-            std::string notifyType;
-            std::string actionInit;
-            std::string setEventForward;
-            std::string setEventDef;
-        };
-        std::vector<MessageGenInfo> messageInfos;
-        for (const auto* m : messages) {
-            auto prop = findAttr(*m, "MESSAGEPROPERTY");
-            std::string propStr = prop.value_or("");
-            auto propTokenEnd = propStr.find_first_of(" {");
-            auto propToken = propStr.substr(0, propTokenEnd);
-            std::string propUpper = toUpper(propToken);
+        if (!messages.empty()) {
+            std::vector<std::vector<size_t>> receiversForMessage(messages.size());
+            for (size_t i = 0; i < messages.size(); ++i) {
+                auto sending = findAttr(*messages[i], "SENDINGMESSAGE");
+                if (!sending) sending = parseFirstToken(findAttr(*messages[i], "MESSAGEPROPERTY"), "SENDINGMESSAGE");
+                if (!sending) continue;
+                auto it = messageIndex.find(*sending);
+                if (it == messageIndex.end()) {
+                    auto upper = toUpper(*sending);
+                    for (const auto& kv : messageIndex) {
+                        if (toUpper(kv.first) == upper) {
+                            it = messageIndex.find(kv.first);
+                            break;
+                        }
+                    }
+                }
+                if (it != messageIndex.end()) {
+                    receiversForMessage[it->second].push_back(i);
+                }
+            }
+
+            struct MessageGenInfo {
+                std::string propUpper;
+                size_t size;
+                bool isReceive;
+                std::string notifyType;
+                std::string actionInit;
+                std::string setEventForward;
+                std::string setEventDef;
+                std::string receiverArray;
+                size_t receiverCount = 0;
+                std::vector<size_t> receivers;
+                uint8_t filterAlg = 0;
+                uint64_t mask = 0;
+                uint64_t x = 0;
+                uint64_t min = 0;
+                uint64_t max = 0;
+                uint64_t period = 0;
+                uint64_t offset = 0;
+                uint64_t initialValue = 0;
+                uint32_t queueSize = 0;
+                uint16_t linkMessage = 0xFFFF;
+                bool linkEnabled = false;
+                bool isQueued = false;
+                int16_t networkId = -1;
+            };
+            std::vector<MessageGenInfo> messageInfos;
+            for (size_t idx = 0; idx < messages.size(); ++idx) {
+                const auto* m = messages[idx];
+                auto prop = findAttr(*m, "MESSAGEPROPERTY");
+                std::string propStr = prop.value_or("");
+                auto propTokenEnd = propStr.find_first_of(" {");
+                auto propToken = propStr.substr(0, propTokenEnd);
+                std::string propUpper = toUpper(propToken);
             size_t sz = messageSize(m);
             bool isReceive = propUpper.find("RECEIVE") != std::string::npos;
             if (isReceive) {
@@ -1010,6 +1139,88 @@ void Generator::writeOsCfgC(const OilModel& model, const Options& opts) const {
             info.isReceive = isReceive;
             info.notifyType = "COM_NOTIFY_NONE";
             info.actionInit = "{ .Dummy = NULL }";
+            info.receiverCount = receiversForMessage[idx].size();
+            info.receivers = receiversForMessage[idx];
+            if (info.receiverCount > 0) {
+                info.receiverArray = "Com_MessageReceivers_" + sanitize(m->name);
+            }
+            auto filterAttr = findAttr(*m, "FILTER");
+            std::string filterTok = "ALWAYS";
+            if (filterAttr && !filterAttr->empty()) {
+                auto end = filterAttr->find_first_of(" {");
+                filterTok = toUpper(filterAttr->substr(0, end));
+            }
+            auto setFilter = [&](const std::string& tok) {
+                if (tok == "NEVER") info.filterAlg = 1;
+                else if (tok == "MASKEDNEWEQUALSX") info.filterAlg = 2;
+                else if (tok == "MASKEDNEWDIFFERSX") info.filterAlg = 3;
+                else if (tok == "NEWISEQUAL") info.filterAlg = 4;
+                else if (tok == "NEWISDIFFERENT") info.filterAlg = 5;
+                else if (tok == "MASKEDNEWEQUALSMASKEDOLD") info.filterAlg = 6;
+                else if (tok == "MASKEDNEWDIFFERSMASKEDOLD") info.filterAlg = 7;
+                else if (tok == "NEWISWITHIN") info.filterAlg = 8;
+                else if (tok == "NEWISOUTSIDE") info.filterAlg = 9;
+                else if (tok == "NEWISGREATER") info.filterAlg = 10;
+                else if (tok == "NEWISLESSOREQUAL") info.filterAlg = 11;
+                else if (tok == "NEWISLESS") info.filterAlg = 12;
+                else if (tok == "NEWISGREATEROREQUAL") info.filterAlg = 13;
+                else if (tok == "ONEEVERYN") info.filterAlg = 14;
+                else info.filterAlg = 0;
+            };
+            setFilter(filterTok);
+            auto setNum = [&](uint64_t& target, const std::optional<std::string>& src, const std::string& key) {
+                auto val = parseNumericToken(src, key);
+                if (val) target = *val;
+            };
+            setNum(info.mask, filterAttr, "MASK");
+            setNum(info.x, filterAttr, "X");
+            setNum(info.min, filterAttr, "MIN");
+            setNum(info.max, filterAttr, "MAX");
+            setNum(info.period, filterAttr, "PERIOD");
+            setNum(info.offset, filterAttr, "OFFSET");
+            auto initAttr = findAttr(*m, "INITIALVALUE");
+            if (!initAttr) initAttr = findAttr(*m, "MESSAGEPROPERTY");
+            setNum(info.initialValue, initAttr, "INITIALVALUE");
+            auto queueAttr = findAttr(*m, "QUEUESIZE");
+            if (!queueAttr) queueAttr = findAttr(*m, "MESSAGEPROPERTY");
+            if (queueAttr) {
+                info.queueSize = parseNumberToken(queueAttr, "QUEUESIZE").value_or(0);
+            }
+            if (propUpper.find("QUEUED") != std::string::npos) info.isQueued = true;
+            auto netAttr = findAttr(*m, "NETWORKMESSAGE");
+            if (!netAttr) netAttr = parseFirstToken(findAttr(*m, "MESSAGEPROPERTY"), "NETWORKMESSAGE");
+            auto linkNet = parseFirstToken(findAttr(*m, "LINK"), "NETWORKMESSAGE");
+            if (!netAttr && linkNet) netAttr = linkNet;
+            if (netAttr) {
+                auto it = networkMessageIndex.find(*netAttr);
+                if (it != networkMessageIndex.end()) info.networkId = static_cast<int16_t>(it->second);
+                else {
+                    auto upper = toUpper(*netAttr);
+                    for (const auto& kv : networkMessageIndex) {
+                        if (toUpper(kv.first) == upper) {
+                            info.networkId = static_cast<int16_t>(kv.second);
+                            break;
+                        }
+                    }
+                }
+            }
+            auto linkAttr = findAttr(*m, "LINK");
+            if (!linkAttr) linkAttr = findAttr(*m, "RECEIVEMESSAGE");
+            auto linkMsg = parseFirstToken(linkAttr, "RECEIVEMESSAGE");
+            if (linkMsg) {
+                info.linkEnabled = true;
+                auto it = messageIndex.find(*linkMsg);
+                if (it != messageIndex.end()) info.linkMessage = static_cast<uint16_t>(it->second);
+                else {
+                    auto upper = toUpper(*linkMsg);
+                    for (const auto& kv : messageIndex) {
+                        if (toUpper(kv.first) == upper) {
+                            info.linkMessage = static_cast<uint16_t>(kv.second);
+                            break;
+                        }
+                    }
+                }
+            }
             auto notif = findAttr(*m, "NOTIFICATION");
             std::string notifUpper = notif ? toUpper(*notif) : "";
             if (notif) {
@@ -1064,18 +1275,62 @@ void Generator::writeOsCfgC(const OilModel& model, const Options& opts) const {
                 c << info.setEventForward << "\n";
             }
         }
+        for (size_t i = 0; i < messageInfos.size(); ++i) {
+            if (messageInfos[i].receiverCount == 0) continue;
+            c << "static const Com_ReceiverType " << messageInfos[i].receiverArray << "[" << messageInfos[i].receiverCount << "] = {";
+            for (size_t r = 0; r < messageInfos[i].receivers.size(); ++r) {
+                auto ridx = messageInfos[i].receivers[r];
+                c << " { (MessageIdentifier)MESSAGE_ID_" << sanitize(messages[ridx]->name) << " }";
+                if (r + 1 < messageInfos[i].receivers.size()) c << ", ";
+            }
+            c << " };\n";
+        }
         c << "const Com_MessageObjectType Com_MessageObjects[COM_NUMBER_OF_MESSAGES] = {\n";
         for (size_t i = 0; i < messageInfos.size(); ++i) {
             const auto& info = messageInfos[i];
             c << "    { " << info.propUpper << ", " << info.notifyType << ", " << info.actionInit << ", (uint8)" << info.size << ", ";
             if (info.isReceive) {
-                c << "(const ApplicationDataRef *)&Com_MessageData_" << sanitize(messages[i]->name) << ", (uint8)0, (Com_ReceiverType *)NULL";
+                c << "(const ApplicationDataRef *)&Com_MessageData_" << sanitize(messages[i]->name) << ", (uint8)" << info.receiverCount << ", ";
             } else {
-                c << "(const ApplicationDataRef *)NULL, (uint8)0, (Com_ReceiverType *)NULL";
+                c << "(const ApplicationDataRef *)NULL, (uint8)" << info.receiverCount << ", ";
+            }
+            if (info.receiverCount > 0) {
+                c << "(const Com_ReceiverType *)" << info.receiverArray;
+            } else {
+                c << "(const Com_ReceiverType *)NULL";
             }
             c << ", (Com_AddressInformation const * const)NULL }";
             if (i + 1 < messageInfos.size()) c << ",";
             c << "\n";
+        }
+        c << "};\n\n";
+        c << "const Os_MessageFilterConfig Os_MessageFilters[COM_NUMBER_OF_MESSAGES] = {\n";
+        for (size_t i = 0; i < messageInfos.size(); ++i) {
+            const auto& info = messageInfos[i];
+            std::string linkId = "0xFFFF";
+            if (info.linkMessage != 0xFFFF && info.linkMessage < messages.size()) {
+                linkId = "(uint16_t)MESSAGE_ID_" + sanitize(messages[info.linkMessage]->name);
+            }
+            c << "    { (Com_FilterAlgorithm)" << static_cast<unsigned>(info.filterAlg) << ", "
+              << static_cast<unsigned long long>(info.mask) << ", "
+              << static_cast<unsigned long long>(info.x) << ", "
+              << static_cast<unsigned long long>(info.min) << ", "
+              << static_cast<unsigned long long>(info.max) << ", "
+              << static_cast<unsigned long long>(info.period) << ", "
+              << static_cast<unsigned long long>(info.offset) << ", "
+              << static_cast<unsigned long long>(info.initialValue) << ", "
+              << static_cast<unsigned long long>(info.queueSize) << ", "
+              << linkId << ", "
+              << (info.linkEnabled ? 1 : 0) << ", "
+              << (info.isQueued ? 1 : 0) << " }";
+            if (i + 1 < messageInfos.size()) c << ",";
+            c << "\n";
+        }
+        c << "};\n\n";
+        c << "const int16_t Os_MessageNetworkId[COM_NUMBER_OF_MESSAGES] = {";
+        for (size_t i = 0; i < messageInfos.size(); ++i) {
+            c << messageInfos[i].networkId;
+            if (i + 1 < messageInfos.size()) c << ", ";
         }
         c << "};\n\n";
         for (const auto& info : messageInfos) {
@@ -1083,6 +1338,69 @@ void Generator::writeOsCfgC(const OilModel& model, const Options& opts) const {
                 c << info.setEventDef << "\n";
             }
         }
+        c << "\n";
+    }
+
+    if (!networkMessages.empty()) {
+        c << "const Os_NetworkMessageConfig Os_NetworkMessages[OS_NUMBER_OF_NETWORKMESSAGES] = {\n";
+        for (size_t i = 0; i < networkMessages.size(); ++i) {
+            auto prop = firstTokenUpper(findAttr(*networkMessages[i], "MESSAGEPROPERTY"));
+            auto ipduRef = findAttr(*networkMessages[i], "IPDU");
+            int16_t ipduId = -1;
+            if (ipduRef) {
+                auto it = ipduIndex.find(*ipduRef);
+                if (it != ipduIndex.end()) ipduId = static_cast<int16_t>(it->second);
+                else {
+                    auto upper = toUpper(*ipduRef);
+                    for (const auto& kv : ipduIndex) {
+                        if (toUpper(kv.first) == upper) {
+                            ipduId = static_cast<int16_t>(kv.second);
+                            break;
+                        }
+                    }
+                }
+            }
+            uint32_t sizeBits = parseNumericToken(findAttr(*networkMessages[i], "SIZEINBITS"), "SIZEINBITS").value_or(0);
+            uint32_t maxSizeBits = parseNumericToken(findAttr(*networkMessages[i], "MAXIMUMSIZEINBITS"), "MAXIMUMSIZEINBITS").value_or(sizeBits);
+            uint32_t bitPos = parseNumericToken(findAttr(*networkMessages[i], "BITPOSITION"), "BITPOSITION").value_or(0);
+            uint64_t initial = parseNumericToken(findAttr(*networkMessages[i], "INITIALVALUE"), "INITIALVALUE").value_or(0);
+            auto bitOrder = findAttr(*networkMessages[i], "BITORDERING").value_or("");
+            auto interpretation = findAttr(*networkMessages[i], "DATAINTERPRETATION").value_or("");
+            auto direction = firstTokenUpper(findAttr(*networkMessages[i], "DIRECTION"));
+            auto transfer = firstTokenUpper(findAttr(*networkMessages[i], "TRANSFERPROPERTY"));
+            c << "    { " << ipduId << ", \"" << prop << "\", " << sizeBits << ", " << maxSizeBits << ", " << bitPos
+              << ", \"" << bitOrder << "\", \"" << interpretation << "\", \"" << direction << "\", \"" << transfer << "\", "
+              << static_cast<unsigned long long>(initial) << " }";
+            if (i + 1 < networkMessages.size()) c << ",";
+            c << "\n";
+        }
+        c << "};\n\n";
+    }
+
+    if (!ipdus.empty()) {
+        c << "const Os_IpduConfig Os_Ipdus[OS_NUMBER_OF_IPDUS] = {\n";
+        for (size_t i = 0; i < ipdus.size(); ++i) {
+            auto property = firstTokenUpper(findAttr(*ipdus[i], "IPDUPROPERTY"));
+            auto transmission = firstTokenUpper(findAttr(*ipdus[i], "TRANSMISSIONMODE"));
+            uint32_t sizeBits = parseNumericToken(findAttr(*ipdus[i], "SIZEINBITS"), "SIZEINBITS").value_or(0);
+            auto period = parseNumericToken(findAttr(*ipdus[i], "TRANSMISSIONMODE"), "TIMEPERIOD").value_or(0);
+            auto offset = parseNumericToken(findAttr(*ipdus[i], "TRANSMISSIONMODE"), "TIMEOFFSET").value_or(0);
+            auto minDelay = parseNumericToken(findAttr(*ipdus[i], "TRANSMISSIONMODE"), "MINIMUMDELAYTIME").value_or(0);
+            auto timeout = parseNumericToken(findAttr(*ipdus[i], "TIMEOUT"), "TIMEOUT").value_or(0);
+            auto firstTimeout = parseNumericToken(findAttr(*ipdus[i], "FIRSTTIMEOUT"), "FIRSTTIMEOUT").value_or(0);
+            auto callout = findAttr(*ipdus[i], "IPDUCALLOUT").value_or("");
+            auto layer = findAttr(*ipdus[i], "LAYERUSED").value_or("");
+            c << "    { \"" << property << "\", \"" << transmission << "\", " << sizeBits << ", "
+              << static_cast<unsigned long long>(period) << ", "
+              << static_cast<unsigned long long>(offset) << ", "
+              << static_cast<unsigned long long>(minDelay) << ", "
+              << static_cast<unsigned long long>(timeout) << ", "
+              << static_cast<unsigned long long>(firstTimeout) << ", "
+              << "\"" << callout << "\", \"" << layer << "\" }";
+            if (i + 1 < ipdus.size()) c << ",";
+            c << "\n";
+        }
+        c << "};\n\n";
     }
 
     emitStringArray(c, "Os_CounterNames", counters);
@@ -1099,6 +1417,12 @@ void Generator::writeOsCfgC(const OilModel& model, const Options& opts) const {
     if (!events.empty()) {
         emitStringArray(c, "Os_EventNames", events);
         c << '\n';
+        c << "const EventMaskType Os_EventMask[OS_NUMBER_OF_EVENTS] = {";
+        for (size_t i = 0; i < events.size(); ++i) {
+            c << "(EventMaskType)(1u << " << i << ")";
+            if (i + 1 < events.size()) c << ", ";
+        }
+        c << "};\n\n";
     }
     if (!resources.empty()) {
         emitStringArray(c, "Os_ResourceNames", resources);
@@ -1128,6 +1452,12 @@ void Generator::writeOsCfgC(const OilModel& model, const Options& opts) const {
     if (!messages.empty()) {
         emitStringArray(c, "Os_MessageNames", messages);
     }
+    if (!networkMessages.empty()) {
+        emitStringArray(c, "Os_NetworkMessageNames", networkMessages);
+    }
+    if (!ipdus.empty()) {
+        emitStringArray(c, "Os_IpduNames", ipdus);
+    }
 }
 
 void Generator::writeOrti(const OilModel& model, const Options& opts) const {
@@ -1142,6 +1472,7 @@ void Generator::writeOrti(const OilModel& model, const Options& opts) const {
     auto resources = filter(model, "RESOURCE");
     auto appmodes = filter(model, "APPMODE");
     auto isrs = filter(model, "ISR");
+    auto messages = filter(model, "MESSAGE");
     std::vector<const ObjectInstance*> autostartTasks;
     std::vector<const ObjectInstance*> otherTasks;
     for (const auto* t : tasks) {
@@ -1234,6 +1565,18 @@ void Generator::writeOrti(const OilModel& model, const Options& opts) const {
     }
     o << "\n        ] CURRENTAPPMODE, \"Current application mode\";\n";
     o << "    }, \"OS\";\n\n";
+
+    if (!messages.empty()) {
+        o << "    MESSAGE {\n";
+        o << "        ENUM \"uint16\" [\n";
+        for (size_t i = 0; i < messages.size(); ++i) {
+            o << "            \"" << sanitize(messages[i]->name) << "\" = " << i;
+            if (i + 1 < messages.size()) o << ",";
+            o << "\n";
+        }
+        o << "        ] CURRENTMESSAGE, \"Current COM message parameter\";\n";
+        o << "    }, \"COM\";\n\n";
+    }
 
     o << "    TASK {\n";
     o << "        ENUM \"uint8\" [\n";
@@ -1332,6 +1675,12 @@ void Generator::writeOrti(const OilModel& model, const Options& opts) const {
     o << "    LASTERROR           = \"OsLastError\";\n";
     o << "    CURRENTAPPMODE      = \"Os_AppMode\";\n";
     o << "};\n\n";
+
+    if (!messages.empty()) {
+        o << "MESSAGE COM {\n";
+        o << "    CURRENTMESSAGE      = \"(MessageIdentifier)(Os_ServiceContext.param1)\";\n";
+        o << "};\n\n";
+    }
 
     for (size_t i = 0; i < orderedTasks.size(); ++i) {
         auto basePrio = toNumber(findAttr(*orderedTasks[i], "PRIORITY"), 1);
