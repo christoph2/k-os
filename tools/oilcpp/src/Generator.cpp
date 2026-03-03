@@ -489,6 +489,8 @@ void Generator::writeOsCfgH(const OilModel& model, const Options& opts) const {
         }
         h << "extern const char* const Os_ResourceNames[OS_NUMBER_OF_RESOURCES];\n";
         h << "extern const char* const Os_ResourceProperty[OS_NUMBER_OF_RESOURCES];\n";
+        h << "extern const Os_ResourceConfigurationType OS_ResourceConf[OS_NUMBER_OF_RESOURCES];\n";
+        h << "extern Os_ResourceType Os_Resources[OS_NUMBER_OF_RESOURCES];\n";
     }
     if (!appmodes.empty()) {
         h << "typedef enum {\n";
@@ -600,6 +602,31 @@ void Generator::writeOsCfgC(const OilModel& model, const Options& opts) const {
         }
     }
     auto messageIndex = indexByName(messages);
+    auto resourceIndex = indexByName(resources);
+    std::vector<uint32_t> resourceCeil(resources.size(), 0);
+    for (const auto* t : tasks) {
+        auto resAttr = findAttr(*t, "RESOURCE");
+        if (!resAttr) continue;
+        auto prio = toNumber(findAttr(*t, "PRIORITY"), 0);
+        std::regex token(R"([A-Za-z_]\w*)");
+        for (std::sregex_iterator it(resAttr->begin(), resAttr->end(), token), end; it != end; ++it) {
+            auto name = (*it)[0].str();
+            auto idxIt = resourceIndex.find(name);
+            if (idxIt == resourceIndex.end()) {
+                auto upperName = toUpper(name);
+                for (const auto& kv : resourceIndex) {
+                    if (toUpper(kv.first) == upperName) {
+                        idxIt = resourceIndex.find(kv.first);
+                        break;
+                    }
+                }
+            }
+            if (idxIt != resourceIndex.end()) {
+                auto idx = idxIt->second;
+                if (prio > resourceCeil[idx]) resourceCeil[idx] = prio;
+            }
+        }
+    }
     constexpr size_t defaultStack = 32;
     auto resolveTaskId = [&](const std::optional<std::string>& name) -> uint8_t {
         if (!name) return 0;
@@ -980,6 +1007,16 @@ void Generator::writeOsCfgC(const OilModel& model, const Options& opts) const {
             if (i + 1 < resources.size()) c << ", ";
         }
         c << "};\n\n";
+        c << "const Os_ResourceConfigurationType OS_ResourceConf[OS_NUMBER_OF_RESOURCES] = {\n";
+        for (size_t i = 0; i < resources.size(); ++i) {
+            auto ceil = resourceCeil[i];
+            if (ceil == 0) ceil = toNumber(findAttr(*resources[i], "PRIORITY"), 0);
+            c << "    { (PriorityType)" << ceil << " }";
+            if (i + 1 < resources.size()) c << ",";
+            c << "\n";
+        }
+        c << "};\n\n";
+        c << "Os_ResourceType Os_Resources[OS_NUMBER_OF_RESOURCES];\n\n";
     }
     if (!appmodes.empty()) {
         emitStringArray(c, "Os_AppModeNames", appmodes);
