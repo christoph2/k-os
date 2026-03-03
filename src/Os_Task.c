@@ -27,6 +27,7 @@
 #include "Os_Mlq.h"
 #include "Os_Res.h"
 #include "Os_Exec.h"
+#include <stdio.h>
 
 /* Fixed incorrect task activation on ISR level. */
 

@@ -123,6 +123,7 @@ typedef enum tagTaskStateType {
 
 typedef TaskStateType * TaskStateRefType;   /*  This data type points to a variable of the data type TaskStateType. */
 typedef void (*Os_TaskFunctionType)(void);
+typedef uint8 StackType;
 
 /*
 **      Datatypes / Resource-Management.

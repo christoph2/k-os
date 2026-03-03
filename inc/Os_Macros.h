@@ -40,6 +40,8 @@
 #pragma MESSAGE DISABLE C4001
 #endif
 
+#include <assert.h>
+
 #define OSEK_SUCCESS(code)              (((code) == E_OK) ? TRUE : FALSE)
 
 #if !defined(_BEGIN_BLOCK)
@@ -47,6 +49,26 @@
 #endif
 #if !defined(_END_BLOCK)
 #define _END_BLOCK      } while (0)
+#endif
+
+#if !defined(ASSERT)
+#define ASSERT(expr)            assert((expr))
+#endif
+
+#if !defined(ASSERT_IS_NOT_NULL)
+#define ASSERT_IS_NOT_NULL(ptr) assert((ptr) != NULL)
+#endif
+
+#if !defined(FOREVER)
+#define FOREVER for (;;)
+#endif
+
+#if !defined(INVERT_NIBBLE)
+#define INVERT_NIBBLE(val) (val)
+#endif
+
+#if !defined(ISR1)
+#define ISR1(name) void name(void)
 #endif
 
 #if !defined(KDK_TOS)

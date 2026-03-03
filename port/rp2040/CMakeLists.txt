@@ -43,7 +43,6 @@ set(INCLUDES
         ${CMAKE_CURRENT_LIST_DIR}
         ${KOS_ROOT}
         ${KOS_ROOT}/inc
-        ${KOS_ROOT}/samples/template
         ${pico_mcp2515_SOURCE_DIR}/include
 )
 
@@ -110,11 +109,6 @@ else ()
     endif ()
 endif (MSVC)
 
-add_library(k_os_rp2040_port STATIC ${RP2040_PORT_SOURCES})
-target_include_directories(k_os_rp2040_port PUBLIC ${INCLUDES})
-target_compile_definitions(k_os_rp2040_port PRIVATE OS_FEATURE_ORTI_DEBUG=STD_OFF)
-target_link_libraries(k_os_rp2040_port pico_stdlib hardware_spi)
-
 # Generate sample OS configuration from OIL using kosgen_cpp
 set(KOS_RP2040_SAMPLE_OIL "${KOS_ROOT}/samples/pico/first.oil" CACHE FILEPATH "Sample OIL file for RP2040 config generation")
 set(KOS_RP2040_GEN_DIR "${CMAKE_CURRENT_BINARY_DIR}/generated/rp2040_sample")
@@ -144,10 +138,15 @@ add_custom_target(rp2040_sample_config ALL
     DEPENDS ${KOS_RP2040_GEN_PREFIX}.c ${KOS_RP2040_GEN_PREFIX}.h ${KOS_RP2040_GEN_PREFIX}.info.txt
 )
 
+add_library(k_os_rp2040_port STATIC ${RP2040_PORT_SOURCES})
+target_include_directories(k_os_rp2040_port PUBLIC ${INCLUDES} ${KOS_RP2040_GEN_DIR})
+target_link_libraries(k_os_rp2040_port pico_stdlib hardware_spi)
+add_dependencies(k_os_rp2040_port rp2040_sample_config)
+
 add_library(k_os_rp2040_core STATIC ${KOS_CORE_SOURCES})
 target_include_directories(k_os_rp2040_core PUBLIC ${INCLUDES} ${KOS_RP2040_GEN_DIR})
-target_compile_definitions(k_os_rp2040_core PRIVATE OS_FEATURE_ORTI_DEBUG=STD_OFF)
 target_link_libraries(k_os_rp2040_core k_os_rp2040_port)
+add_dependencies(k_os_rp2040_core rp2040_sample_config)
 
 add_executable(k_os_rp2040_sample
         Os_RP2040_Sample.c
