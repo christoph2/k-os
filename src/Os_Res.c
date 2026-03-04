@@ -30,7 +30,7 @@
 **  Local variables.
 */
 #if (OS_FEATURE_INTERNAL_RESOURCES == STD_ON)
-static uint16 BM_InternalResources;
+uint16 BM_InternalResources;
 #endif
 
 #if KOS_MEMORY_MAPPING == STD_ON
@@ -76,10 +76,10 @@ StatusType GetResource(ResourceType ResID)
 {
 /*
 **      Standard-Status:
-**              – E_OK – no error.
+**              ï¿½ E_OK ï¿½ no error.
 **      Extended-Status:
-**              – E_OS_ID – the resource identifier is invalid.
-**              – E_OS_ACCESS – attempt to get resource which is already
+**              ï¿½ E_OS_ID ï¿½ the resource identifier is invalid.
+**              ï¿½ E_OS_ACCESS ï¿½ attempt to get resource which is already
 **                occupied by any task or ISR, or the assigned in OIL
 **                priority of the calling task or interrupt routine is higher
 **                than the calculated ceiling priority.
@@ -130,13 +130,13 @@ StatusType ReleaseResource(ResourceType ResID)
 {
 /*
 **      Standard-Status:
-**              – E_OK – no error.
+**              ï¿½ E_OK ï¿½ no error.
 **      Extended-Status:
-**              – E_OS_ID – the resource identifier is invalid.
-**              – E_OS_NOFUNC – attempt to release a resource which is
+**              ï¿½ E_OS_ID ï¿½ the resource identifier is invalid.
+**              ï¿½ E_OS_NOFUNC ï¿½ attempt to release a resource which is
 **                not occupied by any task or ISR, or another resource has
 **                to be released before.
-**              – E_OS_ACCESS – attempt to release a resource which has
+**              ï¿½ E_OS_ACCESS ï¿½ attempt to release a resource which has
 **                a lower ceiling priority than the assigned in OIL priority
 **                of the calling task or interrupt routine. This error code
 **                returned only if E_OS_NOFUNC was not returned.

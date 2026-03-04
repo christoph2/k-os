@@ -40,8 +40,11 @@ void    OsRes_InitResources(void);
 void    OsRes_GetInternalResource(void);
 void    OsRes_ReleaseInternalResource(void);
 
-
 #endif  /* KOS_MEMORY_MAPPING */
+
+#if (OS_FEATURE_INTERNAL_RESOURCES == STD_ON)
+extern uint16 BM_InternalResources;
+#endif
 
 #endif  /* __OS_RES_H */
 
