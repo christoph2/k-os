@@ -11,12 +11,21 @@ include($ENV{PICO_SDK_PATH}/external/pico_sdk_import.cmake)
 
 project(k_os_rp2040 C CXX ASM)
 
-if(NOT DEFINED ENV{KOS_SRC_PATH})
-    message(FATAL_ERROR "KOS_SRC_PATH is not set. Please point it to the k_os source root (e.g. C:/csprojects/k-os).")
+if(NOT DEFINED KOS_SRC_PATH)
+    if(DEFINED ENV{KOS_SRC_PATH})
+        set(KOS_SRC_PATH "$ENV{KOS_SRC_PATH}")
+    else()
+        message(FATAL_ERROR "KOS_SRC_PATH is not set. Please point it to the k_os source root (e.g. C:/csprojects/k-os).")
+    endif()
 endif()
-get_filename_component(KOS_ROOT "$ENV{KOS_SRC_PATH}" ABSOLUTE)
+get_filename_component(KOS_ROOT "${KOS_SRC_PATH}" ABSOLUTE)
 
 pico_sdk_init()
+
+# Enforce cross compiler (should be arm-none-eabi-* when entered)
+if(NOT CMAKE_C_COMPILER MATCHES "arm-none-eabi")
+    message(FATAL_ERROR "RP2040 build requires an arm-none-eabi toolchain. Configure CMake with that compiler/toolchain (e.g., -DCMAKE_C_COMPILER=arm-none-eabi-gcc).")
+endif()
 
 set(CMAKE_C_STANDARD 11)
 set(CMAKE_C_STANDARD_REQUIRED ON)
@@ -164,3 +173,16 @@ target_link_libraries(k_os_rp2040_sample
         hardware_spi
 )
 pico_add_extra_outputs(k_os_rp2040_sample)
+
+# Copy artifacts to samples/rp2040/build for convenience
+set(KOS_RP2040_OUTPUT_DIR "${KOS_ROOT}/samples/rp2040/build")
+file(MAKE_DIRECTORY "${KOS_RP2040_OUTPUT_DIR}")
+add_custom_command(TARGET k_os_rp2040_sample POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different
+        $<TARGET_FILE:k_os_rp2040_sample>
+        "${KOS_RP2040_OUTPUT_DIR}/k_os_rp2040_sample.elf"
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different
+        "${CMAKE_CURRENT_BINARY_DIR}/k_os_rp2040_sample.uf2"
+        "${KOS_RP2040_OUTPUT_DIR}/k_os_rp2040_sample.uf2"
+    VERBATIM
+)

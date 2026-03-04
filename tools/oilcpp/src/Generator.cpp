@@ -575,13 +575,15 @@ void Generator::writeOsCfgH(const OilModel& model, const Options& opts) const {
         for (size_t i = 0; i < counters.size(); ++i) {
             h << "#define " << sanitize(counters[i]->name) << " ((uint8_t)COUNTER_ID_" << sanitize(counters[i]->name) << ")\n";
         }
-        h << "extern const char* const Os_CounterNames[OS_NUMBER_OF_COUNTERS];\n";
-        h << "typedef struct {\n";
-        h << "    uint32_t max_allowed_value;\n";
-        h << "    uint32_t ticks_per_base;\n";
-        h << "    uint32_t min_cycle;\n";
-        h << "} Os_CounterConfig;\n";
-        h << "extern const Os_CounterConfig Os_Counters[OS_NUMBER_OF_COUNTERS];\n";
+    }
+    h << "extern const char* const Os_CounterNames[OS_NUMBER_OF_COUNTERS];\n";
+    h << "typedef struct {\n";
+    h << "    uint32_t max_allowed_value;\n";
+    h << "    uint32_t ticks_per_base;\n";
+    h << "    uint32_t min_cycle;\n";
+    h << "} Os_CounterConfig;\n";
+    h << "extern const Os_CounterConfig Os_Counters[OS_NUMBER_OF_COUNTERS];\n";
+    if (!counters.empty()) {
         for (size_t i = 0; i < counters.size(); ++i) {
             auto type = findAttr(*counters[i], "TYPE");
             auto driver = extractDriver(type, findAttr(*counters[i], "DRIVER"));
@@ -637,7 +639,10 @@ void Generator::writeOsCfgH(const OilModel& model, const Options& opts) const {
             h << "#define " << sanitize(appmodes[i]->name) << " ((uint8_t)APPMODE_ID_" << sanitize(appmodes[i]->name) << ")\n";
         }
         h << "extern const char* const Os_AppModeNames[OS_NUMBER_OF_APPMODES];\n";
-        h << "#define OS_FEATURE_REAL_DEFAULT_APPMODE ((AppModeType)" << (appmodes.empty() ? 0 : 1) << ")\n";
+    }
+    h << "#define OS_FEATURE_REAL_DEFAULT_APPMODE ((AppModeType)" << (appmodes.empty() ? 0 : 1) << ")\n";
+    if (appmodes.empty()) {
+        h << "#define DefaultAppMode OS_FEATURE_REAL_DEFAULT_APPMODE\n";
     }
     if (!messages.empty()) {
         h << "typedef enum {\n";
@@ -660,12 +665,6 @@ void Generator::writeOsCfgH(const OilModel& model, const Options& opts) const {
         }
         h << "    ISR_ID_COUNT = " << (isrs.size() + hwDrivers.size()) << "\n";
         h << "} Os_IsrId;\n";
-        for (size_t i = 0; i < isrs.size(); ++i) {
-            h << "#define " << sanitize(isrs[i]->name) << " ((uint8_t)ISR_ID_" << sanitize(isrs[i]->name) << ")\n";
-        }
-        for (size_t i = 0; i < hwDrivers.size(); ++i) {
-            h << "#define " << sanitize(hwDrivers[i].first) << "Timer ((uint8_t)ISR_ID_" << sanitize(hwDrivers[i].first) << "Timer)\n";
-        }
         if (!hwDrivers.empty()) {
             h << "typedef enum {\n";
             h << "    ISRID_NONE,\n";
@@ -1460,6 +1459,8 @@ void Generator::writeOsCfgC(const OilModel& model, const Options& opts) const {
             }
         }
         c << "\n";
+    } else {
+        c << "const Com_MessageObjectType Com_MessageObjects[COM_NUMBER_OF_MESSAGES] = { };\n\n";
     }
 
     if (!networkMessages.empty()) {
@@ -1620,6 +1621,19 @@ void Generator::writeOrti(const OilModel& model, const Options& opts) const {
     auto messages = filter(model, "MESSAGE");
     auto networkMessages = filter(model, "NETWORKMESSAGE");
     auto ipdus = filter(model, "IPDU");
+    auto messageIndex = indexByName(messages);
+    bool hasNonPreemptTask = std::any_of(tasks.begin(), tasks.end(), [](const ObjectInstance* t) {
+        return toUpper(findAttr(*t, "SCHEDULE").value_or("FULL")) == "NON";
+    });
+    std::vector<const ObjectInstance*> internalResources;
+    bool hasSchedulerResource = hasNonPreemptTask;
+    for (const auto* r : resources) {
+        auto prop = toUpper(findAttr(*r, "RESOURCEPROPERTY").value_or(""));
+        if (prop.find("INTERNAL") != std::string::npos) internalResources.push_back(r);
+        if (prop.find("SCHEDULER") != std::string::npos || toUpper(r->name).find("SCHEDULER") != std::string::npos) hasSchedulerResource = true;
+    }
+    size_t internalResourceCount = internalResources.size() + (hasSchedulerResource ? 1 : 0);
+    bool hasInternalResourceFeature = internalResourceCount > 0;
     std::vector<std::pair<std::string, std::string>> hwDrivers;
     for (const auto* ctr : counters) {
         auto type = findAttr(*ctr, "TYPE");
@@ -1645,6 +1659,43 @@ void Generator::writeOrti(const OilModel& model, const Options& opts) const {
     orderedTasks.insert(orderedTasks.end(), autostartTasks.begin(), autostartTasks.end());
     orderedTasks.insert(orderedTasks.end(), otherTasks.begin(), otherTasks.end());
     auto priorityOrder = orderedPriorities(orderedTasks);
+
+    auto messageType = [&](const ObjectInstance* m) {
+        auto typeAttr = findAttr(*m, "CDATATYPE");
+        std::string typeStr = typeAttr.value_or("");
+        if (typeStr.empty()) {
+            auto sending = findAttr(*m, "SENDINGMESSAGE");
+            if (sending) {
+                auto it = messageIndex.find(*sending);
+                if (it != messageIndex.end()) {
+                    auto ref = messages[it->second];
+                    auto refType = findAttr(*ref, "CDATATYPE");
+                    typeStr = refType.value_or("");
+                }
+            }
+        }
+        if (!typeStr.empty() && (typeStr.front() == '"' || typeStr.front() == '\'')) {
+            if (typeStr.size() > 1) typeStr = typeStr.substr(1, typeStr.size() - 2);
+        }
+        typeStr = toUpper(typeStr);
+        return typeStr;
+    };
+
+    auto messageSize = [&](const ObjectInstance* m) {
+        auto typeStr = messageType(m);
+        if (typeStr.find("LONG") != std::string::npos || typeStr.find("UINT32") != std::string::npos ||
+            typeStr.find("INT32") != std::string::npos)
+            return 4;
+        if (typeStr.find("SHORT") != std::string::npos || typeStr.find("UINT16") != std::string::npos ||
+            typeStr.find("INT16") != std::string::npos)
+            return 2;
+        if (typeStr.find("CHAR") != std::string::npos || typeStr.find("UINT8") != std::string::npos ||
+            typeStr.find("INT8") != std::string::npos)
+            return 1;
+        if (typeStr.find("FLOAT") != std::string::npos)
+            return 4;
+        return 4;
+    };
 
     std::vector<std::pair<std::string, int>> serviceIds = {
         {"NoService", 0},           {"ActivateTask", 2},      {"TerminateTask", 4},     {"ChainTask", 6},
@@ -2185,10 +2236,7 @@ void Generator::writeTargetTemplate(const Options& opts) const {
     if (out_dir.empty()) out_dir = ".";
     std::error_code ec;
     std::filesystem::create_directories(out_dir, ec);
-    auto out = out_dir / "kosgen.cmake";
-
-    std::ofstream cm(out, std::ios::binary);
-    if (!cm) throw std::runtime_error("Cannot open output file: " + out.string());
+    std::ostringstream cm;
 
     auto prefix_name = opts.output_prefix.filename().generic_string();
     if (prefix_name.empty()) prefix_name = "Os_Cfg";
@@ -2199,7 +2247,7 @@ void Generator::writeTargetTemplate(const Options& opts) const {
     cm << "  if(DEFINED ENV{KOS_SRC_PATH})\n";
     cm << "    set(KOS_SRC_PATH \"$ENV{KOS_SRC_PATH}\")\n";
     cm << "  else()\n";
-    cm << "    message(FATAL_ERROR \"KOS_SRC_PATH is not set; point it to the k_os source root.\")\n";
+    cm << "    set(KOS_SRC_PATH \"" << std::filesystem::current_path().generic_string() << "\")\n";
     cm << "  endif()\n";
     cm << "endif()\n\n";
 
@@ -2253,8 +2301,8 @@ void Generator::writeTargetTemplate(const Options& opts) const {
     cm << "  list(APPEND KOSGEN_PORT_SOURCES \"${KOS_SRC_PATH}/port/rp2040/Os_Port_RP2040.c\")\n";
     cm << "  list(APPEND KOSGEN_PORT_LIBS pico_stdlib hardware_spi)\n";
     cm << "elseif(KOSGEN_TARGET STREQUAL \"stm32\")\n";
-    cm << "  list(APPEND KOSGEN_INCLUDE_DIRS \"${KOS_SRC_PATH}/port/stm32/gcc\")\n";
-    cm << "  list(APPEND KOSGEN_PORT_SOURCES \"${KOS_SRC_PATH}/port/stm32/gcc/Os_Port_stm32.c\")\n";
+    cm << "  list(APPEND KOSGEN_INCLUDE_DIRS \"${KOS_SRC_PATH}/port/stm32\")\n";
+    cm << "  list(APPEND KOSGEN_PORT_SOURCES \"${KOS_SRC_PATH}/port/stm32/Os_Port_STM32.c\")\n";
     cm << "elseif(KOSGEN_TARGET STREQUAL \"windows\")\n";
     cm << "  list(APPEND KOSGEN_INCLUDE_DIRS \"${KOS_SRC_PATH}/port/windows\")\n";
     cm << "  list(APPEND KOSGEN_PORT_SOURCES \"${KOS_SRC_PATH}/port/windows/Os_Port_Win32.c\")\n";
@@ -2270,6 +2318,17 @@ void Generator::writeTargetTemplate(const Options& opts) const {
     cm << "# target_include_directories(kos_app PRIVATE ${KOSGEN_INCLUDE_DIRS})\n";
     cm << "# target_link_libraries(kos_app ${KOSGEN_PORT_LIBS})\n";
     cm << "# Adjust toolchain/SDK settings as needed for the selected target.\n";
+
+    const auto body = cm.str();
+    auto kosgen_snippet = out_dir / "kosgen.cmake";
+    auto cmakelists = out_dir / "CMakeLists.txt";
+    auto writeFile = [&](const std::filesystem::path& path) {
+        std::ofstream f(path, std::ios::binary);
+        if (!f) throw std::runtime_error("Cannot open output file: " + path.string());
+        f << body;
+    };
+    writeFile(kosgen_snippet);
+    writeFile(cmakelists);
 }
 
 void Generator::writeMainStub(const OilModel& model, const Options& opts) const {
@@ -2289,10 +2348,7 @@ void Generator::writeMainStub(const OilModel& model, const Options& opts) const 
     auto isrs = filter(model, "ISR");
     auto appmodes = filter(model, "APPMODE");
 
-    std::string appMode = "DefaultAppMode";
-    if (!appmodes.empty()) {
-        appMode = sanitize(appmodes.front()->name);
-    }
+    std::string appMode = appmodes.empty() ? "OS_FEATURE_REAL_DEFAULT_APPMODE" : sanitize(appmodes.front()->name);
 
     std::ofstream m(out, std::ios::binary);
     if (!m) throw std::runtime_error("Cannot open output file: " + out.string());
@@ -2302,7 +2358,7 @@ void Generator::writeMainStub(const OilModel& model, const Options& opts) const 
         m << " (target: " << opts.target << ")";
     }
     m << " */\n\n";
-    m << "#include \"Os.h\"\n";
+    m << "#include \"Osek.h\"\n";
     m << "#include \"Os_Cfg.h\"\n\n";
 
     for (const auto* t : tasks) {

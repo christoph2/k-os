@@ -9,7 +9,7 @@ endif()
 project(k_os_stm32 C ASM)
 
 if(NOT DEFINED ENV{KOS_SRC_PATH})
-    message(FATAL_ERROR "KOS_SRC_PATH is not set. Please point it to the k_os source root (e.g. C:/csprojects/k-os).")
+    message(FATAL_ERROR "KOS_SRC_PATH is not set. Please point it to the k_os source root (e.g. C:/projects/k-os).")
 endif()
 get_filename_component(KOS_ROOT "$ENV{KOS_SRC_PATH}" ABSOLUTE)
 

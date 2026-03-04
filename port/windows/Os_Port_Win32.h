@@ -119,23 +119,13 @@ extern "C" {
 #endif
 
 #include <windows.h>
+#include <mmsystem.h>
 #include <process.h>
 
 /*
 **  Additional MinGW fixes after windows.h
 */
 #if defined(__MINGW32__) || defined(__MINGW64__)
-    /* Ensure multimedia timer functions are available */
-    #ifndef MMRESULT
-    typedef UINT MMRESULT;
-    #endif
-
-    /* Forward declare multimedia functions if not available */
-    #ifndef timeBeginPeriod
-    WINMMAPI MMRESULT WINAPI timeBeginPeriod(UINT uPeriod);
-    WINMMAPI MMRESULT WINAPI timeEndPeriod(UINT uPeriod);
-    #endif
-
     /* Ensure GetVersionEx is available */
     #ifndef GetVersionExA
     WINBASEAPI WINBOOL WINAPI GetVersionExA(LPOSVERSIONINFOA lpVersionInformation);
@@ -158,20 +148,8 @@ extern "C" {
 #endif
 
 /*
-**  OSEK types - avoid conflicts with existing definitions
-*/
-#ifndef TaskType
-typedef uint8_t TaskType;
-#endif
-
-#ifndef Os_TaskFunctionType
-typedef void Os_TaskFunctionType(void);
-#endif
-
-/*
 **  Port-specific types.
 */
-typedef DWORD InterruptStateType;
 typedef CRITICAL_SECTION OsPort_MutexType;
 typedef HANDLE OsPort_EventType;
 typedef HANDLE OsPort_ThreadType;
@@ -241,32 +219,10 @@ void OsPort_TerminateTask(HANDLE ThreadHandle);
 */
 void CALLBACK OsPort_TimerCallback(PVOID lpParameter, BOOLEAN TimerOrWaitFired);
 void OsPort_SimulateInterrupt(void);
-
-/*
-**  Context switching macros using Windows synchronization.
-*/
-#define OsPort_SaveContext() \
-    do { \
-        EnterCriticalSection(&OsPort_GlobalCriticalSection); \
-    } while(0)
-
-#define OsPort_RestoreContext() \
-    do { \
-        LeaveCriticalSection(&OsPort_GlobalCriticalSection); \
-        SetEvent(OsPort_ScheduleEvent); \
-    } while(0)
-
-#define OsPort_StartCurrentTask() \
-    do { \
-        WaitForSingleObject(OsPort_ScheduleEvent, INFINITE); \
-        ResetEvent(OsPort_ScheduleEvent); \
-        LeaveCriticalSection(&OsPort_GlobalCriticalSection); \
-    } while(0)
-
-#define OsPort_SwitchToISRContext() \
-    do { \
-        EnterCriticalSection(&OsPort_GlobalCriticalSection); \
-    } while(0)
+void OsPort_StartCurrentTask(void);
+void OsPort_SaveContext(void);
+void OsPort_RestoreContext(void);
+void OsPort_SwitchToISRContext(void);
 
 /*
 **  Interrupt disable/enable macros using critical sections.

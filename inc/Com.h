@@ -49,6 +49,11 @@ COMCallback(CallbackRoutineName)
 #if !defined(__COM_H)
 #define __COM_H
 
+#if defined(WIN32)
+#undef SendMessage
+#define SendMessage Com_SendMessage
+#endif
+
 #include "Os_Types.h"
 
 /**

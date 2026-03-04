@@ -8,7 +8,9 @@
 #include "Std_Types.h"
 #include <setjmp.h>
 
+#ifndef UNREFERENCED_PARAMETER
 #define UNREFERENCED_PARAMETER(x) ((void)(x))
+#endif
 
 #define UTL_BIT_SET8(val, bit)    ((val) = (uint8)((val) |  (uint8)(1u << (bit))))
 #define UTL_BIT_RESET8(val, bit)  ((val) = (uint8)((val) & (uint8)(~(uint8)(1u << (bit)))))

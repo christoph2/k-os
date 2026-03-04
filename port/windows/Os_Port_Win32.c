@@ -38,8 +38,8 @@ volatile LONG OsPort_InterruptFlag = 0;
 LARGE_INTEGER OsPort_StartTime;
 LARGE_INTEGER OsPort_PerformanceFrequency;
 
-/* Stack for ISR context simulation */
-static uint8_t ISR_Stack[ISR_STACK_SIZE];
+/* Stack for ISR context simulation (provided by generated config) */
+extern uint8_t ISR_Stack[ISR_STACK_SIZE];
 const SizeType OS_TOS_ISR = (SizeType)((const uint8_t *)&ISR_Stack + ISR_STACK_SIZE);
 
 /* Console handles for debugging */

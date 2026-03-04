@@ -34,6 +34,10 @@
 #include "Os_Evt.h"
 #include "Utl.h"
 
+#ifdef SendMessage
+#undef SendMessage
+#endif
+
 #if OS_FEATURE_COM == STD_ON
 
 #if 0
@@ -91,13 +95,13 @@ StatusType StartCOM(COMApplicationModeType Mode)
 {
 /*
     Standard:
-        · This service returns E_OK if the initialisation completed successfully.
-        · This service returns an implementation-specific status code if the
+        ï¿½ This service returns E_OK if the initialisation completed successfully.
+        ï¿½ This service returns an implementation-specific status code if the
           initialisation was not completed successfully.
     Extended:
         In addition to the standard status codes defined above, the following
         status code is supported:
-        · This service returns E_COM_ID if the parameter <Mode> is out of range.
+        ï¿½ This service returns E_COM_ID if the parameter <Mode> is out of range.
  */
     StatusType Status;
     uint8                           idx;
@@ -150,17 +154,17 @@ StatusType StopCOM(COMShutdownModeType Mode)
  */
 /*
     Standard:
-        · This service returns E_OK if OSEK COM was shut down successfully.
-        · This service returns an implementation-specific status code if the
+        ï¿½ This service returns E_OK if OSEK COM was shut down successfully.
+        ï¿½ This service returns an implementation-specific status code if the
           shutdown was not completed successfully.
     Extended:
         In addition to the standard status codes defined above, the following
         status code is supported:
-        · This service returns E_COM_ID if the parameter <Mode> is out of range.
+        ï¿½ This service returns E_COM_ID if the parameter <Mode> is out of range.
  */
     Os_SaveServiceContext(COMServiceId_StopCOM, Mode, NULL, NULL);
 
-    UNREFERENCED_PARAMETER(Mode);   /* Nur vorübergehend !!! */
+    UNREFERENCED_PARAMETER(Mode);   /* Nur vorï¿½bergehend !!! */
 
     Com_Status = COM_UNINIT;
 
@@ -188,14 +192,14 @@ StatusType InitMessage(MessageIdentifier Message, ApplicationDataRef DataRef)
 {
 /*
     Standard:
-        · This service returns E_OK if the initialisation of the message object
+        ï¿½ This service returns E_OK if the initialisation of the message object
           completed successfully.
-        · This service returns an implementation-specific status code if the
+        ï¿½ This service returns an implementation-specific status code if the
           initialisation did not complete successfully.
     Extended:
         In addition to the standard status code defined above, the following
         status code is supported:
-        · This service returns E_COM_ID if the parameter <Message> is
+        ï¿½ This service returns E_COM_ID if the parameter <Message> is
           out of range or refers to a zero-length message or to an internal transmit message.
  */
     Os_SaveServiceContext(COMServiceId_InitMessage, Message, DataRef, NULL);
@@ -220,8 +224,8 @@ StatusType StartPeriodic(void)
 {
 /*
    Standard and Extended:
-    · This service returns E_OK if periodic transmission was started successfully.
-    · This service returns an implementation-specific status code if starting of
+    ï¿½ This service returns E_OK if periodic transmission was started successfully.
+    ï¿½ This service returns an implementation-specific status code if starting of
       periodic transmission was not completed successfully.
  */
     Os_SaveServiceContext(COMServiceId_StartPeriodic, NULL, NULL, NULL);
@@ -240,8 +244,8 @@ StatusType StopPeriodic(void)
 {
 /*
     Standard and Extended:
-        · This service returns E_OK if periodic transmission was stopped successfully.
-        · This service returns an implementation-specific status code if
+        ï¿½ This service returns E_OK if periodic transmission was stopped successfully.
+        ï¿½ This service returns an implementation-specific status code if
           stopping periodic transmission was not completed successfully.
  */
     Os_SaveServiceContext(COMServiceId_StopPeriodic, NULL, NULL, NULL);
@@ -260,11 +264,11 @@ StatusType SendMessage(MessageIdentifier Message, ApplicationDataRef DataRef)
 {
 /*
     Standard:
-        · This service returns E_OK if the service operation completed successfully.
+        ï¿½ This service returns E_OK if the service operation completed successfully.
     Extended:
         In addition to the standard status code defined above, the following
         status code is supported:
-        · This service returns E_COM_ID if the parameter <Message> is
+        ï¿½ This service returns E_COM_ID if the parameter <Message> is
           out of range or if it refers to a message that is received or to a
           dynamic-length or zero-length message.
  */
@@ -308,12 +312,12 @@ StatusType ReceiveMessage(MessageIdentifier Message, ApplicationDataRef DataRef)
 {
 /*
     Standard:
-        · This service returns E_OK if data in the queued or unqueued
+        ï¿½ This service returns E_OK if data in the queued or unqueued
           message identified by <Message> are available and returned to
           the application successfully.
-        · This service returns E_COM_NOMSG if the queued message
+        ï¿½ This service returns E_COM_NOMSG if the queued message
           identified by <Message> is empty.
-        · This service returns E_COM_LIMIT if an overflow of the message
+        ï¿½ This service returns E_COM_LIMIT if an overflow of the message
           queue identified by <Message> occurred since the last call to
           ReceiveMessage for <Message>. E_COM_LIMIT indicates that
           at least one message has been discarded since the message
@@ -323,7 +327,7 @@ StatusType ReceiveMessage(MessageIdentifier Message, ApplicationDataRef DataRef)
     Extended:
         In addition to the standard status codes defined above, the following
         status code is supported:
-        · This service returns E_COM_ID if the parameter <Message> is
+        ï¿½ This service returns E_COM_ID if the parameter <Message> is
           out of range or if it refers to message that is sent or to a dynamiclength
           or zero-length message.
  */
@@ -368,14 +372,14 @@ StatusType SendDynamicMessage(MessageIdentifier Message, ApplicationDataRef Data
 {
 /*
     Standard:
-        · This service returns E_OK if the service operation completed successfully.
+        ï¿½ This service returns E_OK if the service operation completed successfully.
     Extended:
         In addition to the standard status code defined above, the following
         status codes are supported:
-        · This service returns E_COM_ID if the parameter <Message> is
+        ï¿½ This service returns E_COM_ID if the parameter <Message> is
           out of range or if it refers to a received message, a static-length
           message or a zero-length message.
-        · This service returns E_COM_LENGTH if the value to which
+        ï¿½ This service returns E_COM_LENGTH if the value to which
           <LengthRef> points is not within the range 0 to the maximum
           length defined for <Message>.
  */
@@ -398,12 +402,12 @@ StatusType ReceiveDynamicMessage(MessageIdentifier Message, ApplicationDataRef D
 {
 /*
     Standard:
-        · This service returns E_OK if data in the unqueued message identified by <Message>
+        ï¿½ This service returns E_OK if data in the unqueued message identified by <Message>
           is returned to the application succesfully.
     Extended:
         In addition to the standard status code defined above, the following
         status codes are supported:
-        · This service returns E_COM_ID if the parameter <Message> is
+        ï¿½ This service returns E_COM_ID if the parameter <Message> is
           out of range or if it refers to a message that is sent, a queued message,
           a static-length message or a zero-length message.
  */
@@ -424,11 +428,11 @@ StatusType SendZeroMessage(MessageIdentifier Message)
 {
 /*
     Standard:
-        · This service returns E_OK if the service operation completed successfully.
+        ï¿½ This service returns E_OK if the service operation completed successfully.
     Extended:
         In addition to the standard status code defined above, the following
         status code is supported:
-        · This service returns E_COM_ID if the parameter <Message> is
+        ï¿½ This service returns E_COM_ID if the parameter <Message> is
           out of range or if it refers to a non-zero-length message.
  */
     Os_SaveServiceContext(COMServiceId_SendZeroMessage, Message, NULL, NULL);
@@ -448,17 +452,17 @@ StatusType GetMessageStatus(MessageIdentifier Message)
 {
 /*
     Standard:
-        · This service returns E_COM_NOMSG if the message queue
+        ï¿½ This service returns E_COM_NOMSG if the message queue
           identified by <Message> is empty.
-        · This service returns E_COM_LIMIT if an overflow of the message
+        ï¿½ This service returns E_COM_LIMIT if an overflow of the message
           queue identified by <Message> occurred since the last call to
           ReceiveMessage for <Message>.
-        · This service returns E_OK if none of the conditions specified
+        ï¿½ This service returns E_OK if none of the conditions specified
           above is applicable or fulfilled and no error indication is present.
     Extended:
         In addition to the standard status codes defined above, the following
         status code is supported:
-        · This service returns E_COM_ID if the parameter <Message> is
+        ï¿½ This service returns E_COM_ID if the parameter <Message> is
           out of range or if it does not refer to a queued message.
  */
     Os_SaveServiceContext(COMServiceId_GetMessageStatus, Message, NULL, NULL);
@@ -580,6 +584,97 @@ Std_LevelType Com_GetFlag(MessageIdentifier message)
     #define OSEK_COM_STOP_SEC_CODE
     #include "MemMap.h"
 #endif  /* KOS_MEMORY_MAPPING */
+
+#else /* OS_FEATURE_COM == STD_ON */
+
+StatusType StartCOM(COMApplicationModeType Mode)
+{
+    (void)Mode;
+    return E_OK;
+}
+
+StatusType StopCOM(COMShutdownModeType Mode)
+{
+    (void)Mode;
+    return E_OK;
+}
+
+COMApplicationModeType GetCOMApplicationMode(void)
+{
+    return (COMApplicationModeType)0;
+}
+
+StatusType InitMessage(MessageIdentifier Message, ApplicationDataRef DataRef)
+{
+    (void)Message;
+    (void)DataRef;
+    return E_OK;
+}
+
+StatusType StartPeriodic(void)
+{
+    return E_OK;
+}
+
+StatusType StopPeriodic(void)
+{
+    return E_OK;
+}
+
+StatusType SendMessage(MessageIdentifier Message, ApplicationDataRef DataRef)
+{
+    (void)Message;
+    (void)DataRef;
+    return E_OK;
+}
+
+StatusType SendDynamicMessage(MessageIdentifier Message, ApplicationDataRef DataRef, LengthRef LengthRef)
+{
+    (void)Message;
+    (void)DataRef;
+    (void)LengthRef;
+    return E_OK;
+}
+
+StatusType SendZeroMessage(MessageIdentifier Message)
+{
+    (void)Message;
+    return E_OK;
+}
+
+StatusType GetMessageStatus(MessageIdentifier Message)
+{
+    (void)Message;
+    return E_OK;
+}
+
+COMServiceIdType COMErrorGetServiceId(void)
+{
+    return (COMServiceIdType)0;
+}
+
+void ComIf_UpdateAndNotifyReceivers(Com_MessageObjectType const * const MessageSendObject,
+                                    ApplicationDataRef DataRef)
+{
+    (void)MessageSendObject;
+    (void)DataRef;
+}
+
+void Com_SetFlag(MessageIdentifier message)
+{
+    (void)message;
+}
+
+void Com_ResetFlag(MessageIdentifier message)
+{
+    (void)message;
+}
+
+Std_LevelType Com_GetFlag(MessageIdentifier message)
+{
+    (void)message;
+    return (Std_LevelType)0;
+}
 
 #endif  /* OS_FEATURE_COM */
 

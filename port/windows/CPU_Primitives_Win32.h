@@ -4,7 +4,9 @@
 #ifndef __CPU_PRIMITIVES_WIN32_H
 #define __CPU_PRIMITIVES_WIN32_H
 
+#ifndef WIN32_LEAN_AND_MEAN
 #define WIN32_LEAN_AND_MEAN
+#endif
 #include <windows.h>
 #include <stdint.h>
 
@@ -56,5 +58,6 @@ static inline void cpu_win_set_state(uint8_t state) { __cpu_interrupt_disabled =
 #define CPU_NO_OPERATION() __asm nop
 #define CPU_BREAKPOINT() __debugbreak()
 #define CPU_MEMORY_BARRIER() MemoryBarrier()
+#define CPU_ENTER_POWERDOWN_MODE() Sleep(1)
 
 #endif /* __CPU_PRIMITIVES_WIN32_H */

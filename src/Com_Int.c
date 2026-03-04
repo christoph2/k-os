@@ -31,6 +31,8 @@
 #include "Com_Int.h"
 #include "Utl.h"
 
+#if OS_FEATURE_COM == STD_ON
+
 #if KOS_MEMORY_MAPPING == STD_ON
 FUNC(StatusType, OSEK_COM_CODE) ComInt_SendMessage(MessageIdentifier Message, ApplicationDataRef DataRef)
 #else
@@ -62,3 +64,21 @@ StatusType ComInt_ReceiveMessage(MessageIdentifier Message, ApplicationDataRef D
 
     return E_OK;
 }
+
+#else /* OS_FEATURE_COM == STD_ON */
+
+StatusType ComInt_SendMessage(MessageIdentifier Message, ApplicationDataRef DataRef)
+{
+    UNREFERENCED_PARAMETER(Message);
+    UNREFERENCED_PARAMETER(DataRef);
+    return E_OK;
+}
+
+StatusType ComInt_ReceiveMessage(MessageIdentifier Message, ApplicationDataRef DataRef)
+{
+    UNREFERENCED_PARAMETER(Message);
+    UNREFERENCED_PARAMETER(DataRef);
+    return E_OK;
+}
+
+#endif /* OS_FEATURE_COM == STD_ON */
