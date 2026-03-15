@@ -31,9 +31,16 @@ OS_DEFINE_GLOBAL_IF_DEBUGGING(OsLastError, StatusType);
 #endif
 #endif
 
+#if defined(_MSC_VER)
+void ErrorHook(StatusType Error) { (void)Error; }
+#if OS_FEATURE_COM == STD_ON
+void COMErrorHook(StatusType Error) { (void)Error; }
+#endif
+#else
 __attribute__((weak)) void ErrorHook(StatusType Error) { (void)Error; }
 #if OS_FEATURE_COM == STD_ON
 __attribute__((weak)) void COMErrorHook(StatusType Error) { (void)Error; }
+#endif
 #endif
 
 #if (OS_FEATURE_ORTI_DEBUG == STD_ON)
