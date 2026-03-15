@@ -6,6 +6,11 @@ set(CMAKE_C_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+set(KOS_CROSS_ARM OFF)
+if(CMAKE_C_COMPILER MATCHES "arm-none-eabi")
+    set(KOS_CROSS_ARM ON)
+endif()
+
 # Source root (defaults to this tree, can be overridden)
 set(KOS_SRC_PATH "${CMAKE_CURRENT_SOURCE_DIR}" CACHE PATH "Path to k_os source root")
 set(KOS_INCLUDE_DIRS "${KOS_SRC_PATH}" "${KOS_SRC_PATH}/inc")
@@ -34,25 +39,39 @@ if(EXISTS ${KOS_SRC_PATH}/src/Com_Ext.c)
     list(APPEND KOS_KERNEL_SOURCES ${KOS_SRC_PATH}/src/Com_Ext.c)
 endif()
 
-# C++ OIL generator
-add_subdirectory(tools/oilcpp)
+# C++ OIL generator / parser
+if(NOT KOS_CROSS_ARM)
+    add_subdirectory(tools/oilcpp)
 
-# OIL parser tool (C++17)
-add_executable(oilparse
-    tools/oil/OilLexer.cpp
-    tools/oil/OilParser.cpp
-    tools/oil/oilparse.cpp
-)
-target_include_directories(oilparse PRIVATE tools/oil)
+    # OIL parser tool (C++17)
+    add_executable(oilparse
+        tools/oil/OilLexer.cpp
+        tools/oil/OilParser.cpp
+        tools/oil/oilparse.cpp
+    )
+    target_include_directories(oilparse PRIVATE tools/oil)
 
-# Install generator + parser
-install(TARGETS kosgen_cpp oilparse RUNTIME DESTINATION bin)
+    # Install generator + parser
+    install(TARGETS kosgen_cpp oilparse RUNTIME DESTINATION bin)
 
-if(MSVC)
-    set_property(TARGET kosgen_cpp PROPERTY MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
-    set_property(TARGET oilparse   PROPERTY MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
-elseif(MINGW)
-    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -static-libgcc")
+    if(MSVC)
+        set_property(TARGET kosgen_cpp PROPERTY MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
+        set_property(TARGET oilparse   PROPERTY MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
+    elseif(MINGW)
+        set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -static-libgcc")
+    endif()
+else()
+    if(NOT KOSGEN_CPP_EXECUTABLE)
+        # Default to in-tree host build if present
+        set(KOSGEN_CPP_EXECUTABLE "${CMAKE_SOURCE_DIR}/tools/oilcpp/kosgen_cpp.exe" CACHE FILEPATH "Host-built kosgen_cpp for cross builds")
+    endif()
+    if(NOT EXISTS "${KOSGEN_CPP_EXECUTABLE}")
+        message(FATAL_ERROR "Cross-compiling with arm-none-eabi requires a host-built kosgen_cpp. Set KOSGEN_CPP_EXECUTABLE to the host binary path.")
+    endif()
+    add_executable(kosgen_cpp IMPORTED GLOBAL)
+    set_target_properties(kosgen_cpp PROPERTIES IMPORTED_LOCATION "${KOSGEN_CPP_EXECUTABLE}")
+    message(STATUS "Using prebuilt kosgen_cpp at ${KOSGEN_CPP_EXECUTABLE} for cross build.")
+    # oilparse is not needed for target builds; skip in cross mode.
 endif()
 
 # Helper to collect port specifics
@@ -167,7 +186,7 @@ else()
 endif()
 
 if(KOS_RP2040_AVAILABLE)
-    set(KOS_RP2040_SAMPLE_OIL "${KOS_SRC_PATH}/samples/rp2040/first.oil" CACHE FILEPATH "Sample OIL file for RP2040 config generation" FORCE)
+    set(KOS_RP2040_SAMPLE_OIL "${KOS_SRC_PATH}/samples/pico/first.oil" CACHE FILEPATH "Sample OIL file for RP2040 config generation" FORCE)
     add_subdirectory(port/rp2040)
 endif()
 # STM32 availability detection (cross toolchain required)
@@ -198,6 +217,16 @@ if(KOS_STM32_TOOLCHAIN)
 endif()
 
 if(KOS_STM32_AVAILABLE)
-    kos_add_generated_example(kos_sample_stm32 "stm32" "${KOS_SRC_PATH}/samples/stm32/first.oil")
-    target_compile_definitions(kos_sample_stm32 PRIVATE ${KOS_STM32_FAMILY})
+    find_path(STM32_HAL_INCLUDE_DIR stm32f4xx_hal.h
+        HINTS
+            "${STM32_HAL_PATH}"
+            "$ENV{STM32_HAL_PATH}"
+    )
+    if(NOT STM32_HAL_INCLUDE_DIR)
+        message(STATUS "STM32 HAL headers not found (stm32f4xx_hal.h); skipping STM32 sample build.")
+    else()
+        include_directories(${STM32_HAL_INCLUDE_DIR})
+        kos_add_generated_example(kos_sample_stm32 "stm32" "${KOS_SRC_PATH}/samples/stm32/first.oil")
+        target_compile_definitions(kos_sample_stm32 PRIVATE ${KOS_STM32_FAMILY})
+    endif()
 endif()

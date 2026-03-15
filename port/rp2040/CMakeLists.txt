@@ -6,10 +6,16 @@ set(CMAKE_CXX_STANDARD 20)
 set(FAMILY rp2040)
 set(BOARD pico_sdk)
 
+# We only need the SDK for target code; skip host-side picotool builds when cross-compiling.
+set(PICO_NO_PICOTOOL 1 CACHE BOOL "Disable picotool build for cross builds")
+
 include($ENV{PICO_SDK_PATH}/external/pico_sdk_import.cmake)
 
 
 project(k_os_rp2040 C CXX ASM)
+
+# Avoid building host executables during try_compile when cross-compiling.
+set(CMAKE_TRY_COMPILE_TARGET_TYPE STATIC_LIBRARY)
 
 if(NOT DEFINED KOS_SRC_PATH)
     if(DEFINED ENV{KOS_SRC_PATH})
@@ -21,6 +27,9 @@ endif()
 get_filename_component(KOS_ROOT "${KOS_SRC_PATH}" ABSOLUTE)
 
 pico_sdk_init()
+
+# Avoid building host executables during try_compile when cross-compiling.
+set(CMAKE_TRY_COMPILE_TARGET_TYPE STATIC_LIBRARY)
 
 # Enforce cross compiler (should be arm-none-eabi-* when entered)
 if(NOT CMAKE_C_COMPILER MATCHES "arm-none-eabi")
@@ -35,16 +44,19 @@ set(KOS_RP_SYSCLK_HZ "125000000" CACHE STRING "System clock frequency in Hz for 
 
 if(KOS_RP_TARGET STREQUAL "rp2350")
     # Default to softfp until FPU context save/restore is added (TODO).
-    set(_KOS_CPU_FLAGS "-mcpu=cortex-m33 -mthumb -mfpu=fpv5-sp-d16 -mfloat-abi=softfp")
+    set(_KOS_CPU_FLAGS "-mcpu=cortex-m33;-mthumb;-mfpu=fpv5-sp-d16;-mfloat-abi=softfp")
     add_compile_definitions(PICO_RP2350=1)
 else()
-    set(_KOS_CPU_FLAGS "-mcpu=cortex-m0plus -mthumb")
+    set(_KOS_CPU_FLAGS "-mcpu=cortex-m0plus;-mthumb")
     add_compile_definitions(PICO_RP2040=1)
 endif()
 
 # RP2040/2350 specific compiler flags
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${_KOS_CPU_FLAGS}")
+string(JOIN " " _KOS_CPU_FLAGS_STR ${_KOS_CPU_FLAGS})
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${_KOS_CPU_FLAGS_STR}")
+set(CMAKE_ASM_FLAGS "${CMAKE_ASM_FLAGS} ${_KOS_CPU_FLAGS_STR}")
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -ffunction-sections -fdata-sections -Wall -Wextra")
+add_link_options(${_KOS_CPU_FLAGS})
 set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -g -O0")
 set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} -Os")
 add_compile_definitions(OSPORT_SYSCLK_HZ=${KOS_RP_SYSCLK_HZ})
@@ -57,6 +69,12 @@ set(INCLUDES
         ${PICO_SDK_PATH}/src/rp2_common/cmsis/stub/CMSIS/Core/Include
         ${pico_mcp2515_SOURCE_DIR}/include
 )
+
+# Pin linker script to current SDK layout (memmap_default.ld exists; memmap_elf.ld may not).
+set(PICO_DEFAULT_LINKER_SCRIPT "${PICO_SDK_PATH}/src/rp2_common/pico_crt0/${KOS_RP_TARGET}/memmap_default.ld" CACHE FILEPATH "RP2040 linker script")
+if(NOT EXISTS "${PICO_DEFAULT_LINKER_SCRIPT}")
+    message(FATAL_ERROR "Expected linker script not found at ${PICO_DEFAULT_LINKER_SCRIPT}; update path for this SDK version.")
+endif()
 
 # RP2040 port specific sources
 set(RP2040_PORT_SOURCES
@@ -125,6 +143,7 @@ endif (MSVC)
 set(KOS_RP2040_SAMPLE_OIL "${KOS_ROOT}/samples/pico/first.oil" CACHE FILEPATH "Sample OIL file for RP2040 config generation")
 set(KOS_RP2040_GEN_DIR "${CMAKE_CURRENT_BINARY_DIR}/generated/rp2040_sample")
 set(KOS_RP2040_GEN_PREFIX "${KOS_RP2040_GEN_DIR}/Os_Cfg")
+set(KOS_RP2040_GEN_STUB "${KOS_RP2040_GEN_DIR}/Os_Cfg_stubs.c")
 
 if (NOT KOSGEN_CPP_EXECUTABLE)
     find_program(KOSGEN_CPP_EXECUTABLE NAMES kosgen_cpp kosgen_cpp.exe
@@ -138,16 +157,16 @@ if (NOT KOSGEN_CPP_EXECUTABLE)
 endif()
 
 add_custom_command(
-    OUTPUT ${KOS_RP2040_GEN_PREFIX}.c ${KOS_RP2040_GEN_PREFIX}.h ${KOS_RP2040_GEN_PREFIX}.info.txt ${KOS_RP2040_GEN_PREFIX}.ort
+    OUTPUT ${KOS_RP2040_GEN_PREFIX}.c ${KOS_RP2040_GEN_PREFIX}.h ${KOS_RP2040_GEN_PREFIX}.info.txt ${KOS_RP2040_GEN_PREFIX}.ort ${KOS_RP2040_GEN_STUB}
     COMMAND ${CMAKE_COMMAND} -E make_directory ${KOS_RP2040_GEN_DIR}
-    COMMAND ${KOSGEN_CPP_EXECUTABLE} --include ${KOS_ROOT}/config/oil --orti -o ${KOS_RP2040_GEN_PREFIX} ${KOS_RP2040_SAMPLE_OIL}
+    COMMAND ${KOSGEN_CPP_EXECUTABLE} --include ${KOS_ROOT}/config/oil --target ${KOS_RP_TARGET} --orti -o ${KOS_RP2040_GEN_PREFIX} ${KOS_RP2040_SAMPLE_OIL}
     DEPENDS ${KOS_RP2040_SAMPLE_OIL} ${KOSGEN_CPP_EXECUTABLE}
     COMMENT "Generating RP2040 sample OS config from ${KOS_RP2040_SAMPLE_OIL}"
     VERBATIM
 )
 
 add_custom_target(rp2040_sample_config ALL
-    DEPENDS ${KOS_RP2040_GEN_PREFIX}.c ${KOS_RP2040_GEN_PREFIX}.h ${KOS_RP2040_GEN_PREFIX}.info.txt ${KOS_RP2040_GEN_PREFIX}.ort
+    DEPENDS ${KOS_RP2040_GEN_PREFIX}.c ${KOS_RP2040_GEN_PREFIX}.h ${KOS_RP2040_GEN_PREFIX}.info.txt ${KOS_RP2040_GEN_PREFIX}.ort ${KOS_RP2040_GEN_STUB}
 )
 
 add_library(k_os_rp2040_port STATIC ${RP2040_PORT_SOURCES})
@@ -177,12 +196,23 @@ pico_add_extra_outputs(k_os_rp2040_sample)
 # Copy artifacts to samples/rp2040/build for convenience
 set(KOS_RP2040_OUTPUT_DIR "${KOS_ROOT}/samples/rp2040/build")
 file(MAKE_DIRECTORY "${KOS_RP2040_OUTPUT_DIR}")
+if (NOT Python3_EXECUTABLE)
+    find_package(Python3 COMPONENTS Interpreter REQUIRED)
+endif()
+set(_KOS_ELF2UF2 "${PICO_SDK_PATH}/tools/elf2uf2/elf2uf2.py")
+if (EXISTS "${_KOS_ELF2UF2}")
+    add_custom_command(TARGET k_os_rp2040_sample POST_BUILD
+        COMMAND ${Python3_EXECUTABLE} "${_KOS_ELF2UF2}"
+            $<TARGET_FILE:k_os_rp2040_sample>
+            "${CMAKE_CURRENT_BINARY_DIR}/k_os_rp2040_sample.uf2"
+        BYPRODUCTS "${CMAKE_CURRENT_BINARY_DIR}/k_os_rp2040_sample.uf2"
+        COMMENT "Generating UF2 image via elf2uf2.py"
+        VERBATIM
+    )
+endif()
 add_custom_command(TARGET k_os_rp2040_sample POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy_if_different
         $<TARGET_FILE:k_os_rp2040_sample>
         "${KOS_RP2040_OUTPUT_DIR}/k_os_rp2040_sample.elf"
-    COMMAND ${CMAKE_COMMAND} -E copy_if_different
-        "${CMAKE_CURRENT_BINARY_DIR}/k_os_rp2040_sample.uf2"
-        "${KOS_RP2040_OUTPUT_DIR}/k_os_rp2040_sample.uf2"
     VERBATIM
 )
