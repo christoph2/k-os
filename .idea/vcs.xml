@@ -5,6 +5,7 @@
     <mapping directory="$PROJECT_DIR$/_deps/picotool-src" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/cmake-build-debug/_deps/picotool-src" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/cmake-build-rp2040/_deps/picotool-src" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/generated/check_rp/build/_deps/picotool-src" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/port/rp2040/build-cross/_deps/picotool-src" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/port/rp2040/build/_deps/picotool-src" vcs="Git" />
   </component>
