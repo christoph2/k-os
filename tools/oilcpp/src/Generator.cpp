@@ -343,6 +343,7 @@ void Generator::generate(const OilModel& model, const Options& opts) const {
 
     writeOsCfgH(model, opts);
     writeOsCfgC(model, opts);
+    writeTaskIsrStubs(model, opts);
     if (opts.generate_orti) {
         writeOrti(model, opts);
     }
@@ -2228,6 +2229,67 @@ void Generator::writeOrti(const OilModel& model, const Options& opts) const {
 
 }
 
+void Generator::writeTaskIsrStubs(const OilModel& model, const Options& opts) const {
+    auto out_dir = opts.output_prefix.parent_path();
+    if (out_dir.empty()) out_dir = ".";
+    std::error_code ec;
+    std::filesystem::create_directories(out_dir, ec);
+
+    auto prefix_name = opts.output_prefix.filename().generic_string();
+    if (prefix_name.empty()) prefix_name = "Os_Cfg";
+    auto stub = out_dir / (prefix_name + "_stubs.c");
+
+    auto tasks = filter(model, "TASK");
+    auto isrs = filter(model, "ISR");
+    auto counters = filter(model, "COUNTER");
+
+    std::vector<std::string> hwDrivers;
+    for (const auto* ctr : counters) {
+        auto type = findAttr(*ctr, "TYPE");
+        auto driver = extractDriver(type, findAttr(*ctr, "DRIVER"));
+        if (!driver) driver = findAttr(*ctr, "HC12_TYPE");
+        if (type && toUpper(*type).find("HARDWARE") != std::string::npos && driver) {
+            auto drvName = *driver;
+            auto exists = std::find_if(hwDrivers.begin(), hwDrivers.end(), [&](const auto& n) { return sanitize(n) == sanitize(drvName); });
+            if (exists == hwDrivers.end()) hwDrivers.push_back(drvName);
+        }
+    }
+
+    std::ofstream s(stub, std::ios::binary);
+    if (!s) throw std::runtime_error("Cannot open output file: " + stub.string());
+
+    s << "/* Auto-generated task/ISR stubs by kosgen_cpp";
+    if (!opts.target.empty()) s << " (target: " << opts.target << ")";
+    s << " */\n\n";
+    s << "#include \"Osek.h\"\n";
+    s << "#include \"Os_Cfg.h\"\n\n";
+
+    if (tasks.empty() && isrs.empty() && hwDrivers.empty()) {
+        s << "/* No tasks or ISRs defined in the provided OIL model. */\n";
+        return;
+    }
+
+    for (const auto* t : tasks) {
+        auto name = sanitize(t->name);
+        s << "TASK(" << name << ")\n{\n"
+          << "    /* TODO: implement task '" << t->name << "' */\n"
+          << "}\n\n";
+    }
+
+    for (const auto* isr : isrs) {
+        auto name = sanitize(isr->name);
+        s << "ISR2(" << name << ")\n{\n"
+          << "    /* TODO: implement ISR '" << isr->name << "' */\n"
+          << "}\n\n";
+    }
+
+    for (const auto& drv : hwDrivers) {
+        s << "ISR2(" << sanitize(drv) << "Timer)\n{\n"
+          << "    /* TODO: implement hardware timer ISR for driver '" << drv << "' */\n"
+          << "}\n\n";
+    }
+}
+
 void Generator::writeTargetTemplate(const Options& opts) const {
     if (opts.target.empty()) return;
 
@@ -2240,9 +2302,19 @@ void Generator::writeTargetTemplate(const Options& opts) const {
 
     auto prefix_name = opts.output_prefix.filename().generic_string();
     if (prefix_name.empty()) prefix_name = "Os_Cfg";
+    auto app_name = sanitize(prefix_name + "_" + target);
+    if (app_name.empty()) app_name = "kosgen_app";
 
-    cm << "# Auto-generated build snippet by kosgen_cpp (target: " << target << ")\n";
+    cm << "# Auto-generated CMake project by kosgen_cpp (target: " << target << ")\n";
     cm << "# Regenerate with kosgen_cpp; manual edits may be overwritten.\n\n";
+    cm << "cmake_minimum_required(VERSION 3.16)\n";
+    cm << "if(\"" << target << "\" STREQUAL \"rp2040\")\n";
+    cm << "  set(CMAKE_SYSTEM_NAME Generic)\n";
+    cm << "  set(CMAKE_SYSTEM_PROCESSOR arm)\n";
+    cm << "  set(CMAKE_TRY_COMPILE_TARGET_TYPE STATIC_LIBRARY)\n";
+    cm << "endif()\n";
+    cm << "project(" << app_name << " LANGUAGES C CXX ASM)\n\n";
+
     cm << "if(NOT DEFINED KOS_SRC_PATH)\n";
     cm << "  if(DEFINED ENV{KOS_SRC_PATH})\n";
     cm << "    set(KOS_SRC_PATH \"$ENV{KOS_SRC_PATH}\")\n";
@@ -2253,12 +2325,19 @@ void Generator::writeTargetTemplate(const Options& opts) const {
 
     cm << "set(KOSGEN_TARGET \"" << target << "\")\n";
     cm << "set(KOSGEN_OUTPUT_DIR \"${CMAKE_CURRENT_LIST_DIR}\")\n";
-    cm << "set(KOSGEN_OUTPUT_PREFIX \"${KOSGEN_OUTPUT_DIR}/" << prefix_name << "\")\n\n";
+    cm << "set(KOSGEN_OUTPUT_PREFIX \"${KOSGEN_OUTPUT_DIR}/" << prefix_name << "\")\n";
+    cm << "set(KOSGEN_APP \"" << app_name << "\")\n\n";
+
+    cm << "set(CMAKE_C_STANDARD 11)\n";
+    cm << "set(CMAKE_C_STANDARD_REQUIRED ON)\n";
+    cm << "set(CMAKE_CXX_STANDARD 17)\n";
+    cm << "set(CMAKE_CXX_STANDARD_REQUIRED ON)\n\n";
 
     cm << "set(KOSGEN_GENERATED_SOURCES\n";
     cm << "    \"${KOSGEN_OUTPUT_PREFIX}.c\"\n";
     cm << "    \"${KOSGEN_OUTPUT_PREFIX}.h\"\n";
     cm << "    \"${KOSGEN_OUTPUT_PREFIX}.info.txt\"\n";
+    cm << "    \"${KOSGEN_OUTPUT_PREFIX}_stubs.c\"\n";
     if (opts.generate_orti) {
         cm << "    \"${KOSGEN_OUTPUT_PREFIX}.ort\"\n";
     }
@@ -2289,6 +2368,7 @@ void Generator::writeTargetTemplate(const Options& opts) const {
     cm << "    \"${KOS_SRC_PATH}/src/Os_SchT.c\"\n";
     cm << "    \"${KOS_SRC_PATH}/src/Os_Task.c\"\n";
     cm << "    \"${KOS_SRC_PATH}/src/Os_Vars.c\"\n";
+    cm << "    \"${KOS_SRC_PATH}/src/Utl.c\"\n";
     cm << ")\n";
     cm << "if(EXISTS \"${KOS_SRC_PATH}/src/Com_Ext.c\")\n";
     cm << "  list(APPEND KOSGEN_KERNEL_SOURCES \"${KOS_SRC_PATH}/src/Com_Ext.c\")\n";
@@ -2313,11 +2393,41 @@ void Generator::writeTargetTemplate(const Options& opts) const {
     cm << "  list(APPEND KOSGEN_PORT_LIBS pthread rt)\n";
     cm << "endif()\n\n";
 
-    cm << "# Example usage:\n";
-    cm << "# add_executable(kos_app ${KOSGEN_GENERATED_SOURCES} ${KOSGEN_KERNEL_SOURCES} ${KOSGEN_PORT_SOURCES})\n";
-    cm << "# target_include_directories(kos_app PRIVATE ${KOSGEN_INCLUDE_DIRS})\n";
-    cm << "# target_link_libraries(kos_app ${KOSGEN_PORT_LIBS})\n";
-    cm << "# Adjust toolchain/SDK settings as needed for the selected target.\n";
+    cm << "if(KOSGEN_TARGET STREQUAL \"rp2040\")\n";
+    cm << "  if(NOT DEFINED PICO_SDK_PATH AND DEFINED ENV{PICO_SDK_PATH})\n";
+    cm << "    set(PICO_SDK_PATH \"$ENV{PICO_SDK_PATH}\")\n";
+    cm << "  endif()\n";
+    cm << "  if(NOT EXISTS \"${PICO_SDK_PATH}/pico_sdk_init.cmake\")\n";
+    cm << "    message(FATAL_ERROR \"PICO_SDK_PATH is not set or invalid; required for rp2040 builds\")\n";
+    cm << "  endif()\n";
+    cm << "  set(_KOS_CPU_FLAGS \"-mcpu=cortex-m0plus -mthumb\")\n";
+    cm << "  set(CMAKE_C_FLAGS \"${CMAKE_C_FLAGS} ${_KOS_CPU_FLAGS} -ffunction-sections -fdata-sections\")\n";
+    cm << "  set(CMAKE_C_FLAGS_RELEASE \"${CMAKE_C_FLAGS_RELEASE} -Os\")\n";
+    cm << "  add_compile_definitions(PICO_RP2040=1)\n";
+    cm << "  include(${PICO_SDK_PATH}/pico_sdk_init.cmake)\n";
+    cm << "  pico_sdk_init()\n";
+    cm << "  add_executable(${KOSGEN_APP} ${KOSGEN_GENERATED_SOURCES} ${KOSGEN_KERNEL_SOURCES} ${KOSGEN_PORT_SOURCES})\n";
+    cm << "  target_include_directories(${KOSGEN_APP} PRIVATE ${KOSGEN_INCLUDE_DIRS})\n";
+    cm << "  target_compile_options(${KOSGEN_APP} PRIVATE -mcpu=cortex-m0plus -mthumb -ffunction-sections -fdata-sections)\n";
+    cm << "  target_link_libraries(${KOSGEN_APP} PRIVATE ${KOSGEN_PORT_LIBS})\n";
+    cm << "  pico_add_extra_outputs(${KOSGEN_APP})\n";
+    cm << "elseif(KOSGEN_TARGET STREQUAL \"windows\")\n";
+    cm << "  add_executable(${KOSGEN_APP} ${KOSGEN_GENERATED_SOURCES} ${KOSGEN_KERNEL_SOURCES} ${KOSGEN_PORT_SOURCES})\n";
+    cm << "  target_include_directories(${KOSGEN_APP} PRIVATE ${KOSGEN_INCLUDE_DIRS})\n";
+    cm << "  target_link_libraries(${KOSGEN_APP} PRIVATE ${KOSGEN_PORT_LIBS})\n";
+    cm << "elseif(KOSGEN_TARGET STREQUAL \"stm32\")\n";
+    cm << "  add_executable(${KOSGEN_APP} ${KOSGEN_GENERATED_SOURCES} ${KOSGEN_KERNEL_SOURCES} ${KOSGEN_PORT_SOURCES})\n";
+    cm << "  target_include_directories(${KOSGEN_APP} PRIVATE ${KOSGEN_INCLUDE_DIRS})\n";
+    cm << "  target_link_libraries(${KOSGEN_APP} PRIVATE ${KOSGEN_PORT_LIBS})\n";
+    cm << "  message(STATUS \"STM32 build assumes an externally provided STM32 toolchain file and startup code\")\n";
+    cm << "elseif(KOSGEN_TARGET STREQUAL \"pthreads\" OR KOSGEN_TARGET STREQUAL \"posix\")\n";
+    cm << "  find_package(Threads REQUIRED)\n";
+    cm << "  add_executable(${KOSGEN_APP} ${KOSGEN_GENERATED_SOURCES} ${KOSGEN_KERNEL_SOURCES} ${KOSGEN_PORT_SOURCES})\n";
+    cm << "  target_include_directories(${KOSGEN_APP} PRIVATE ${KOSGEN_INCLUDE_DIRS})\n";
+    cm << "  target_link_libraries(${KOSGEN_APP} PRIVATE ${KOSGEN_PORT_LIBS} Threads::Threads)\n";
+    cm << "else()\n";
+    cm << "  message(FATAL_ERROR \"Unsupported target ${KOSGEN_TARGET}\")\n";
+    cm << "endif()\n";
 
     const auto body = cm.str();
     auto kosgen_snippet = out_dir / "kosgen.cmake";
@@ -2341,39 +2451,22 @@ void Generator::writeMainStub(const OilModel& model, const Options& opts) const 
     out /= "main.c";
 
     if (std::filesystem::exists(out)) {
-        return;  // do not overwrite user main
+        return;  // keep user-provided main()
     }
 
-    auto tasks = filter(model, "TASK");
-    auto isrs = filter(model, "ISR");
     auto appmodes = filter(model, "APPMODE");
-
     std::string appMode = appmodes.empty() ? "OS_FEATURE_REAL_DEFAULT_APPMODE" : sanitize(appmodes.front()->name);
 
     std::ofstream m(out, std::ios::binary);
     if (!m) throw std::runtime_error("Cannot open output file: " + out.string());
 
-    m << "/* Auto-generated stub by kosgen_cpp";
+    m << "/* Auto-generated main by kosgen_cpp";
     if (!opts.target.empty()) {
         m << " (target: " << opts.target << ")";
     }
     m << " */\n\n";
     m << "#include \"Osek.h\"\n";
     m << "#include \"Os_Cfg.h\"\n\n";
-
-    for (const auto* t : tasks) {
-        auto name = sanitize(t->name);
-        m << "void " << name << "(void)\n{\n"
-          << "    /* TODO: implement task '" << t->name << "' */\n"
-          << "}\n\n";
-    }
-
-    for (const auto* isr : isrs) {
-        auto name = sanitize(isr->name);
-        m << "void " << name << "(void)\n{\n"
-          << "    /* TODO: implement ISR '" << isr->name << "' */\n"
-          << "}\n\n";
-    }
 
     m << "int main(void)\n{\n"
       << "    StartOS(" << appMode << ");\n"

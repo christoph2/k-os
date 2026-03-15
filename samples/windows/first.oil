@@ -1,1 +1,222 @@
-#include "../first/first.oil"
+
+#include <kos25full.oil>
+//#include <kos25int.oil>
+
+CPU Configuration
+{
+  OS Demo
+  {
+    CC = AUTO;
+    STATUS = STANDARD;
+//    SCHEDULE = AUTO;
+    STARTUPHOOK = TRUE;
+    ERRORHOOK = FALSE;
+    SHUTDOWNHOOK = FALSE;
+    PRETASKHOOK = FALSE;
+    POSTTASKHOOK = FALSE;
+    USEGETSERVICEID = FALSE;
+    ORTI_DEBUG = TRUE {
+	KOIL_VERSION = "2.1";
+//	OSEK_VERSION = "2.5";	// todo: ohne Testen!!!
+    };
+    USEPARAMETERACCESS = FALSE;
+//    MICROCONTROLLER = MC68HC912D60;
+//    USERMAIN = FALSE;
+//    STACKCHECK = FALSE;
+//    HC12_REALTIMECLOCK = NOT_USED;
+  };
+
+APPMODE DefaultAppMode;
+
+TASK TaskA {
+    TYPE = BASIC;
+    AUTOSTART = FALSE;
+    ACTIVATION = 1;
+    PRIORITY = 10;
+    SCHEDULE = NON;	/* todo: ohne 'SCHEDULE' testen, bzw. mit ungültigem Attribut!!! */
+};
+
+TASK TaskB {
+    TYPE = BASIC;
+    AUTOSTART = FALSE;
+    ACTIVATION = 1;
+    PRIORITY = 20;
+    SCHEDULE = NON;
+
+    MESSAGE = myMess1;
+};
+
+TASK Loop /* $Runs for ever*/
+{
+    TYPE = BASIC; /* $Runs for ever*/
+    AUTOSTART = FALSE;
+    PRIORITY = 2;
+    ACTIVATION = 1;
+    SCHEDULE = FULL;
+    RESOURCE = Res_CounterVar;
+    STACKSIZE = 48;
+    CALLSCHEDULE = NO;
+};
+
+  TASK InitTask /* $Initialize the system*/
+  {
+    TYPE = BASIC; /* $no events needed*/
+//    AUTOSTART = TRUE;	// todo: diesen Fall untersuchen!!!
+//    AUTOSTART = TRUE {
+//        APPMODE = DefaultAppMode
+//    };
+
+
+    AUTOSTART = TRUE {
+      APPMODE = DefaultAppMode;
+    };
+
+    PRIORITY = 1;
+    ACTIVATION = 1;
+    SCHEDULE = NON; /* $must run exclusively*/
+    STACKSIZE = 48;
+    CALLSCHEDULE = NO;
+  };
+
+  TASK Cyclic /* $Runs cyclic*/
+  {
+    TYPE = BASIC; /* $Runs cyclic*/
+    AUTOSTART = FALSE;
+    PRIORITY = 4;
+    ACTIVATION = 1;
+    SCHEDULE = FULL;
+    RESOURCE = Res_CounterVar;
+    STACKSIZE = 48;
+    CALLSCHEDULE = NO;
+
+  MESSAGE = speed;
+  };
+
+  COUNTER SysCounter
+  {
+    MINCYCLE = 1;
+    MAXALLOWEDVALUE = 1000;
+    TICKSPERBASE = 1000; /* $1 sec*/
+    TYPE = HARDWARE {
+		DRIVER = TC2;
+    };
+//    HC12_TYPE = TC2;
+//    TIME_IN_NS = 1000000;
+  };
+
+ALARM AlarmActCyclic {
+//    COUNTER = SysCounter;	// todo: COUNTER nach ACTION untersuchen!!!
+
+    ACTION = ACTIVATETASK {
+	TASK = Cyclic;
+    };
+
+    COUNTER = SysCounter;
+
+    AUTOSTART = FALSE;
+};
+
+RESOURCE Res_CounterVar {
+    RESOURCEPROPERTY = STANDARD;
+};
+
+/*
+**
+** 	Networking-Stuff.
+**
+*/
+MESSAGE myMess1 {
+    MESSAGEPROPERTY = SEND_STATIC_EXTERNAL {
+		CDATATYPE = "long";
+		TRANSFERPROPERTY = PENDING;
+		NETWORKMESSAGE = NWM_myMess1;	// todo: 'NWM_' als Standard-Prefix im Designer verwenden!!!
+		FILTER = NEWISWITHIN {
+			MAX = 0x1234;
+			MIN = 0x12;
+		};
+		INITIALVALUE = 0x12;
+    };
+	NOTIFICATION = FLAG {	// NOTOFICATION
+		FLAGNAME = "myMess1_finished";
+	};
+};
+
+MESSAGE speed {
+	MESSAGEPROPERTY = RECEIVE_UNQUEUED_EXTERNAL {
+		CDATATYPE = "long";
+		LINK = FALSE {
+			NETWORKMESSAGE = NWM_myMess1;	// NWM_speed;
+			NETWORKORDERCALLOUT = "vehicle_data_active";
+		};
+	};
+	NOTIFICATION = ACTIVATETASK {
+		// TASK = speed_update;
+	    TASK = TaskA;
+	};
+};
+
+
+MESSAGE sendInternal {
+	MESSAGEPROPERTY = SEND_STATIC_INTERNAL {
+		CDATATYPE = "long";
+	};
+};
+
+
+MESSAGE rcvInternal {
+	MESSAGEPROPERTY = RECEIVE_UNQUEUED_INTERNAL {
+		SENDINGMESSAGE = sendInternal;
+	};
+};
+
+
+NETWORKMESSAGE NWM_myMess1 {
+	IPDU = mySendIPDU;
+	MESSAGEPROPERTY = STATIC {
+		SIZEINBITS = 17;
+		BITORDERING = BIGENDIAN;
+		BITPOSITION = 5;
+		DATAINTERPRETATION = UNSIGNEDINTEGER;
+		INITIALVALUE = 0x12;
+		DIRECTION = SENT {  //	DIRECTTION
+			TRANSFERPROPERTY = PENDING;
+		};
+	};
+};
+
+IPDU mySendIPDU {
+	SIZEINBITS = 64;
+	IPDUPROPERTY = SENT {
+		TRANSMISSIONMODE = PERIODIC {
+			TIMEPERIOD = 2;
+			TIMEOFFSET = 100;
+		};
+		TIMEOUT = 250;
+	};
+	IPDUCALLOUT = "";
+	LAYERUSED = "network";
+};
+
+IPDU myReceiveIPDU {
+	SIZEINBITS = 64;
+	IPDUPROPERTY = RECEIVED {
+		TIMEOUT = 250;
+		FIRSTTIMEOUT = 100;
+	};
+	IPDUCALLOUT = "";
+	LAYERUSED = "network";
+};
+
+COM ExampleCOM {
+	COMTIMEBASE = 0.001;
+	COMERRORHOOK = TRUE;
+	COMUSEGETSERVICEID = FALSE;
+	COMUSEPARAMETERACCESS = FALSE;
+	COMSTARTCOMEXTENSION = FALSE;
+	COMAPPMODE = "COMNormalMode";
+	COMAPPMODE = "COMDiagnosticMode";
+	COMSTATUS = COMEXTENDED;
+	// USE = "networkfile.oil";
+};
+
+};

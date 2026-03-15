@@ -96,19 +96,22 @@ function(kos_add_generated_example NAME PLATFORM OIL_FILE)
     file(MAKE_DIRECTORY "${gen_dir}")
     set(gen_prefix "${gen_dir}/Os_Cfg")
 
+    set(gen_stub "${gen_prefix}_stubs.c")
+
     add_custom_command(
-        OUTPUT "${gen_prefix}.c" "${gen_prefix}.h" "${gen_prefix}.info.txt" "${gen_prefix}.ort" "${gen_dir}/main.c" "${gen_dir}/kosgen.cmake" "${gen_dir}/CMakeLists.txt"
+        OUTPUT "${gen_prefix}.c" "${gen_prefix}.h" "${gen_prefix}.info.txt" "${gen_prefix}.ort" "${gen_stub}" "${gen_dir}/main.c" "${gen_dir}/kosgen.cmake" "${gen_dir}/CMakeLists.txt"
         COMMAND ${CMAKE_COMMAND} -E make_directory "${gen_dir}"
         COMMAND $<TARGET_FILE:kosgen_cpp> --include "${KOS_SRC_PATH}/config/oil" --target ${PLATFORM} --orti -o "${gen_prefix}" "${OIL_FILE}"
         DEPENDS kosgen_cpp "${OIL_FILE}"
         VERBATIM
     )
-    add_custom_target(${NAME}_cfg DEPENDS "${gen_prefix}.c" "${gen_prefix}.h" "${gen_prefix}.info.txt" "${gen_prefix}.ort")
+    add_custom_target(${NAME}_cfg DEPENDS "${gen_prefix}.c" "${gen_prefix}.h" "${gen_prefix}.info.txt" "${gen_prefix}.ort" "${gen_stub}")
 
     add_executable(${NAME}
         ${KOS_KERNEL_SOURCES}
         ${PORT_SRCS}
         "${gen_prefix}.c"
+        "${gen_stub}"
         "${gen_dir}/main.c"
     )
     add_dependencies(${NAME} ${NAME}_cfg)

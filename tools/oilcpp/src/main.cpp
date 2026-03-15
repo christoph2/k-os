@@ -1,3 +1,5 @@
+#include <algorithm>
+#include <cctype>
 #include <filesystem>
 #include <iostream>
 #include <optional>
@@ -26,15 +28,29 @@ struct CliOptions {
 
 void printHelp() {
     std::cout << "kosgen_cpp - C++ OIL generator (prototype)\n"
-              << "Usage: kosgen_cpp [options] <input.oil>\n"
-              << "Options:\n"
-              << "  -I, --include <dir>   Add include search path (KOS_INCLUDE is also used)\n"
-              << "  -o, --output <path>   Output prefix (default: input path without extension)\n"
-              << "  --target <name>       Target identifier for templating/build outputs\n"
-              << "  --orti                Generate ORTI (.ort) alongside Os_Cfg files\n"
-              << "  --test                Parse/validate only (no output)\n"
-              << "  -h, --help            Show this help\n"
-              << "  -V, --version         Show version\n";
+               << "Usage: kosgen_cpp [options] <input.oil>\n"
+               << "Options:\n"
+               << "  -I, --include <dir>   Add include search path (KOS_INCLUDE is also used)\n"
+               << "  -o, --output <path>   Output prefix (default: input path without extension)\n"
+               << "  --target <name>       Target identifier (required): rp2040, stm32, windows, posix\n"
+               << "  --orti                Generate ORTI (.ort) alongside Os_Cfg files\n"
+               << "  --test                Parse/validate only (no output)\n"
+               << "  -h, --help            Show this help\n"
+               << "  -V, --version         Show version\n";
+}
+
+std::string toLower(std::string s) {
+    std::transform(s.begin(), s.end(), s.begin(), [](unsigned char c) { return static_cast<char>(std::tolower(c)); });
+    return s;
+}
+
+std::string normalizeTarget(const std::string& raw) {
+    auto lower = toLower(raw);
+    if (lower == "rp2040" || lower == "rp2350") return "rp2040";
+    if (lower == "stm32" || lower == "stm32f4") return "stm32";
+    if (lower == "windows" || lower == "win32" || lower == "win") return "windows";
+    if (lower == "posix" || lower == "pthreads" || lower == "linux" || lower == "unix") return "posix";
+    throw std::runtime_error("Unsupported target '" + raw + "'. Supported: rp2040, stm32, windows, posix");
 }
 
 CliOptions parseArgs(int argc, char** argv) {
@@ -69,6 +85,12 @@ CliOptions parseArgs(int argc, char** argv) {
     }
     if (!opts.show_help && !opts.show_version && opts.input.empty()) {
         throw std::runtime_error("No input file specified");
+    }
+    if (!opts.show_help && !opts.show_version) {
+        if (opts.target.empty()) {
+            throw std::runtime_error("Missing required --target (rp2040, stm32, windows, posix)");
+        }
+        opts.target = normalizeTarget(opts.target);
     }
     return opts;
 }
