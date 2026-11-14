@@ -2298,6 +2298,8 @@ void Generator::writeTaskIsrStubs(const OilModel& model, const Options& opts) co
     auto tasks = filter(model, "TASK");
     auto isrs = filter(model, "ISR");
     auto counters = filter(model, "COUNTER");
+    auto alarms = filter(model, "ALARM");
+    auto resources = filter(model, "RESOURCE");
 
     std::vector<std::string> hwDrivers;
     for (const auto* ctr : counters) {
@@ -2311,6 +2313,28 @@ void Generator::writeTaskIsrStubs(const OilModel& model, const Options& opts) co
         }
     }
 
+    /* Detect whether this is the pthreads (POSIX) target — generate a demo app */
+    auto targetLower = toLower(opts.target);
+    bool is_pthreads = (targetLower == "pthreads" || targetLower == "posix");
+
+    /* Collect autostart task names */
+    std::vector<std::string> autostartTasks;
+    /* Collect alarm names that activate tasks */
+    std::vector<std::string> alarmNames;
+    for (const auto* alm : alarms) {
+        alarmNames.push_back(sanitize(alm->name));
+    }
+    /* Collect resource names */
+    std::vector<std::string> resourceNames;
+    for (const auto* res : resources) {
+        resourceNames.push_back(sanitize(res->name));
+    }
+    /* Collect counter names */
+    std::vector<std::string> counterNames;
+    for (const auto* ctr : counters) {
+        counterNames.push_back(sanitize(ctr->name));
+    }
+
     std::ofstream s(stub, std::ios::binary);
     if (!s) throw std::runtime_error("Cannot open output file: " + stub.string());
 
@@ -2318,15 +2342,36 @@ void Generator::writeTaskIsrStubs(const OilModel& model, const Options& opts) co
     if (!opts.target.empty()) s << " (target: " << opts.target << ")";
     s << " */\n\n";
     s << "#include \"Osek.h\"\n";
-    s << "#include \"Os_Cfg.h\"\n\n";
+    s << "#include \"Os_Cfg.h\"\n";
+    if (is_pthreads) {
+        s << "#include <stdio.h>\n";
+    }
+    s << "\n";
 
-    s << "void StartupHook(void)\n{\n"
-      << "    /* TODO: implement StartupHook */\n"
-      << "}\n\n";
-    s << "void ShutdownHook(StatusType Error)\n{\n"
-      << "    /* TODO: implement ShutdownHook */\n"
-      << "    (void)Error;\n"
-      << "}\n\n";
+    /* StartupHook */
+    if (is_pthreads) {
+        s << "void StartupHook(void)\n{\n"
+          << "    printf(\"k-os: StartupHook — system initialized\\n\");\n"
+          << "}\n\n";
+    } else {
+        s << "void StartupHook(void)\n{\n"
+          << "    /* TODO: implement StartupHook */\n"
+          << "}\n\n";
+    }
+
+    /* ShutdownHook */
+    if (is_pthreads) {
+        s << "void ShutdownHook(StatusType Error)\n{\n"
+          << "    printf(\"k-os: ShutdownHook — clean shutdown (error=%u)\\n\", (unsigned)Error);\n"
+          << "    (void)Error;\n"
+          << "}\n\n";
+    } else {
+        s << "void ShutdownHook(StatusType Error)\n{\n"
+          << "    /* TODO: implement ShutdownHook */\n"
+          << "    (void)Error;\n"
+          << "}\n\n";
+    }
+
     s << "void PreTaskHook(void)\n{\n"
       << "    /* TODO: implement PreTaskHook */\n"
       << "}\n\n";
@@ -2339,11 +2384,143 @@ void Generator::writeTaskIsrStubs(const OilModel& model, const Options& opts) co
         return;
     }
 
+    /* Build a map of task names to their attributes for pthreads demo */
+    struct TaskInfo {
+        std::string name;
+        std::string sanitizedName;
+        bool autostart = false;
+        uint32_t priority = 0;
+        std::string schedule; // "FULL", "NON", etc.
+    };
+    std::vector<TaskInfo> taskInfos;
+    for (const auto* t : tasks) {
+        TaskInfo ti;
+        ti.name = t->name;
+        ti.sanitizedName = sanitize(t->name);
+        auto autostartAttr = findAttr(*t, "AUTOSTART");
+        if (autostartAttr) {
+            auto upper = toUpper(*autostartAttr);
+            ti.autostart = (upper.find("TRUE") != std::string::npos || upper.find("STD_ON") != std::string::npos);
+        }
+        auto prioAttr = findAttr(*t, "PRIORITY");
+        ti.priority = toNumber(prioAttr, 0);
+        auto schedAttr = findAttr(*t, "SCHEDULE");
+        if (schedAttr) ti.schedule = toUpper(*schedAttr);
+        autostartTasks.push_back(ti.sanitizedName);
+        taskInfos.push_back(ti);
+    }
+
     for (const auto* t : tasks) {
         auto name = sanitize(t->name);
-        s << "TASK(" << name << ")\n{\n"
-          << "    /* TODO: implement task '" << t->name << "' */\n"
-          << "}\n\n";
+
+        if (is_pthreads) {
+            /* Generate meaningful demo code for known task patterns */
+            if (t->name == "InitTask") {
+                /* InitTask: activate Cyclic, set alarm, then terminate */
+                s << "TASK(" << name << ")\n{\n"
+                  << "    StatusType stat;\n"
+                  << "    printf(\"k-os: InitTask — starting initialization\\n\");\n";
+                /* Activate Cyclic if it exists */
+                bool hasCyclic = false;
+                for (const auto& ti : taskInfos) {
+                    if (ti.name == "Cyclic") { hasCyclic = true; break; }
+                }
+                if (hasCyclic && !alarmNames.empty()) {
+                    s << "    stat = ActivateTask(Cyclic);\n"
+                      << "    if (stat != E_OK) {\n"
+                      << "        printf(\"k-os: InitTask — ActivateTask(Cyclic) failed (%u)\\n\", (unsigned)stat);\n"
+                      << "    }\n";
+                    /* Set relative alarm to activate Cyclic periodically */
+                    s << "    stat = SetRelAlarm(" << alarmNames[0] << ", 100, 100);\n"
+                      << "    if (stat != E_OK) {\n"
+                      << "        printf(\"k-os: InitTask — SetRelAlarm failed (%u)\\n\", (unsigned)stat);\n"
+                      << "    }\n"
+                      << "    printf(\"k-os: InitTask — alarm configured, cycle = 100 ticks\\n\");\n";
+                } else if (hasCyclic) {
+                    s << "    stat = ActivateTask(Cyclic);\n"
+                      << "    if (stat != E_OK) {\n"
+                      << "        printf(\"k-os: InitTask — ActivateTask(Cyclic) failed (%u)\\n\", (unsigned)stat);\n"
+                      << "    }\n";
+                }
+                s << "    printf(\"k-os: InitTask — initialization complete\\n\");\n"
+                  << "    TerminateTask();\n"
+                  << "}\n\n";
+            } else if (t->name == "Cyclic") {
+                /* Cyclic: periodic task that counts activations and prints status */
+                s << "TASK(" << name << ")\n{\n"
+                  << "    static uint32_t cycle_count = 0;\n"
+                  << "    TaskType task_id;\n"
+                  << "    TickType tick;\n"
+                  << "    StatusType stat;\n"
+                  << "    cycle_count++;\n"
+                  << "    stat = GetTaskID(&task_id);\n"
+                  << "    if (stat == E_OK) {\n"
+                  << "        printf(\"k-os: Cyclic #%lu — task ID %u\\n\", (unsigned long)cycle_count, (unsigned)task_id);\n"
+                  << "    }\n";
+                if (!counterNames.empty()) {
+                    s << "    stat = GetCounterValue(" << counterNames[0] << ", &tick);\n"
+                      << "    if (stat == E_OK) {\n"
+                      << "        printf(\"k-os: Cyclic — counter value = %lu\\n\", (unsigned long)tick);\n"
+                      << "    }\n";
+                }
+                if (!alarmNames.empty()) {
+                    s << "    /* Re-arm alarm for next cycle */\n"
+                      << "    stat = SetRelAlarm(" << alarmNames[0] << ", 100, 0);\n"
+                      << "    if (stat != E_OK) {\n"
+                      << "        printf(\"k-os: Cyclic — SetRelAlarm failed (%u)\\n\", (unsigned)stat);\n"
+                      << "    }\n";
+                }
+                s << "    TerminateTask();\n"
+                  << "}\n\n";
+            } else if (t->name == "TaskA") {
+                uint32_t prioA = 0;
+                for (const auto& ti : taskInfos) { if (ti.name == "TaskA") { prioA = ti.priority; break; } }
+                s << "TASK(" << name << ")\n{\n"
+                  << "    printf(\"k-os: TaskA — running (priority %u)\\n\", " << (unsigned)prioA << ");\n"
+                  << "    TerminateTask();\n"
+                  << "}\n\n";
+            } else if (t->name == "TaskB") {
+                uint32_t prioB = 0;
+                for (const auto& ti : taskInfos) { if (ti.name == "TaskB") { prioB = ti.priority; break; } }
+                s << "TASK(" << name << ")\n{\n"
+                  << "    printf(\"k-os: TaskB — running (priority %u)\\n\", " << (unsigned)prioB << ");\n"
+                  << "    TerminateTask();\n"
+                  << "}\n\n";
+            } else if (t->name == "Loop") {
+                /* Loop: demonstrates ChainTask */
+                bool hasTaskB = false;
+                for (const auto& ti : taskInfos) {
+                    if (ti.name == "TaskB") { hasTaskB = true; break; }
+                }
+                s << "TASK(" << name << ")\n{\n"
+                  << "    printf(\"k-os: Loop — demonstrating ChainTask\\n\");\n";
+                if (hasTaskB) {
+                    s << "    ChainTask(TaskB);\n";
+                } else if (!taskInfos.empty()) {
+                    /* Chain to the first non-autostart task */
+                    for (const auto& ti : taskInfos) {
+                        if (!ti.autostart && ti.name != "Loop") {
+                            s << "    ChainTask(" << ti.sanitizedName << ");\n";
+                            break;
+                        }
+                    }
+                }
+                s << "    TerminateTask();\n"
+                  << "}\n\n";
+            } else {
+                /* Generic task */
+                uint32_t prioGeneric = 0;
+                for (const auto& ti : taskInfos) { if (ti.name == t->name) { prioGeneric = ti.priority; break; } }
+                s << "TASK(" << name << ")\n{\n"
+                  << "    printf(\"k-os: " << t->name << " — running (priority %u)\\n\", " << (unsigned)prioGeneric << ");\n"
+                  << "    TerminateTask();\n"
+                  << "}\n\n";
+            }
+        } else {
+            s << "TASK(" << name << ")\n{\n"
+              << "    /* TODO: implement task '" << t->name << "' */\n"
+              << "}\n\n";
+        }
     }
 
     for (const auto* isr : isrs) {
