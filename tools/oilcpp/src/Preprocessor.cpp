@@ -69,6 +69,9 @@ std::string Preprocessor::processStream(std::istream& in,
     }
 
     while (std::getline(in, line)) {
+		if (!line.empty() && line.back() == '\r') {
+			line.pop_back();
+		}
         std::smatch m;
         if (std::regex_match(line, m, include_re)) {
             bool quoted = m[1].str() == "\"";

@@ -16,6 +16,39 @@ namespace kos::oilcpp {
 
 namespace {
 
+std::string stripComments(const std::string& input) {
+	std::string result = input;
+	bool in_string = false;
+	bool escaped = false;
+	for (size_t i = 0; i < input.size(); ++i) {
+		if (in_string) {
+			if (escaped) {
+				escaped = false;
+			} else if (input[i] == '\\') {
+				escaped = true;
+			} else if (input[i] == '"') {
+				in_string = false;
+			}
+		} else if (input[i] == '"') {
+			in_string = true;
+		} else if (input[i] == '/' && i + 1 < input.size() && input[i + 1] == '/') {
+			while (i < input.size() && input[i] != '\n') result[i++] = ' ';
+			if (i == input.size()) break;
+		} else if (input[i] == '/' && i + 1 < input.size() && input[i + 1] == '*') {
+			result[i++] = ' ';
+			result[i++] = ' ';
+			while (i + 1 < input.size() && !(input[i] == '*' && input[i + 1] == '/')) {
+				if (input[i] != '\n') result[i] = ' ';
+				++i;
+			}
+			if (i + 1 >= input.size()) throw std::runtime_error("Unterminated OIL comment");
+			result[i] = ' ';
+			result[++i] = ' ';
+		}
+	}
+	return result;
+}
+
 std::string trim(std::string_view sv) {
     size_t start = 0;
     while (start < sv.size() && std::isspace(static_cast<unsigned char>(sv[start]))) {
@@ -85,12 +118,21 @@ std::set<std::string> extractAttributes(const std::string& raw) {
             auto stmt = trim(std::string_view(raw).substr(stmt_start, i - stmt_start));
             stmt_start = i + 1;
             if (stmt.empty()) continue;
-            auto eq = stmt.find('=');
-            if (eq != std::string::npos) {
-                stmt = trim(stmt.substr(0, eq));
-            }
+			int brackets = 0;
+			bool quoted = false;
+			for (size_t j = 0; j < stmt.size(); ++j) {
+				if (stmt[j] == '"' && (j == 0 || stmt[j - 1] != '\\')) quoted = !quoted;
+				if (quoted) continue;
+				if (stmt[j] == '[') ++brackets;
+				else if (stmt[j] == ']') --brackets;
+				else if (stmt[j] == '=' && brackets == 0) {
+					stmt = trim(stmt.substr(0, j));
+					break;
+				}
+			}
             size_t end = stmt.size();
             while (end > 0 && std::isspace(static_cast<unsigned char>(stmt[end - 1]))) --end;
+			if (end >= 2 && stmt.compare(end - 2, 2, "[]") == 0) end -= 2;
             size_t pos = end;
             while (pos > 0 && (std::isalnum(static_cast<unsigned char>(stmt[pos - 1])) || stmt[pos - 1] == '_')) --pos;
             if (pos < end) {
@@ -345,19 +387,21 @@ void validateAttributeValue(const Attribute& attr,
     }
 
     switch (constraint.kind) {
-    case ConstraintKind::kBoolean:
-        if (attr.value.kind != AttributeValue::Kind::kBoolean) {
-            fail("expected boolean");
-        }
-        if (!constraint.enum_values.empty() &&
-            std::find(constraint.enum_values.begin(), constraint.enum_values.end(), attr.value.text) ==
-                constraint.enum_values.end()) {
-            fail("unexpected boolean value");
-        }
-        break;
+    case ConstraintKind::kBoolean: {
+		const auto token = leadingToken(attr.value.text);
+		if (token != "TRUE" && token != "FALSE" && token != "STD_ON" && token != "STD_OFF") {
+			fail("expected boolean");
+		}
+		if (!constraint.enum_values.empty() &&
+			std::find(constraint.enum_values.begin(), constraint.enum_values.end(), token) ==
+				constraint.enum_values.end()) {
+			fail("unexpected boolean value");
+		}
+		break;
+	}
     case ConstraintKind::kEnum:
         if (!constraint.enum_values.empty() &&
-            std::find(constraint.enum_values.begin(), constraint.enum_values.end(), attr.value.text) ==
+			std::find(constraint.enum_values.begin(), constraint.enum_values.end(), leadingToken(attr.value.text)) ==
                 constraint.enum_values.end()) {
             fail("expected one of the declared enum values");
         }
@@ -426,9 +470,10 @@ void validateAttributeValue(const Attribute& attr,
 }
 }  // namespace
 
-OilModel OilParser::parse(const std::string& preprocessed, const std::filesystem::path&) const {
+OilModel OilParser::parse(const std::string& input, const std::filesystem::path&) const {
+    const auto preprocessed = stripComments(input);
     OilModel model{};
-    model.preprocessed_text = preprocessed;
+    model.preprocessed_text = input;
 
     std::regex version_re("OIL_VERSION\\s*=\\s*\"([^\"]+)\"");
     std::smatch m;

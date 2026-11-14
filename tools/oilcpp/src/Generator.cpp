@@ -2468,6 +2468,9 @@ void Generator::writeTargetTemplate(const Options& opts) const {
     cm << "elseif(KOSGEN_TARGET STREQUAL \"pthreads\" OR KOSGEN_TARGET STREQUAL \"posix\")\n";
     cm << "  list(APPEND KOSGEN_INCLUDE_DIRS \"${KOS_SRC_PATH}/port/pthreads\")\n";
     cm << "  list(APPEND KOSGEN_PORT_SOURCES \"${KOS_SRC_PATH}/port/pthreads/Os_Port_Unix.c\")\n";
+	cm << "  list(APPEND KOSGEN_PORT_SOURCES \"${KOS_SRC_PATH}/port/pthreads/CPU_Primitives_Unix.c\")\n";
+	cm << "  list(APPEND KOSGEN_PORT_SOURCES \"${KOS_SRC_PATH}/port/pthreads/Os_Mlq_Unix.c\")\n";
+	cm << "  list(REMOVE_ITEM KOSGEN_KERNEL_SOURCES \"${KOS_SRC_PATH}/src/Os_Mlq.c\")\n";
     cm << "  list(APPEND KOSGEN_PORT_LIBS pthread rt)\n";
     cm << "endif()\n\n";
 
@@ -2503,6 +2506,7 @@ void Generator::writeTargetTemplate(const Options& opts) const {
     cm << "  add_executable(${KOSGEN_APP} ${KOSGEN_GENERATED_SOURCES} ${KOSGEN_KERNEL_SOURCES} ${KOSGEN_PORT_SOURCES})\n";
     cm << "  target_include_directories(${KOSGEN_APP} PRIVATE ${KOSGEN_INCLUDE_DIRS})\n";
     cm << "  target_link_libraries(${KOSGEN_APP} PRIVATE ${KOSGEN_PORT_LIBS} Threads::Threads)\n";
+	cm << "  target_compile_definitions(${KOSGEN_APP} PRIVATE KOS_POSIX=1)\n";
     cm << "else()\n";
     cm << "  message(FATAL_ERROR \"Unsupported target ${KOSGEN_TARGET}\")\n";
     cm << "endif()\n";
