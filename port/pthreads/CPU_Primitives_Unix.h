@@ -5,6 +5,7 @@
 #define __CPU_PRIMITIVES_UNIX_H
 
 #include <pthread.h>
+#include <sched.h>
 #include <signal.h>
 #include <stdint.h>
 
@@ -18,39 +19,42 @@ extern volatile sig_atomic_t OsPort_InterruptFlag;
     #define CPU_THREAD_LOCAL _Thread_local
 #endif
 
-static CPU_THREAD_LOCAL uint8_t __cpu_unix_disabled = 0;
+extern CPU_THREAD_LOCAL uint8_t OsPort_InterruptsDisabled;
+
+void OsPort_DisableOsInterrupts(void);
+void OsPort_EnableOsInterrupts(void);
 
 #define CPU_DISABLE_ALL_INTERRUPTS()                \
     do {                                            \
-        if (!__cpu_unix_disabled) {                 \
-            __cpu_unix_disabled = 1;                \
+		if (!OsPort_InterruptsDisabled) {           \
+			OsPort_InterruptsDisabled = 1;          \
             pthread_mutex_lock(&OsPort_GlobalMutex);\
         }                                           \
     } while (0)
 
 #define CPU_ENABLE_ALL_INTERRUPTS()                 \
     do {                                            \
-        if (__cpu_unix_disabled) {                  \
-            __cpu_unix_disabled = 0;                \
+		if (OsPort_InterruptsDisabled) {            \
+			OsPort_InterruptsDisabled = 0;          \
             pthread_mutex_unlock(&OsPort_GlobalMutex);\
         }                                           \
     } while (0)
 
-#define CPU_INTERRUPTS_DISABLED() (__cpu_unix_disabled != 0)
+#define CPU_INTERRUPTS_DISABLED() (OsPort_InterruptsDisabled != 0)
 
 #define CPU_SAVE_AND_DISABLE_INTERRUPTS(state)      \
     do {                                            \
-        (state) = __cpu_unix_disabled;              \
-        if (!__cpu_unix_disabled) {                 \
-            __cpu_unix_disabled = 1;                \
+		(state) = OsPort_InterruptsDisabled;        \
+		if (!OsPort_InterruptsDisabled) {            \
+			OsPort_InterruptsDisabled = 1;           \
             pthread_mutex_lock(&OsPort_GlobalMutex);\
         }                                           \
     } while (0)
 
 #define CPU_RESTORE_INTERRUPTS(state)               \
     do {                                            \
-        if ((state) == 0u && __cpu_unix_disabled) { \
-            __cpu_unix_disabled = 0;                \
+		if ((state) == 0u && OsPort_InterruptsDisabled) { \
+			OsPort_InterruptsDisabled = 0;           \
             pthread_mutex_unlock(&OsPort_GlobalMutex);\
         }                                           \
     } while (0)
@@ -63,5 +67,6 @@ static CPU_THREAD_LOCAL uint8_t __cpu_unix_disabled = 0;
 
 #define CPU_NO_OPERATION() do { __asm__ __volatile__("" ::: "memory"); } while (0)
 #define CPU_MEMORY_BARRIER() __sync_synchronize()
+#define CPU_ENTER_POWERDOWN_MODE() ((void)sched_yield())
 
 #endif /* __CPU_PRIMITIVES_UNIX_H */

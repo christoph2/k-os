@@ -82,46 +82,15 @@ void OsPort_SimulateInterrupt(int signal_num);
 void OsPort_SignalHandler(int sig, siginfo_t *info, void *context);
 
 /*
-**  Context switching macros using pthreads.
+**  Context switching — no-op for pthread-based port.
+**  Context is managed by pthreads; these are declared as functions in Os_Port_Unix.c.
 */
-#define OsPort_SaveContext() \
-    _BEGIN_BLOCK \
-    pthread_mutex_lock(&OsPort_GlobalMutex); \
-    _END_BLOCK
-
-#define OsPort_RestoreContext() \
-    _BEGIN_BLOCK \
-    pthread_mutex_unlock(&OsPort_GlobalMutex); \
-    pthread_cond_signal(&OsPort_ScheduleCondition); \
-    _END_BLOCK
-
-#define OsPort_StartCurrentTask() \
-    _BEGIN_BLOCK \
-    pthread_cond_wait(&OsPort_ScheduleCondition, &OsPort_GlobalMutex); \
-    pthread_mutex_unlock(&OsPort_GlobalMutex); \
-    _END_BLOCK
-
-#define OsPort_SwitchToISRContext() \
-    _BEGIN_BLOCK \
-    pthread_mutex_lock(&OsPort_GlobalMutex); \
-    _END_BLOCK
 
 /*
-**  Interrupt disable/enable macros.
+**  Interrupt disable/enable macros — provided by CPU_Primitives_Unix.h.
+**  OsPort_DisableAllOsInterrupts/EnableAllOsInterrupts are mapped in Os_Port.h
+**  to OsPort_DisableOsInterrupts/EnableOsInterrupts on Linux.
 */
-#define OsPort_DisableAllInterrupts() \
-    _BEGIN_BLOCK \
-    sigset_t new_mask, old_mask; \
-    sigfillset(&new_mask); \
-    pthread_sigmask(SIG_BLOCK, &new_mask, &old_mask); \
-    _END_BLOCK
-
-#define OsPort_EnableAllInterrupts() \
-    _BEGIN_BLOCK \
-    sigset_t old_mask; \
-    sigemptyset(&old_mask); \
-    pthread_sigmask(SIG_SETMASK, &old_mask, NULL); \
-    _END_BLOCK
 
 #ifdef __cplusplus
 }
