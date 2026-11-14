@@ -1,6 +1,19 @@
 cmake_minimum_required(VERSION 3.16)
 project(k_os C CXX)
 
+include(CTest)
+
+if(BUILD_TESTING AND UNIX AND NOT CMAKE_CROSSCOMPILING)
+	find_package(Threads REQUIRED)
+	add_executable(posix_interrupt_state_test
+		tests/posix_interrupt_state.c
+		tests/posix_interrupt_state_other.c
+		port/pthreads/CPU_Primitives_Unix.c)
+	target_include_directories(posix_interrupt_state_test PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}")
+	target_link_libraries(posix_interrupt_state_test PRIVATE Threads::Threads)
+	add_test(NAME posix_interrupt_state COMMAND posix_interrupt_state_test)
+endif()
+
 set(CMAKE_C_STANDARD 11)
 set(CMAKE_C_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_STANDARD 17)
@@ -88,6 +101,8 @@ function(kos_port_config PLATFORM OUT_SRCS OUT_LIBS OUT_INCS)
         endif()
     elseif(PLATFORM STREQUAL "pthreads" OR PLATFORM STREQUAL "posix")
         list(APPEND srclist ${KOS_SRC_PATH}/port/pthreads/Os_Port_Unix.c)
+		list(APPEND srclist ${KOS_SRC_PATH}/port/pthreads/CPU_Primitives_Unix.c)
+		list(APPEND srclist ${KOS_SRC_PATH}/port/pthreads/Os_Mlq_Unix.c)
         list(APPEND inclist ${KOS_SRC_PATH}/port/pthreads)
         list(APPEND liblist pthread rt)
     elseif(PLATFORM STREQUAL "rp2040")
@@ -117,17 +132,28 @@ function(kos_add_generated_example NAME PLATFORM OIL_FILE)
 
     set(gen_stub "${gen_prefix}_stubs.c")
 
+    set(oil_dependencies "${OIL_FILE}")
+    if(PLATFORM STREQUAL "pthreads" OR PLATFORM STREQUAL "posix")
+		list(APPEND oil_dependencies
+			"${KOS_SRC_PATH}/samples/windows/first.oil"
+			"${KOS_SRC_PATH}/config/oil/kos25full.oil")
+    endif()
+
     add_custom_command(
         OUTPUT "${gen_prefix}.c" "${gen_prefix}.h" "${gen_prefix}.info.txt" "${gen_prefix}.ort" "${gen_stub}" "${gen_dir}/main.c" "${gen_dir}/kosgen.cmake" "${gen_dir}/CMakeLists.txt"
         COMMAND ${CMAKE_COMMAND} -E make_directory "${gen_dir}"
         COMMAND $<TARGET_FILE:kosgen_cpp> --include "${KOS_SRC_PATH}/config/oil" --target ${PLATFORM} --orti -o "${gen_prefix}" "${OIL_FILE}"
-        DEPENDS kosgen_cpp "${OIL_FILE}"
+		DEPENDS kosgen_cpp ${oil_dependencies}
         VERBATIM
     )
     add_custom_target(${NAME}_cfg DEPENDS "${gen_prefix}.c" "${gen_prefix}.h" "${gen_prefix}.info.txt" "${gen_prefix}.ort" "${gen_stub}")
 
+	set(kernel_sources ${KOS_KERNEL_SOURCES})
+	if(PLATFORM STREQUAL "pthreads" OR PLATFORM STREQUAL "posix")
+		list(REMOVE_ITEM kernel_sources ${KOS_SRC_PATH}/src/Os_Mlq.c)
+	endif()
     add_executable(${NAME}
-        ${KOS_KERNEL_SOURCES}
+		${kernel_sources}
         ${PORT_SRCS}
         "${gen_prefix}.c"
         "${gen_stub}"
@@ -136,6 +162,9 @@ function(kos_add_generated_example NAME PLATFORM OIL_FILE)
     add_dependencies(${NAME} ${NAME}_cfg)
     target_include_directories(${NAME} PRIVATE ${KOS_INCLUDE_DIRS} ${PORT_INCS} "${gen_dir}")
     target_link_libraries(${NAME} PRIVATE ${PORT_LIBS})
+	if(PLATFORM STREQUAL "pthreads" OR PLATFORM STREQUAL "posix")
+		target_compile_definitions(${NAME} PRIVATE KOS_POSIX=1)
+	endif()
 
     set(output_subdir "")
     if(PLATFORM STREQUAL "windows")
@@ -163,6 +192,19 @@ if(WIN32)
     kos_add_generated_example(kos_sample_windows "windows" "${KOS_SRC_PATH}/samples/windows/first.oil")
 elseif(UNIX)
     kos_add_generated_example(kos_sample_posix "pthreads" "${KOS_SRC_PATH}/samples/posix/first.oil")
+	if(BUILD_TESTING)
+		add_executable(posix_ready_queue_test tests/posix_ready_queue.c port/pthreads/Os_Mlq_Unix.c)
+		add_dependencies(posix_ready_queue_test kos_sample_posix_cfg)
+		target_include_directories(posix_ready_queue_test PRIVATE ${KOS_INCLUDE_DIRS} "${CMAKE_BINARY_DIR}/generated/kos_sample_posix")
+		target_compile_definitions(posix_ready_queue_test PRIVATE KOS_POSIX=1)
+		add_test(NAME posix_ready_queue COMMAND posix_ready_queue_test)
+		add_executable(posix_timer_lifecycle_test tests/posix_timer_lifecycle.c port/pthreads/Os_Port_Unix.c)
+		add_dependencies(posix_timer_lifecycle_test kos_sample_posix_cfg)
+		target_include_directories(posix_timer_lifecycle_test PRIVATE ${KOS_INCLUDE_DIRS} "${CMAKE_BINARY_DIR}/generated/kos_sample_posix")
+		target_link_libraries(posix_timer_lifecycle_test PRIVATE Threads::Threads rt)
+		add_test(NAME posix_timer_lifecycle COMMAND posix_timer_lifecycle_test)
+		set_tests_properties(posix_timer_lifecycle PROPERTIES TIMEOUT 5)
+	endif()
 endif()
 
 set(KOS_RP2040_AVAILABLE OFF)
