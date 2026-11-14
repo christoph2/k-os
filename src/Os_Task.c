@@ -408,8 +408,10 @@ static void OsTask_Init(TaskType TaskID, boolean Schedule)
     tcb->Activations = (uint8)0x00;
 #endif
 
-#if (OS_FEATURE_RESOURCES == STD_ON)
+#if (OS_FEATURE_RESOURCES == STD_ON) || (OS_FEATURE_INTERNAL_RESOURCES == STD_ON)
     tcb->CurrentPriority   = task_def->Priority;
+#endif
+#if (OS_FEATURE_RESOURCES == STD_ON)
     tcb->ResourceCount     = (uint8)0x00;
 #endif
 
@@ -428,4 +430,3 @@ static void OsTask_Init(TaskType TaskID, boolean Schedule)
     #define OSEK_OS_STOP_SEC_CODE
     #include "MemMap.h"
 #endif /* KOS_MEMORY_MAPPING */
-

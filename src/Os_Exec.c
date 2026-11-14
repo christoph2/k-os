@@ -102,6 +102,10 @@ void StartOS(AppModeType Mode)
     Os_ClearServiceContext();
 /*    OsPort_EnableAllOsInterrupts(); */
 
+#if defined(KOS_POSIX)
+    OsPort_TimerInit();
+#endif
+
 #if (OS_FEATURE_SAVE_STARTUP_CONTEXT == STD_ON)
 
     if (Utl_SetJump(&StartupContext) == 0) {
@@ -273,6 +277,15 @@ FUNC(boolean, OSEK_OS_CODE) OsExec_HigherPriorityThenCurrentReady(void)
 boolean OsExec_HigherPriorityThenCurrentReady(void)
 #endif /* KOS_MEMORY_MAPPING */
 {
+#if defined(KOS_POSIX)
+    TaskType highest = OsMLQ_GetHighestPrio();
+    if (highest == INVALID_TASK || highest == Os_CurrentTID) return FALSE;
+#if (OS_FEATURE_RESOURCES == STD_ON) || (OS_FEATURE_INTERNAL_RESOURCES == STD_ON)
+    return (boolean)(OS_TCB[highest].CurrentPriority > Os_CurrentTCB->CurrentPriority);
+#else
+    return (boolean)(OS_TaskConf[highest].Priority > OS_TaskConf[Os_CurrentTID].Priority);
+#endif
+#else
     uint16  currentPriority;
     boolean res;
 
@@ -286,6 +299,7 @@ boolean OsExec_HigherPriorityThenCurrentReady(void)
     res = (boolean)((OsMLQ_GetBitmap() & ((uint16) ~currentPriority)) > currentPriority);
 
     return res;
+#endif
 
 }
 
@@ -296,8 +310,15 @@ FUNC(void, OSEK_OS_CODE) OsExec_StartHighestReadyTask(void)
 void OsExec_StartHighestReadyTask(void)
 #endif /* KOS_MEMORY_MAPPING */
 {
+#if defined(KOS_POSIX)
+    /* On POSIX, TerminateTask/ChainTask already return to the task thread.
+       The scheduler loop in OsPort_StartCurrentTask will pick up the next
+       ready task. We only need to update the current task state. */
+    OsExec_SetHighestPrioRunning();
+#else
     OsExec_SetHighestPrioRunning();
     OsPort_StartCurrentTask();
+#endif
 }
 
 

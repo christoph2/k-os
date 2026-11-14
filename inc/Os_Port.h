@@ -90,8 +90,13 @@ void OsPort_SignalSchedulingEvent(void);
 void OsPort_AdjustProcessPriorityClass(void);
 #endif /* KOS_MEMORY_MAPPING */
 
+#if defined(__linux__) && !defined(_WIN32)
+#define OsPort_DisableAllOsInterrupts() OsPort_DisableOsInterrupts()
+#define OsPort_EnableAllOsInterrupts()  OsPort_EnableOsInterrupts()
+#else
 #define OsPort_DisableAllOsInterrupts() CPU_SAVE_AND_DISABLE_INTERRUPTS(OsPort_InterruptState)
 #define OsPort_EnableAllOsInterrupts()  CPU_RESTORE_INTERRUPTS(OsPort_InterruptState)
+#endif
 
 extern const SizeType OS_TOS_ISR;
 
