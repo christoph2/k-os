@@ -470,6 +470,25 @@ void OsPort_StartCurrentTask(void)
         pthread_attr_destroy(&attr);
     }
 
+    /* On POSIX, OsExec_SetHighestPrioRunning() marks the highest-priority
+       autostart task as RUNNING but does not actually run it (no context
+       switch on POSIX). Now that all task threads exist, run the RUNNING
+       task by posting its semaphore. */
+    if (Os_CurrentTID != INVALID_TASK && OS_TCB[Os_CurrentTID].State == RUNNING) {
+        TaskType firstTask = Os_CurrentTID;
+        OS_TCB[firstTask].State = RUNNING;
+        Os_CurrentTCB = &OS_TCB[firstTask];
+        OsPort_TaskRunning[firstTask] = 1;
+        sem_post(&OsPort_TaskSemaphores[firstTask]);
+        /* Wait for completion — InitTask is non-preemptive */
+        while (OsPort_TaskRunning[firstTask] && !OsPort_ShutdownRequested) {
+            sched_yield();
+        }
+        OS_TCB[firstTask].State = SUSPENDED;
+        Os_CurrentTID = INVALID_TASK;
+        Os_CurrentTCB = NULL;
+    }
+
     /* Main scheduling loop */
     while (!OsPort_ShutdownRequested) {
         pthread_mutex_lock(&OsPort_GlobalMutex);
